@@ -1,0 +1,49 @@
+name: Google Play Release AAB
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - uses: android-actions/setup-android@v3
+      - name: Install Android SDK 36
+        run: sdkmanager "platforms;android-36" "build-tools;35.0.0" "platform-tools"
+      - name: Restore upload key
+        env:
+          PLAY_UPLOAD_KEYSTORE_B64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_B64 }}
+        run: |
+          if [ -z "$PLAY_UPLOAD_KEYSTORE_B64" ]; then
+            echo "PLAY_UPLOAD_KEYSTORE_B64 secret is missing" >&2
+            exit 1
+          fi
+          echo "$PLAY_UPLOAD_KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/upload-key.jks"
+      - name: Create signing properties
+        env:
+          STORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+        run: |
+          cat > keystore.properties <<EOF2
+          storeFile=$RUNNER_TEMP/upload-key.jks
+          storePassword=$STORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF2
+      - name: Build signed release bundle
+        run: gradle --no-daemon bundleRelease
+      - name: Verify signed bundle exists
+        run: test -s app/build/outputs/bundle/release/app-release.aab
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AracimPro-Play-AAB
+          path: app/build/outputs/bundle/release/app-release.aab

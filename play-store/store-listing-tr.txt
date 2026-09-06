@@ -1,0 +1,24 @@
+Uygulama adı:
+Aracım Pro
+
+Kısa açıklama:
+Yakıt, bakım, gider, servis ve araç hatırlatmalarını tek yerde takip et.
+
+Uzun açıklama:
+Aracım Pro, araç sahiplerinin günlük takip işlerini tek uygulamada toplar.
+
+• Birden fazla araç ekleme ve araç profili
+• Yakıt alımları ve ortalama tüketim takibi
+• Bakım, servis ve masraf kayıtları
+• Muayene, sigorta, kasko ve MTV hatırlatmaları
+• Lastik ve akü takibi
+• Yolculuk ve yakıt maliyeti hesaplama
+• Araç değer geçmişi ve kilometre başına toplam maliyet
+• Kaza ve hasar kayıtları
+• Belge kasası ve dışa aktarma seçenekleri
+• PDF, CSV ve Excel raporları
+• PIN ve biyometrik uygulama kilidi
+• Ana ekran widget'ı
+• Gerçek araç fotoğrafı arama veya galeriden araç fotoğrafı seçme
+
+Veriler temel olarak cihazında tutulur. Hesap açmak zorunlu değildir.

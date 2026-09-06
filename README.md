@@ -1,31 +1,26 @@
 # Aracım Pro V7 — 3.0.0
 
-V6'nın çalışan çekirdeği üzerine eklenen kapsamlı araç yönetim sürümü.
+V6 üzerine tam kapsamlı araç sahipliği özellikleri eklendi.
 
 ## V7 yenilikleri
-- Yıl + marka + model + paket ile gerçek araç fotoğrafı arama (Wikimedia Commons)
-- Fotoğraf adayları arasından seçim, lisans/kaynak bilgisi ve çevrimdışı önbellek
-- Fotoğraf seçmeden kaydedilen araçta otomatik görsel arama denemesi
-- Otomobil, SUV, hafif ticari, pickup, motosiklet, karavan desteği
-- Gelişmiş araç profili: paket, kasa, renk, motor hacmi, beygir, tork, çekiş, 0-100, ağırlık, bagaj
-- Garajdaki iki aracı teknik özelliklerle yan yana karşılaştırma
-- Gerçek gider / km hesabı
-- Aylık yakıt bütçesi ve yol maliyeti hesaplayıcı
-- Şehir içi / uzun yol / karma yakıt kayıtları
-- Araç değer geçmişi ve alış fiyatına göre değer değişimi
-- Akü geçmişi, garanti ve maliyet takibi
-- Kaza / hasar geçmişi
-- Mevcut bakım, muayene, sigorta, kasko, MTV bildirimleri
-- Lastik, servis, yolculuk, belge kasası, PDF/XLS/CSV rapor
-- PIN, biyometri, karanlık tema, widget, yerel/bulut yedekleme
-- Emoji ağırlıklı ana navigasyon yerine profesyonel SVG ikon sistemi
+- Otomatik gerçek/orijinal araç görseli için IMAGIN.studio entegrasyonu (müşteri anahtarı kullanıcı tarafından girilir)
+- Yıl → marka → model CarAPI katalog sihirbazı ve CarAPI teknik özellik aktarımı
+- Gelişmiş araç profili: paket, kasa, hp, Nm, cc, çekiş, ağırlık, bagaj, 0-100, ortalama tüketim
+- Araç karşılaştırma
+- Yol/yakıt maliyeti hesaplayıcı
+- Araç değer geçmişi ve alışa göre fark
+- Akü takip sistemi
+- Kaza/hasar kayıtları + fotoğraf
+- KM başına toplam sahiplik maliyeti
+- Akıllı durum/uyarı kartları
+- Var olan yakıt, bakım, muayene/sigorta/MTV, lastik, servis, belge kasası, PDF/Excel/CSV, acil durum, widget, PIN/biyometri ve yedekleme özellikleri korunur
+- Emoji ağırlıklı alt menü yerine SVG navigasyon ikonları
 
-## Araç fotoğrafları hakkında
-V7, lisans bilgisi olan Wikimedia Commons görsellerini arar. Bu yöntem geniş kapsama sahiptir fakat her yıl/paket için %100 birebir stüdyo fotoğrafı garantisi vermez. Kullanıcı her zaman galeriden kendi araç fotoğrafını seçebilir. Ticari üretici stüdyo görsellerinin eksiksiz kataloğu için ileride lisanslı bir otomotiv görsel sağlayıcısı bağlanabilir.
+## Gerçek araç fotoğrafları hakkında
+IMAGIN.studio CDN modeli kullanılır. Uygulama içinde Ayarlar → Araç Veri Servisleri kısmına müşteri anahtarı girildiğinde araç marka/model/yıl bilgisine göre görsel istenir. Görsel servisi ücret/lisans ve model kapsaması sağlayıcıya bağlıdır. Anahtar yoksa kullanıcı kendi araç fotoğrafını seçebilir.
 
-## Teknik
-- minSdk 24 / targetSdk 36 / compileSdk 36
-- Java 17
-- WebView + native Android bridge
-- INTERNET izni yalnızca araç görseli araması ve indirme için
-- GitHub Actions: debug APK + release AAB (imzasız)
+## CarAPI hakkında
+Katalog ve teknik veriler CarAPI üzerinden alınabilir. Ücretsiz demo veri seti sınırlı yılları kapsayabilir; tam katalog için token/abonelik gerekebilir. CarAPI ağırlıklı olarak ABD pazar verisidir; Türkiye'ye özgü bazı paket/versiyonlar elle girilebilir.
+
+## Google Play üretim notu
+Ticari API anahtarlarını APK içine sabitlemek yerine üretimde kendi backend/proxy servisinden geçirmek önerilir. V7 içindeki anahtar alanları geliştirme ve entegrasyon testi içindir.
