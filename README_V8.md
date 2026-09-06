@@ -1,6 +1,6 @@
-# Aracım Pro V8 — Seçimli Araç Kataloğu
+# Aracım Pro V9 — Seçimli Araç Kataloğu
 
-V8 sürümünde kategori niteliğindeki alanlar serbest metin yerine seçimli hale getirildi.
+V9 sürümünde kategori niteliğindeki alanlar serbest metin yerine seçimli hale getirildi.
 
 ## Araç ekleme
 - Model yılı: seçim
@@ -18,6 +18,14 @@ Yakıt istasyonu, kullanım türü, yolculuk amacı, servis türü/işlemi, bak�
 ## Google Play
 - applicationId değişmedi: `com.aracimpro.app`
 - versionCode: 9
-- versionName: 4.0.0
+- versionName: 4.1.0
 - targetSdk / compileSdk: 36
 - Mevcut Play release iş akışı korunmuştur.
+
+
+## V9 katalog düzeltmeleri
+- Marka, model, motor, paket ve diğer seçim listeleri Türkçe A-Z sıralı.
+- Passat ve Elantra dahil yaygın Türkiye modellerinde model/yıl bazlı motor ve paket seçenekleri.
+- Elantra 2011-2015 için Tune, Mode, Mode Plus, Style, Style Design Pack, Prime/Prime Plus ve Elite seçenekleri.
+- Passat için 1.4 TSI, 1.5 TSI, 1.6 TDI, 2.0 TDI gibi motorlar ve dönemine göre Comfortline/Highline/Trendline/Business/Impression/Elegance/R-Line seçenekleri.
+- Model seçilince açık lisanslı gerçek araç fotoğrafı otomatik aranır; sonuç yoksa galeri seçimi kullanılabilir.

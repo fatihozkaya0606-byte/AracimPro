@@ -47,6 +47,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Iterator;
+import java.util.HashSet;
+import java.util.Set;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -316,7 +318,7 @@ public class MainActivity extends Activity {
                             URLEncoder.encode(brand, "UTF-8") + "/modelyear/" + year + "?format=json";
                     HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
                     c.setConnectTimeout(7000); c.setReadTimeout(10000);
-                    c.setRequestProperty("User-Agent", "AracimPro/4.0 Android");
+                    c.setRequestProperty("User-Agent", "AracimPro/4.1 Android");
                     int code = c.getResponseCode();
                     InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
                     BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
@@ -355,32 +357,44 @@ public class MainActivity extends Activity {
                 try {
                     String q = query == null ? "" : query.trim();
                     if (q.isEmpty()) throw new IllegalArgumentException("Araç bilgisi boş");
-                    String api = "https://commons.wikimedia.org/w/api.php?action=query&generator=search" +
-                            "&gsrnamespace=6&gsrlimit=10&gsrsearch=" + URLEncoder.encode(q + " automobile car filetype:bitmap", "UTF-8") +
-                            "&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=1000&format=json&formatversion=2&origin=*";
-                    HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
-                    c.setConnectTimeout(9000); c.setReadTimeout(12000);
-                    c.setRequestProperty("User-Agent", "AracimPro/4.0 Android");
-                    int code = c.getResponseCode();
-                    InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
-                    BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
-                    StringBuilder raw = new StringBuilder(); String line;
-                    while ((line = br.readLine()) != null) raw.append(line);
-                    br.close(); c.disconnect();
-                    JSONObject rootJson = new JSONObject(raw.toString());
-                    JSONObject queryObj = rootJson.optJSONObject("query");
-                    JSONArray pages = queryObj == null ? null : queryObj.optJSONArray("pages");
-                    if (pages != null) {
-                        for (int i = 0; i < pages.length(); i++) {
+                    Set<String> seen = new HashSet<>();
+                    java.util.ArrayList<String> queries = new java.util.ArrayList<>();
+                    queries.add(q);
+                    String noYear = q.replaceFirst("^\\d{4}\\s+", "").trim();
+                    if (!noYear.equals(q)) queries.add(noYear);
+                    queries.add(noYear + " car");
+                    for (String term : queries) {
+                        if (out.length() >= 12) break;
+                        String api = "https://commons.wikimedia.org/w/api.php?action=query&generator=search" +
+                                "&gsrnamespace=6&gsrlimit=20&gsrsearch=" + URLEncoder.encode(term, "UTF-8") +
+                                "&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=1200&format=json&formatversion=2&origin=*";
+                        HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
+                        c.setConnectTimeout(9000); c.setReadTimeout(12000);
+                        c.setRequestProperty("User-Agent", "AracimPro/4.1 Android (vehicle-photo-search)");
+                        int code = c.getResponseCode();
+                        InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
+                        BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+                        StringBuilder raw = new StringBuilder(); String line;
+                        while ((line = br.readLine()) != null) raw.append(line);
+                        br.close(); c.disconnect();
+                        JSONObject rootJson = new JSONObject(raw.toString());
+                        JSONObject queryObj = rootJson.optJSONObject("query");
+                        JSONArray pages = queryObj == null ? null : queryObj.optJSONArray("pages");
+                        if (pages == null) continue;
+                        for (int i = 0; i < pages.length() && out.length() < 12; i++) {
                             JSONObject page = pages.optJSONObject(i); if (page == null) continue;
                             JSONArray info = page.optJSONArray("imageinfo"); if (info == null || info.length() == 0) continue;
                             JSONObject ii = info.optJSONObject(0); if (ii == null) continue;
-                            String thumb = ii.optString("thumburl", ii.optString("url", ""));
-                            if (thumb.isEmpty()) continue;
+                            String full = ii.optString("url", "");
+                            String thumb = ii.optString("thumburl", full);
+                            if (thumb.isEmpty() || full.isEmpty() || seen.contains(full)) continue;
+                            String lower = full.toLowerCase(Locale.ROOT);
+                            if (!(lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.contains(".jpg?") || lower.contains(".jpeg?") || lower.contains(".png?"))) continue;
+                            seen.add(full);
                             JSONObject meta = ii.optJSONObject("extmetadata");
                             JSONObject item = new JSONObject();
                             item.put("url", thumb);
-                            item.put("fullUrl", ii.optString("url", thumb));
+                            item.put("fullUrl", full);
                             item.put("page", ii.optString("descriptionurl", ""));
                             item.put("title", page.optString("title", "").replaceFirst("^File:", ""));
                             item.put("artist", metaValue(meta, "Artist"));
@@ -404,7 +418,7 @@ public class MainActivity extends Activity {
                 try {
                     HttpURLConnection c = (HttpURLConnection) new URL(imageUrl).openConnection();
                     c.setConnectTimeout(9000); c.setReadTimeout(12000);
-                    c.setRequestProperty("User-Agent", "AracimPro/4.0 Android");
+                    c.setRequestProperty("User-Agent", "AracimPro/4.1 Android");
                     try (InputStream in = c.getInputStream()) {
                         Bitmap src = BitmapFactory.decodeStream(in);
                         if (src == null) throw new IllegalStateException("Görsel okunamadı");
