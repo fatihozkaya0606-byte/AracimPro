@@ -13,7 +13,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowInsets;
-import android.view.WindowInsetsController;
 import android.view.WindowManager;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
@@ -56,13 +55,7 @@ public class MainActivity extends Activity {
         // V4: HyperOS/Android 16 keyboard + edge-to-edge fix.
         // adjustResize is kept on, and native margins are also updated from IME insets
         // with a global-layout fallback for devices where WebView does not resize itself.
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        if (Build.VERSION.SDK_INT >= 30) {
-            getWindow().setDecorFitsSystemWindows(false);
-            getWindow().getInsetsController().setSystemBarsAppearance(
-                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS | WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
-                    WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS | WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS);
-        }
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
 
         root = new FrameLayout(this);
         root.setBackgroundColor(0xFFF4F8FF);
@@ -73,6 +66,17 @@ public class MainActivity extends Activity {
         root.addView(webView, webLp);
         setContentView(root);
 
+        // V5 stability fix: configure edge-to-edge only after the decor view exists.
+        // Some HyperOS builds can return a null InsetsController during early onCreate,
+        // which caused the V4 launch crash. We no longer touch the controller at all.
+        if (Build.VERSION.SDK_INT >= 30) {
+            try {
+                getWindow().setDecorFitsSystemWindows(false);
+            } catch (Throwable ignored) {
+                // Keep running with fallback margins below.
+            }
+        }
+
         // Give the WebView safe margins immediately. This fallback is important on
         // some HyperOS builds where the first WindowInsets callback is late or missing.
         final int fallbackTop = systemDimen("status_bar_height", dp(28));
@@ -81,18 +85,22 @@ public class MainActivity extends Activity {
 
         root.setOnApplyWindowInsetsListener((v, insets) -> {
             int left = 0, top = fallbackTop, right = 0, bottom = fallbackBottom;
-            if (Build.VERSION.SDK_INT >= 30) {
-                Insets bars = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
-                Insets ime = insets.getInsets(WindowInsets.Type.ime());
-                left = bars.left;
-                top = Math.max(fallbackTop, bars.top);
-                right = bars.right;
-                bottom = Math.max(Math.max(fallbackBottom, bars.bottom), ime.bottom);
-            } else {
-                left = insets.getSystemWindowInsetLeft();
-                top = Math.max(fallbackTop, insets.getSystemWindowInsetTop());
-                right = insets.getSystemWindowInsetRight();
-                bottom = Math.max(fallbackBottom, insets.getSystemWindowInsetBottom());
+            try {
+                if (Build.VERSION.SDK_INT >= 30) {
+                    Insets bars = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+                    Insets ime = insets.getInsets(WindowInsets.Type.ime());
+                    left = bars.left;
+                    top = Math.max(fallbackTop, bars.top);
+                    right = bars.right;
+                    bottom = Math.max(Math.max(fallbackBottom, bars.bottom), ime.bottom);
+                } else {
+                    left = insets.getSystemWindowInsetLeft();
+                    top = Math.max(fallbackTop, insets.getSystemWindowInsetTop());
+                    right = insets.getSystemWindowInsetRight();
+                    bottom = Math.max(fallbackBottom, insets.getSystemWindowInsetBottom());
+                }
+            } catch (Throwable ignored) {
+                // OEM fallback values are already set.
             }
             applyWebMargins(left, top, right, bottom);
             return insets;
@@ -102,25 +110,30 @@ public class MainActivity extends Activity {
         // This catches the numeric keyboard even when IME insets are not re-dispatched.
         root.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
             int left = 0, top = fallbackTop, right = 0, bottom = fallbackBottom;
-            if (Build.VERSION.SDK_INT >= 30 && root.getRootWindowInsets() != null) {
-                WindowInsets wi = root.getRootWindowInsets();
-                Insets bars = wi.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
-                Insets ime = wi.getInsets(WindowInsets.Type.ime());
-                left = bars.left;
-                top = Math.max(fallbackTop, bars.top);
-                right = bars.right;
-                bottom = Math.max(Math.max(fallbackBottom, bars.bottom), ime.bottom);
-            }
+            try {
+                if (Build.VERSION.SDK_INT >= 30 && root.getRootWindowInsets() != null) {
+                    WindowInsets wi = root.getRootWindowInsets();
+                    Insets bars = wi.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
+                    Insets ime = wi.getInsets(WindowInsets.Type.ime());
+                    left = bars.left;
+                    top = Math.max(fallbackTop, bars.top);
+                    right = bars.right;
+                    bottom = Math.max(Math.max(fallbackBottom, bars.bottom), ime.bottom);
+                }
 
-            Rect visible = new Rect();
-            root.getWindowVisibleDisplayFrame(visible);
-            int screenHeight = root.getRootView().getHeight();
-            int hiddenBottom = Math.max(0, screenHeight - visible.bottom);
-            // A large hidden area means a keyboard is open.
-            if (hiddenBottom > dp(120)) bottom = Math.max(bottom, hiddenBottom);
+                Rect visible = new Rect();
+                View decor = getWindow().getDecorView();
+                decor.getWindowVisibleDisplayFrame(visible);
+                int screenHeight = decor.getRootView().getHeight();
+                int hiddenBottom = Math.max(0, screenHeight - visible.bottom);
+                // HyperOS fallback when IME insets are not dispatched.
+                if (hiddenBottom > dp(120)) bottom = Math.max(bottom, hiddenBottom);
+            } catch (Throwable ignored) {
+                // Never crash the app because of an OEM inset quirk.
+            }
             applyWebMargins(left, top, right, bottom);
         });
-        root.requestApplyInsets();
+        root.post(root::requestApplyInsets);
 
         WebSettings s = webView.getSettings();
         s.setJavaScriptEnabled(true);

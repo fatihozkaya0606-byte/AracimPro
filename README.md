@@ -1,11 +1,10 @@
-# Aracım Pro V4
+# Aracım Pro V5 — 1.4.0
 
-V1/V2/V3 testlerinde görülen Android 16 + HyperOS edge-to-edge ve klavye taşması için V4 düzeltmesi.
+Stabilite sürümü.
 
-- Status bar için native güvenli üst boşluk (fallback dahil)
-- Navigation bar için native güvenli alt boşluk
-- IME/klavye açılınca WebView native olarak küçültülür
-- HyperOS için GlobalLayout yedek klavye algılama
-- Form bottom-sheet klavye açıkken kaydırılabilir ve odaklanan alan yukarı alınır
-- Kaydet düğmesi klavye/sistem tuşlarının üstünde kalır
-- Sürüm: 1.3.0 (versionCode 4)
+- V4 açılış çökmesine neden olan erken WindowInsetsController erişimi kaldırıldı.
+- Edge-to-edge ayarı decor view hazır olduktan sonra uygulanıyor.
+- HyperOS/Android 16 inset ve klavye ölçümleri try/catch ile güvenli hale getirildi.
+- Klavye için IME inset + visible display frame yedeği birlikte kullanılıyor.
+- Üst/alt sistem çubukları için fiziksel WebView güvenli boşlukları korunuyor.
+- Sürüm: 1.4.0 (versionCode 5).
