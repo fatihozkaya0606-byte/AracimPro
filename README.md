@@ -1,8 +1,8 @@
-# Aracım Pro V7 — 3.0.0
+# Aracım Pro V8 — 3.0.0
 
 V6 üzerine tam kapsamlı araç sahipliği özellikleri eklendi.
 
-## V7 yenilikleri
+## V8 yenilikleri
 - Otomatik gerçek/orijinal araç görseli için IMAGIN.studio entegrasyonu (müşteri anahtarı kullanıcı tarafından girilir)
 - Yıl → marka → model CarAPI katalog sihirbazı ve CarAPI teknik özellik aktarımı
 - Gelişmiş araç profili: paket, kasa, hp, Nm, cc, çekiş, ağırlık, bagaj, 0-100, ortalama tüketim
@@ -23,4 +23,4 @@ IMAGIN.studio CDN modeli kullanılır. Uygulama içinde Ayarlar → Araç Veri S
 Katalog ve teknik veriler CarAPI üzerinden alınabilir. Ücretsiz demo veri seti sınırlı yılları kapsayabilir; tam katalog için token/abonelik gerekebilir. CarAPI ağırlıklı olarak ABD pazar verisidir; Türkiye'ye özgü bazı paket/versiyonlar elle girilebilir.
 
 ## Google Play üretim notu
-Ticari API anahtarlarını APK içine sabitlemek yerine üretimde kendi backend/proxy servisinden geçirmek önerilir. V7 içindeki anahtar alanları geliştirme ve entegrasyon testi içindir.
+Ticari API anahtarlarını APK içine sabitlemek yerine üretimde kendi backend/proxy servisinden geçirmek önerilir. V8 içindeki anahtar alanları geliştirme ve entegrasyon testi içindir.

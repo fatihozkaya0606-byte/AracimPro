@@ -305,6 +305,49 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show());
         }
 
+        @JavascriptInterface public void fetchVehicleModels(String make, int year) {
+            new Thread(() -> {
+                JSONArray out = new JSONArray();
+                String error = "";
+                try {
+                    String brand = make == null ? "" : make.trim();
+                    if (brand.isEmpty() || year < 1996) throw new IllegalArgumentException("Çevrimdışı katalog kullanılıyor");
+                    String api = "https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeYear/make/" +
+                            URLEncoder.encode(brand, "UTF-8") + "/modelyear/" + year + "?format=json";
+                    HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
+                    c.setConnectTimeout(7000); c.setReadTimeout(10000);
+                    c.setRequestProperty("User-Agent", "AracimPro/4.0 Android");
+                    int code = c.getResponseCode();
+                    InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+                    StringBuilder raw = new StringBuilder(); String line;
+                    while ((line = br.readLine()) != null) raw.append(line);
+                    br.close(); c.disconnect();
+                    JSONObject rootJson = new JSONObject(raw.toString());
+                    JSONArray results = rootJson.optJSONArray("Results");
+                    java.util.TreeSet<String> names = new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+                    if (results != null) {
+                        for (int i = 0; i < results.length(); i++) {
+                            JSONObject item = results.optJSONObject(i); if (item == null) continue;
+                            String name = item.optString("Model_Name", "").trim();
+                            if (!name.isEmpty()) names.add(name);
+                        }
+                    }
+                    for (String name : names) out.put(name);
+                } catch (Exception e) {
+                    error = e.getMessage() == null ? "Geniş araç kataloğuna ulaşılamadı" : e.getMessage();
+                }
+                final String payload = out.toString(), err = error;
+                final String brandOut = make == null ? "" : make.trim();
+                runOnUiThread(() -> {
+                    if (webView != null) webView.evaluateJavascript(
+                            "window.onVehicleModelsResult && window.onVehicleModelsResult(" +
+                                    JSONObject.quote(brandOut) + "," + year + "," +
+                                    JSONObject.quote(payload) + "," + JSONObject.quote(err) + ")", null);
+                });
+            }).start();
+        }
+
         @JavascriptInterface public void searchVehicleImages(String query) {
             new Thread(() -> {
                 JSONArray out = new JSONArray();
@@ -317,7 +360,7 @@ public class MainActivity extends Activity {
                             "&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=1000&format=json&formatversion=2&origin=*";
                     HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
                     c.setConnectTimeout(9000); c.setReadTimeout(12000);
-                    c.setRequestProperty("User-Agent", "AracimPro/3.0 Android");
+                    c.setRequestProperty("User-Agent", "AracimPro/4.0 Android");
                     int code = c.getResponseCode();
                     InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
                     BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
@@ -361,7 +404,7 @@ public class MainActivity extends Activity {
                 try {
                     HttpURLConnection c = (HttpURLConnection) new URL(imageUrl).openConnection();
                     c.setConnectTimeout(9000); c.setReadTimeout(12000);
-                    c.setRequestProperty("User-Agent", "AracimPro/3.0 Android");
+                    c.setRequestProperty("User-Agent", "AracimPro/4.0 Android");
                     try (InputStream in = c.getInputStream()) {
                         Bitmap src = BitmapFactory.decodeStream(in);
                         if (src == null) throw new IllegalStateException("Görsel okunamadı");

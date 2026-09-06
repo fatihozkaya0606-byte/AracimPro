@@ -22,3 +22,6 @@ Aracım Pro, araç sahiplerinin günlük takip işlerini tek uygulamada toplar.
 • Gerçek araç fotoğrafı arama veya galeriden araç fotoğrafı seçme
 
 Veriler temel olarak cihazında tutulur. Hesap açmak zorunlu değildir.
+
+
+V8 yeniliği: Yıl, marka, model, araç türü, kasa, yakıt, motor, şanzıman, çekiş, paket ve renk artık seçim listeleriyle eklenebilir. İnternet bağlantısı varsa model kataloğu genişletilir.

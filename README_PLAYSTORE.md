@@ -1,10 +1,10 @@
-# Aracım Pro — Google Play Edition 3.1.0
+# Aracım Pro — Google Play Edition 4.0.0
 
-Bu paket V7 kaynak kodunun Google Play'e hazırlanmış sürümüdür.
+Bu paket V8 kaynak kodunun Google Play'e hazırlanmış sürümüdür.
 
 ## Değişiklikler
 - targetSdk / compileSdk 36
-- versionCode 8, versionName 3.1.0
+- versionCode 8, versionName 4.0.0
 - Debug ve release paketleri ayrıldı
 - Release AAB için güvenli signing config eklendi
 - GitHub Actions'ta imzalı AAB üretim workflow'u eklendi
