@@ -3,25 +3,39 @@ package com.aracimpro.app;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Insets;
+import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.pdf.PdfDocument;
+import android.hardware.biometrics.BiometricPrompt;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CancellationSignal;
+import android.provider.OpenableColumns;
+import android.util.Base64;
 import android.view.View;
 import android.view.WindowInsets;
 import android.view.WindowManager;
-import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
 
 import org.json.JSONObject;
 
@@ -33,52 +47,42 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.Executor;
 
 public class MainActivity extends Activity {
     private static final int CREATE_FILE_REQUEST = 7701;
     private static final int OPEN_BACKUP_REQUEST = 7702;
     private static final int NOTIFICATION_PERMISSION_REQUEST = 7703;
+    private static final int PICK_IMAGE_REQUEST = 7704;
+    private static final int PICK_DOCUMENT_REQUEST = 7705;
 
     private WebView webView;
     private FrameLayout root;
     private String pendingFileName;
     private String pendingMime;
     private String pendingContent;
-    private int safeTop = 0;
-    private int safeBottom = 0;
+    private byte[] pendingBinary;
+    private String pendingPickerContext;
     private boolean pageReady = false;
+    private boolean appWasBackgrounded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        // V4: HyperOS/Android 16 keyboard + edge-to-edge fix.
-        // adjustResize is kept on, and native margins are also updated from IME insets
-        // with a global-layout fallback for devices where WebView does not resize itself.
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
 
         root = new FrameLayout(this);
         root.setBackgroundColor(0xFFF4F8FF);
         webView = new WebView(this);
         webView.setBackgroundColor(0xFFF4F8FF);
-        FrameLayout.LayoutParams webLp = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-        root.addView(webView, webLp);
+        root.addView(webView, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         setContentView(root);
 
-        // V5 stability fix: configure edge-to-edge only after the decor view exists.
-        // Some HyperOS builds can return a null InsetsController during early onCreate,
-        // which caused the V4 launch crash. We no longer touch the controller at all.
         if (Build.VERSION.SDK_INT >= 30) {
-            try {
-                getWindow().setDecorFitsSystemWindows(false);
-            } catch (Throwable ignored) {
-                // Keep running with fallback margins below.
-            }
+            try { getWindow().setDecorFitsSystemWindows(false); } catch (Throwable ignored) {}
         }
 
-        // Give the WebView safe margins immediately. This fallback is important on
-        // some HyperOS builds where the first WindowInsets callback is late or missing.
         final int fallbackTop = systemDimen("status_bar_height", dp(28));
         final int fallbackBottom = systemDimen("navigation_bar_height", dp(44));
         applyWebMargins(0, fallbackTop, 0, fallbackBottom);
@@ -99,15 +103,11 @@ public class MainActivity extends Activity {
                     right = insets.getSystemWindowInsetRight();
                     bottom = Math.max(fallbackBottom, insets.getSystemWindowInsetBottom());
                 }
-            } catch (Throwable ignored) {
-                // OEM fallback values are already set.
-            }
+            } catch (Throwable ignored) {}
             applyWebMargins(left, top, right, bottom);
             return insets;
         });
 
-        // HyperOS fallback: force a relayout whenever the visible window changes.
-        // This catches the numeric keyboard even when IME insets are not re-dispatched.
         root.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
             int left = 0, top = fallbackTop, right = 0, bottom = fallbackBottom;
             try {
@@ -120,17 +120,13 @@ public class MainActivity extends Activity {
                     right = bars.right;
                     bottom = Math.max(Math.max(fallbackBottom, bars.bottom), ime.bottom);
                 }
-
                 Rect visible = new Rect();
                 View decor = getWindow().getDecorView();
                 decor.getWindowVisibleDisplayFrame(visible);
                 int screenHeight = decor.getRootView().getHeight();
                 int hiddenBottom = Math.max(0, screenHeight - visible.bottom);
-                // HyperOS fallback when IME insets are not dispatched.
                 if (hiddenBottom > dp(120)) bottom = Math.max(bottom, hiddenBottom);
-            } catch (Throwable ignored) {
-                // Never crash the app because of an OEM inset quirk.
-            }
+            } catch (Throwable ignored) {}
             applyWebMargins(left, top, right, bottom);
         });
         root.post(root::requestApplyInsets);
@@ -140,18 +136,16 @@ public class MainActivity extends Activity {
         s.setDomStorageEnabled(true);
         s.setDatabaseEnabled(true);
         s.setAllowFileAccess(true);
-        s.setAllowContentAccess(false);
+        s.setAllowContentAccess(true);
         s.setBuiltInZoomControls(false);
         s.setDisplayZoomControls(false);
         s.setTextZoom(100);
         s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
 
         webView.setWebViewClient(new WebViewClient() {
-            @Override
-            public void onPageFinished(WebView view, String url) {
+            @Override public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 pageReady = true;
-                sendInsetsToWeb();
             }
         });
         webView.setWebChromeClient(new WebChromeClient());
@@ -159,11 +153,7 @@ public class MainActivity extends Activity {
         webView.loadUrl("file:///android_asset/index.html");
     }
 
-
-    private int dp(int value) {
-        return Math.round(value * getResources().getDisplayMetrics().density);
-    }
-
+    private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
     private int systemDimen(String name, int fallback) {
         int id = getResources().getIdentifier(name, "dimen", "android");
         return id > 0 ? getResources().getDimensionPixelSize(id) : fallback;
@@ -176,27 +166,28 @@ public class MainActivity extends Activity {
             lp.setMargins(left, top, right, bottom);
             webView.setLayoutParams(lp);
         }
-        safeTop = 0;
-        safeBottom = 0;
-        sendInsetsToWeb();
     }
 
-    private void sendInsetsToWeb() {
-        if (!pageReady || webView == null) return;
-        webView.post(() -> webView.evaluateJavascript(
-                "window.setNativeInsets && window.setNativeInsets(" + safeTop + "," + safeBottom + ")", null));
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (webView != null && webView.canGoBack()) webView.goBack();
-        else if (webView != null) webView.evaluateJavascript("window.appBack && window.appBack()", null);
+    @Override public void onBackPressed() {
+        if (webView != null) webView.evaluateJavascript("window.appBack && window.appBack()", null);
         else super.onBackPressed();
     }
 
+    @Override protected void onPause() {
+        super.onPause();
+        appWasBackgrounded = true;
+    }
+
+    @Override protected void onResume() {
+        super.onResume();
+        if (appWasBackgrounded && pageReady && webView != null) {
+            webView.postDelayed(() -> webView.evaluateJavascript("window.appShouldLock && window.appShouldLock()", null), 250);
+        }
+        appWasBackgrounded = false;
+    }
+
     public class AndroidBridge {
-        @JavascriptInterface
-        public void shareText(String title, String text) {
+        @JavascriptInterface public void shareText(String title, String text) {
             runOnUiThread(() -> {
                 Intent i = new Intent(Intent.ACTION_SEND);
                 i.setType("text/plain");
@@ -206,22 +197,22 @@ public class MainActivity extends Activity {
             });
         }
 
-        @JavascriptInterface
-        public void saveFile(String filename, String mime, String content) {
+        @JavascriptInterface public void saveFile(String filename, String mime, String content) {
+            runOnUiThread(() -> launchCreateDocument(filename, mime, content, null));
+        }
+
+        @JavascriptInterface public void savePdf(String filename, String title, String content) {
             runOnUiThread(() -> {
-                pendingFileName = filename;
-                pendingMime = mime;
-                pendingContent = content;
-                Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
-                intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.setType(mime == null || mime.isEmpty() ? "text/plain" : mime);
-                intent.putExtra(Intent.EXTRA_TITLE, filename);
-                startActivityForResult(intent, CREATE_FILE_REQUEST);
+                try {
+                    byte[] pdf = createSimplePdf(title, content);
+                    launchCreateDocument(filename, "application/pdf", null, pdf);
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "PDF oluşturulamadı", Toast.LENGTH_SHORT).show();
+                }
             });
         }
 
-        @JavascriptInterface
-        public void openBackupFile() {
+        @JavascriptInterface public void openBackupFile() {
             runOnUiThread(() -> {
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
@@ -230,27 +221,136 @@ public class MainActivity extends Activity {
             });
         }
 
-        @JavascriptInterface
-        public void requestNotificationPermission() {
+        @JavascriptInterface public void pickImage(String contextId) {
+            runOnUiThread(() -> {
+                pendingPickerContext = contextId;
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                intent.setType("image/*");
+                startActivityForResult(intent, PICK_IMAGE_REQUEST);
+            });
+        }
+
+        @JavascriptInterface public void pickDocument(String contextId) {
+            runOnUiThread(() -> {
+                pendingPickerContext = contextId;
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                intent.setType("*/*");
+                startActivityForResult(intent, PICK_DOCUMENT_REQUEST);
+            });
+        }
+
+        @JavascriptInterface public void openUri(String uriText, String mime) {
+            runOnUiThread(() -> {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uriText));
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    if (mime != null && !mime.isEmpty()) intent.setDataAndType(Uri.parse(uriText), mime);
+                    startActivity(Intent.createChooser(intent, "Belgeyi aç"));
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Belge açılamadı", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        @JavascriptInterface public void dial(String phone) {
+            runOnUiThread(() -> {
+                try { startActivity(new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + phone))); }
+                catch (Exception ignored) {}
+            });
+        }
+
+        @JavascriptInterface public void requestNotificationPermission() {
             if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 runOnUiThread(() -> requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, NOTIFICATION_PERMISSION_REQUEST));
             }
         }
 
-        @JavascriptInterface
-        public void scheduleMaintenanceReminder(String id, String title, String dueDate) {
+        @JavascriptInterface public void scheduleMaintenanceReminder(String id, String title, String dueDate) {
             runOnUiThread(() -> scheduleReminder(id, title, dueDate));
         }
 
-        @JavascriptInterface
-        public void cancelMaintenanceReminder(String id) {
+        @JavascriptInterface public void cancelMaintenanceReminder(String id) {
             runOnUiThread(() -> cancelReminder(id));
         }
 
-        @JavascriptInterface
-        public void toast(String message) {
+        @JavascriptInterface public void showNotification(String title, String text, String key) {
+            runOnUiThread(() -> postInstantNotification(title, text, Math.abs(key.hashCode())));
+        }
+
+        @JavascriptInterface public void updateWidget(String title, String subtitle, String detail) {
+            runOnUiThread(() -> AracimWidgetProvider.storeAndRefresh(MainActivity.this, title, subtitle, detail));
+        }
+
+        @JavascriptInterface public boolean biometricAvailable() {
+            return Build.VERSION.SDK_INT >= 28;
+        }
+
+        @JavascriptInterface public void authenticateBiometric() {
+            runOnUiThread(MainActivity.this::startBiometricAuth);
+        }
+
+        @JavascriptInterface public void toast(String message) {
             runOnUiThread(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show());
         }
+    }
+
+    private void launchCreateDocument(String filename, String mime, String content, byte[] binary) {
+        pendingFileName = filename;
+        pendingMime = mime;
+        pendingContent = content;
+        pendingBinary = binary;
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.setType(mime == null || mime.isEmpty() ? "application/octet-stream" : mime);
+        intent.putExtra(Intent.EXTRA_TITLE, filename);
+        startActivityForResult(intent, CREATE_FILE_REQUEST);
+    }
+
+    private byte[] createSimplePdf(String title, String content) throws Exception {
+        PdfDocument doc = new PdfDocument();
+        Paint titlePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        titlePaint.setTextSize(18f);
+        titlePaint.setFakeBoldText(true);
+        Paint body = new Paint(Paint.ANTI_ALIAS_FLAG);
+        body.setTextSize(11f);
+        int pageNo = 1;
+        int y = 54;
+        PdfDocument.Page page = doc.startPage(new PdfDocument.PageInfo.Builder(595, 842, pageNo).create());
+        Canvas canvas = page.getCanvas();
+        canvas.drawText(title == null ? "Aracım Pro Raporu" : title, 42, y, titlePaint);
+        y += 28;
+        for (String raw : (content == null ? "" : content).split("\\n")) {
+            String line = raw;
+            while (line.length() > 88) {
+                int cut = line.lastIndexOf(' ', 88);
+                if (cut < 20) cut = 88;
+                String part = line.substring(0, cut);
+                if (y > 800) {
+                    doc.finishPage(page);
+                    pageNo++;
+                    page = doc.startPage(new PdfDocument.PageInfo.Builder(595, 842, pageNo).create());
+                    canvas = page.getCanvas(); y = 48;
+                }
+                canvas.drawText(part, 42, y, body); y += 17;
+                line = line.substring(cut).trim();
+            }
+            if (y > 800) {
+                doc.finishPage(page);
+                pageNo++;
+                page = doc.startPage(new PdfDocument.PageInfo.Builder(595, 842, pageNo).create());
+                canvas = page.getCanvas(); y = 48;
+            }
+            canvas.drawText(line, 42, y, body); y += 17;
+        }
+        doc.finishPage(page);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        doc.writeTo(out);
+        doc.close();
+        return out.toByteArray();
     }
 
     private void scheduleReminder(String id, String title, String dueDate) {
@@ -259,29 +359,21 @@ public class MainActivity extends Activity {
             parser.setLenient(false);
             Date parsed = parser.parse(dueDate);
             if (parsed == null) return;
-
             Calendar due = Calendar.getInstance();
             due.setTime(parsed);
-            due.set(Calendar.HOUR_OF_DAY, 9);
-            due.set(Calendar.MINUTE, 0);
-            due.set(Calendar.SECOND, 0);
-            due.set(Calendar.MILLISECOND, 0);
-
+            due.set(Calendar.HOUR_OF_DAY, 9); due.set(Calendar.MINUTE, 0); due.set(Calendar.SECOND, 0); due.set(Calendar.MILLISECOND, 0);
             cancelReminder(id);
-            Calendar early = (Calendar) due.clone();
-            early.add(Calendar.DAY_OF_MONTH, -30);
-
-            long now = System.currentTimeMillis();
-            if (early.getTimeInMillis() > now) {
-                setAlarm(id, 1, early.getTimeInMillis(), title,
-                        title + " için 30 gün kaldı. Hedef tarih: " + formatTrDate(dueDate));
+            int[] days = new int[]{30, 15, 7, 1, 0};
+            for (int slot = 0; slot < days.length; slot++) {
+                Calendar when = (Calendar) due.clone();
+                when.add(Calendar.DAY_OF_MONTH, -days[slot]);
+                if (when.getTimeInMillis() <= System.currentTimeMillis()) continue;
+                String text = days[slot] == 0
+                        ? "Bugün " + title + " zamanı. Aracım Pro kaydını kontrol et."
+                        : title + " için " + days[slot] + " gün kaldı. Hedef: " + formatTrDate(dueDate);
+                setAlarm(id, slot + 1, when.getTimeInMillis(), title, text);
             }
-            if (due.getTimeInMillis() > now) {
-                setAlarm(id, 2, due.getTimeInMillis(), title,
-                        "Bugün " + title + " zamanı. Aracım Pro'daki kaydını kontrol et.");
-            }
-        } catch (Exception ignored) {
-        }
+        } catch (Exception ignored) {}
     }
 
     private void setAlarm(String id, int slot, long when, String title, String text) {
@@ -300,58 +392,130 @@ public class MainActivity extends Activity {
     private void cancelReminder(String id) {
         AlarmManager am = (AlarmManager) getSystemService(ALARM_SERVICE);
         if (am == null) return;
-        for (int slot = 1; slot <= 2; slot++) {
+        for (int slot = 1; slot <= 5; slot++) {
             int requestCode = Math.abs((id + "-" + slot).hashCode());
-            Intent intent = new Intent(this, ReminderReceiver.class);
-            PendingIntent pi = PendingIntent.getBroadcast(this, requestCode, intent,
+            PendingIntent pi = PendingIntent.getBroadcast(this, requestCode, new Intent(this, ReminderReceiver.class),
                     PendingIntent.FLAG_NO_CREATE | PendingIntent.FLAG_IMMUTABLE);
-            if (pi != null) {
-                am.cancel(pi);
-                pi.cancel();
-            }
+            if (pi != null) { am.cancel(pi); pi.cancel(); }
         }
+    }
+
+    private void postInstantNotification(String title, String text, int id) {
+        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        if (nm == null) return;
+        String channelId = "smart_alerts";
+        if (Build.VERSION.SDK_INT >= 26) {
+            NotificationChannel c = new NotificationChannel(channelId, "Akıllı araç uyarıları", NotificationManager.IMPORTANCE_DEFAULT);
+            nm.createNotificationChannel(c);
+        }
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 98,
+                new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        Notification.Builder b = Build.VERSION.SDK_INT >= 26 ? new Notification.Builder(this, channelId) : new Notification.Builder(this);
+        b.setSmallIcon(R.drawable.ic_notification).setContentTitle(title).setContentText(text)
+                .setStyle(new Notification.BigTextStyle().bigText(text)).setAutoCancel(true).setContentIntent(contentIntent);
+        nm.notify(id, b.build());
     }
 
     private String formatTrDate(String iso) {
         try {
             Date d = new SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(iso);
             return new SimpleDateFormat("dd.MM.yyyy", new Locale("tr", "TR")).format(d);
+        } catch (Exception e) { return iso; }
+    }
+
+    private void startBiometricAuth() {
+        if (Build.VERSION.SDK_INT < 28) {
+            webView.evaluateJavascript("window.onBiometricResult && window.onBiometricResult(false,'Desteklenmiyor')", null);
+            return;
+        }
+        try {
+            Executor executor = getMainExecutor();
+            CancellationSignal signal = new CancellationSignal();
+            BiometricPrompt prompt = new BiometricPrompt.Builder(this)
+                    .setTitle("Aracım Pro")
+                    .setSubtitle("Uygulamanın kilidini aç")
+                    .setDescription("Parmak izi veya kayıtlı biyometrik doğrulamanı kullan")
+                    .setNegativeButton("PIN kullan", executor, (d, w) ->
+                            webView.evaluateJavascript("window.onBiometricResult && window.onBiometricResult(false,'PIN')", null))
+                    .build();
+            prompt.authenticate(signal, executor, new BiometricPrompt.AuthenticationCallback() {
+                @Override public void onAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result) {
+                    super.onAuthenticationSucceeded(result);
+                    webView.evaluateJavascript("window.onBiometricResult && window.onBiometricResult(true,'')", null);
+                }
+                @Override public void onAuthenticationError(int errorCode, CharSequence errString) {
+                    super.onAuthenticationError(errorCode, errString);
+                    webView.evaluateJavascript("window.onBiometricResult && window.onBiometricResult(false," + JSONObject.quote(String.valueOf(errString)) + ")", null);
+                }
+            });
         } catch (Exception e) {
-            return iso;
+            webView.evaluateJavascript("window.onBiometricResult && window.onBiometricResult(false,'Biyometri başlatılamadı')", null);
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         if (requestCode == CREATE_FILE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            Uri uri = data.getData();
-            try (OutputStream out = getContentResolver().openOutputStream(uri)) {
+            try (OutputStream out = getContentResolver().openOutputStream(data.getData())) {
                 if (out != null) {
-                    out.write(pendingContent.getBytes(StandardCharsets.UTF_8));
+                    if (pendingBinary != null) out.write(pendingBinary);
+                    else out.write((pendingContent == null ? "" : pendingContent).getBytes(StandardCharsets.UTF_8));
                     out.flush();
                     Toast.makeText(this, "Dosya kaydedildi", Toast.LENGTH_SHORT).show();
                 }
-            } catch (Exception e) {
-                Toast.makeText(this, "Dosya kaydedilemedi", Toast.LENGTH_SHORT).show();
-            }
-            pendingFileName = pendingMime = pendingContent = null;
+            } catch (Exception e) { Toast.makeText(this, "Dosya kaydedilemedi", Toast.LENGTH_SHORT).show(); }
+            pendingFileName = pendingMime = pendingContent = null; pendingBinary = null;
         }
 
         if (requestCode == OPEN_BACKUP_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            try (InputStream in = getContentResolver().openInputStream(data.getData());
-                 ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            try (InputStream in = getContentResolver().openInputStream(data.getData()); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
                 if (in == null) throw new IllegalStateException();
-                byte[] buffer = new byte[8192];
-                int n;
+                byte[] buffer = new byte[8192]; int n;
                 while ((n = in.read(buffer)) != -1) out.write(buffer, 0, n);
                 String content = out.toString(StandardCharsets.UTF_8.name());
-                String js = "window.restoreBackupFromNative && window.restoreBackupFromNative(" + JSONObject.quote(content) + ")";
-                webView.evaluateJavascript(js, null);
-            } catch (Exception e) {
-                Toast.makeText(this, "Yedek dosyası okunamadı", Toast.LENGTH_SHORT).show();
-            }
+                webView.evaluateJavascript("window.restoreBackupFromNative && window.restoreBackupFromNative(" + JSONObject.quote(content) + ")", null);
+            } catch (Exception e) { Toast.makeText(this, "Yedek dosyası okunamadı", Toast.LENGTH_SHORT).show(); }
+        }
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            Uri uri = data.getData();
+            try {
+                getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            } catch (Exception ignored) {}
+            try (InputStream in = getContentResolver().openInputStream(uri)) {
+                Bitmap src = BitmapFactory.decodeStream(in);
+                if (src == null) throw new IllegalStateException();
+                int max = 960;
+                float scale = Math.min(1f, (float) max / Math.max(src.getWidth(), src.getHeight()));
+                Bitmap scaled = src;
+                if (scale < 1f) scaled = Bitmap.createScaledBitmap(src, Math.round(src.getWidth()*scale), Math.round(src.getHeight()*scale), true);
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                scaled.compress(Bitmap.CompressFormat.JPEG, 72, out);
+                String dataUrl = "data:image/jpeg;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
+                webView.evaluateJavascript("window.onNativeImagePicked && window.onNativeImagePicked(" + JSONObject.quote(pendingPickerContext) + "," + JSONObject.quote(dataUrl) + ")", null);
+            } catch (Exception e) { Toast.makeText(this, "Fotoğraf okunamadı", Toast.LENGTH_SHORT).show(); }
+            pendingPickerContext = null;
+        }
+
+        if (requestCode == PICK_DOCUMENT_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            Uri uri = data.getData();
+            try { getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION); } catch (Exception ignored) {}
+            String name = "Belge"; long size = 0;
+            try (Cursor c = getContentResolver().query(uri, null, null, null, null)) {
+                if (c != null && c.moveToFirst()) {
+                    int ni = c.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                    int si = c.getColumnIndex(OpenableColumns.SIZE);
+                    if (ni >= 0) name = c.getString(ni);
+                    if (si >= 0 && !c.isNull(si)) size = c.getLong(si);
+                }
+            } catch (Exception ignored) {}
+            String mime = getContentResolver().getType(uri);
+            String js = "window.onNativeDocumentPicked && window.onNativeDocumentPicked(" +
+                    JSONObject.quote(pendingPickerContext) + "," +
+                    JSONObject.quote(uri.toString()) + "," + JSONObject.quote(name) + "," +
+                    JSONObject.quote(mime == null ? "application/octet-stream" : mime) + "," + size + ")";
+            webView.evaluateJavascript(js, null);
+            pendingPickerContext = null;
         }
     }
 }
