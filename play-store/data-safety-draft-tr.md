@@ -1,20 +1,25 @@
-# Google Play Veri Güvenliği — TASLAK
+# Google Play Veri Güvenliği — V10 TASLAK
 
-Bu belge Play Console'a kopyala-yapıştır yapılacak kesin hukuki beyan değildir; yayına göndermeden önce uygulamanın son koduyla karşılaştırılmalıdır.
+Kesin hukuki beyan değildir; Play Console'a göndermeden önce son uygulama ve bağlı servislerle tekrar kontrol edilmelidir.
 
-## Mevcut 4.0.0 Play sürümü
+## V10 mevcut davranış
 - Reklam SDK'sı: Yok
 - Analiz SDK'sı: Yok
 - Konum izni: Yok
 - Hesap oluşturma: Yok
-- Araç/yakıt/bakım kayıtları: Cihazda yerel saklama
-- Yedek/rapor: Kullanıcının seçtiği dosya konumuna dışa aktarma
+- Araç/yakıt/bakım/hasar kayıtları: cihazda yerel saklama
+- Yedek/rapor: kullanıcının seçtiği dosya konumuna dışa aktarma
 - Biyometri: Android sistem doğrulaması; biyometrik veri uygulamaya verilmez
-- Bildirimler: Cihazda yerel hatırlatma
-- Ağ kullanımı: Araç model listesini genişletmek için seçilen marka + model yılı NHTSA vPIC servisine gönderilebilir. Kullanıcı gerçek araç fotoğrafı aradığında yıl + marka + model sorgusu Wikimedia Commons'a gönderilir ve seçilen görsel indirilir. Plaka, kilometre, kişi bilgisi veya konum bu katalog servislerine gönderilmez.
+- Bildirimler: cihaz içi bakım hatırlatmaları + kullanıcı açarsa akaryakıt fiyat/haber kontrolü
+- NHTSA vPIC: marka + model yılı gönderilebilir
+- Wikimedia Commons: fotoğraf aramasında yıl + marka + model gönderilir
+- Akaryakıt özelliği: seçilen şehir + takip edilen yakıt türü halka açık fiyat/haber kaynağına yönelik sorguda kullanılır
+- Opsiyonel canlı piyasa endpoint'i: kullanıcı etkinleştirirse araç yılı, marka, model, motor, paket, km, yakıt ve şanzıman yapılandırılmış değerleme sunucusuna gönderilebilir
+- Plaka; NHTSA, Wikimedia veya akaryakıt sorgularına gönderilmez
 
-## Play Console'da özellikle doğrulanacak alanlar
-1. “Uygulamanız kullanıcı verisi topluyor veya paylaşıyor mu?” sorusunda Wikimedia Commons'a giden kullanıcı tarafından girilmiş araç sorgusunun veri sınıflandırmasını Play Console'un güncel tanımlarına göre doğrulayın.
-2. Verinin şifreli aktarımı: HTTPS kullanılır.
-3. Hesap silme: Hesap sistemi yoktur; uygulama içindeki “Tüm Verileri Sil” cihazdaki yerel kayıtları siler.
-4. Gizlilik politikası URL'si, uygulama içindeki açıklamalarla uyumlu olmalıdır.
+## Play Console'da ayrıca doğrula
+1. Seçimli araç bilgilerinin Google'ın “kullanıcı verisi” sınıflarındaki güncel karşılığını kontrol et.
+2. Ağ aktarımları HTTPS kullanır.
+3. Hesap sistemi yoktur; uygulamadaki “Tüm Verileri Sil” yerel kayıtları siler.
+4. Canlı değerleme endpoint'i etkinleştirilirse sağlayıcının gizlilik/işleme şartları beyana eklenmelidir.
+5. Reklam veya Play Billing eklendiğinde bu taslak güncellenmelidir.

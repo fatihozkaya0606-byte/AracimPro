@@ -1,34 +1,74 @@
-# Aracım Pro V9 — 3.0.0
+# Aracım Pro V10 — Hepsi Bir Arada 5.0.0
 
-V6 üzerine tam kapsamlı araç sahipliği özellikleri eklendi.
+V10, önceki sürümlerdeki çalışan özellikleri tek projede birleştirir ve araç sahipliği tarafını teknik rehber, piyasa değeri ve akaryakıt gündemiyle genişletir.
 
-## V9 yenilikleri
-- Otomatik gerçek/orijinal araç görseli için IMAGIN.studio entegrasyonu (müşteri anahtarı kullanıcı tarafından girilir)
-- Yıl → marka → model CarAPI katalog sihirbazı ve CarAPI teknik özellik aktarımı
-- Gelişmiş araç profili: paket, kasa, hp, Nm, cc, çekiş, ağırlık, bagaj, 0-100, ortalama tüketim
-- Araç karşılaştırma
-- Yol/yakıt maliyeti hesaplayıcı
-- Araç değer geçmişi ve alışa göre fark
-- Akü takip sistemi
-- Kaza/hasar kayıtları + fotoğraf
-- KM başına toplam sahiplik maliyeti
-- Akıllı durum/uyarı kartları
-- Var olan yakıt, bakım, muayene/sigorta/MTV, lastik, servis, belge kasası, PDF/Excel/CSV, acil durum, widget, PIN/biyometri ve yedekleme özellikleri korunur
-- Emoji ağırlıklı alt menü yerine SVG navigasyon ikonları
+## Araç ekleme ve katalog
+- Yıl → marka → model → araç türü → kasa → yakıt → motor → şanzıman → çekiş → paket → renk seçimli akış
+- Listeler Türkçe A-Z sıralı
+- Türkiye'de yaygın modeller için model/yıl bazlı motor ve paket kataloğu
+- Elantra, Passat, Golf, Polo, Tiguan, Corolla, Civic, Clio, Megane, Egea, Focus, Astra, 3008, 508, Tucson, Sportage, Qashqai, Duster, Superb, Leon, A3, BMW 3/5, Mercedes C/E, Chery Tiggo 7/8 Pro ve başka yaygın modeller için genişletilmiş varyantlar
+- İnternet varsa NHTSA vPIC ile model listesi genişletme
+- Wikimedia Commons üzerinden açık lisanslı gerçek araç fotoğrafı arama; sonuç yoksa galeriden kendi fotoğrafını seçme
 
-## Gerçek araç fotoğrafları hakkında
-IMAGIN.studio CDN modeli kullanılır. Uygulama içinde Ayarlar → Araç Veri Servisleri kısmına müşteri anahtarı girildiğinde araç marka/model/yıl bilgisine göre görsel istenir. Görsel servisi ücret/lisans ve model kapsaması sağlayıcıya bağlıdır. Anahtar yoksa kullanıcı kendi araç fotoğrafını seçebilir.
+## Günlük araç yönetimi
+- Çoklu araç / garaj
+- Yakıt ve ortalama tüketim
+- Şehir içi / uzun yol ayrımı
+- Gider kategorileri ve km başı toplam maliyet
+- Bakım, servis, muayene, sigorta, kasko ve MTV takibi
+- Tarih ve kilometre bazlı hatırlatmalar
+- Lastik setleri, ebat, marka, sezon ve kullanım geçmişi
+- Akü geçmişi
+- Yolculuk kayıtları ve yol/yakıt maliyet hesabı
+- Kaza / hasar kayıtları
+- Belge kasası
+- Acil durum / yol yardım bilgileri
+- Ana ekran widget'ı
+- PIN ve biyometrik uygulama kilidi
+- JSON yedek / geri yükleme
+- PDF, CSV ve Excel dışa aktarma
 
-## CarAPI hakkında
-Katalog ve teknik veriler CarAPI üzerinden alınabilir. Ücretsiz demo veri seti sınırlı yılları kapsayabilir; tam katalog için token/abonelik gerekebilir. CarAPI ağırlıklı olarak ABD pazar verisidir; Türkiye'ye özgü bazı paket/versiyonlar elle girilebilir.
+## Araç Rehberi
+V10'da model-özel profil bulunan araçlarda aşağıdaki bilgiler tek ekranda gösterilebilir:
+- Fabrika lastik ölçüleri ve jant seçenekleri
+- Önerilen lastik basıncı / bijon bilgisi notları
+- Motor yağı standardı ve kapasite
+- Antifriz / soğutma sıvısı tipi ve kapasitesi
+- Şanzıman sıvısı ve fren hidroliği
+- Triger zincir/kayış rehberi
+- Akü, ampul/far, silecek ve yakıt deposu bilgileri
+- Bakım aralığı rehberi
+- Sık kontrol edilen / kronik olarak raporlanan noktalar
+- İkinci el satın alma ekspertiz kontrol listesi
 
-## Google Play üretim notu
-Ticari API anahtarlarını APK içine sabitlemek yerine üretimde kendi backend/proxy servisinden geçirmek önerilir. V9 içindeki anahtar alanları geliştirme ve entegrasyon testi içindir.
+Kesin parça, sıvı, basınç ve bakım bilgisi için VIN, kapı etiketi ve üretici kullanım kılavuzu her zaman önceliklidir. Profil olmayan araçlarda uygulama veri uydurmaz; doğrulama gerektiğini açıkça belirtir.
 
+## Piyasa Değeri Merkezi
+- Alt / ortalama / üst fiyat göstergesi
+- Emsal sayısı ve 30 günlük trend alanı
+- Kilometre, kondisyon ve tramer etkili şeffaf yerel tahmin
+- Değer geçmişi
+- Canlı değerleme sağlayıcısı için güvenli backend endpoint desteği
 
-## V9 katalog düzeltmeleri
-- Marka, model, motor, paket ve diğer seçim listeleri Türkçe A-Z sıralı.
-- Passat ve Elantra dahil yaygın Türkiye modellerinde model/yıl bazlı motor ve paket seçenekleri.
-- Elantra 2011-2015 için Tune, Mode, Mode Plus, Style, Style Design Pack, Prime/Prime Plus ve Elite seçenekleri.
-- Passat için 1.4 TSI, 1.5 TSI, 1.6 TDI, 2.0 TDI gibi motorlar ve dönemine göre Comfortline/Highline/Trendline/Business/Impression/Elegance/R-Line seçenekleri.
-- Model seçilince açık lisanslı gerçek araç fotoğrafı otomatik aranır; sonuç yoksa galeri seçimi kullanılabilir.
+Canlı Türkiye ilan/piyasa verisi lisanslı bir veri sağlayıcısı gerektirir. API anahtarı APK içine gömülmez. Endpoint ayarlanmazsa yalnız kullanıcı referansı ve kayıtlı değerler üzerinden tahmini gösterge çalışır.
+
+## Akaryakıt Gündemi
+- Şehir seçimine göre güncel benzin / motorin / LPG gösterimi
+- Zam / indirim haber akışı
+- Uygulama içi güncelleme
+- Kullanıcı açarsa yaklaşık 6 saatte bir arka plan kontrolü
+- Fiyat değişiminde veya yeni zam/indirim başlığında Android bildirimi
+
+İnternet gerekir. Pompa fiyatları ilçe, istasyon ve saate göre değişebilir. Android güç tasarrufu arka plan kontrolünü geciktirebilir.
+
+## Premium hazırlığı
+Google Play Billing henüz bağlı değildir; test sürümünde özellikler açıktır. Sonraki Play sürümünde Premium için planlananlar: reklamsız kullanım, sınırsız araç, canlı piyasa/emsal analizi, gelişmiş raporlar, bulut yedekleme, gelişmiş karşılaştırma ve premium veri/görsel özellikleri.
+
+## Google Play
+- applicationId: `com.aracimpro.app`
+- compileSdk / targetSdk: 36
+- minSdk: 24
+- versionCode: 11
+- versionName: 5.0.0
+- Debug APK workflow'u hazır
+- İmzalı release AAB workflow'u hazır

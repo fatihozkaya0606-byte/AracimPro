@@ -2,26 +2,29 @@ Uygulama adı:
 Aracım Pro
 
 Kısa açıklama:
-Yakıt, bakım, gider, servis ve araç hatırlatmalarını tek yerde takip et.
+Aracın için yakıt, bakım, piyasa değeri, teknik rehber ve hatırlatmalar.
 
 Uzun açıklama:
-Aracım Pro, araç sahiplerinin günlük takip işlerini tek uygulamada toplar.
+Aracım Pro, araç sahiplerinin günlük takip ve araç bilgi ihtiyaçlarını tek uygulamada toplar.
 
-• Birden fazla araç ekleme ve araç profili
+• Seçimli yıl, marka, model, motor ve paket kataloğu
+• Açık lisanslı gerçek araç fotoğrafı arama veya galeriden fotoğraf
+• Birden fazla araç / garaj
 • Yakıt alımları ve ortalama tüketim takibi
-• Bakım, servis ve masraf kayıtları
-• Muayene, sigorta, kasko ve MTV hatırlatmaları
-• Lastik ve akü takibi
-• Yolculuk ve yakıt maliyeti hesaplama
-• Araç değer geçmişi ve kilometre başına toplam maliyet
+• Güncel akaryakıt fiyatı ve zam/indirim gündemi uyarıları
+• Bakım, servis, muayene, sigorta, kasko ve MTV hatırlatmaları
+• Lastik / jant, akü ve araç masraf takibi
+• Araç rehberi: yağ, antifriz, şanzıman sıvısı, bakım ve uygun ölçüler
+• Model özel sık kontrol noktaları ve ikinci el kontrol listesi
+• Piyasa değeri göstergesi ve değer geçmişi
+• Yolculuk / yakıt maliyeti hesaplama
 • Kaza ve hasar kayıtları
-• Belge kasası ve dışa aktarma seçenekleri
+• Belge kasası
 • PDF, CSV ve Excel raporları
 • PIN ve biyometrik uygulama kilidi
 • Ana ekran widget'ı
-• Gerçek araç fotoğrafı arama veya galeriden araç fotoğrafı seçme
+• Yerel yedekleme / geri yükleme
+
+Araçla ilgili teknik değerler model, motor, donanım ve pazara göre değişebilir. Kesin bakım/parça bilgisi için üretici kılavuzu ve araç üzerindeki etiketler önceliklidir.
 
 Veriler temel olarak cihazında tutulur. Hesap açmak zorunlu değildir.
-
-
-V8 yeniliği: Yıl, marka, model, araç türü, kasa, yakıt, motor, şanzıman, çekiş, paket ve renk artık seçim listeleriyle eklenebilir. İnternet bağlantısı varsa model kataloğu genişletilir.

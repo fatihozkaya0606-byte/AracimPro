@@ -307,6 +307,49 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show());
         }
 
+        @JavascriptInterface public void fetchFuelDashboard(String city, String fuelType) {
+            new Thread(() -> {
+                JSONObject out = new JSONObject();
+                String error = "";
+                try {
+                    out = FuelDataClient.fetchDashboard(city, fuelType);
+                } catch (Exception e) {
+                    error = e.getMessage() == null ? "Akaryakıt verisi alınamadı" : e.getMessage();
+                }
+                final String payload = out.toString();
+                final String err = error;
+                runOnUiThread(() -> {
+                    if (webView != null) webView.evaluateJavascript(
+                            "window.onFuelDashboardResult && window.onFuelDashboardResult(" +
+                                    JSONObject.quote(payload) + "," + JSONObject.quote(err) + ")", null);
+                });
+            }).start();
+        }
+
+        @JavascriptInterface public void configureFuelAlerts(boolean enabled, String city, String fuelType) {
+            runOnUiThread(() -> FuelAlertScheduler.configure(MainActivity.this, enabled, city, fuelType));
+        }
+
+        @JavascriptInterface public void fetchMarketValue(String endpoint, String vehicleJson) {
+            new Thread(() -> {
+                JSONObject out = new JSONObject();
+                String error = "";
+                try {
+                    JSONObject vehicle = new JSONObject(vehicleJson == null ? "{}" : vehicleJson);
+                    out = FuelDataClient.fetchMarketValue(endpoint, vehicle);
+                } catch (Exception e) {
+                    error = e.getMessage() == null ? "Canlı değerleme alınamadı" : e.getMessage();
+                }
+                final String payload = out.toString();
+                final String err = error;
+                runOnUiThread(() -> {
+                    if (webView != null) webView.evaluateJavascript(
+                            "window.onMarketValueResult && window.onMarketValueResult(" +
+                                    JSONObject.quote(payload) + "," + JSONObject.quote(err) + ")", null);
+                });
+            }).start();
+        }
+
         @JavascriptInterface public void fetchVehicleModels(String make, int year) {
             new Thread(() -> {
                 JSONArray out = new JSONArray();
@@ -318,7 +361,7 @@ public class MainActivity extends Activity {
                             URLEncoder.encode(brand, "UTF-8") + "/modelyear/" + year + "?format=json";
                     HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
                     c.setConnectTimeout(7000); c.setReadTimeout(10000);
-                    c.setRequestProperty("User-Agent", "AracimPro/4.1 Android");
+                    c.setRequestProperty("User-Agent", "AracimPro/5.0 Android");
                     int code = c.getResponseCode();
                     InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
                     BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
@@ -370,7 +413,7 @@ public class MainActivity extends Activity {
                                 "&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=1200&format=json&formatversion=2&origin=*";
                         HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
                         c.setConnectTimeout(9000); c.setReadTimeout(12000);
-                        c.setRequestProperty("User-Agent", "AracimPro/4.1 Android (vehicle-photo-search)");
+                        c.setRequestProperty("User-Agent", "AracimPro/5.0 Android (vehicle-photo-search)");
                         int code = c.getResponseCode();
                         InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
                         BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
@@ -418,7 +461,7 @@ public class MainActivity extends Activity {
                 try {
                     HttpURLConnection c = (HttpURLConnection) new URL(imageUrl).openConnection();
                     c.setConnectTimeout(9000); c.setReadTimeout(12000);
-                    c.setRequestProperty("User-Agent", "AracimPro/4.1 Android");
+                    c.setRequestProperty("User-Agent", "AracimPro/5.0 Android");
                     try (InputStream in = c.getInputStream()) {
                         Bitmap src = BitmapFactory.decodeStream(in);
                         if (src == null) throw new IllegalStateException("Görsel okunamadı");
