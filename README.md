@@ -1,38 +1,31 @@
-# Aracım Pro V6 — 2.0.0
+# Aracım Pro V7 — 3.0.0
 
-Google Play'e hazırlanmak üzere geliştirilen profesyonel Android araç asistanı.
+V6'nın çalışan çekirdeği üzerine eklenen kapsamlı araç yönetim sürümü.
 
-## V6'da bulunan özellikler
-- Birden fazla araç / aktif araç seçimi
-- Araç fotoğrafı ve araç profil kartı
-- Yakıt kayıtları, TL/L ve L/100 km hesabı
-- Gider kategorileri: MTV, sigorta, kasko, HGS, park, yıkama, ceza, aksesuar vb.
-- Akıllı bakım planı ve hazır bakım şablonları
-- Muayene, trafik sigortası, kasko ve MTV tarih takibi
-- Tarih bazlı 30/15/7/1 gün ve gününde Android bildirimleri
-- KM bazlı bakım yaklaşınca bildirim
-- Lastik setleri: yazlık/kışlık/dört mevsim, marka, ölçü, diş derinliği, takılma km/tarihi
-- Servis/usta geçmişi, parça ve işçilik kayıtları
-- Yolculuk kaydı, başlangıç/bitiş km ve ek yol gideri
-- Belge kasası: ruhsat, poliçe, kasko, ekspertiz, servis faturası vb.
-- Belgeyi sistem dosya seçicisinden ekleme ve tekrar açma
-- Araç satış/geçmiş dosyası PDF üretimi
-- Excel uyumlu XLS, CSV rapor ve paylaşım
-- Son 6 aylık gider grafiği
-- Acil durum ekranı: 112, sigorta, yol yardım, yakın irtibat
-- PIN kilidi ve Android biyometrik doğrulama
-- Karanlık tema
-- Ana ekran Android widget'ı
-- Yerel JSON yedekleme ve geri yükleme
-- Android dosya kaydetme ekranı üzerinden Google Drive / OneDrive gibi bulut sağlayıcılara yedekleme
-- İnternetsiz çalışma
+## V7 yenilikleri
+- Yıl + marka + model + paket ile gerçek araç fotoğrafı arama (Wikimedia Commons)
+- Fotoğraf adayları arasından seçim, lisans/kaynak bilgisi ve çevrimdışı önbellek
+- Fotoğraf seçmeden kaydedilen araçta otomatik görsel arama denemesi
+- Otomobil, SUV, hafif ticari, pickup, motosiklet, karavan desteği
+- Gelişmiş araç profili: paket, kasa, renk, motor hacmi, beygir, tork, çekiş, 0-100, ağırlık, bagaj
+- Garajdaki iki aracı teknik özelliklerle yan yana karşılaştırma
+- Gerçek gider / km hesabı
+- Aylık yakıt bütçesi ve yol maliyeti hesaplayıcı
+- Şehir içi / uzun yol / karma yakıt kayıtları
+- Araç değer geçmişi ve alış fiyatına göre değer değişimi
+- Akü geçmişi, garanti ve maliyet takibi
+- Kaza / hasar geçmişi
+- Mevcut bakım, muayene, sigorta, kasko, MTV bildirimleri
+- Lastik, servis, yolculuk, belge kasası, PDF/XLS/CSV rapor
+- PIN, biyometri, karanlık tema, widget, yerel/bulut yedekleme
+- Emoji ağırlıklı ana navigasyon yerine profesyonel SVG ikon sistemi
+
+## Araç fotoğrafları hakkında
+V7, lisans bilgisi olan Wikimedia Commons görsellerini arar. Bu yöntem geniş kapsama sahiptir fakat her yıl/paket için %100 birebir stüdyo fotoğrafı garantisi vermez. Kullanıcı her zaman galeriden kendi araç fotoğrafını seçebilir. Ticari üretici stüdyo görsellerinin eksiksiz kataloğu için ileride lisanslı bir otomotiv görsel sağlayıcısı bağlanabilir.
 
 ## Teknik
-- Android minSdk 24
-- targetSdk / compileSdk 36
+- minSdk 24 / targetSdk 36 / compileSdk 36
 - Java 17
-- WebView tabanlı, Android native köprü
-- Google Play için AAB ve test için debug APK GitHub Actions ile oluşturulur.
-
-## Not
-Google Play içi ücretli abonelik/satın alma, Play Console ürün kimlikleri ve geliştirici ödeme hesabı tanımlandıktan sonra etkinleştirilebilir. V6 geliştirici sürümünde tüm uygulama özellikleri açıktır.
+- WebView + native Android bridge
+- INTERNET izni yalnızca araç görseli araması ve indirme için
+- GitHub Actions: debug APK + release AAB (imzasız)

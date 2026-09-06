@@ -38,8 +38,16 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import org.json.JSONObject;
+import org.json.JSONArray;
 
 import java.io.ByteArrayOutputStream;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Iterator;
+
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -296,6 +304,91 @@ public class MainActivity extends Activity {
         @JavascriptInterface public void toast(String message) {
             runOnUiThread(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show());
         }
+
+        @JavascriptInterface public void searchVehicleImages(String query) {
+            new Thread(() -> {
+                JSONArray out = new JSONArray();
+                String error = "";
+                try {
+                    String q = query == null ? "" : query.trim();
+                    if (q.isEmpty()) throw new IllegalArgumentException("Araç bilgisi boş");
+                    String api = "https://commons.wikimedia.org/w/api.php?action=query&generator=search" +
+                            "&gsrnamespace=6&gsrlimit=10&gsrsearch=" + URLEncoder.encode(q + " automobile car filetype:bitmap", "UTF-8") +
+                            "&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=1000&format=json&formatversion=2&origin=*";
+                    HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
+                    c.setConnectTimeout(9000); c.setReadTimeout(12000);
+                    c.setRequestProperty("User-Agent", "AracimPro/3.0 Android");
+                    int code = c.getResponseCode();
+                    InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
+                    BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+                    StringBuilder raw = new StringBuilder(); String line;
+                    while ((line = br.readLine()) != null) raw.append(line);
+                    br.close(); c.disconnect();
+                    JSONObject rootJson = new JSONObject(raw.toString());
+                    JSONObject queryObj = rootJson.optJSONObject("query");
+                    JSONArray pages = queryObj == null ? null : queryObj.optJSONArray("pages");
+                    if (pages != null) {
+                        for (int i = 0; i < pages.length(); i++) {
+                            JSONObject page = pages.optJSONObject(i); if (page == null) continue;
+                            JSONArray info = page.optJSONArray("imageinfo"); if (info == null || info.length() == 0) continue;
+                            JSONObject ii = info.optJSONObject(0); if (ii == null) continue;
+                            String thumb = ii.optString("thumburl", ii.optString("url", ""));
+                            if (thumb.isEmpty()) continue;
+                            JSONObject meta = ii.optJSONObject("extmetadata");
+                            JSONObject item = new JSONObject();
+                            item.put("url", thumb);
+                            item.put("fullUrl", ii.optString("url", thumb));
+                            item.put("page", ii.optString("descriptionurl", ""));
+                            item.put("title", page.optString("title", "").replaceFirst("^File:", ""));
+                            item.put("artist", metaValue(meta, "Artist"));
+                            item.put("credit", metaValue(meta, "Credit"));
+                            item.put("license", metaValue(meta, "LicenseShortName"));
+                            out.put(item);
+                        }
+                    }
+                } catch (Exception e) { error = e.getMessage() == null ? "Görsel aranamadı" : e.getMessage(); }
+                final String payload = out.toString(); final String err = error;
+                runOnUiThread(() -> {
+                    if (webView != null) webView.evaluateJavascript(
+                            "window.onVehicleImageSearchResult && window.onVehicleImageSearchResult(" + JSONObject.quote(payload) + "," + JSONObject.quote(err) + ")", null);
+                });
+            }).start();
+        }
+
+        @JavascriptInterface public void cacheRemoteImage(String contextId, String imageUrl) {
+            new Thread(() -> {
+                String dataUrl = ""; String error = "";
+                try {
+                    HttpURLConnection c = (HttpURLConnection) new URL(imageUrl).openConnection();
+                    c.setConnectTimeout(9000); c.setReadTimeout(12000);
+                    c.setRequestProperty("User-Agent", "AracimPro/3.0 Android");
+                    try (InputStream in = c.getInputStream()) {
+                        Bitmap src = BitmapFactory.decodeStream(in);
+                        if (src == null) throw new IllegalStateException("Görsel okunamadı");
+                        int max = 1100;
+                        float scale = Math.min(1f, (float) max / Math.max(src.getWidth(), src.getHeight()));
+                        Bitmap scaled = src;
+                        if (scale < 1f) scaled = Bitmap.createScaledBitmap(src, Math.round(src.getWidth()*scale), Math.round(src.getHeight()*scale), true);
+                        ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                        scaled.compress(Bitmap.CompressFormat.JPEG, 76, bout);
+                        dataUrl = "data:image/jpeg;base64," + Base64.encodeToString(bout.toByteArray(), Base64.NO_WRAP);
+                    }
+                    c.disconnect();
+                } catch (Exception e) { error = e.getMessage() == null ? "Görsel kaydedilemedi" : e.getMessage(); }
+                final String data = dataUrl, err = error;
+                runOnUiThread(() -> {
+                    if (webView != null) webView.evaluateJavascript(
+                            "window.onRemoteVehicleImageCached && window.onRemoteVehicleImageCached(" + JSONObject.quote(contextId) + "," + JSONObject.quote(data) + "," + JSONObject.quote(err) + ")", null);
+                });
+            }).start();
+        }
+    }
+
+
+    private static String metaValue(JSONObject meta, String key) {
+        if (meta == null) return "";
+        JSONObject o = meta.optJSONObject(key);
+        return o == null ? "" : o.optString("value", "").replaceAll("<[^>]+>", "").trim();
     }
 
     private void launchCreateDocument(String filename, String mime, String content, byte[] binary) {
