@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -18,9 +18,24 @@ jobs:
       - uses: android-actions/setup-android@v3
       - name: Install Android 16 SDK
         run: sdkmanager "platforms;android-36" "build-tools;35.0.0" "platform-tools"
+      - name: Verify OtoAPI secret
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+        run: |
+          test -n "$OTOAPI_KEY" || (echo "OTOAPI_KEY secret is missing" >&2; exit 1)
       - name: Build debug APK
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
         run: gradle --no-daemon assembleDebug
       - name: Build release AAB
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
         run: gradle --no-daemon bundleRelease
       - uses: actions/upload-artifact@v4
         with:
