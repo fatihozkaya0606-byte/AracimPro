@@ -1,4 +1,4 @@
-# Aracım Pro V11 — Hepsi Bir Arada 5.1.0
+# Aracım Pro V12 — Derin Teknik + Canlı Sürüş 5.2.0
 
 V11, önceki sürümlerdeki çalışan özellikleri tek projede birleştirir ve araç sahipliği tarafını teknik rehber, piyasa değeri ve akaryakıt gündemiyle genişletir.
 
@@ -68,7 +68,11 @@ Google Play Billing henüz bağlı değildir; test sürümünde özellikler aç�
 - applicationId: `com.aracimpro.app`
 - compileSdk / targetSdk: 36
 - minSdk: 24
-- versionCode: 11
-- versionName: 5.1.0
+- versionCode: 13
+- versionName: 5.2.0
 - Debug APK workflow'u hazır
 - İmzalı release AAB workflow'u hazır
+
+
+## V12 5.2.0
+Bkz. `README_V12.md`: otomatik derin teknik özellikler, VIN üretim yeri, canlı GPS hız ve yakındaki benzinlik/TÜVTÜRK/EV şarj özellikleri.

@@ -19,10 +19,14 @@ import android.graphics.Insets;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.pdf.PdfDocument;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.hardware.biometrics.BiometricPrompt;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.os.CancellationSignal;
 import android.provider.OpenableColumns;
 import android.util.Base64;
@@ -69,6 +73,7 @@ public class MainActivity extends Activity {
     private static final int NOTIFICATION_PERMISSION_REQUEST = 7703;
     private static final int PICK_IMAGE_REQUEST = 7704;
     private static final int PICK_DOCUMENT_REQUEST = 7705;
+    private static final int LOCATION_PERMISSION_REQUEST = 7706;
 
     private WebView webView;
     private FrameLayout root;
@@ -79,6 +84,10 @@ public class MainActivity extends Activity {
     private String pendingPickerContext;
     private boolean pageReady = false;
     private boolean appWasBackgrounded = false;
+    private LocationManager locationManager;
+    private LocationListener speedLocationListener;
+    private boolean speedTracking = false;
+    private String pendingLocationAction = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -311,6 +320,61 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show());
         }
 
+        @JavascriptInterface public void requestLocationPermission() {
+            runOnUiThread(() -> ensureLocationPermission("permission"));
+        }
+
+        @JavascriptInterface public void startSpeedTracking() {
+            runOnUiThread(() -> {
+                if (!hasLocationPermission()) { ensureLocationPermission("speed"); return; }
+                startSpeedTrackingNative();
+            });
+        }
+
+        @JavascriptInterface public void stopSpeedTracking() {
+            runOnUiThread(MainActivity.this::stopSpeedTrackingNative);
+        }
+
+        @JavascriptInterface public void openNearby(String query) {
+            runOnUiThread(() -> openNearbyNative(query));
+        }
+
+        @JavascriptInterface public void fetchVehicleSpecs(String make, String model, int year, String engine, String fuel, String transmission) {
+            new Thread(() -> {
+                JSONObject out = new JSONObject();
+                String error = "";
+                try {
+                    out = fetchCarQuerySpecs(make, model, year, engine, fuel, transmission);
+                } catch (Exception e) {
+                    error = e.getMessage() == null ? "Teknik özellik verisi alınamadı" : e.getMessage();
+                }
+                final String payload = out.toString(), err = error;
+                runOnUiThread(() -> {
+                    if (webView != null) webView.evaluateJavascript(
+                            "window.onVehicleSpecsResult && window.onVehicleSpecsResult(" +
+                                    JSONObject.quote(payload) + "," + JSONObject.quote(err) + ")", null);
+                });
+            }).start();
+        }
+
+        @JavascriptInterface public void decodeVin(String vin) {
+            new Thread(() -> {
+                JSONObject out = new JSONObject();
+                String error = "";
+                try {
+                    out = fetchVinDetails(vin);
+                } catch (Exception e) {
+                    error = e.getMessage() == null ? "VIN bilgisi alınamadı" : e.getMessage();
+                }
+                final String payload = out.toString(), err = error;
+                runOnUiThread(() -> {
+                    if (webView != null) webView.evaluateJavascript(
+                            "window.onVinDetailsResult && window.onVinDetailsResult(" +
+                                    JSONObject.quote(payload) + "," + JSONObject.quote(err) + ")", null);
+                });
+            }).start();
+        }
+
         @JavascriptInterface public void fetchFuelDashboard(String city, String fuelType) {
             new Thread(() -> {
                 JSONObject out = new JSONObject();
@@ -365,7 +429,7 @@ public class MainActivity extends Activity {
                             URLEncoder.encode(brand, "UTF-8") + "/modelyear/" + year + "?format=json";
                     HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
                     c.setConnectTimeout(7000); c.setReadTimeout(10000);
-                    c.setRequestProperty("User-Agent", "AracimPro/5.1 Android");
+                    c.setRequestProperty("User-Agent", "AracimPro/5.2 Android");
                     int code = c.getResponseCode();
                     InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
                     BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
@@ -423,7 +487,7 @@ public class MainActivity extends Activity {
                                 "&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=1400&format=json&formatversion=2&origin=*";
                         HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
                         c.setConnectTimeout(9000); c.setReadTimeout(12000);
-                        c.setRequestProperty("User-Agent", "AracimPro/5.1 Android (exact-vehicle-photo-search)");
+                        c.setRequestProperty("User-Agent", "AracimPro/5.2 Android (exact-vehicle-photo-search)");
                         int code = c.getResponseCode();
                         InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
                         BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
@@ -501,7 +565,7 @@ public class MainActivity extends Activity {
                                 "&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=1200&format=json&formatversion=2&origin=*";
                         HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
                         c.setConnectTimeout(9000); c.setReadTimeout(12000);
-                        c.setRequestProperty("User-Agent", "AracimPro/5.1 Android (vehicle-photo-search)");
+                        c.setRequestProperty("User-Agent", "AracimPro/5.2 Android (vehicle-photo-search)");
                         int code = c.getResponseCode();
                         InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
                         BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
@@ -549,7 +613,7 @@ public class MainActivity extends Activity {
                 try {
                     HttpURLConnection c = (HttpURLConnection) new URL(imageUrl).openConnection();
                     c.setConnectTimeout(9000); c.setReadTimeout(12000);
-                    c.setRequestProperty("User-Agent", "AracimPro/5.1 Android");
+                    c.setRequestProperty("User-Agent", "AracimPro/5.2 Android");
                     try (InputStream in = c.getInputStream()) {
                         Bitmap src = BitmapFactory.decodeStream(in);
                         if (src == null) throw new IllegalStateException("Görsel okunamadı");
@@ -752,6 +816,178 @@ public class MainActivity extends Activity {
         nm.notify(id, b.build());
     }
 
+    private boolean hasLocationPermission() {
+        return checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED ||
+                checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void ensureLocationPermission(String action) {
+        pendingLocationAction = action == null ? "" : action;
+        if (hasLocationPermission()) {
+            if ("speed".equals(pendingLocationAction)) startSpeedTrackingNative();
+            return;
+        }
+        requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_REQUEST);
+    }
+
+    @SuppressWarnings("MissingPermission")
+    private Location bestLastLocation() {
+        if (!hasLocationPermission()) return null;
+        try {
+            if (locationManager == null) locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+            if (locationManager == null) return null;
+            Location gps = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            Location net = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            if (gps == null) return net;
+            if (net == null) return gps;
+            return gps.getTime() >= net.getTime() ? gps : net;
+        } catch (Throwable ignored) { return null; }
+    }
+
+    @SuppressWarnings("MissingPermission")
+    private void startSpeedTrackingNative() {
+        if (!hasLocationPermission()) { ensureLocationPermission("speed"); return; }
+        if (locationManager == null) locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        if (locationManager == null) return;
+        stopSpeedTrackingNative();
+        speedLocationListener = new LocationListener() {
+            @Override public void onLocationChanged(Location location) { emitSpeed(location); }
+            @Override public void onProviderEnabled(String provider) {}
+            @Override public void onProviderDisabled(String provider) {}
+        };
+        speedTracking = true;
+        try { locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 700L, 0.5f, speedLocationListener, Looper.getMainLooper()); } catch (Throwable ignored) {}
+        try { locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1200L, 1.0f, speedLocationListener, Looper.getMainLooper()); } catch (Throwable ignored) {}
+        Location last = bestLastLocation(); if (last != null) emitSpeed(last);
+    }
+
+    private void stopSpeedTrackingNative() {
+        speedTracking = false;
+        try { if (locationManager != null && speedLocationListener != null) locationManager.removeUpdates(speedLocationListener); } catch (Throwable ignored) {}
+        speedLocationListener = null;
+    }
+
+    private void emitSpeed(Location loc) {
+        if (loc == null || webView == null) return;
+        double kmh = loc.hasSpeed() ? Math.max(0d, loc.getSpeed() * 3.6d) : 0d;
+        double acc = loc.hasAccuracy() ? loc.getAccuracy() : -1d;
+        String js = "window.onSpeedUpdate && window.onSpeedUpdate(" +
+                String.format(Locale.US, "%.2f", kmh) + "," +
+                String.format(Locale.US, "%.1f", acc) + "," +
+                String.format(Locale.US, "%.7f", loc.getLatitude()) + "," +
+                String.format(Locale.US, "%.7f", loc.getLongitude()) + ")";
+        webView.evaluateJavascript(js, null);
+    }
+
+    private void openNearbyNative(String query) {
+        String q = query == null ? "" : query.trim();
+        try {
+            Location loc = bestLastLocation();
+            String base = loc == null ? "geo:0,0?q=" : "geo:" + loc.getLatitude() + "," + loc.getLongitude() + "?q=";
+            Uri uri = Uri.parse(base + Uri.encode(q));
+            Intent i = new Intent(Intent.ACTION_VIEW, uri);
+            startActivity(Intent.createChooser(i, "Haritada aç"));
+        } catch (Throwable e) {
+            Toast.makeText(this, "Harita açılamadı", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private static String normalizeApiText(String s) {
+        if (s == null) return "";
+        return s.toLowerCase(Locale.ROOT).replace('ı','i').replace('ş','s').replace('ğ','g').replace('ü','u').replace('ö','o').replace('ç','c')
+                .replaceAll("[^a-z0-9]+", " ").trim();
+    }
+
+    private static double num(JSONObject o, String key) {
+        try { String s = o.optString(key, "").trim(); return s.isEmpty() ? 0d : Double.parseDouble(s); } catch (Exception e) { return 0d; }
+    }
+
+    private JSONObject fetchCarQuerySpecs(String make, String model, int year, String engine, String fuel, String transmission) throws Exception {
+        String mk = make == null ? "" : make.trim();
+        String mdl = model == null ? "" : model.trim();
+        if (mk.isEmpty() || mdl.isEmpty() || year < 1941) throw new IllegalArgumentException("Araç bilgisi eksik");
+        String apiMake = mk.toLowerCase(Locale.ROOT).replace("mercedes-benz", "mercedes-benz").replace(" ", "-");
+        String url = "https://www.carqueryapi.com/api/0.3/?cmd=getTrims&full_results=1&year=" + year +
+                "&make=" + URLEncoder.encode(apiMake, "UTF-8") + "&model=" + URLEncoder.encode(mdl, "UTF-8");
+        HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+        c.setConnectTimeout(9000); c.setReadTimeout(12000);
+        c.setRequestProperty("User-Agent", "AracimPro/5.2 Android vehicle-specs");
+        int code = c.getResponseCode();
+        InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
+        BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+        StringBuilder raw = new StringBuilder(); String line;
+        while ((line = br.readLine()) != null) raw.append(line);
+        br.close(); c.disconnect();
+        String txt = raw.toString().trim();
+        if (txt.startsWith("?(") && txt.endsWith(");")) txt = txt.substring(2, txt.length()-2);
+        else if (txt.startsWith("(") && txt.endsWith(")")) txt = txt.substring(1, txt.length()-1);
+        JSONObject rootJson = new JSONObject(txt);
+        JSONArray trims = rootJson.optJSONArray("Trims");
+        if (trims == null || trims.length() == 0) throw new IllegalStateException("Bu varyant için çevrimiçi teknik kayıt bulunamadı");
+        String engNeed = normalizeApiText(engine), fuelNeed = normalizeApiText(fuel), transNeed = normalizeApiText(transmission);
+        JSONObject best = null; int bestScore = Integer.MIN_VALUE;
+        String wantedLiters = "";
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d(?:[\\.,]\\d)?)").matcher(engine == null ? "" : engine);
+        if (m.find()) wantedLiters = m.group(1).replace(',', '.');
+        for (int i=0;i<trims.length();i++) {
+            JSONObject t = trims.optJSONObject(i); if (t == null) continue;
+            int score = 0;
+            String blob = normalizeApiText(t.optString("model_trim", "") + " " + t.optString("model_engine_fuel", "") + " " + t.optString("model_transmission_type", ""));
+            if (!engNeed.isEmpty() && blob.contains(engNeed)) score += 70;
+            if (!wantedLiters.isEmpty()) {
+                double l = num(t,"model_engine_l");
+                try { if (Math.abs(l-Double.parseDouble(wantedLiters)) < 0.12) score += 35; } catch(Exception ignored) {}
+            }
+            if (fuelNeed.contains("dizel") && normalizeApiText(t.optString("model_engine_fuel","")).contains("diesel")) score += 20;
+            if (fuelNeed.contains("benzin") && normalizeApiText(t.optString("model_engine_fuel","")).contains("gasoline")) score += 20;
+            if (transNeed.contains("otomatik") && normalizeApiText(t.optString("model_transmission_type","")).contains("automatic")) score += 15;
+            if (transNeed.contains("manuel") && normalizeApiText(t.optString("model_transmission_type","")).contains("manual")) score += 15;
+            if (score > bestScore) { bestScore = score; best = t; }
+        }
+        if (best == null) best = trims.optJSONObject(0);
+        JSONObject out = new JSONObject();
+        out.put("source", "CarQuery"); out.put("confidence", Math.max(20, Math.min(95, bestScore + 25)));
+        out.put("matchedTrim", best.optString("model_trim", ""));
+        copyNum(best,out,"model_engine_cc","engineCc"); copyNum(best,out,"model_engine_power_hp","powerHp");
+        copyNum(best,out,"model_engine_torque_nm","torqueNm"); copyNum(best,out,"model_0_to_100_kph","zeroTo100");
+        copyNum(best,out,"model_top_speed_kph","topSpeedKph"); copyNum(best,out,"model_weight_kg","weightKg");
+        copyNum(best,out,"model_length_mm","lengthMm"); copyNum(best,out,"model_width_mm","widthMm");
+        copyNum(best,out,"model_height_mm","heightMm"); copyNum(best,out,"model_wheelbase_mm","wheelbaseMm");
+        copyNum(best,out,"model_lkm_mixed","avgConsumptionL"); copyNum(best,out,"model_lkm_city","cityConsumptionL");
+        copyNum(best,out,"model_lkm_hwy","hwyConsumptionL"); copyNum(best,out,"model_fuel_cap_l","fuelTankL");
+        copyNum(best,out,"model_doors","doors"); copyNum(best,out,"model_seats","seats");
+        out.put("body", best.optString("model_body", ""));
+        out.put("drive", best.optString("model_drive", ""));
+        out.put("apiTransmission", best.optString("model_transmission_type", ""));
+        out.put("engineFuel", best.optString("model_engine_fuel", ""));
+        out.put("brandCountry", best.optString("make_country", ""));
+        out.put("specUpdatedAt", new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date()));
+        return out;
+    }
+
+    private static void copyNum(JSONObject src, JSONObject dst, String from, String to) throws Exception {
+        String s = src.optString(from, "").trim(); if (!s.isEmpty()) dst.put(to, Double.parseDouble(s));
+    }
+
+    private JSONObject fetchVinDetails(String vin) throws Exception {
+        String v = vin == null ? "" : vin.trim().toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9]", "");
+        if (v.length() != 17) throw new IllegalArgumentException("VIN 17 karakter olmalı");
+        String api = "https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/" + URLEncoder.encode(v, "UTF-8") + "?format=json";
+        HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
+        c.setConnectTimeout(9000); c.setReadTimeout(12000); c.setRequestProperty("User-Agent", "AracimPro/5.2 Android VIN");
+        BufferedReader br = new BufferedReader(new InputStreamReader(c.getInputStream(), StandardCharsets.UTF_8));
+        StringBuilder raw = new StringBuilder(); String line; while((line=br.readLine())!=null) raw.append(line); br.close(); c.disconnect();
+        JSONObject root = new JSONObject(raw.toString()); JSONArray arr = root.optJSONArray("Results");
+        if (arr == null || arr.length()==0) throw new IllegalStateException("VIN çözümlenemedi");
+        JSONObject r = arr.optJSONObject(0), out = new JSONObject();
+        out.put("source", "NHTSA vPIC VIN");
+        String[][] fields={{"PlantCountry","productionCountry"},{"PlantCity","productionCity"},{"Manufacturer","manufacturer"},{"Model","vinModel"},{"ModelYear","vinYear"},{"BodyClass","vinBody"},{"FuelTypePrimary","vinFuel"},{"TransmissionStyle","vinTransmission"},{"DriveType","vinDrive"}};
+        for (String[] f:fields) { String val=r.optString(f[0],"").trim(); if(!val.isEmpty()) out.put(f[1],val); }
+        String hp=r.optString("EngineHP","").trim(); if(!hp.isEmpty()) out.put("powerHp",Double.parseDouble(hp));
+        String cc=r.optString("DisplacementCC","").trim(); if(!cc.isEmpty()) out.put("engineCc",Double.parseDouble(cc));
+        return out;
+    }
+
     private String formatTrDate(String iso) {
         try {
             Date d = new SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(iso);
@@ -787,6 +1023,21 @@ public class MainActivity extends Activity {
         } catch (Exception e) {
             webView.evaluateJavascript("window.onBiometricResult && window.onBiometricResult(false,'Biyometri başlatılamadı')", null);
         }
+    }
+
+    @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST) {
+            boolean ok = hasLocationPermission();
+            if (ok && "speed".equals(pendingLocationAction)) startSpeedTrackingNative();
+            if (webView != null) webView.evaluateJavascript("window.onLocationPermissionResult && window.onLocationPermissionResult(" + (ok ? "true" : "false") + ")", null);
+            pendingLocationAction = "";
+        }
+    }
+
+    @Override protected void onDestroy() {
+        stopSpeedTrackingNative();
+        super.onDestroy();
     }
 
     @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {

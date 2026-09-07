@@ -1,8 +1,8 @@
-# Aracım Pro — Google Play Edition 5.1.0
+# Aracım Pro — Google Play Edition 5.2.0
 
 ## Teknik
 - targetSdk / compileSdk 36
-- versionCode 11, versionName 5.1.0
+- versionCode 13, versionName 5.2.0
 - Debug ve release paketleri ayrıdır
 - GitHub Actions debug APK ve imzalı release AAB üretir
 - Upload key / keystore repoya dahil edilmez
@@ -18,3 +18,7 @@
 
 ## Release AAB
 GitHub Secrets'a upload key bilgileri tanımlandıktan sonra `.github/workflows/play-release.yml` çalıştırılır. Çıktı artifact adı `AracimPro-Play-AAB` olur.
+
+
+## V12 5.2.0
+Bkz. `README_V12.md`: otomatik derin teknik özellikler, VIN üretim yeri, canlı GPS hız ve yakındaki benzinlik/TÜVTÜRK/EV şarj özellikleri.
