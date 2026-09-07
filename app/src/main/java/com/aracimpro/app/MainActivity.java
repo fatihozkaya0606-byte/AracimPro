@@ -18,6 +18,8 @@ import android.graphics.Canvas;
 import android.graphics.Insets;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.pdf.PdfDocument;
 import android.location.Location;
 import android.location.LocationListener;
@@ -27,13 +29,19 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.os.CancellationSignal;
 import android.provider.OpenableColumns;
+import android.provider.Settings;
 import android.util.Base64;
 import android.view.View;
+import android.view.Gravity;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -97,8 +105,13 @@ public class MainActivity extends Activity {
     private boolean appWasBackgrounded = false;
     private LocationManager locationManager;
     private LocationListener speedLocationListener;
+    private LocationListener nearbyLocationListener;
     private boolean speedTracking = false;
     private String pendingLocationAction = "";
+    private String pendingNearbyQuery = "";
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private View launchSplash;
+    private long splashStartedAt = 0L;
     private FirebaseApp communityFirebaseApp;
     private FirebaseAuth communityAuth;
     private FirebaseFirestore communityDb;
@@ -116,6 +129,7 @@ public class MainActivity extends Activity {
         root.addView(webView, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         setContentView(root);
+        showLaunchSplash();
 
         if (Build.VERSION.SDK_INT >= 30) {
             try { getWindow().setDecorFitsSystemWindows(false); } catch (Throwable ignored) {}
@@ -184,12 +198,67 @@ public class MainActivity extends Activity {
             @Override public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 pageReady = true;
+                hideLaunchSplashWhenReady();
             }
         });
         webView.setWebChromeClient(new WebChromeClient());
         initCommunityFirebase();
         webView.addJavascriptInterface(new AndroidBridge(), "Android");
         webView.loadUrl("file:///android_asset/index.html");
+    }
+
+    private void showLaunchSplash() {
+        splashStartedAt = SystemClock.elapsedRealtime();
+        FrameLayout splash = new FrameLayout(this);
+        splash.setBackgroundColor(Color.rgb(8, 35, 66));
+
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setGravity(Gravity.CENTER);
+        box.setPadding(dp(28), dp(28), dp(28), dp(28));
+
+        TextView title = new TextView(this);
+        title.setText("ARACIM PRO");
+        title.setTextColor(Color.WHITE);
+        title.setTextSize(34f);
+        title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
+        title.setGravity(Gravity.CENTER);
+
+        TextView slogan = new TextView(this);
+        slogan.setText("Aracın için ne ararsan, hepsi burada.");
+        slogan.setTextColor(Color.rgb(221, 235, 249));
+        slogan.setTextSize(18f);
+        slogan.setGravity(Gravity.CENTER);
+        slogan.setPadding(0, dp(16), 0, 0);
+
+        TextView features = new TextView(this);
+        features.setText("Teknik veri • bakım • piyasa • topluluk");
+        features.setTextColor(Color.rgb(154, 190, 224));
+        features.setTextSize(13f);
+        features.setGravity(Gravity.CENTER);
+        features.setPadding(0, dp(10), 0, 0);
+
+        box.addView(title, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        box.addView(slogan, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+        box.addView(features, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+
+        FrameLayout.LayoutParams boxLp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
+        splash.addView(box, boxLp);
+        launchSplash = splash;
+        root.addView(splash, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+    }
+
+    private void hideLaunchSplashWhenReady() {
+        long elapsed = Math.max(0L, SystemClock.elapsedRealtime() - splashStartedAt);
+        long delay = Math.max(0L, 4200L - elapsed);
+        mainHandler.postDelayed(() -> {
+            final View v = launchSplash;
+            if (v == null) return;
+            v.animate().alpha(0f).setDuration(450L).withEndAction(() -> {
+                try { if (root != null) root.removeView(v); } catch (Throwable ignored) {}
+                if (launchSplash == v) launchSplash = null;
+            }).start();
+        }, delay);
     }
 
     private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
@@ -221,6 +290,9 @@ public class MainActivity extends Activity {
         super.onResume();
         if (appWasBackgrounded && pageReady && webView != null) {
             webView.postDelayed(() -> webView.evaluateJavascript("window.appShouldLock && window.appShouldLock()", null), 250);
+        }
+        if (hasLocationPermission() && isLocationServiceEnabled() && pendingLocationAction != null && !pendingLocationAction.isEmpty()) {
+            mainHandler.postDelayed(this::resumePendingLocationAction, 300L);
         }
         appWasBackgrounded = false;
     }
@@ -552,6 +624,18 @@ public class MainActivity extends Activity {
 
         @JavascriptInterface public void requestLocationPermission() {
             runOnUiThread(() -> ensureLocationPermission("permission"));
+        }
+
+        @JavascriptInterface public void openLocationSettings() {
+            runOnUiThread(MainActivity.this::openLocationSettingsNative);
+        }
+
+        @JavascriptInterface public boolean locationServiceEnabled() {
+            return isLocationServiceEnabled();
+        }
+
+        @JavascriptInterface public String getDefaultMarketApiUrl() {
+            return BuildConfig.MARKET_API_URL == null ? "" : BuildConfig.MARKET_API_URL.trim();
         }
 
         @JavascriptInterface public void startSpeedTracking() {
@@ -1051,13 +1135,64 @@ public class MainActivity extends Activity {
                 checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED;
     }
 
+    private boolean isLocationServiceEnabled() {
+        try {
+            if (locationManager == null) locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+            if (locationManager == null) return false;
+            if (Build.VERSION.SDK_INT >= 28) return locationManager.isLocationEnabled();
+            return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                    locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        } catch (Throwable ignored) { return false; }
+    }
+
+    private void notifyLocationStatus(String message) {
+        if (webView == null) return;
+        final String msg = message == null ? "" : message;
+        webView.evaluateJavascript("window.onLocationStatus && window.onLocationStatus(" + JSONObject.quote(msg) + ")", null);
+    }
+
+    private void openLocationSettingsNative() {
+        try {
+            Intent i = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            startActivity(i);
+        } catch (Throwable e) {
+            try { startActivity(new Intent(Settings.ACTION_SETTINGS)); } catch (Throwable ignored) {}
+        }
+    }
+
     private void ensureLocationPermission(String action) {
         pendingLocationAction = action == null ? "" : action;
         if (hasLocationPermission()) {
-            if ("speed".equals(pendingLocationAction)) startSpeedTrackingNative();
+            resumePendingLocationAction();
             return;
         }
         requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, LOCATION_PERMISSION_REQUEST);
+    }
+
+    private void resumePendingLocationAction() {
+        String action = pendingLocationAction == null ? "" : pendingLocationAction;
+        if (action.isEmpty()) return;
+        if (!hasLocationPermission()) return;
+        if ("permission".equals(action)) {
+            pendingLocationAction = "";
+            notifyLocationStatus("Konum izni verildi.");
+            return;
+        }
+        if (!isLocationServiceEnabled()) {
+            notifyLocationStatus("Konum hizmeti kapalı. Telefonun Konum/GPS ayarını aç.");
+            Toast.makeText(this, "Konum hizmeti kapalı. Konum ayarları açılıyor.", Toast.LENGTH_LONG).show();
+            openLocationSettingsNative();
+            return;
+        }
+        pendingLocationAction = "";
+        if ("speed".equals(action)) {
+            startSpeedTrackingNative();
+            return;
+        }
+        if (action.startsWith("nearby:")) {
+            String q = action.substring("nearby:".length());
+            requestFreshLocationAndOpenNearby(q);
+        }
     }
 
     @SuppressWarnings("MissingPermission")
@@ -1066,8 +1201,9 @@ public class MainActivity extends Activity {
         try {
             if (locationManager == null) locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
             if (locationManager == null) return null;
-            Location gps = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            Location net = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            Location gps = null, net = null;
+            try { gps = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER); } catch (Throwable ignored) {}
+            try { net = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER); } catch (Throwable ignored) {}
             if (gps == null) return net;
             if (net == null) return gps;
             return gps.getTime() >= net.getTime() ? gps : net;
@@ -1077,17 +1213,24 @@ public class MainActivity extends Activity {
     @SuppressWarnings("MissingPermission")
     private void startSpeedTrackingNative() {
         if (!hasLocationPermission()) { ensureLocationPermission("speed"); return; }
+        if (!isLocationServiceEnabled()) {
+            pendingLocationAction = "speed";
+            notifyLocationStatus("Konum/GPS kapalı. Açmak için ayarlara yönlendiriliyorsun.");
+            openLocationSettingsNative();
+            return;
+        }
         if (locationManager == null) locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
         if (locationManager == null) return;
         stopSpeedTrackingNative();
         speedLocationListener = new LocationListener() {
             @Override public void onLocationChanged(Location location) { emitSpeed(location); }
-            @Override public void onProviderEnabled(String provider) {}
-            @Override public void onProviderDisabled(String provider) {}
+            @Override public void onProviderEnabled(String provider) { notifyLocationStatus("GPS aktif, konum alınıyor…"); }
+            @Override public void onProviderDisabled(String provider) { notifyLocationStatus("Konum sağlayıcısı kapatıldı."); }
         };
         speedTracking = true;
-        try { locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 700L, 0.5f, speedLocationListener, Looper.getMainLooper()); } catch (Throwable ignored) {}
-        try { locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1200L, 1.0f, speedLocationListener, Looper.getMainLooper()); } catch (Throwable ignored) {}
+        notifyLocationStatus("GPS aranıyor… Açık alanda birkaç saniye sürebilir.");
+        try { if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 700L, 0.5f, speedLocationListener, Looper.getMainLooper()); } catch (Throwable ignored) {}
+        try { if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1200L, 1.0f, speedLocationListener, Looper.getMainLooper()); } catch (Throwable ignored) {}
         Location last = bestLastLocation(); if (last != null) emitSpeed(last);
     }
 
@@ -1111,12 +1254,93 @@ public class MainActivity extends Activity {
 
     private void openNearbyNative(String query) {
         String q = query == null ? "" : query.trim();
+        if (q.isEmpty()) return;
+        if (!hasLocationPermission()) {
+            ensureLocationPermission("nearby:" + q);
+            return;
+        }
+        if (!isLocationServiceEnabled()) {
+            pendingLocationAction = "nearby:" + q;
+            notifyLocationStatus("Yakındaki yerler için telefonun Konum/GPS özelliğini aç.");
+            Toast.makeText(this, "Konum kapalı. Konum ayarları açılıyor.", Toast.LENGTH_LONG).show();
+            openLocationSettingsNative();
+            return;
+        }
+        requestFreshLocationAndOpenNearby(q);
+    }
+
+    @SuppressWarnings("MissingPermission")
+    private void requestFreshLocationAndOpenNearby(String query) {
+        if (locationManager == null) locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        if (locationManager == null) { openMapForQuery(query, null); return; }
+
+        Location last = bestLastLocation();
+        if (last != null && Math.abs(System.currentTimeMillis() - last.getTime()) <= 180000L) {
+            openMapForQuery(query, last);
+            return;
+        }
+
+        pendingNearbyQuery = query;
+        notifyLocationStatus("Güncel konum alınıyor…");
+        final boolean[] completed = {false};
+        nearbyLocationListener = new LocationListener() {
+            @Override public void onLocationChanged(Location location) {
+                if (completed[0]) return;
+                completed[0] = true;
+                try { if (locationManager != null) locationManager.removeUpdates(this); } catch (Throwable ignored) {}
+                nearbyLocationListener = null;
+                pendingNearbyQuery = "";
+                openMapForQuery(query, location);
+            }
+            @Override public void onProviderEnabled(String provider) {}
+            @Override public void onProviderDisabled(String provider) {}
+        };
+
+        boolean requested = false;
         try {
-            Location loc = bestLastLocation();
-            String base = loc == null ? "geo:0,0?q=" : "geo:" + loc.getLatitude() + "," + loc.getLongitude() + "?q=";
-            Uri uri = Uri.parse(base + Uri.encode(q));
+            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, nearbyLocationListener, Looper.getMainLooper());
+                requested = true;
+            }
+        } catch (Throwable ignored) {}
+        try {
+            if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, nearbyLocationListener, Looper.getMainLooper());
+                requested = true;
+            }
+        } catch (Throwable ignored) {}
+
+        if (!requested) {
+            completed[0] = true;
+            nearbyLocationListener = null;
+            pendingNearbyQuery = "";
+            openMapForQuery(query, last);
+            return;
+        }
+
+        mainHandler.postDelayed(() -> {
+            if (completed[0]) return;
+            completed[0] = true;
+            try { if (locationManager != null && nearbyLocationListener != null) locationManager.removeUpdates(nearbyLocationListener); } catch (Throwable ignored) {}
+            nearbyLocationListener = null;
+            pendingNearbyQuery = "";
+            Location fallback = bestLastLocation();
+            openMapForQuery(query, fallback);
+        }, 4500L);
+    }
+
+    private void openMapForQuery(String query, Location loc) {
+        try {
+            Uri uri;
+            if (loc != null) {
+                uri = Uri.parse("geo:" + loc.getLatitude() + "," + loc.getLongitude() + "?q=" + Uri.encode(query));
+                notifyLocationStatus("Konum alındı. Harita açılıyor…");
+            } else {
+                uri = Uri.parse("https://www.google.com/maps/search/?api=1&query=" + Uri.encode(query));
+                notifyLocationStatus("Kesin konum alınamadı; harita araması açılıyor.");
+            }
             Intent i = new Intent(Intent.ACTION_VIEW, uri);
-            startActivity(Intent.createChooser(i, "Haritada aç"));
+            startActivity(i);
         } catch (Throwable e) {
             Toast.makeText(this, "Harita açılamadı", Toast.LENGTH_SHORT).show();
         }
@@ -1277,14 +1501,17 @@ public class MainActivity extends Activity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST) {
             boolean ok = hasLocationPermission();
-            if (ok && "speed".equals(pendingLocationAction)) startSpeedTrackingNative();
             if (webView != null) webView.evaluateJavascript("window.onLocationPermissionResult && window.onLocationPermissionResult(" + (ok ? "true" : "false") + ")", null);
-            pendingLocationAction = "";
+            if (ok) resumePendingLocationAction();
+            else pendingLocationAction = "";
         }
     }
 
     @Override protected void onDestroy() {
         stopSpeedTrackingNative();
+        try { if (locationManager != null && nearbyLocationListener != null) locationManager.removeUpdates(nearbyLocationListener); } catch (Throwable ignored) {}
+        nearbyLocationListener = null;
+        mainHandler.removeCallbacksAndMessages(null);
         super.onDestroy();
     }
 

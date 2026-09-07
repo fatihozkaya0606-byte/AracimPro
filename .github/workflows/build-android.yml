@@ -1,8 +1,6 @@
-name: Android Build
+name: Android Release Build (Manual)
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main", "master" ]
 jobs:
   build:
     runs-on: ubuntu-latest

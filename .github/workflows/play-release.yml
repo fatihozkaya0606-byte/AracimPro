@@ -50,6 +50,7 @@ jobs:
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
         run: gradle --no-daemon bundleRelease
       - name: Verify signed bundle exists
         run: test -s app/build/outputs/bundle/release/app-release.aab

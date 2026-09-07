@@ -22,8 +22,9 @@ android {
         buildConfigField "String", "FIREBASE_API_KEY", "\"${System.getenv('FIREBASE_API_KEY') ?: ''}\""
         buildConfigField "String", "FIREBASE_PROJECT_ID", "\"${System.getenv('FIREBASE_PROJECT_ID') ?: ''}\""
         buildConfigField "String", "FIREBASE_APP_ID", "\"${System.getenv('FIREBASE_APP_ID') ?: ''}\""
-        versionCode 17
-        versionName '5.5.1'
+        buildConfigField "String", "MARKET_API_URL", "\"${System.getenv('MARKET_API_URL') ?: ''}\""
+        versionCode 18
+        versionName '5.5.2'
     }
 
     signingConfigs {
@@ -41,6 +42,9 @@ android {
         debug {
             applicationIdSuffix '.debug'
             versionNameSuffix '-debug'
+            if (keystorePropertiesFile.exists()) {
+                signingConfig signingConfigs.release
+            }
         }
         release {
             minifyEnabled false
