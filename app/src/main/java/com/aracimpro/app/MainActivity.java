@@ -44,6 +44,15 @@ import android.webkit.WebViewClient;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.DocumentSnapshot;
+
 import java.io.ByteArrayOutputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -57,6 +66,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -88,6 +99,10 @@ public class MainActivity extends Activity {
     private LocationListener speedLocationListener;
     private boolean speedTracking = false;
     private String pendingLocationAction = "";
+    private FirebaseApp communityFirebaseApp;
+    private FirebaseAuth communityAuth;
+    private FirebaseFirestore communityDb;
+    private boolean communityConfigured = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -172,6 +187,7 @@ public class MainActivity extends Activity {
             }
         });
         webView.setWebChromeClient(new WebChromeClient());
+        initCommunityFirebase();
         webView.addJavascriptInterface(new AndroidBridge(), "Android");
         webView.loadUrl("file:///android_asset/index.html");
     }
@@ -209,7 +225,221 @@ public class MainActivity extends Activity {
         appWasBackgrounded = false;
     }
 
+    private void initCommunityFirebase() {
+        String apiKey = BuildConfig.FIREBASE_API_KEY == null ? "" : BuildConfig.FIREBASE_API_KEY.trim();
+        String projectId = BuildConfig.FIREBASE_PROJECT_ID == null ? "" : BuildConfig.FIREBASE_PROJECT_ID.trim();
+        String appId = BuildConfig.FIREBASE_APP_ID == null ? "" : BuildConfig.FIREBASE_APP_ID.trim();
+        if (apiKey.isEmpty() || projectId.isEmpty() || appId.isEmpty()) {
+            communityConfigured = false;
+            return;
+        }
+        try {
+            FirebaseOptions options = new FirebaseOptions.Builder()
+                    .setApiKey(apiKey)
+                    .setProjectId(projectId)
+                    .setApplicationId(appId)
+                    .build();
+            try {
+                communityFirebaseApp = FirebaseApp.getInstance("AracimProCommunity");
+            } catch (Exception ignored) {
+                communityFirebaseApp = FirebaseApp.initializeApp(this, options, "AracimProCommunity");
+            }
+            if (communityFirebaseApp != null) {
+                communityAuth = FirebaseAuth.getInstance(communityFirebaseApp);
+                communityDb = FirebaseFirestore.getInstance(communityFirebaseApp);
+                communityConfigured = true;
+            }
+        } catch (Exception ignored) {
+            communityConfigured = false;
+        }
+    }
+
+    private JSONObject communityStatusJson() {
+        JSONObject out = new JSONObject();
+        try {
+            out.put("configured", communityConfigured);
+            FirebaseUser u = communityAuth == null ? null : communityAuth.getCurrentUser();
+            out.put("signedIn", u != null);
+            if (u != null) {
+                out.put("uid", u.getUid());
+                out.put("email", u.getEmail() == null ? "" : u.getEmail());
+                out.put("name", u.getDisplayName() == null ? "" : u.getDisplayName());
+                out.put("emailVerified", u.isEmailVerified());
+            }
+        } catch (Exception ignored) {}
+        return out;
+    }
+
+    private void sendCommunityJs(String callback, String payload, String error) {
+        runOnUiThread(() -> {
+            if (webView == null) return;
+            String js = "window." + callback + " && window." + callback + "(" +
+                    JSONObject.quote(payload == null ? "" : payload) + "," +
+                    JSONObject.quote(error == null ? "" : error) + ")";
+            webView.evaluateJavascript(js, null);
+        });
+    }
+
+    private JSONObject commentToJson(DocumentSnapshot d) {
+        JSONObject o = new JSONObject();
+        try {
+            o.put("id", d.getId());
+            String[] textKeys = new String[]{"modelKey","make","model","engine","trim","userId","userName","text","pros","cons","issue"};
+            for (String k : textKeys) {
+                Object v = d.get(k);
+                if (v != null) o.put(k, String.valueOf(v));
+            }
+            String[] numKeys = new String[]{"year","rating","mileage","realConsumption","createdAt","likes"};
+            for (String k : numKeys) {
+                Object v = d.get(k);
+                if (v instanceof Number) o.put(k, ((Number) v).doubleValue());
+            }
+        } catch (Exception ignored) {}
+        return o;
+    }
+
     public class AndroidBridge {
+        @JavascriptInterface public String communityStatus() {
+            return communityStatusJson().toString();
+        }
+
+        @JavascriptInterface public void communitySignUp(String name, String email, String password) {
+            if (!communityConfigured || communityAuth == null) {
+                sendCommunityJs("onCommunityAuthResult", "", "Kullanıcı sistemi henüz yapılandırılmadı");
+                return;
+            }
+            String n = name == null ? "" : name.trim();
+            String e = email == null ? "" : email.trim();
+            String p = password == null ? "" : password;
+            if (n.length() < 2 || e.isEmpty() || p.length() < 6) {
+                sendCommunityJs("onCommunityAuthResult", "", "Ad, e-posta ve en az 6 karakter şifre gerekli");
+                return;
+            }
+            communityAuth.createUserWithEmailAndPassword(e, p).addOnCompleteListener(task -> {
+                if (!task.isSuccessful()) {
+                    String err = task.getException() == null ? "Kayıt oluşturulamadı" : task.getException().getMessage();
+                    sendCommunityJs("onCommunityAuthResult", "", err);
+                    return;
+                }
+                FirebaseUser u = communityAuth.getCurrentUser();
+                if (u == null) {
+                    sendCommunityJs("onCommunityAuthResult", "", "Kullanıcı oturumu açılamadı");
+                    return;
+                }
+                UserProfileChangeRequest profile = new UserProfileChangeRequest.Builder().setDisplayName(n).build();
+                u.updateProfile(profile).addOnCompleteListener(t -> {
+                    u.sendEmailVerification();
+                    sendCommunityJs("onCommunityAuthResult", communityStatusJson().toString(), "");
+                });
+            });
+        }
+
+        @JavascriptInterface public void communityLogin(String email, String password) {
+            if (!communityConfigured || communityAuth == null) {
+                sendCommunityJs("onCommunityAuthResult", "", "Kullanıcı sistemi henüz yapılandırılmadı");
+                return;
+            }
+            String e = email == null ? "" : email.trim();
+            String p = password == null ? "" : password;
+            communityAuth.signInWithEmailAndPassword(e, p).addOnCompleteListener(task -> {
+                if (!task.isSuccessful()) {
+                    String err = task.getException() == null ? "Giriş yapılamadı" : task.getException().getMessage();
+                    sendCommunityJs("onCommunityAuthResult", "", err);
+                    return;
+                }
+                sendCommunityJs("onCommunityAuthResult", communityStatusJson().toString(), "");
+            });
+        }
+
+        @JavascriptInterface public void communityLogout() {
+            if (communityAuth != null) communityAuth.signOut();
+            sendCommunityJs("onCommunityAuthResult", communityStatusJson().toString(), "");
+        }
+
+        @JavascriptInterface public void communityFetchComments(String modelKey) {
+            if (!communityConfigured || communityDb == null) {
+                sendCommunityJs("onCommunityCommentsResult", "[]", "Yorum sunucusu henüz yapılandırılmadı");
+                return;
+            }
+            String key = modelKey == null ? "" : modelKey.trim();
+            communityDb.collection("vehicle_comments").whereEqualTo("modelKey", key).limit(100).get()
+                    .addOnCompleteListener(task -> {
+                        if (!task.isSuccessful() || task.getResult() == null) {
+                            String err = task.getException() == null ? "Yorumlar alınamadı" : task.getException().getMessage();
+                            sendCommunityJs("onCommunityCommentsResult", "[]", err);
+                            return;
+                        }
+                        JSONArray arr = new JSONArray();
+                        for (DocumentSnapshot d : task.getResult().getDocuments()) arr.put(commentToJson(d));
+                        sendCommunityJs("onCommunityCommentsResult", arr.toString(), "");
+                    });
+        }
+
+        @JavascriptInterface public void communityAddComment(String commentJson) {
+            if (!communityConfigured || communityDb == null || communityAuth == null || communityAuth.getCurrentUser() == null) {
+                sendCommunityJs("onCommunityCommentSaved", "", "Yorum yapmak için giriş yapmalısın");
+                return;
+            }
+            try {
+                JSONObject j = new JSONObject(commentJson == null ? "{}" : commentJson);
+                FirebaseUser u = communityAuth.getCurrentUser();
+                Map<String, Object> data = new HashMap<>();
+                data.put("modelKey", j.optString("modelKey", ""));
+                data.put("make", j.optString("make", ""));
+                data.put("model", j.optString("model", ""));
+                data.put("year", j.optInt("year", 0));
+                data.put("engine", j.optString("engine", ""));
+                data.put("trim", j.optString("trim", ""));
+                data.put("rating", Math.max(1, Math.min(5, j.optInt("rating", 5))));
+                data.put("mileage", Math.max(0, j.optLong("mileage", 0)));
+                data.put("realConsumption", Math.max(0, j.optDouble("realConsumption", 0)));
+                data.put("text", j.optString("text", "").trim());
+                data.put("pros", j.optString("pros", "").trim());
+                data.put("cons", j.optString("cons", "").trim());
+                data.put("issue", j.optString("issue", "").trim());
+                data.put("userId", u.getUid());
+                data.put("userName", (u.getDisplayName() == null || u.getDisplayName().trim().isEmpty()) ? "Aracım Pro kullanıcısı" : u.getDisplayName().trim());
+                data.put("createdAt", System.currentTimeMillis());
+                data.put("createdAtServer", FieldValue.serverTimestamp());
+                data.put("likes", 0);
+                if (String.valueOf(data.get("text")).length() < 3) {
+                    sendCommunityJs("onCommunityCommentSaved", "", "Yorum en az 3 karakter olmalı");
+                    return;
+                }
+                communityDb.collection("vehicle_comments").add(data).addOnCompleteListener(task -> {
+                    if (!task.isSuccessful()) {
+                        String err = task.getException() == null ? "Yorum kaydedilemedi" : task.getException().getMessage();
+                        sendCommunityJs("onCommunityCommentSaved", "", err);
+                    } else {
+                        JSONObject out = new JSONObject();
+                        try { out.put("ok", true); } catch (Exception ignored) {}
+                        sendCommunityJs("onCommunityCommentSaved", out.toString(), "");
+                    }
+                });
+            } catch (Exception e) {
+                sendCommunityJs("onCommunityCommentSaved", "", "Yorum verisi okunamadı");
+            }
+        }
+
+        @JavascriptInterface public void communityReportComment(String commentId, String reason) {
+            if (!communityConfigured || communityDb == null || communityAuth == null || communityAuth.getCurrentUser() == null) {
+                sendCommunityJs("onCommunityReportResult", "", "Şikayet için giriş yapmalısın");
+                return;
+            }
+            Map<String, Object> data = new HashMap<>();
+            data.put("commentId", commentId == null ? "" : commentId);
+            data.put("reason", reason == null ? "Uygunsuz içerik" : reason);
+            data.put("userId", communityAuth.getCurrentUser().getUid());
+            data.put("createdAt", System.currentTimeMillis());
+            data.put("createdAtServer", FieldValue.serverTimestamp());
+            communityDb.collection("comment_reports").add(data).addOnCompleteListener(task -> {
+                if (!task.isSuccessful()) {
+                    String err = task.getException() == null ? "Şikayet gönderilemedi" : task.getException().getMessage();
+                    sendCommunityJs("onCommunityReportResult", "", err);
+                } else sendCommunityJs("onCommunityReportResult", "{\"ok\":true}", "");
+            });
+        }
+
         @JavascriptInterface public void shareText(String title, String text) {
             runOnUiThread(() -> {
                 Intent i = new Intent(Intent.ACTION_SEND);
@@ -937,7 +1167,7 @@ public class MainActivity extends Activity {
         if (key.isEmpty()) throw new IllegalStateException("OtoAPI anahtarı tanımlı değil. GitHub Secret: OTOAPI_KEY");
         HttpURLConnection c = (HttpURLConnection) new URL(OTOAPI_BASE + path).openConnection();
         c.setConnectTimeout(10000); c.setReadTimeout(15000);
-        c.setRequestProperty("User-Agent", "AracimPro/5.4 Android OtoAPI");
+        c.setRequestProperty("User-Agent", "AracimPro/5.5 Android OtoAPI");
         c.setRequestProperty("Accept", "application/json"); c.setRequestProperty("X-API-Key", key);
         int code=c.getResponseCode(); InputStream stream=code>=200&&code<300?c.getInputStream():c.getErrorStream();
         BufferedReader br=new BufferedReader(new InputStreamReader(stream,StandardCharsets.UTF_8)); StringBuilder raw=new StringBuilder(); String line;
@@ -992,7 +1222,7 @@ public class MainActivity extends Activity {
         if (v.length() != 17) throw new IllegalArgumentException("VIN 17 karakter olmalı");
         String api = "https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/" + URLEncoder.encode(v, "UTF-8") + "?format=json";
         HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
-        c.setConnectTimeout(9000); c.setReadTimeout(12000); c.setRequestProperty("User-Agent", "AracimPro/5.4 Android VIN");
+        c.setConnectTimeout(9000); c.setReadTimeout(12000); c.setRequestProperty("User-Agent", "AracimPro/5.5 Android VIN");
         BufferedReader br = new BufferedReader(new InputStreamReader(c.getInputStream(), StandardCharsets.UTF_8));
         StringBuilder raw = new StringBuilder(); String line; while((line=br.readLine())!=null) raw.append(line); br.close(); c.disconnect();
         JSONObject root = new JSONObject(raw.toString()); JSONArray arr = root.optJSONArray("Results");

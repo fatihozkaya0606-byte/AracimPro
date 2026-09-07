@@ -19,8 +19,11 @@ android {
         minSdk 24
         targetSdk 36
         buildConfigField "String", "OTOAPI_KEY", "\"${System.getenv('OTOAPI_KEY') ?: ''}\""
-        versionCode 15
-        versionName '5.4.0'
+        buildConfigField "String", "FIREBASE_API_KEY", "\"${System.getenv('FIREBASE_API_KEY') ?: ''}\""
+        buildConfigField "String", "FIREBASE_PROJECT_ID", "\"${System.getenv('FIREBASE_PROJECT_ID') ?: ''}\""
+        buildConfigField "String", "FIREBASE_APP_ID", "\"${System.getenv('FIREBASE_APP_ID') ?: ''}\""
+        versionCode 16
+        versionName '5.5.0'
     }
 
     signingConfigs {
@@ -58,4 +61,11 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+}
+
+
+dependencies {
+    implementation platform('com.google.firebase:firebase-bom:34.18.0')
+    implementation 'com.google.firebase:firebase-auth'
+    implementation 'com.google.firebase:firebase-firestore'
 }
