@@ -902,67 +902,81 @@ public class MainActivity extends Activity {
         try { String s = o.optString(key, "").trim(); return s.isEmpty() ? 0d : Double.parseDouble(s); } catch (Exception e) { return 0d; }
     }
 
-    private JSONObject fetchCarQuerySpecs(String make, String model, int year, String engine, String fuel, String transmission) throws Exception {
-        String mk = make == null ? "" : make.trim();
-        String mdl = model == null ? "" : model.trim();
-        if (mk.isEmpty() || mdl.isEmpty() || year < 1941) throw new IllegalArgumentException("Araç bilgisi eksik");
-        String apiMake = mk.toLowerCase(Locale.ROOT).replace("mercedes-benz", "mercedes-benz").replace(" ", "-");
-        String url = "https://www.carqueryapi.com/api/0.3/?cmd=getTrims&full_results=1&year=" + year +
-                "&make=" + URLEncoder.encode(apiMake, "UTF-8") + "&model=" + URLEncoder.encode(mdl, "UTF-8");
-        HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
-        c.setConnectTimeout(9000); c.setReadTimeout(12000);
-        c.setRequestProperty("User-Agent", "AracimPro/5.2 Android vehicle-specs");
-        int code = c.getResponseCode();
-        InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
-        BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
-        StringBuilder raw = new StringBuilder(); String line;
-        while ((line = br.readLine()) != null) raw.append(line);
-        br.close(); c.disconnect();
-        String txt = raw.toString().trim();
-        if (txt.startsWith("?(") && txt.endsWith(");")) txt = txt.substring(2, txt.length()-2);
-        else if (txt.startsWith("(") && txt.endsWith(")")) txt = txt.substring(1, txt.length()-1);
-        JSONObject rootJson = new JSONObject(txt);
-        JSONArray trims = rootJson.optJSONArray("Trims");
-        if (trims == null || trims.length() == 0) throw new IllegalStateException("Bu varyant için çevrimiçi teknik kayıt bulunamadı");
-        String engNeed = normalizeApiText(engine), fuelNeed = normalizeApiText(fuel), transNeed = normalizeApiText(transmission);
-        JSONObject best = null; int bestScore = Integer.MIN_VALUE;
-        String wantedLiters = "";
-        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d(?:[\\.,]\\d)?)").matcher(engine == null ? "" : engine);
-        if (m.find()) wantedLiters = m.group(1).replace(',', '.');
-        for (int i=0;i<trims.length();i++) {
-            JSONObject t = trims.optJSONObject(i); if (t == null) continue;
-            int score = 0;
-            String blob = normalizeApiText(t.optString("model_trim", "") + " " + t.optString("model_engine_fuel", "") + " " + t.optString("model_transmission_type", ""));
-            if (!engNeed.isEmpty() && blob.contains(engNeed)) score += 70;
-            if (!wantedLiters.isEmpty()) {
-                double l = num(t,"model_engine_l");
-                try { if (Math.abs(l-Double.parseDouble(wantedLiters)) < 0.12) score += 35; } catch(Exception ignored) {}
-            }
-            if (fuelNeed.contains("dizel") && normalizeApiText(t.optString("model_engine_fuel","")).contains("diesel")) score += 20;
-            if (fuelNeed.contains("benzin") && normalizeApiText(t.optString("model_engine_fuel","")).contains("gasoline")) score += 20;
-            if (transNeed.contains("otomatik") && normalizeApiText(t.optString("model_transmission_type","")).contains("automatic")) score += 15;
-            if (transNeed.contains("manuel") && normalizeApiText(t.optString("model_transmission_type","")).contains("manual")) score += 15;
-            if (score > bestScore) { bestScore = score; best = t; }
+    private static String compactApiText(String s) { return normalizeApiText(s).replace(" ", ""); }
+
+    private static java.util.List<String> modelCandidates(String make, String model) {
+        java.util.LinkedHashSet<String> set = new java.util.LinkedHashSet<>();
+        String m = model == null ? "" : model.trim();
+        if (!m.isEmpty()) set.add(m);
+        if ("Mercedes-Benz".equalsIgnoreCase(make)) {
+            if (m.endsWith(" Serisi")) { String l=m.substring(0,m.length()-7).trim(); set.add(l+"-Class"); set.add(l+" Class"); }
         }
-        if (best == null) best = trims.optJSONObject(0);
-        JSONObject out = new JSONObject();
-        out.put("source", "CarQuery"); out.put("confidence", Math.max(20, Math.min(95, bestScore + 25)));
-        out.put("matchedTrim", best.optString("model_trim", ""));
-        copyNum(best,out,"model_engine_cc","engineCc"); copyNum(best,out,"model_engine_power_hp","powerHp");
-        copyNum(best,out,"model_engine_torque_nm","torqueNm"); copyNum(best,out,"model_0_to_100_kph","zeroTo100");
-        copyNum(best,out,"model_top_speed_kph","topSpeedKph"); copyNum(best,out,"model_weight_kg","weightKg");
-        copyNum(best,out,"model_length_mm","lengthMm"); copyNum(best,out,"model_width_mm","widthMm");
-        copyNum(best,out,"model_height_mm","heightMm"); copyNum(best,out,"model_wheelbase_mm","wheelbaseMm");
-        copyNum(best,out,"model_lkm_mixed","avgConsumptionL"); copyNum(best,out,"model_lkm_city","cityConsumptionL");
-        copyNum(best,out,"model_lkm_hwy","hwyConsumptionL"); copyNum(best,out,"model_fuel_cap_l","fuelTankL");
+        if ("BMW".equalsIgnoreCase(make) && m.endsWith(" Serisi")) {
+            String n=m.substring(0,m.length()-7).trim(); set.add(n+"-Series"); set.add(n+" Series");
+        }
+        if ("Hyundai".equalsIgnoreCase(make) && (m.equalsIgnoreCase("Accent Era")||m.equalsIgnoreCase("Accent Blue"))) set.add("Accent");
+        if ("Citroen".equalsIgnoreCase(make)) set.add(m.replace("C-", "C"));
+        if (m.toLowerCase(Locale.ROOT).contains("pro max")) set.add(m.replaceAll("(?i)\\s*Pro Max", ""));
+        if (m.toLowerCase(Locale.ROOT).contains("pro")) set.add(m.replaceAll("(?i)\\s*Pro", ""));
+        return new java.util.ArrayList<>(set);
+    }
+
+    private static java.util.List<String> makeCandidates(String make) {
+        java.util.LinkedHashSet<String> set=new java.util.LinkedHashSet<>();
+        String m=make==null?"":make.trim(); if(!m.isEmpty()) set.add(m);
+        if (m.equalsIgnoreCase("SsangYong/KGM")) { set.add("SsangYong"); set.add("KGM"); }
+        if (m.equalsIgnoreCase("Mercedes-Benz")) { set.add("Mercedes-Benz"); set.add("Mercedes"); }
+        if (m.equalsIgnoreCase("DS")) set.add("Citroen");
+        return new java.util.ArrayList<>(set);
+    }
+
+    private JSONObject fetchCarQuerySpecs(String make, String model, int year, String engine, String fuel, String transmission) throws Exception {
+        String mk = make == null ? "" : make.trim(), mdl = model == null ? "" : model.trim();
+        if (mk.isEmpty() || mdl.isEmpty() || year < 1941) throw new IllegalArgumentException("Araç bilgisi eksik");
+        JSONArray trims = null; String usedMake=mk, usedModel=mdl; Exception lastErr=null;
+        for (String mkTry: makeCandidates(mk)) {
+            for (String modelTry: modelCandidates(mk, mdl)) {
+                try {
+                    String apiMake = mkTry.toLowerCase(Locale.ROOT).replace(" ", "-");
+                    String url = "https://www.carqueryapi.com/api/0.3/?cmd=getTrims&full_results=1&year=" + year +
+                            "&make=" + URLEncoder.encode(apiMake, "UTF-8") + "&model=" + URLEncoder.encode(modelTry, "UTF-8");
+                    HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+                    c.setConnectTimeout(9000); c.setReadTimeout(12000); c.setRequestProperty("User-Agent", "AracimPro/5.3 Android vehicle-specs");
+                    int code=c.getResponseCode(); InputStream stream=code>=200&&code<300?c.getInputStream():c.getErrorStream();
+                    BufferedReader br=new BufferedReader(new InputStreamReader(stream,StandardCharsets.UTF_8)); StringBuilder raw=new StringBuilder(); String line;
+                    while((line=br.readLine())!=null) raw.append(line); br.close(); c.disconnect();
+                    String txt=raw.toString().trim(); if(txt.startsWith("?(")&&txt.endsWith(");")) txt=txt.substring(2,txt.length()-2); else if(txt.startsWith("(")&&txt.endsWith(")")) txt=txt.substring(1,txt.length()-1);
+                    JSONObject rootJson=new JSONObject(txt); JSONArray a=rootJson.optJSONArray("Trims");
+                    if(a!=null&&a.length()>0){trims=a;usedMake=mkTry;usedModel=modelTry;break;}
+                } catch(Exception ex){ lastErr=ex; }
+            }
+            if(trims!=null&&trims.length()>0) break;
+        }
+        if (trims == null || trims.length() == 0) throw new IllegalStateException("Bu model/yıl için açık teknik katalog kaydı bulunamadı");
+        String engNeed=normalizeApiText(engine), engCompact=compactApiText(engine), fuelNeed=normalizeApiText(fuel), transNeed=normalizeApiText(transmission);
+        JSONObject best=null; int bestScore=Integer.MIN_VALUE; String wantedLiters="";
+        java.util.regex.Matcher m=java.util.regex.Pattern.compile("(\\d(?:[\\.,]\\d)?)").matcher(engine==null?"":engine); if(m.find()) wantedLiters=m.group(1).replace(',','.');
+        for(int i=0;i<trims.length();i++){
+            JSONObject t=trims.optJSONObject(i); if(t==null)continue; int score=0;
+            String rawBlob=t.optString("model_trim","")+" "+t.optString("model_engine_fuel","")+" "+t.optString("model_transmission_type","")+" "+t.optString("model_name","");
+            String blob=normalizeApiText(rawBlob), compact=compactApiText(rawBlob);
+            if(!engNeed.isEmpty()&&(blob.contains(engNeed)||(!engCompact.isEmpty()&&compact.contains(engCompact)))) score+=80;
+            if(!wantedLiters.isEmpty()){double l=num(t,"model_engine_l");try{if(Math.abs(l-Double.parseDouble(wantedLiters))<0.12)score+=35;}catch(Exception ignored){}}
+            if(fuelNeed.contains("dizel")&&normalizeApiText(t.optString("model_engine_fuel","")).contains("diesel"))score+=20;
+            if(fuelNeed.contains("benzin")&&normalizeApiText(t.optString("model_engine_fuel","")).contains("gasoline"))score+=20;
+            if((transNeed.contains("otomatik")||transNeed.contains("dct")||transNeed.contains("cvt"))&&normalizeApiText(t.optString("model_transmission_type","")).contains("automatic"))score+=15;
+            if(transNeed.contains("manuel")&&normalizeApiText(t.optString("model_transmission_type","")).contains("manual"))score+=15;
+            if(score>bestScore){bestScore=score;best=t;}
+        }
+        if(best==null)best=trims.optJSONObject(0); JSONObject out=new JSONObject();
+        out.put("source","CarQuery ("+usedMake+" / "+usedModel+")"); out.put("confidence",Math.max(20,Math.min(95,bestScore+25))); out.put("matchedTrim",best.optString("model_trim",""));
+        copyNum(best,out,"model_engine_cc","engineCc"); copyNum(best,out,"model_engine_power_hp","powerHp"); copyNum(best,out,"model_engine_torque_nm","torqueNm");
+        copyNum(best,out,"model_0_to_100_kph","zeroTo100"); copyNum(best,out,"model_top_speed_kph","topSpeedKph"); copyNum(best,out,"model_weight_kg","weightKg");
+        copyNum(best,out,"model_length_mm","lengthMm"); copyNum(best,out,"model_width_mm","widthMm"); copyNum(best,out,"model_height_mm","heightMm"); copyNum(best,out,"model_wheelbase_mm","wheelbaseMm");
+        copyNum(best,out,"model_lkm_mixed","avgConsumptionL"); copyNum(best,out,"model_lkm_city","cityConsumptionL"); copyNum(best,out,"model_lkm_hwy","hwyConsumptionL"); copyNum(best,out,"model_fuel_cap_l","fuelTankL");
         copyNum(best,out,"model_doors","doors"); copyNum(best,out,"model_seats","seats");
-        out.put("body", best.optString("model_body", ""));
-        out.put("drive", best.optString("model_drive", ""));
-        out.put("apiTransmission", best.optString("model_transmission_type", ""));
-        out.put("engineFuel", best.optString("model_engine_fuel", ""));
-        out.put("brandCountry", best.optString("make_country", ""));
-        out.put("specUpdatedAt", new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date()));
-        return out;
+        out.put("body",best.optString("model_body","")); out.put("drive",best.optString("model_drive","")); out.put("apiTransmission",best.optString("model_transmission_type","")); out.put("engineFuel",best.optString("model_engine_fuel","")); out.put("brandCountry",best.optString("make_country",""));
+        out.put("specUpdatedAt",new SimpleDateFormat("yyyy-MM-dd",Locale.US).format(new Date())); return out;
     }
 
     private static void copyNum(JSONObject src, JSONObject dst, String from, String to) throws Exception {
@@ -974,7 +988,7 @@ public class MainActivity extends Activity {
         if (v.length() != 17) throw new IllegalArgumentException("VIN 17 karakter olmalı");
         String api = "https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/" + URLEncoder.encode(v, "UTF-8") + "?format=json";
         HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
-        c.setConnectTimeout(9000); c.setReadTimeout(12000); c.setRequestProperty("User-Agent", "AracimPro/5.2 Android VIN");
+        c.setConnectTimeout(9000); c.setReadTimeout(12000); c.setRequestProperty("User-Agent", "AracimPro/5.3 Android VIN");
         BufferedReader br = new BufferedReader(new InputStreamReader(c.getInputStream(), StandardCharsets.UTF_8));
         StringBuilder raw = new StringBuilder(); String line; while((line=br.readLine())!=null) raw.append(line); br.close(); c.disconnect();
         JSONObject root = new JSONObject(raw.toString()); JSONArray arr = root.optJSONArray("Results");
