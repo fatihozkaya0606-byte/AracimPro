@@ -49,6 +49,10 @@ import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Collections;
+import java.util.Comparator;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -361,7 +365,7 @@ public class MainActivity extends Activity {
                             URLEncoder.encode(brand, "UTF-8") + "/modelyear/" + year + "?format=json";
                     HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
                     c.setConnectTimeout(7000); c.setReadTimeout(10000);
-                    c.setRequestProperty("User-Agent", "AracimPro/5.0 Android");
+                    c.setRequestProperty("User-Agent", "AracimPro/5.1 Android");
                     int code = c.getResponseCode();
                     InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
                     BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
@@ -393,6 +397,90 @@ public class MainActivity extends Activity {
             }).start();
         }
 
+
+        @JavascriptInterface public void searchVehicleImagesExact(String make, String model, int year, String engine) {
+            new Thread(() -> {
+                JSONArray out = new JSONArray();
+                String error = "";
+                try {
+                    String brand = make == null ? "" : make.trim();
+                    String mdl = model == null ? "" : model.trim();
+                    if (brand.isEmpty() || mdl.isEmpty()) throw new IllegalArgumentException("Marka/model bilgisi eksik");
+
+                    List<String> aliases = photoAliases(brand, mdl, year);
+                    List<JSONObject> ranked = new ArrayList<>();
+                    Set<String> seen = new HashSet<>();
+                    List<String> queries = new ArrayList<>();
+                    for (String alias : aliases) {
+                        if (year > 0) queries.add(year + " " + brand + " " + alias);
+                        queries.add(brand + " " + alias);
+                    }
+
+                    for (String term : queries) {
+                        if (ranked.size() >= 36) break;
+                        String api = "https://commons.wikimedia.org/w/api.php?action=query&generator=search" +
+                                "&gsrnamespace=6&gsrlimit=35&gsrsearch=" + URLEncoder.encode(term, "UTF-8") +
+                                "&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=1400&format=json&formatversion=2&origin=*";
+                        HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
+                        c.setConnectTimeout(9000); c.setReadTimeout(12000);
+                        c.setRequestProperty("User-Agent", "AracimPro/5.1 Android (exact-vehicle-photo-search)");
+                        int code = c.getResponseCode();
+                        InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
+                        BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+                        StringBuilder raw = new StringBuilder(); String line;
+                        while ((line = br.readLine()) != null) raw.append(line);
+                        br.close(); c.disconnect();
+
+                        JSONObject rootJson = new JSONObject(raw.toString());
+                        JSONObject queryObj = rootJson.optJSONObject("query");
+                        JSONArray pages = queryObj == null ? null : queryObj.optJSONArray("pages");
+                        if (pages == null) continue;
+                        for (int i = 0; i < pages.length(); i++) {
+                            JSONObject page = pages.optJSONObject(i); if (page == null) continue;
+                            JSONArray info = page.optJSONArray("imageinfo"); if (info == null || info.length() == 0) continue;
+                            JSONObject ii = info.optJSONObject(0); if (ii == null) continue;
+                            String full = ii.optString("url", "");
+                            String thumb = ii.optString("thumburl", full);
+                            String title = page.optString("title", "").replaceFirst("^File:", "");
+                            if (thumb.isEmpty() || full.isEmpty() || seen.contains(full)) continue;
+                            String lower = full.toLowerCase(Locale.ROOT);
+                            if (!(lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png") || lower.contains(".jpg?") || lower.contains(".jpeg?") || lower.contains(".png?"))) continue;
+
+                            int confidence = photoConfidence(brand, mdl, year, title);
+                            if (confidence < 72) continue; // yanlış model göstermemek, fotoğraf göstermemekten daha kötü
+                            seen.add(full);
+                            JSONObject meta = ii.optJSONObject("extmetadata");
+                            JSONObject item = new JSONObject();
+                            item.put("url", thumb);
+                            item.put("fullUrl", full);
+                            item.put("page", ii.optString("descriptionurl", ""));
+                            item.put("title", title);
+                            item.put("artist", metaValue(meta, "Artist"));
+                            item.put("credit", metaValue(meta, "Credit"));
+                            item.put("license", metaValue(meta, "LicenseShortName"));
+                            item.put("confidence", confidence);
+                            ranked.add(item);
+                        }
+                    }
+
+                    Collections.sort(ranked, new Comparator<JSONObject>() {
+                        @Override public int compare(JSONObject a, JSONObject b) {
+                            return Integer.compare(b.optInt("confidence", 0), a.optInt("confidence", 0));
+                        }
+                    });
+                    for (int i = 0; i < ranked.size() && i < 12; i++) out.put(ranked.get(i));
+                    if (out.length() == 0) error = "Bu model için doğruluğu yeterli açık lisanslı fotoğraf bulunamadı";
+                } catch (Exception e) {
+                    error = e.getMessage() == null ? "Görsel aranamadı" : e.getMessage();
+                }
+                final String payload = out.toString(); final String err = error;
+                runOnUiThread(() -> {
+                    if (webView != null) webView.evaluateJavascript(
+                            "window.onVehicleImageSearchResult && window.onVehicleImageSearchResult(" + JSONObject.quote(payload) + "," + JSONObject.quote(err) + ")", null);
+                });
+            }).start();
+        }
+
         @JavascriptInterface public void searchVehicleImages(String query) {
             new Thread(() -> {
                 JSONArray out = new JSONArray();
@@ -413,7 +501,7 @@ public class MainActivity extends Activity {
                                 "&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=1200&format=json&formatversion=2&origin=*";
                         HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
                         c.setConnectTimeout(9000); c.setReadTimeout(12000);
-                        c.setRequestProperty("User-Agent", "AracimPro/5.0 Android (vehicle-photo-search)");
+                        c.setRequestProperty("User-Agent", "AracimPro/5.1 Android (vehicle-photo-search)");
                         int code = c.getResponseCode();
                         InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
                         BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
@@ -461,7 +549,7 @@ public class MainActivity extends Activity {
                 try {
                     HttpURLConnection c = (HttpURLConnection) new URL(imageUrl).openConnection();
                     c.setConnectTimeout(9000); c.setReadTimeout(12000);
-                    c.setRequestProperty("User-Agent", "AracimPro/5.0 Android");
+                    c.setRequestProperty("User-Agent", "AracimPro/5.1 Android");
                     try (InputStream in = c.getInputStream()) {
                         Bitmap src = BitmapFactory.decodeStream(in);
                         if (src == null) throw new IllegalStateException("Görsel okunamadı");
@@ -484,6 +572,61 @@ public class MainActivity extends Activity {
         }
     }
 
+
+
+    private static String normalizePhotoText(String s) {
+        if (s == null) return "";
+        String x = s.toLowerCase(Locale.ROOT)
+                .replace('ı','i').replace('ş','s').replace('ğ','g').replace('ü','u').replace('ö','o').replace('ç','c');
+        return x.replaceAll("[^a-z0-9]+", " ").trim();
+    }
+
+    private static List<String> photoAliases(String make, String model, int year) {
+        List<String> a = new ArrayList<>();
+        String key = normalizePhotoText(make) + "|" + normalizePhotoText(model);
+        if (key.equals("hyundai|elantra")) { a.add("Elantra"); a.add("Avante"); return a; }
+        if (key.equals("mercedes benz|e serisi")) {
+            a.add("E-Class");
+            if (year >= 2009 && year <= 2016) a.add("W212");
+            else if (year >= 2017 && year <= 2023) a.add("W213");
+            else if (year >= 2024) a.add("W214");
+            return a;
+        }
+        if (key.equals("mercedes benz|c serisi")) { a.add("C-Class"); if(year>=2014&&year<=2021)a.add("W205"); else if(year>=2022)a.add("W206"); return a; }
+        if (key.equals("mercedes benz|a serisi")) { a.add("A-Class"); return a; }
+        if (key.equals("mercedes benz|s serisi")) { a.add("S-Class"); return a; }
+        if (key.equals("bmw|3 serisi")) { a.add("3 Series"); return a; }
+        if (key.equals("bmw|5 serisi")) { a.add("5 Series"); return a; }
+        if (key.equals("bmw|1 serisi")) { a.add("1 Series"); return a; }
+        a.add(model);
+        return a;
+    }
+
+    private static int photoConfidence(String make, String model, int year, String title) {
+        String t = normalizePhotoText(title);
+        String brand = normalizePhotoText(make);
+        String mdl = normalizePhotoText(model);
+        int score = 0;
+        String brandCore = brand;
+        if (brandCore.contains("mercedes")) brandCore = "mercedes";
+        else if (brandCore.contains("volkswagen")) brandCore = "volkswagen";
+        if (!brandCore.isEmpty() && t.contains(brandCore)) score += 28;
+
+        List<String> aliases = photoAliases(make, model, year);
+        boolean modelHit = false;
+        for (String alias : aliases) {
+            String na = normalizePhotoText(alias);
+            if (!na.isEmpty() && t.contains(na)) { modelHit = true; score += 58; break; }
+        }
+        if (!modelHit) {
+            String[] words = mdl.split(" ");
+            for (String w : words) if (w.length() >= 3 && !w.equals("serisi") && t.contains(w)) { modelHit = true; score += 50; break; }
+        }
+        if (!modelHit) return 0;
+        if (year > 0 && t.contains(String.valueOf(year))) score += 12;
+        if (t.contains("interior") || t.contains("engine") || t.contains("dashboard") || t.contains("logo")) score -= 20;
+        return Math.max(0, Math.min(100, score));
+    }
 
     private static String metaValue(JSONObject meta, String key) {
         if (meta == null) return "";

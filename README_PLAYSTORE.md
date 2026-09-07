@@ -1,8 +1,8 @@
-# Aracım Pro — Google Play Edition 5.0.0
+# Aracım Pro — Google Play Edition 5.1.0
 
 ## Teknik
 - targetSdk / compileSdk 36
-- versionCode 11, versionName 5.0.0
+- versionCode 11, versionName 5.1.0
 - Debug ve release paketleri ayrıdır
 - GitHub Actions debug APK ve imzalı release AAB üretir
 - Upload key / keystore repoya dahil edilmez

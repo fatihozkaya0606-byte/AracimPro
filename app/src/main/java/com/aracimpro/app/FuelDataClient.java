@@ -129,7 +129,7 @@ public final class FuelDataClient {
         HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
         c.setConnectTimeout(timeout);
         c.setReadTimeout(timeout);
-        c.setRequestProperty("User-Agent", "AracimPro/5.0 Android");
+        c.setRequestProperty("User-Agent", "AracimPro/5.1 Android");
         c.setRequestProperty("Accept-Language", "tr-TR,tr;q=0.9,en;q=0.6");
         int code = c.getResponseCode();
         InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();

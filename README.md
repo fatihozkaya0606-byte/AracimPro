@@ -1,6 +1,6 @@
-# Aracım Pro V10 — Hepsi Bir Arada 5.0.0
+# Aracım Pro V11 — Hepsi Bir Arada 5.1.0
 
-V10, önceki sürümlerdeki çalışan özellikleri tek projede birleştirir ve araç sahipliği tarafını teknik rehber, piyasa değeri ve akaryakıt gündemiyle genişletir.
+V11, önceki sürümlerdeki çalışan özellikleri tek projede birleştirir ve araç sahipliği tarafını teknik rehber, piyasa değeri ve akaryakıt gündemiyle genişletir.
 
 ## Araç ekleme ve katalog
 - Yıl → marka → model → araç türü → kasa → yakıt → motor → şanzıman → çekiş → paket → renk seçimli akış
@@ -29,7 +29,7 @@ V10, önceki sürümlerdeki çalışan özellikleri tek projede birleştirir ve 
 - PDF, CSV ve Excel dışa aktarma
 
 ## Araç Rehberi
-V10'da model-özel profil bulunan araçlarda aşağıdaki bilgiler tek ekranda gösterilebilir:
+V11'da model-özel profil bulunan araçlarda aşağıdaki bilgiler tek ekranda gösterilebilir:
 - Fabrika lastik ölçüleri ve jant seçenekleri
 - Önerilen lastik basıncı / bijon bilgisi notları
 - Motor yağı standardı ve kapasite
@@ -69,6 +69,6 @@ Google Play Billing henüz bağlı değildir; test sürümünde özellikler aç�
 - compileSdk / targetSdk: 36
 - minSdk: 24
 - versionCode: 11
-- versionName: 5.0.0
+- versionName: 5.1.0
 - Debug APK workflow'u hazır
 - İmzalı release AAB workflow'u hazır
