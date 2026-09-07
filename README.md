@@ -1,3 +1,7 @@
+# Aracım Pro V14 5.4.0
+
+OtoAPI teknik katalog test sürümü. `README_V14.md` dosyasını oku.
+
 # Aracım Pro V12 — Derin Teknik + Canlı Sürüş 5.2.0
 
 V11, önceki sürümlerdeki çalışan özellikleri tek projede birleştirir ve araç sahipliği tarafını teknik rehber, piyasa değeri ve akaryakıt gündemiyle genişletir.

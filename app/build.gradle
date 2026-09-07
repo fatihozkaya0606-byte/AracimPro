@@ -18,8 +18,9 @@ android {
         applicationId 'com.aracimpro.app'
         minSdk 24
         targetSdk 36
-        versionCode 14
-        versionName '5.3.0'
+        buildConfigField "String", "OTOAPI_KEY", "\"${System.getenv('OTOAPI_KEY') ?: ''}\""
+        versionCode 15
+        versionName '5.4.0'
     }
 
     signingConfigs {
@@ -47,6 +48,10 @@ android {
             }
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+
+    buildFeatures {
+        buildConfig true
     }
 
     compileOptions {

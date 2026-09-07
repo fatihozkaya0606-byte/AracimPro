@@ -344,7 +344,7 @@ public class MainActivity extends Activity {
                 JSONObject out = new JSONObject();
                 String error = "";
                 try {
-                    out = fetchCarQuerySpecs(make, model, year, engine, fuel, transmission);
+                    out = fetchOtoApiSpecs(make, model, year, engine, fuel, transmission);
                 } catch (Exception e) {
                     error = e.getMessage() == null ? "Teknik özellik verisi alınamadı" : e.getMessage();
                 }
@@ -930,57 +930,61 @@ public class MainActivity extends Activity {
         return new java.util.ArrayList<>(set);
     }
 
-    private JSONObject fetchCarQuerySpecs(String make, String model, int year, String engine, String fuel, String transmission) throws Exception {
-        String mk = make == null ? "" : make.trim(), mdl = model == null ? "" : model.trim();
-        if (mk.isEmpty() || mdl.isEmpty() || year < 1941) throw new IllegalArgumentException("Araç bilgisi eksik");
-        JSONArray trims = null; String usedMake=mk, usedModel=mdl; Exception lastErr=null;
-        for (String mkTry: makeCandidates(mk)) {
-            for (String modelTry: modelCandidates(mk, mdl)) {
-                try {
-                    String apiMake = mkTry.toLowerCase(Locale.ROOT).replace(" ", "-");
-                    String url = "https://www.carqueryapi.com/api/0.3/?cmd=getTrims&full_results=1&year=" + year +
-                            "&make=" + URLEncoder.encode(apiMake, "UTF-8") + "&model=" + URLEncoder.encode(modelTry, "UTF-8");
-                    HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
-                    c.setConnectTimeout(9000); c.setReadTimeout(12000); c.setRequestProperty("User-Agent", "AracimPro/5.3 Android vehicle-specs");
-                    int code=c.getResponseCode(); InputStream stream=code>=200&&code<300?c.getInputStream():c.getErrorStream();
-                    BufferedReader br=new BufferedReader(new InputStreamReader(stream,StandardCharsets.UTF_8)); StringBuilder raw=new StringBuilder(); String line;
-                    while((line=br.readLine())!=null) raw.append(line); br.close(); c.disconnect();
-                    String txt=raw.toString().trim(); if(txt.startsWith("?(")&&txt.endsWith(");")) txt=txt.substring(2,txt.length()-2); else if(txt.startsWith("(")&&txt.endsWith(")")) txt=txt.substring(1,txt.length()-1);
-                    JSONObject rootJson=new JSONObject(txt); JSONArray a=rootJson.optJSONArray("Trims");
-                    if(a!=null&&a.length()>0){trims=a;usedMake=mkTry;usedModel=modelTry;break;}
-                } catch(Exception ex){ lastErr=ex; }
-            }
-            if(trims!=null&&trims.length()>0) break;
-        }
-        if (trims == null || trims.length() == 0) throw new IllegalStateException("Bu model/yıl için açık teknik katalog kaydı bulunamadı");
-        String engNeed=normalizeApiText(engine), engCompact=compactApiText(engine), fuelNeed=normalizeApiText(fuel), transNeed=normalizeApiText(transmission);
-        JSONObject best=null; int bestScore=Integer.MIN_VALUE; String wantedLiters="";
-        java.util.regex.Matcher m=java.util.regex.Pattern.compile("(\\d(?:[\\.,]\\d)?)").matcher(engine==null?"":engine); if(m.find()) wantedLiters=m.group(1).replace(',','.');
-        for(int i=0;i<trims.length();i++){
-            JSONObject t=trims.optJSONObject(i); if(t==null)continue; int score=0;
-            String rawBlob=t.optString("model_trim","")+" "+t.optString("model_engine_fuel","")+" "+t.optString("model_transmission_type","")+" "+t.optString("model_name","");
-            String blob=normalizeApiText(rawBlob), compact=compactApiText(rawBlob);
-            if(!engNeed.isEmpty()&&(blob.contains(engNeed)||(!engCompact.isEmpty()&&compact.contains(engCompact)))) score+=80;
-            if(!wantedLiters.isEmpty()){double l=num(t,"model_engine_l");try{if(Math.abs(l-Double.parseDouble(wantedLiters))<0.12)score+=35;}catch(Exception ignored){}}
-            if(fuelNeed.contains("dizel")&&normalizeApiText(t.optString("model_engine_fuel","")).contains("diesel"))score+=20;
-            if(fuelNeed.contains("benzin")&&normalizeApiText(t.optString("model_engine_fuel","")).contains("gasoline"))score+=20;
-            if((transNeed.contains("otomatik")||transNeed.contains("dct")||transNeed.contains("cvt"))&&normalizeApiText(t.optString("model_transmission_type","")).contains("automatic"))score+=15;
-            if(transNeed.contains("manuel")&&normalizeApiText(t.optString("model_transmission_type","")).contains("manual"))score+=15;
-            if(score>bestScore){bestScore=score;best=t;}
-        }
-        if(best==null)best=trims.optJSONObject(0); JSONObject out=new JSONObject();
-        out.put("source","CarQuery ("+usedMake+" / "+usedModel+")"); out.put("confidence",Math.max(20,Math.min(95,bestScore+25))); out.put("matchedTrim",best.optString("model_trim",""));
-        copyNum(best,out,"model_engine_cc","engineCc"); copyNum(best,out,"model_engine_power_hp","powerHp"); copyNum(best,out,"model_engine_torque_nm","torqueNm");
-        copyNum(best,out,"model_0_to_100_kph","zeroTo100"); copyNum(best,out,"model_top_speed_kph","topSpeedKph"); copyNum(best,out,"model_weight_kg","weightKg");
-        copyNum(best,out,"model_length_mm","lengthMm"); copyNum(best,out,"model_width_mm","widthMm"); copyNum(best,out,"model_height_mm","heightMm"); copyNum(best,out,"model_wheelbase_mm","wheelbaseMm");
-        copyNum(best,out,"model_lkm_mixed","avgConsumptionL"); copyNum(best,out,"model_lkm_city","cityConsumptionL"); copyNum(best,out,"model_lkm_hwy","hwyConsumptionL"); copyNum(best,out,"model_fuel_cap_l","fuelTankL");
-        copyNum(best,out,"model_doors","doors"); copyNum(best,out,"model_seats","seats");
-        out.put("body",best.optString("model_body","")); out.put("drive",best.optString("model_drive","")); out.put("apiTransmission",best.optString("model_transmission_type","")); out.put("engineFuel",best.optString("model_engine_fuel","")); out.put("brandCountry",best.optString("make_country",""));
-        out.put("specUpdatedAt",new SimpleDateFormat("yyyy-MM-dd",Locale.US).format(new Date())); return out;
+    private static final String OTOAPI_BASE = "https://otoapi.net/api/v1";
+
+    private JSONObject otoGet(String path) throws Exception {
+        String key = BuildConfig.OTOAPI_KEY == null ? "" : BuildConfig.OTOAPI_KEY.trim();
+        if (key.isEmpty()) throw new IllegalStateException("OtoAPI anahtarı tanımlı değil. GitHub Secret: OTOAPI_KEY");
+        HttpURLConnection c = (HttpURLConnection) new URL(OTOAPI_BASE + path).openConnection();
+        c.setConnectTimeout(10000); c.setReadTimeout(15000);
+        c.setRequestProperty("User-Agent", "AracimPro/5.4 Android OtoAPI");
+        c.setRequestProperty("Accept", "application/json"); c.setRequestProperty("X-API-Key", key);
+        int code=c.getResponseCode(); InputStream stream=code>=200&&code<300?c.getInputStream():c.getErrorStream();
+        BufferedReader br=new BufferedReader(new InputStreamReader(stream,StandardCharsets.UTF_8)); StringBuilder raw=new StringBuilder(); String line;
+        while((line=br.readLine())!=null)raw.append(line); br.close(); c.disconnect();
+        JSONObject root=raw.length()==0?new JSONObject():new JSONObject(raw.toString());
+        if(code==429)throw new IllegalStateException(root.optString("error","OtoAPI limiti doldu"));
+        if(code<200||code>=300||!root.optBoolean("ok",false))throw new IllegalStateException(root.optString("error","OtoAPI isteği başarısız (HTTP "+code+")"));
+        return root;
     }
 
-    private static void copyNum(JSONObject src, JSONObject dst, String from, String to) throws Exception {
-        String s = src.optString(from, "").trim(); if (!s.isEmpty()) dst.put(to, Double.parseDouble(s));
+    private static JSONObject bestNamed(JSONArray arr,String wanted){
+        if(arr==null||arr.length()==0)return null; String need=compactApiText(wanted); JSONObject best=null; int bestScore=Integer.MIN_VALUE;
+        for(int i=0;i<arr.length();i++){JSONObject o=arr.optJSONObject(i);if(o==null)continue;String name=o.optString("name","");String n=compactApiText(name);int score=0;
+            if(n.equals(need))score+=200;else if(!need.isEmpty()&&(n.contains(need)||need.contains(n)))score+=100;
+            for(String tok:normalizeApiText(wanted).split(" "))if(tok.length()>1&&normalizeApiText(name).contains(tok))score+=5;
+            if(score>bestScore){bestScore=score;best=o;}}
+        return best;
+    }
+
+    private JSONObject findOtoBrand(String make)throws Exception{
+        Exception last=null; for(String q:makeCandidates(make)){try{JSONObject r=otoGet("/brands?q="+URLEncoder.encode(q,"UTF-8")+"&offset=0");JSONObject b=bestNamed(r.optJSONArray("data"),q);if(b!=null)return b;}catch(Exception e){last=e;}Thread.sleep(220);} if(last!=null)throw last; throw new IllegalStateException("Marka bulunamadı: "+make);
+    }
+    private JSONObject findOtoModel(int brandId,String make,String model)throws Exception{
+        Exception last=null; for(String q:modelCandidates(make,model)){try{JSONObject r=otoGet("/models?brand_id="+brandId+"&q="+URLEncoder.encode(q,"UTF-8")+"&offset=0");JSONObject m=bestNamed(r.optJSONArray("data"),q);if(m!=null)return m;}catch(Exception e){last=e;}Thread.sleep(220);} if(last!=null)throw last; throw new IllegalStateException("Model bulunamadı: "+model);
+    }
+
+    private static double[] numbersIn(String raw){java.util.ArrayList<Double> vals=new java.util.ArrayList<>();if(raw==null)return new double[0];java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?<![A-Za-z0-9])(-?\\d+(?:[\\.,]\\d+)?)").matcher(raw);while(m.find()&&vals.size()<6){try{vals.add(Double.parseDouble(m.group(1).replace(',','.')));}catch(Exception ignored){}}double[] out=new double[vals.size()];for(int i=0;i<vals.size();i++)out[i]=vals.get(i);return out;}
+    private static double firstNumber(String raw){double[] a=numbersIn(raw);return a.length==0?0:a[0];}
+    private static double rangeAverage(String raw){double[] a=numbersIn(raw);if(a.length==0)return 0;if(a.length>1&&raw!=null&&raw.matches(".*\\d[\\.,]?\\d*\\s*[-–]\\s*\\d.*"))return(a[0]+a[1])/2d;return a[0];}
+    private static String normKey(String s){return normalizeApiText(s).replace("ı","i").replace("ş","s").replace("ğ","g").replace("ü","u").replace("ö","o").replace("ç","c");}
+    private static void flattenSpecs(JSONObject o,java.util.LinkedHashMap<String,String> out){if(o==null)return;Iterator<String>it=o.keys();while(it.hasNext()){String k=it.next();Object v=o.opt(k);if(v instanceof JSONObject)flattenSpecs((JSONObject)v,out);else if(v!=null&&v!=JSONObject.NULL)out.put(k,String.valueOf(v));}}
+    private static String specValue(java.util.LinkedHashMap<String,String> flat,String... needles){for(java.util.Map.Entry<String,String>e:flat.entrySet()){String k=normKey(e.getKey());for(String n:needles)if(k.equals(normKey(n)))return e.getValue();}for(java.util.Map.Entry<String,String>e:flat.entrySet()){String k=normKey(e.getKey());for(String n:needles)if(k.contains(normKey(n)))return e.getValue();}return"";}
+    private static void putNum(JSONObject out,String key,double v)throws Exception{if(v>0)out.put(key,Math.round(v*100d)/100d);}
+    private static int variantScore(JSONObject c,String engine,String fuel,String transmission){String name=normalizeApiText(c.optString("name","")),compact=compactApiText(c.optString("name",""));int score=0;String e=normalizeApiText(engine),ec=compactApiText(engine);if(!e.isEmpty()&&(name.contains(e)||(!ec.isEmpty()&&compact.contains(ec))))score+=180;String f=normKey(fuel),cf=normKey(c.optString("fuel_type",""));if(!f.isEmpty()&&!cf.isEmpty()&&(cf.contains(f)||f.contains(cf)))score+=30;String tr=normKey(transmission),cn=normKey(c.optString("name",""));if((tr.contains("otomatik")||tr.contains("dct")||tr.contains("cvt"))&&(cn.contains("tronic")||cn.contains("otomatik")||cn.contains("dct")||cn.contains("cvt")||cn.contains("tiptronic")))score+=20;return score;}
+
+    private JSONObject fetchOtoApiSpecs(String make,String model,int year,String engine,String fuel,String transmission)throws Exception{
+        if(make==null||make.trim().isEmpty()||model==null||model.trim().isEmpty()||year<1941)throw new IllegalArgumentException("Araç bilgisi eksik");
+        JSONObject brand=findOtoBrand(make.trim());int brandId=brand.optInt("id");Thread.sleep(220);JSONObject mod=findOtoModel(brandId,make,model);int modelId=mod.optInt("id");Thread.sleep(220);
+        JSONObject best=null;int bestScore=Integer.MIN_VALUE,offset=0,pages=0;do{JSONObject r=otoGet("/cars?brand_id="+brandId+"&model_id="+modelId+"&year="+year+"&offset="+offset);JSONArray a=r.optJSONArray("data");if(a!=null)for(int i=0;i<a.length();i++){JSONObject c=a.optJSONObject(i);if(c==null)continue;int sc=variantScore(c,engine,fuel,transmission);if(sc>bestScore){bestScore=sc;best=c;}}JSONObject pg=r.optJSONObject("pagination");boolean more=pg!=null&&pg.optBoolean("has_more",false);int lim=pg==null?5:Math.max(1,pg.optInt("limit",5));offset+=lim;pages++;if(!more||pages>=8||bestScore>=210)break;Thread.sleep(230);}while(true);
+        if(best==null)throw new IllegalStateException("Bu model/yıl için OtoAPI varyantı bulunamadı");int carId=best.optInt("id");Thread.sleep(230);JSONObject dr=otoGet("/cars/"+carId),d=dr.optJSONObject("data");if(d==null)throw new IllegalStateException("OtoAPI teknik detay boş");
+        java.util.LinkedHashMap<String,String> flat=new java.util.LinkedHashMap<>();flattenSpecs(d.optJSONObject("specs"),flat);JSONObject out=new JSONObject();out.put("source","OtoAPI");out.put("confidence",Math.max(60,Math.min(99,bestScore/2+60)));out.put("matchedTrim",d.optString("name",best.optString("name","")));out.put("otoCarId",carId);
+        double hp=firstNumber(specValue(flat,"Güç"));if(hp<=0)hp=d.optDouble("power_hp",best.optDouble("power_hp",0));putNum(out,"powerHp",hp);putNum(out,"torqueNm",firstNumber(specValue(flat,"Tork")));putNum(out,"engineCc",firstNumber(specValue(flat,"Motor hacmi")));putNum(out,"zeroTo100",firstNumber(specValue(flat,"Hızlanma 0 - 100 km/saat","Hızlanma 0-100 km/saat")));putNum(out,"topSpeedKph",firstNumber(specValue(flat,"Maksimum sürat","Maksimum hız")));
+        putNum(out,"avgConsumptionL",rangeAverage(specValue(flat,"Ortalama yakıt tüketimi","Yakıt tüketimi, ORTALAMA (WLTP)","Ortalama yakıt tüketimi (NEDC)")));putNum(out,"cityConsumptionL",rangeAverage(specValue(flat,"Şehir içi yakıt tüketimi")));putNum(out,"hwyConsumptionL",rangeAverage(specValue(flat,"Şehir dışı yakıt tüketimi")));putNum(out,"weightKg",firstNumber(specValue(flat,"Ağırlık")));putNum(out,"trunkL",firstNumber(specValue(flat,"Bagaj hacmi en az","Bagaj hacmi")));putNum(out,"fuelTankL",firstNumber(specValue(flat,"Yakıt deposu hacmi","Yakıt deposu")));
+        putNum(out,"lengthMm",firstNumber(specValue(flat,"Uzunluk")));putNum(out,"widthMm",firstNumber(specValue(flat,"Genişlik")));putNum(out,"heightMm",firstNumber(specValue(flat,"Yükseklik")));putNum(out,"wheelbaseMm",firstNumber(specValue(flat,"Dingil Mesafesi","Aks mesafesi")));putNum(out,"doors",firstNumber(specValue(flat,"Kapı sayısı")));putNum(out,"seats",firstNumber(specValue(flat,"Koltuk Sayısı","Koltuk sayısı")));putNum(out,"oilCapacityL",firstNumber(specValue(flat,"Motor yağı kapasitesi")));putNum(out,"coolantCapacityL",firstNumber(specValue(flat,"soğutma sıvısı","Soğutma sıvısı")));putNum(out,"adblueTankL",firstNumber(specValue(flat,"AdBlue tankı")));
+        String body=d.optString("body_type",best.optString("body_type",""));if(body.isEmpty())body=specValue(flat,"Gövde tipi");if(!body.isEmpty())out.put("body",body);String drive=d.optString("drive_type",best.optString("drive_type",""));if(!drive.isEmpty())out.put("drive",drive);String ft=d.optString("fuel_type",best.optString("fuel_type",""));if(ft.isEmpty())ft=specValue(flat,"Yakıt Tipi");if(!ft.isEmpty())out.put("engineFuel",ft);
+        String trans=specValue(flat,"Vites sayısı ve şanzıman tipi","Vites sayısı ve şanzıman türü","Şanzıman tipi");if(!trans.isEmpty())out.put("apiTransmission",trans);String ec=specValue(flat,"Motor Modeli/Kodu");if(!ec.isEmpty())out.put("engineCode",ec);String inj=specValue(flat,"Yakıt enjeksiyon sistemi");if(!inj.isEmpty())out.put("injectionSystem",inj);String asp=specValue(flat,"Motor aspirasyonu");if(!asp.isEmpty())out.put("aspiration",asp);String tire=specValue(flat,"Lastik boyutu","Ön lastikler");if(!tire.isEmpty())out.put("tireSizes",tire);String wheel=specValue(flat,"Jant boyutu","Jantlar");if(!wheel.isEmpty())out.put("wheelSizes",wheel);
+        putNum(out,"batteryKwh",firstNumber(specValue(flat,"Brüt batarya kapasitesi","Net (kullanılabilir) batarya kapasitesi","Batarya kapasitesi")));putNum(out,"rangeKm",firstNumber(specValue(flat,"Tam elektrikli menzil","Elektrikli menzil","Menzil (WLTP)")));putNum(out,"avgConsumptionKwh",rangeAverage(specValue(flat,"Ortalama enerji tüketimi","Enerji tüketimi, ORTALAMA (WLTP)")));out.put("specUpdatedAt",new SimpleDateFormat("yyyy-MM-dd",Locale.US).format(new Date()));return out;
     }
 
     private JSONObject fetchVinDetails(String vin) throws Exception {
@@ -988,7 +992,7 @@ public class MainActivity extends Activity {
         if (v.length() != 17) throw new IllegalArgumentException("VIN 17 karakter olmalı");
         String api = "https://vpic.nhtsa.dot.gov/api/vehicles/DecodeVinValuesExtended/" + URLEncoder.encode(v, "UTF-8") + "?format=json";
         HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
-        c.setConnectTimeout(9000); c.setReadTimeout(12000); c.setRequestProperty("User-Agent", "AracimPro/5.3 Android VIN");
+        c.setConnectTimeout(9000); c.setReadTimeout(12000); c.setRequestProperty("User-Agent", "AracimPro/5.4 Android VIN");
         BufferedReader br = new BufferedReader(new InputStreamReader(c.getInputStream(), StandardCharsets.UTF_8));
         StringBuilder raw = new StringBuilder(); String line; while((line=br.readLine())!=null) raw.append(line); br.close(); c.disconnect();
         JSONObject root = new JSONObject(raw.toString()); JSONArray arr = root.optJSONArray("Results");

@@ -39,7 +39,14 @@ jobs:
           keyAlias=$KEY_ALIAS
           keyPassword=$KEY_PASSWORD
           EOF2
+      - name: Verify OtoAPI secret
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+        run: |
+          test -n "$OTOAPI_KEY" || (echo "OTOAPI_KEY secret is missing" >&2; exit 1)
       - name: Build signed release bundle
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
         run: gradle --no-daemon bundleRelease
       - name: Verify signed bundle exists
         run: test -s app/build/outputs/bundle/release/app-release.aab
