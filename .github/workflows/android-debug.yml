@@ -50,5 +50,5 @@ jobs:
         run: gradle --no-daemon assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: AracimPro-V15.2-Test-APK
+          name: AracimPro-V15.3-Test-APK
           path: app/build/outputs/apk/debug/app-debug.apk

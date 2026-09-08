@@ -13,3 +13,16 @@ Uygulama, piyasa değerleme API anahtarını APK içine koymaz. `server/cloudfla
 Dönen alanlar: `avg`, `min`, `max`, `quickSell`, `retailSell`, `toughSell`, `count`, `updated`, `source`.
 
 > Not: OtoApi.com ile otoapi.net farklı servislerdir. V14/V15 teknik katalog otoapi.net kullanır; piyasa değerleme Worker'ı OtoApi.com için hazırlanmıştır. Piyasa servisi aboneliği ayrıca gerekir.
+
+
+## V15.3 - Araç Data Merkezi seçeneği
+
+`cloudflare-worker-adm-market-proxy.js` dosyası Araç Data Merkezi endpoint'ine göre hazırdır.
+
+1. Araç Data Merkezi sandbox/ticari API token alın.
+2. Cloudflare Worker oluşturun ve `cloudflare-worker-adm-market-proxy.js` kodunu ekleyin.
+3. Worker secret: `ADM_API_KEY` = aldığınız Bearer token.
+4. Worker URL'sini GitHub repository secret `MARKET_API_URL` olarak kaydedin.
+5. V15.3 test APK'sını yeniden derleyin. Piyasa değeri min/ortalama/max + emsal sayısı olarak otomatik gelir.
+
+Uygulama tokenı APK içine koymaz.

@@ -671,6 +671,56 @@ public class MainActivity extends Activity {
             }).start();
         }
 
+        @JavascriptInterface public void fetchVehicleSpecsById(int carId) {
+            new Thread(() -> {
+                JSONObject out = new JSONObject();
+                String error = "";
+                try {
+                    out = fetchOtoApiSpecsById(carId);
+                } catch (Exception e) {
+                    error = e.getMessage() == null ? "Kesin varyant teknik verisi alınamadı" : e.getMessage();
+                }
+                final String payload = out.toString(), err = error;
+                runOnUiThread(() -> {
+                    if (webView != null) webView.evaluateJavascript(
+                            "window.onVehicleSpecsResult && window.onVehicleSpecsResult(" +
+                                    JSONObject.quote(payload) + "," + JSONObject.quote(err) + ")", null);
+                });
+            }).start();
+        }
+
+        @JavascriptInterface public void fetchOtoVariants(String make, String model, int year) {
+            new Thread(() -> {
+                JSONObject out = new JSONObject();
+                String error = "";
+                try {
+                    out = fetchOtoVariantsList(make, model, year);
+                } catch (Exception e) {
+                    error = e.getMessage() == null ? "OtoAPI varyant listesi alınamadı" : e.getMessage();
+                }
+                final String payload = out.toString(), err = error;
+                runOnUiThread(() -> {
+                    if (webView != null) webView.evaluateJavascript(
+                            "window.onOtoVariantsResult && window.onOtoVariantsResult(" +
+                                    JSONObject.quote(payload) + "," + JSONObject.quote(err) + ")", null);
+                });
+            }).start();
+        }
+
+        @JavascriptInterface public void fetchOtoUsage() {
+            new Thread(() -> {
+                JSONObject out = new JSONObject();
+                String error = "";
+                try { out = otoGet("/usage"); }
+                catch (Exception e) { error = e.getMessage() == null ? "OtoAPI kullanım bilgisi alınamadı" : e.getMessage(); }
+                final String payload = out.toString(), err = error;
+                runOnUiThread(() -> {
+                    if (webView != null) webView.evaluateJavascript(
+                            "window.onOtoUsageResult && window.onOtoUsageResult(" + JSONObject.quote(payload) + "," + JSONObject.quote(err) + ")", null);
+                });
+            }).start();
+        }
+
         @JavascriptInterface public void decodeVin(String vin) {
             new Thread(() -> {
                 JSONObject out = new JSONObject();
@@ -1427,18 +1477,60 @@ public class MainActivity extends Activity {
     private static void putNum(JSONObject out,String key,double v)throws Exception{if(v>0)out.put(key,Math.round(v*100d)/100d);}
     private static int variantScore(JSONObject c,String engine,String fuel,String transmission){String name=normalizeApiText(c.optString("name","")),compact=compactApiText(c.optString("name",""));int score=0;String e=normalizeApiText(engine),ec=compactApiText(engine);if(!e.isEmpty()&&(name.contains(e)||(!ec.isEmpty()&&compact.contains(ec))))score+=180;String f=normKey(fuel),cf=normKey(c.optString("fuel_type",""));if(!f.isEmpty()&&!cf.isEmpty()&&(cf.contains(f)||f.contains(cf)))score+=30;String tr=normKey(transmission),cn=normKey(c.optString("name",""));if((tr.contains("otomatik")||tr.contains("dct")||tr.contains("cvt"))&&(cn.contains("tronic")||cn.contains("otomatik")||cn.contains("dct")||cn.contains("cvt")||cn.contains("tiptronic")))score+=20;return score;}
 
+    private JSONObject fetchOtoVariantsList(String make,String model,int year)throws Exception{
+        if(make==null||make.trim().isEmpty()||model==null||model.trim().isEmpty()||year<1941)throw new IllegalArgumentException("Marka/model/yıl eksik");
+        JSONObject brand=findOtoBrand(make.trim()); int brandId=brand.optInt("id");
+        Thread.sleep(230);
+        JSONObject mod=findOtoModel(brandId,make,model); int modelId=mod.optInt("id");
+        Thread.sleep(230);
+        JSONArray items=new JSONArray(); int offset=0,pages=0; boolean more=false;
+        do{
+            JSONObject r=otoGet("/cars?brand_id="+brandId+"&model_id="+modelId+"&year="+year+"&offset="+offset);
+            JSONArray a=r.optJSONArray("data");
+            if(a!=null)for(int i=0;i<a.length();i++){
+                JSONObject c=a.optJSONObject(i); if(c==null)continue;
+                JSONObject x=new JSONObject();
+                x.put("id",c.optInt("id")); x.put("name",c.optString("name",""));
+                x.put("powerHp",c.optDouble("power_hp",0)); x.put("fuel",c.optString("fuel_type",""));
+                x.put("body",c.optString("body_type","")); x.put("drive",c.optString("drive_type",""));
+                items.put(x);
+            }
+            JSONObject pg=r.optJSONObject("pagination"); more=pg!=null&&pg.optBoolean("has_more",false);
+            int lim=pg==null?5:Math.max(1,pg.optInt("limit",5)); offset+=lim; pages++;
+            if(more&&pages<5)Thread.sleep(230);
+        }while(more&&pages<5);
+        JSONObject out=new JSONObject(); out.put("brandId",brandId); out.put("modelId",modelId); out.put("data",items); out.put("hasMore",more); out.put("pages",pages);
+        return out;
+    }
+
+    private JSONObject fetchOtoApiSpecsById(int carId)throws Exception{
+        if(carId<=0)throw new IllegalArgumentException("OtoAPI carId geçersiz");
+        JSONObject dr=otoGet("/cars/"+carId),d=dr.optJSONObject("data");
+        if(d==null)throw new IllegalStateException("OtoAPI teknik detay boş");
+        JSONObject best=new JSONObject(); best.put("id",carId); best.put("name",d.optString("name",""));
+        best.put("power_hp",d.optDouble("power_hp",0)); best.put("fuel_type",d.optString("fuel_type",""));
+        best.put("body_type",d.optString("body_type","")); best.put("drive_type",d.optString("drive_type",""));
+        return parseOtoCarSpecs(d,best,99);
+    }
+
+    private JSONObject parseOtoCarSpecs(JSONObject d,JSONObject best,int bestScore)throws Exception{
+        int carId=d.optInt("id",best.optInt("id"));
+        java.util.LinkedHashMap<String,String> flat=new java.util.LinkedHashMap<>();flattenSpecs(d.optJSONObject("specs"),flat);JSONObject out=new JSONObject();out.put("source","OtoAPI kesin varyant");out.put("confidence",Math.max(60,Math.min(99,bestScore)));out.put("matchedTrim",d.optString("name",best.optString("name","")));out.put("otoCarId",carId);
+        double hp=firstNumber(specValue(flat,"Güç"));if(hp<=0)hp=d.optDouble("power_hp",best.optDouble("power_hp",0));putNum(out,"powerHp",hp);putNum(out,"torqueNm",firstNumber(specValue(flat,"Tork")));putNum(out,"engineCc",firstNumber(specValue(flat,"Motor hacmi","Motor Hacmi","Silindir hacmi")));putNum(out,"zeroTo100",firstNumber(specValue(flat,"Hızlanma 0 - 100 km/saat","Hızlanma 0-100 km/saat","0 - 100 km/saat","0-100 km/saat")));putNum(out,"topSpeedKph",firstNumber(specValue(flat,"Maksimum sürat","Maksimum hız","Azami hız")));
+        putNum(out,"avgConsumptionL",rangeAverage(specValue(flat,"Ortalama yakıt tüketimi","Yakıt tüketimi, ORTALAMA (WLTP)","Ortalama yakıt tüketimi (NEDC)","Karma yakıt tüketimi")));putNum(out,"cityConsumptionL",rangeAverage(specValue(flat,"Şehir içi yakıt tüketimi","Şehir içi tüketim")));putNum(out,"hwyConsumptionL",rangeAverage(specValue(flat,"Şehir dışı yakıt tüketimi","Şehir dışı tüketim")));putNum(out,"weightKg",firstNumber(specValue(flat,"Ağırlık","Boş ağırlık","Yüksüz ağırlık")));putNum(out,"trunkL",firstNumber(specValue(flat,"Bagaj hacmi en az","Bagaj hacmi","Bagaj kapasitesi")));putNum(out,"fuelTankL",firstNumber(specValue(flat,"Yakıt deposu hacmi","Yakıt deposu","Depo hacmi")));
+        putNum(out,"lengthMm",firstNumber(specValue(flat,"Uzunluk")));putNum(out,"widthMm",firstNumber(specValue(flat,"Genişlik")));putNum(out,"heightMm",firstNumber(specValue(flat,"Yükseklik")));putNum(out,"wheelbaseMm",firstNumber(specValue(flat,"Dingil Mesafesi","Aks mesafesi","Dingil mesafesi")));putNum(out,"doors",firstNumber(specValue(flat,"Kapı sayısı","Kapı Sayısı")));putNum(out,"seats",firstNumber(specValue(flat,"Koltuk Sayısı","Koltuk sayısı","Oturma yeri")));putNum(out,"oilCapacityL",firstNumber(specValue(flat,"Motor yağı kapasitesi","Motor yağı")));putNum(out,"coolantCapacityL",firstNumber(specValue(flat,"soğutma sıvısı","Soğutma sıvısı","Soğutma sistemi kapasitesi")));putNum(out,"adblueTankL",firstNumber(specValue(flat,"AdBlue tankı","AdBlue deposu")));
+        String body=d.optString("body_type",best.optString("body_type",""));if(body.isEmpty())body=specValue(flat,"Gövde tipi","Kasa tipi");if(!body.isEmpty())out.put("body",body);String drive=d.optString("drive_type",best.optString("drive_type",""));if(drive.isEmpty())drive=specValue(flat,"Çekiş","Çekiş sistemi");if(!drive.isEmpty())out.put("drive",drive);String ft=d.optString("fuel_type",best.optString("fuel_type",""));if(ft.isEmpty())ft=specValue(flat,"Yakıt Tipi","Yakıt türü");if(!ft.isEmpty())out.put("engineFuel",ft);
+        String trans=specValue(flat,"Vites sayısı ve şanzıman tipi","Vites sayısı ve şanzıman türü","Şanzıman tipi","Şanzıman");if(!trans.isEmpty())out.put("apiTransmission",trans);String ec=specValue(flat,"Motor Modeli/Kodu","Motor kodu","Motor Kodu");if(!ec.isEmpty())out.put("engineCode",ec);String inj=specValue(flat,"Yakıt enjeksiyon sistemi","Enjeksiyon sistemi");if(!inj.isEmpty())out.put("injectionSystem",inj);String asp=specValue(flat,"Motor aspirasyonu","Aspirasyon","Turbo");if(!asp.isEmpty())out.put("aspiration",asp);String tire=specValue(flat,"Lastik boyutu","Ön lastikler","Lastik ölçüsü");if(!tire.isEmpty())out.put("tireSizes",tire);String wheel=specValue(flat,"Jant boyutu","Jantlar","Jant ölçüsü");if(!wheel.isEmpty())out.put("wheelSizes",wheel);
+        putNum(out,"batteryKwh",firstNumber(specValue(flat,"Brüt batarya kapasitesi","Net (kullanılabilir) batarya kapasitesi","Batarya kapasitesi")));putNum(out,"rangeKm",firstNumber(specValue(flat,"Tam elektrikli menzil","Elektrikli menzil","Menzil (WLTP)","Menzil")));putNum(out,"avgConsumptionKwh",rangeAverage(specValue(flat,"Ortalama enerji tüketimi","Enerji tüketimi, ORTALAMA (WLTP)")));
+        out.put("specUpdatedAt",new SimpleDateFormat("yyyy-MM-dd",Locale.US).format(new Date()));return out;
+    }
+
     private JSONObject fetchOtoApiSpecs(String make,String model,int year,String engine,String fuel,String transmission)throws Exception{
         if(make==null||make.trim().isEmpty()||model==null||model.trim().isEmpty()||year<1941)throw new IllegalArgumentException("Araç bilgisi eksik");
         JSONObject brand=findOtoBrand(make.trim());int brandId=brand.optInt("id");Thread.sleep(220);JSONObject mod=findOtoModel(brandId,make,model);int modelId=mod.optInt("id");Thread.sleep(220);
         JSONObject best=null;int bestScore=Integer.MIN_VALUE,offset=0,pages=0;do{JSONObject r=otoGet("/cars?brand_id="+brandId+"&model_id="+modelId+"&year="+year+"&offset="+offset);JSONArray a=r.optJSONArray("data");if(a!=null)for(int i=0;i<a.length();i++){JSONObject c=a.optJSONObject(i);if(c==null)continue;int sc=variantScore(c,engine,fuel,transmission);if(sc>bestScore){bestScore=sc;best=c;}}JSONObject pg=r.optJSONObject("pagination");boolean more=pg!=null&&pg.optBoolean("has_more",false);int lim=pg==null?5:Math.max(1,pg.optInt("limit",5));offset+=lim;pages++;if(!more||pages>=8||bestScore>=210)break;Thread.sleep(230);}while(true);
         if(best==null)throw new IllegalStateException("Bu model/yıl için OtoAPI varyantı bulunamadı");int carId=best.optInt("id");Thread.sleep(230);JSONObject dr=otoGet("/cars/"+carId),d=dr.optJSONObject("data");if(d==null)throw new IllegalStateException("OtoAPI teknik detay boş");
-        java.util.LinkedHashMap<String,String> flat=new java.util.LinkedHashMap<>();flattenSpecs(d.optJSONObject("specs"),flat);JSONObject out=new JSONObject();out.put("source","OtoAPI");out.put("confidence",Math.max(60,Math.min(99,bestScore/2+60)));out.put("matchedTrim",d.optString("name",best.optString("name","")));out.put("otoCarId",carId);
-        double hp=firstNumber(specValue(flat,"Güç"));if(hp<=0)hp=d.optDouble("power_hp",best.optDouble("power_hp",0));putNum(out,"powerHp",hp);putNum(out,"torqueNm",firstNumber(specValue(flat,"Tork")));putNum(out,"engineCc",firstNumber(specValue(flat,"Motor hacmi")));putNum(out,"zeroTo100",firstNumber(specValue(flat,"Hızlanma 0 - 100 km/saat","Hızlanma 0-100 km/saat")));putNum(out,"topSpeedKph",firstNumber(specValue(flat,"Maksimum sürat","Maksimum hız")));
-        putNum(out,"avgConsumptionL",rangeAverage(specValue(flat,"Ortalama yakıt tüketimi","Yakıt tüketimi, ORTALAMA (WLTP)","Ortalama yakıt tüketimi (NEDC)")));putNum(out,"cityConsumptionL",rangeAverage(specValue(flat,"Şehir içi yakıt tüketimi")));putNum(out,"hwyConsumptionL",rangeAverage(specValue(flat,"Şehir dışı yakıt tüketimi")));putNum(out,"weightKg",firstNumber(specValue(flat,"Ağırlık")));putNum(out,"trunkL",firstNumber(specValue(flat,"Bagaj hacmi en az","Bagaj hacmi")));putNum(out,"fuelTankL",firstNumber(specValue(flat,"Yakıt deposu hacmi","Yakıt deposu")));
-        putNum(out,"lengthMm",firstNumber(specValue(flat,"Uzunluk")));putNum(out,"widthMm",firstNumber(specValue(flat,"Genişlik")));putNum(out,"heightMm",firstNumber(specValue(flat,"Yükseklik")));putNum(out,"wheelbaseMm",firstNumber(specValue(flat,"Dingil Mesafesi","Aks mesafesi")));putNum(out,"doors",firstNumber(specValue(flat,"Kapı sayısı")));putNum(out,"seats",firstNumber(specValue(flat,"Koltuk Sayısı","Koltuk sayısı")));putNum(out,"oilCapacityL",firstNumber(specValue(flat,"Motor yağı kapasitesi")));putNum(out,"coolantCapacityL",firstNumber(specValue(flat,"soğutma sıvısı","Soğutma sıvısı")));putNum(out,"adblueTankL",firstNumber(specValue(flat,"AdBlue tankı")));
-        String body=d.optString("body_type",best.optString("body_type",""));if(body.isEmpty())body=specValue(flat,"Gövde tipi");if(!body.isEmpty())out.put("body",body);String drive=d.optString("drive_type",best.optString("drive_type",""));if(!drive.isEmpty())out.put("drive",drive);String ft=d.optString("fuel_type",best.optString("fuel_type",""));if(ft.isEmpty())ft=specValue(flat,"Yakıt Tipi");if(!ft.isEmpty())out.put("engineFuel",ft);
-        String trans=specValue(flat,"Vites sayısı ve şanzıman tipi","Vites sayısı ve şanzıman türü","Şanzıman tipi");if(!trans.isEmpty())out.put("apiTransmission",trans);String ec=specValue(flat,"Motor Modeli/Kodu");if(!ec.isEmpty())out.put("engineCode",ec);String inj=specValue(flat,"Yakıt enjeksiyon sistemi");if(!inj.isEmpty())out.put("injectionSystem",inj);String asp=specValue(flat,"Motor aspirasyonu");if(!asp.isEmpty())out.put("aspiration",asp);String tire=specValue(flat,"Lastik boyutu","Ön lastikler");if(!tire.isEmpty())out.put("tireSizes",tire);String wheel=specValue(flat,"Jant boyutu","Jantlar");if(!wheel.isEmpty())out.put("wheelSizes",wheel);
-        putNum(out,"batteryKwh",firstNumber(specValue(flat,"Brüt batarya kapasitesi","Net (kullanılabilir) batarya kapasitesi","Batarya kapasitesi")));putNum(out,"rangeKm",firstNumber(specValue(flat,"Tam elektrikli menzil","Elektrikli menzil","Menzil (WLTP)")));putNum(out,"avgConsumptionKwh",rangeAverage(specValue(flat,"Ortalama enerji tüketimi","Enerji tüketimi, ORTALAMA (WLTP)")));out.put("specUpdatedAt",new SimpleDateFormat("yyyy-MM-dd",Locale.US).format(new Date()));return out;
+        return parseOtoCarSpecs(d,best,Math.max(60,Math.min(99,bestScore/2+60)));
     }
 
     private JSONObject fetchVinDetails(String vin) throws Exception {
