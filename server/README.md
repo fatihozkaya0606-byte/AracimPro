@@ -26,3 +26,24 @@ Dönen alanlar: `avg`, `min`, `max`, `quickSell`, `retailSell`, `toughSell`, `co
 5. V15.3 test APK'sını yeniden derleyin. Piyasa değeri min/ortalama/max + emsal sayısı olarak otomatik gelir.
 
 Uygulama tokenı APK içine koymaz.
+
+## V15.4 — tek canlı veri gateway
+
+Yeni önerilen dosya: `cloudflare-worker-live-data-gateway.js`
+
+Tek Worker iki rota sunar:
+- `/fuel?city=Ankara&fuelType=Benzin`
+- `/market?year=2023&make=Peugeot&model=508&km=50000`
+
+GitHub repository secret `LIVE_DATA_API_URL`, Worker'ın **ana URL'si** olmalıdır (`/fuel` eklemeyin). Android uygulaması `/fuel` yolunu kendi ekler; `MARKET_API_URL` boşsa `/market` de otomatik kullanılır.
+
+Akaryakıt sağlayıcısı Worker secret'ları:
+- `FUEL_PROVIDER`: `apibir` veya `ucuzyakitbul`
+- `FUEL_API_KEY`: ilgili sağlayıcının anahtarı
+
+Piyasa değerleme için gerçek lisanslı sağlayıcı bilgileri gerekir:
+- `MARKET_ENDPOINT`
+- `MARKET_API_KEY` (gerekiyorsa)
+- `MARKET_AUTH_HEADER` ve `MARKET_AUTH_PREFIX` (sağlayıcıya göre)
+
+Sağlayıcı anahtarlarını uygulama/HTML/Gradle içine yazmayın.

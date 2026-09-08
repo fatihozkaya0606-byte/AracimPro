@@ -634,8 +634,17 @@ public class MainActivity extends Activity {
             return isLocationServiceEnabled();
         }
 
+        @JavascriptInterface public String getDefaultLiveDataApiUrl() {
+            return BuildConfig.LIVE_DATA_API_URL == null ? "" : BuildConfig.LIVE_DATA_API_URL.trim();
+        }
+
         @JavascriptInterface public String getDefaultMarketApiUrl() {
-            return BuildConfig.MARKET_API_URL == null ? "" : BuildConfig.MARKET_API_URL.trim();
+            String market = BuildConfig.MARKET_API_URL == null ? "" : BuildConfig.MARKET_API_URL.trim();
+            if (!market.isEmpty()) return market;
+            String live = BuildConfig.LIVE_DATA_API_URL == null ? "" : BuildConfig.LIVE_DATA_API_URL.trim();
+            if (live.isEmpty()) return "";
+            while (live.endsWith("/")) live = live.substring(0, live.length() - 1);
+            return live + "/market";
         }
 
         @JavascriptInterface public void startSpeedTracking() {
@@ -744,7 +753,7 @@ public class MainActivity extends Activity {
                 JSONObject out = new JSONObject();
                 String error = "";
                 try {
-                    out = FuelDataClient.fetchDashboard(city, fuelType);
+                    out = FuelDataClient.fetchDashboard(city, fuelType, BuildConfig.LIVE_DATA_API_URL);
                 } catch (Exception e) {
                     error = e.getMessage() == null ? "Akaryakıt verisi alınamadı" : e.getMessage();
                 }

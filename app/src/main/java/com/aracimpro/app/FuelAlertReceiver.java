@@ -25,7 +25,7 @@ public class FuelAlertReceiver extends BroadcastReceiver {
                 if (!p.getBoolean("enabled", false)) return;
                 String city = p.getString("city", "Ankara");
                 String fuelType = p.getString("fuelType", "Benzin");
-                JSONObject data = FuelDataClient.fetchDashboard(city, fuelType);
+                JSONObject data = FuelDataClient.fetchDashboard(city, fuelType, BuildConfig.LIVE_DATA_API_URL);
                 double price = data.optDouble("selectedPrice", 0);
                 double lastPrice = Double.longBitsToDouble(p.getLong("lastPriceBits", Double.doubleToRawLongBits(0d)));
                 String lastHeadline = p.getString("lastHeadline", "");
