@@ -47,6 +47,7 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebViewClient;
 
 import org.json.JSONObject;
@@ -195,6 +196,17 @@ public class MainActivity extends Activity {
         s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
 
         webView.setWebViewClient(new WebViewClient() {
+            @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                if (!request.isForMainFrame()) return false;
+                Uri uri = request.getUrl();
+                String url = uri.toString();
+                if (url.startsWith("file:///android_asset/")) return false;
+                if ("https".equalsIgnoreCase(uri.getScheme()) || "http".equalsIgnoreCase(uri.getScheme())) {
+                    try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); }
+                    catch (Exception ignored) { Toast.makeText(MainActivity.this, "Bağlantı açılamadı", Toast.LENGTH_SHORT).show(); }
+                }
+                return true;
+            }
             @Override public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 pageReady = true;
@@ -662,7 +674,7 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> openNearbyNative(query));
         }
 
-        @JavascriptInterface public void fetchVehicleSpecs(String make, String model, int year, String engine, String fuel, String transmission) {
+        @JavascriptInterface public void fetchVehicleSpecs(String make, String model, int year, String engine, String fuel, String transmission, int requestId) {
             new Thread(() -> {
                 JSONObject out = new JSONObject();
                 String error = "";
@@ -675,12 +687,12 @@ public class MainActivity extends Activity {
                 runOnUiThread(() -> {
                     if (webView != null) webView.evaluateJavascript(
                             "window.onVehicleSpecsResult && window.onVehicleSpecsResult(" +
-                                    JSONObject.quote(payload) + "," + JSONObject.quote(err) + ")", null);
+                                    JSONObject.quote(payload) + "," + JSONObject.quote(err) + "," + requestId + ")", null);
                 });
             }).start();
         }
 
-        @JavascriptInterface public void fetchVehicleSpecsById(int carId) {
+        @JavascriptInterface public void fetchVehicleSpecsById(int carId, int requestId) {
             new Thread(() -> {
                 JSONObject out = new JSONObject();
                 String error = "";
@@ -693,7 +705,7 @@ public class MainActivity extends Activity {
                 runOnUiThread(() -> {
                     if (webView != null) webView.evaluateJavascript(
                             "window.onVehicleSpecsResult && window.onVehicleSpecsResult(" +
-                                    JSONObject.quote(payload) + "," + JSONObject.quote(err) + ")", null);
+                                    JSONObject.quote(payload) + "," + JSONObject.quote(err) + "," + requestId + ")", null);
                 });
             }).start();
         }
@@ -711,7 +723,8 @@ public class MainActivity extends Activity {
                 runOnUiThread(() -> {
                     if (webView != null) webView.evaluateJavascript(
                             "window.onOtoVariantsResult && window.onOtoVariantsResult(" +
-                                    JSONObject.quote(payload) + "," + JSONObject.quote(err) + ")", null);
+                                    JSONObject.quote(payload) + "," + JSONObject.quote(err) + "," +
+                                    JSONObject.quote(make) + "," + JSONObject.quote(model) + "," + year + ")", null);
                 });
             }).start();
         }
