@@ -19,7 +19,7 @@ jobs:
           gradle-version: '8.11.1'
       
       - name: Install Android SDK 36
-        run: "$ANDROID_HOME/cmdline-tools/16.0/bin/sdkmanager" "platforms;android-36" "build-tools;35.0.0" "platform-tools"
+        run: $ANDROID_HOME/cmdline-tools/16.0/bin/sdkmanager "platforms;android-36" "build-tools;35.0.0" "platform-tools"
       - name: Restore stable test signing key
         env:
           PLAY_UPLOAD_KEYSTORE_B64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_B64 }}
