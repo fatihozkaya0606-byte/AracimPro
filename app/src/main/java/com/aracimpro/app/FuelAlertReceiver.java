@@ -26,24 +26,18 @@ public class FuelAlertReceiver extends BroadcastReceiver {
                 String city = p.getString("city", "Ankara");
                 String fuelType = p.getString("fuelType", "Benzin");
                 JSONObject data = FuelDataClient.fetchDashboard(city, fuelType, BuildConfig.LIVE_DATA_API_URL);
-                double price = data.optDouble("selectedPrice", 0);
-                double lastPrice = Double.longBitsToDouble(p.getLong("lastPriceBits", Double.doubleToRawLongBits(0d)));
                 String lastHeadline = p.getString("lastHeadline", "");
                 JSONArray news = data.optJSONArray("news");
                 String headline = news != null && news.length() > 0 ? news.optJSONObject(0).optString("title", "") : "";
-
-                boolean notified = false;
-                if (price > 0 && lastPrice > 0 && Math.abs(price - lastPrice) >= 0.05) {
-                    String dir = price > lastPrice ? "yükseldi" : "düştü";
-                    notify(app, "Akaryakıt fiyatı değişti", city + " • " + fuelType + " " + String.format(new Locale("tr","TR"), "%.2f TL/L", price) + " • fiyat " + dir, 88042);
-                    notified = true;
-                }
                 String low = headline.toLowerCase(new Locale("tr","TR"));
-                if (!headline.isEmpty() && !headline.equals(lastHeadline) && (low.contains("zam") || low.contains("indirim"))) {
-                    if (!notified) notify(app, "Akaryakıt gündemi", headline, 88043);
+                boolean futureSignal = low.contains("zam geliyor") || low.contains("zam beklen") || low.contains("zam yolda") ||
+                        low.contains("zam kapıda") || low.contains("zam yapılacak") || low.contains("zam gelecek") ||
+                        low.contains("bu gece") || low.contains("gece yarısı") || low.contains("yarından itibaren") ||
+                        low.contains("artış beklen") || low.contains("fiyat artışı");
+                if (!headline.isEmpty() && !headline.equals(lastHeadline) && low.contains("zam") && futureSignal) {
+                    notify(app, "Akaryakıta zam bekleniyor", headline, 88043);
                 }
                 SharedPreferences.Editor e = p.edit();
-                if (price > 0) e.putLong("lastPriceBits", Double.doubleToRawLongBits(price));
                 if (!headline.isEmpty()) e.putString("lastHeadline", headline);
                 e.apply();
             } catch (Throwable ignored) {
@@ -59,7 +53,7 @@ public class FuelAlertReceiver extends BroadcastReceiver {
             if (nm == null) return;
             String channel = "fuel_updates";
             if (Build.VERSION.SDK_INT >= 26) {
-                NotificationChannel c = new NotificationChannel(channel, "Akaryakıt fiyat ve zam/indirim uyarıları", NotificationManager.IMPORTANCE_DEFAULT);
+                NotificationChannel c = new NotificationChannel(channel, "Akaryakıt zam haberleri", NotificationManager.IMPORTANCE_DEFAULT);
                 nm.createNotificationChannel(c);
             }
             PendingIntent content = PendingIntent.getActivity(context, id, new Intent(context, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);

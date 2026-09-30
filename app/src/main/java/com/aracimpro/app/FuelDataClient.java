@@ -53,73 +53,12 @@ public final class FuelDataClient {
         out.put("city", c);
         out.put("selectedType", selected);
         out.put("updatedAt", System.currentTimeMillis());
-
-        double gasoline = 0d, diesel = 0d, lpg = 0d;
-        List<String> sources = new ArrayList<>();
-        List<String> warnings = new ArrayList<>();
-        boolean live = false;
-
-        // 1) Opsiyonel güvenli gateway. API anahtarları APK içine konmaz.
-        if (liveDataBaseUrl != null && !liveDataBaseUrl.trim().isEmpty()) {
-            try {
-                JSONObject g = fetchGatewayFuel(liveDataBaseUrl, c, selected);
-                gasoline = positive(g.optDouble("gasoline", g.optDouble("benzin", 0d)));
-                diesel = positive(g.optDouble("diesel", g.optDouble("motorin", 0d)));
-                lpg = positive(g.optDouble("lpg", 0d));
-                String src = g.optString("source", "Canlı veri gateway");
-                if (gasoline > 0 || diesel > 0 || lpg > 0) {
-                    sources.add(src);
-                    live = true;
-                    long providerUpdated = parseEpoch(g.opt("updatedAt"));
-                    if (providerUpdated > 0) out.put("updatedAt", providerUpdated);
-                }
-                String w = g.optString("warning", "");
-                if (!w.isEmpty()) warnings.add(w);
-            } catch (Exception e) {
-                warnings.add("Canlı veri gateway: " + safeMessage(e));
-            }
-        }
-
-        // 2) EPDK resmi il bazlı XML servisi. Gateway yoksa veya alanlar eksikse tamamla.
-        if (gasoline <= 0 || diesel <= 0) {
-            try {
-                JSONObject epdk = fetchEpdkPetrolPrices(c);
-                if (gasoline <= 0) gasoline = positive(epdk.optDouble("gasoline", 0d));
-                if (diesel <= 0) diesel = positive(epdk.optDouble("diesel", 0d));
-                if (epdk.optDouble("gasoline", 0d) > 0 || epdk.optDouble("diesel", 0d) > 0) {
-                    sources.add("EPDK il bazlı bayi fiyatları");
-                    live = true;
-                }
-            } catch (Exception e) {
-                warnings.add("EPDK: " + safeMessage(e));
-            }
-        }
-
-        // 3) Yedek kaynak. LPG için gateway yoksa bu kaynak kullanılabilir.
-        if (gasoline <= 0 || diesel <= 0 || lpg <= 0) {
-            try {
-                JSONObject po = fetchPetrolOfisiPrices(c);
-                if (gasoline <= 0) gasoline = positive(po.optDouble("gasoline", 0d));
-                if (diesel <= 0) diesel = positive(po.optDouble("diesel", 0d));
-                if (lpg <= 0) lpg = positive(po.optDouble("lpg", 0d));
-                if (po.optDouble("gasoline", 0d) > 0 || po.optDouble("diesel", 0d) > 0 || po.optDouble("lpg", 0d) > 0) {
-                    sources.add("Petrol Ofisi şehir fiyatları (yedek)");
-                }
-            } catch (Exception e) {
-                warnings.add("Yedek fiyat kaynağı: " + safeMessage(e));
-            }
-        }
-
-        out.put("gasoline", gasoline);
-        out.put("diesel", diesel);
-        out.put("lpg", lpg);
-        out.put("live", live);
-        out.put("source", sources.isEmpty() ? "Canlı fiyat alınamadı" : joinUnique(sources, " + "));
-        if (!warnings.isEmpty()) out.put("warning", joinUnique(warnings, " | "));
-
-        double selectedPrice = "Motorin".equalsIgnoreCase(selected) ? diesel :
-                ("LPG".equalsIgnoreCase(selected) ? lpg : gasoline);
-        out.put("selectedPrice", selectedPrice);
+        out.put("gasoline", 0d);
+        out.put("diesel", 0d);
+        out.put("lpg", 0d);
+        out.put("selectedPrice", 0d);
+        out.put("live", false);
+        out.put("source", "Akaryakıt zam haberleri");
         out.put("news", fetchFuelNews());
         return out;
     }
