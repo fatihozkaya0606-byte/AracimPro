@@ -679,7 +679,7 @@ public class MainActivity extends Activity {
                 JSONObject out = new JSONObject();
                 String error = "";
                 try {
-                    out = fetchOtoApiSpecs(make, model, year, engine, fuel, transmission);
+                    out = fetchVehicleSpecsReliable(make, model, year, engine, fuel, transmission);
                 } catch (Exception e) {
                     error = e.getMessage() == null ? "Teknik özellik verisi alınamadı" : e.getMessage();
                 }
@@ -1554,6 +1554,168 @@ public class MainActivity extends Activity {
         if(best==null)throw new IllegalStateException("Bu model/yıl için OtoAPI varyantı bulunamadı");int carId=best.optInt("id");Thread.sleep(230);JSONObject dr=otoGet("/cars/"+carId),d=dr.optJSONObject("data");if(d==null)throw new IllegalStateException("OtoAPI teknik detay boş");
         return parseOtoCarSpecs(d,best,Math.max(60,Math.min(99,bestScore/2+60)));
     }
+
+    // Key gerektirmeyen FleetByte katalogu, OtoAPI kullanilamazsa otomatik yedek olur.
+    private static final String FLEETBYTE_BASE = "https://fleetcatalog.disturbingbyte.pt/v1";
+
+    private JSONObject publicJsonGet(String url) throws Exception {
+        HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+        c.setConnectTimeout(10000); c.setReadTimeout(15000);
+        c.setRequestProperty("User-Agent", "AracimPro/5.5.7 Android");
+        c.setRequestProperty("Accept", "application/json");
+        int code = c.getResponseCode();
+        InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
+        BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+        StringBuilder raw = new StringBuilder(); String line;
+        while ((line = br.readLine()) != null) raw.append(line);
+        br.close(); c.disconnect();
+        if (code < 200 || code >= 300) throw new IllegalStateException("FleetByte HTTP " + code);
+        return raw.length() == 0 ? new JSONObject() : new JSONObject(raw.toString());
+    }
+
+    private JSONObject findFleetMake(String make) throws Exception {
+        Exception last = null;
+        for (String q : makeCandidates(make)) {
+            try {
+                JSONObject r = publicJsonGet(FLEETBYTE_BASE + "/makes?search=" + URLEncoder.encode(q, "UTF-8") + "&pageSize=20");
+                JSONObject b = bestNamed(r.optJSONArray("items"), q);
+                if (b != null) return b;
+            } catch (Exception e) { last = e; }
+        }
+        if (last != null) throw last;
+        throw new IllegalStateException("FleetByte marka bulunamadi: " + make);
+    }
+
+    private JSONObject findFleetModel(String makeId, String make, String model) throws Exception {
+        Exception last = null;
+        for (String q : modelCandidates(make, model)) {
+            try {
+                JSONObject r = publicJsonGet(FLEETBYTE_BASE + "/makes/" + URLEncoder.encode(makeId, "UTF-8") + "/models?search=" + URLEncoder.encode(q, "UTF-8") + "&pageSize=50");
+                JSONObject m = bestNamed(r.optJSONArray("items"), q);
+                if (m != null) return m;
+            } catch (Exception e) { last = e; }
+        }
+        if (last != null) throw last;
+        throw new IllegalStateException("FleetByte model bulunamadi: " + model);
+    }
+
+    private static String fleetFuel(String fuel) {
+        String f = normKey(fuel);
+        if (f.contains("benzin")) return "petrol";
+        if (f.contains("dizel")) return "diesel";
+        if (f.contains("elektrik")) return "electric";
+        if (f.contains("plug") || f.contains("phev")) return "pluginhybrid";
+        if (f.contains("hibrit") || f.contains("hybrid")) return "hybrid";
+        if (f.contains("lpg")) return "lpg";
+        if (f.contains("hidrojen")) return "hydrogen";
+        return f;
+    }
+
+    private static String fleetGearbox(String transmission) {
+        String t = normKey(transmission);
+        if (t.contains("dct") || t.contains("cift kavrama")) return "dct";
+        if (t.contains("cvt")) return "cvt";
+        if (t.contains("manuel")) return "manual";
+        if (t.contains("otomatik")) return "automatic";
+        return t;
+    }
+
+    private static int fleetVariantScore(JSONObject c, String engine, String fuel, String transmission, int year) {
+        String name = normalizeApiText(c.optString("name", ""));
+        String compact = compactApiText(c.optString("name", ""));
+        int score = 0;
+        String e = normalizeApiText(engine), ec = compactApiText(engine);
+        if (!e.isEmpty() && (name.contains(e) || (!ec.isEmpty() && compact.contains(ec)))) score += 220;
+        for (String tok : e.split(" ")) if (tok.length() > 1 && name.contains(tok)) score += 8;
+        String wantFuel = fleetFuel(fuel), gotFuel = normKey(c.optString("fuelType", ""));
+        if (!wantFuel.isEmpty() && !gotFuel.isEmpty() && (gotFuel.contains(wantFuel) || wantFuel.contains(gotFuel))) score += 40;
+        String wantGear = fleetGearbox(transmission), gotGear = normKey(c.optString("gearboxType", ""));
+        if (!wantGear.isEmpty() && !gotGear.isEmpty() && (gotGear.contains(wantGear) || wantGear.contains(gotGear))) score += 30;
+        int yf = c.optInt("yearFrom", 0), yt = c.isNull("yearTo") ? 0 : c.optInt("yearTo", 0);
+        if (year > 0 && yf > 0 && year >= yf && (yt == 0 || year <= yt)) score += 25;
+        return score;
+    }
+
+    private JSONObject parseFleetVariant(JSONObject d, int score) throws Exception {
+        JSONObject out = new JSONObject();
+        out.put("source", "FleetByte acik teknik katalog");
+        out.put("confidence", Math.max(60, Math.min(96, 62 + score / 6)));
+        out.put("matchedTrim", d.optString("name", ""));
+        putNum(out, "engineCc", d.optDouble("engineDisplacementCc", 0));
+        putNum(out, "powerHp", d.optDouble("powerBhp", 0));
+        putNum(out, "torqueNm", d.optDouble("torqueNm", 0));
+        putNum(out, "zeroTo100", d.optDouble("acceleration0100Kph", 0));
+        putNum(out, "topSpeedKph", d.optDouble("topSpeedKph", 0));
+        putNum(out, "avgConsumptionL", d.optDouble("fuelEconomyCombinedL100", 0));
+        putNum(out, "cityConsumptionL", d.optDouble("fuelEconomyUrbanL100", 0));
+        putNum(out, "hwyConsumptionL", d.optDouble("fuelEconomyExtraUrbanL100", 0));
+        putNum(out, "fuelTankL", d.optDouble("fuelTankLitres", 0));
+        putNum(out, "weightKg", d.optDouble("weightKg", 0));
+        putNum(out, "trunkL", d.optDouble("bootLitres", 0));
+        putNum(out, "lengthMm", d.optDouble("lengthMm", 0));
+        putNum(out, "widthMm", d.optDouble("widthMm", 0));
+        putNum(out, "heightMm", d.optDouble("heightMm", 0));
+        putNum(out, "wheelbaseMm", d.optDouble("wheelbaseMm", 0));
+        putNum(out, "doors", d.optDouble("numberOfDoors", 0));
+        putNum(out, "seats", d.optDouble("numberOfSeats", 0));
+        putNum(out, "batteryKwh", d.optDouble("batteryKwh", 0));
+        putNum(out, "rangeKm", d.optDouble("electricRangeKm", 0));
+        String body = d.optString("bodyType", ""); if (!body.isEmpty()) out.put("body", body);
+        String drive = d.optString("driveType", ""); if (!drive.isEmpty()) out.put("drive", drive);
+        String ft = d.optString("fuelType", ""); if (!ft.isEmpty()) out.put("engineFuel", ft);
+        String tr = d.optString("gearboxType", ""); if (!tr.isEmpty()) out.put("apiTransmission", tr);
+        String ec = d.optString("engineCode", ""); if (!ec.isEmpty()) out.put("engineCode", ec);
+        String asp = d.optString("engineAspiration", ""); if (!asp.isEmpty()) out.put("aspiration", asp);
+        String tf = d.optString("tyreFront", ""), trr = d.optString("tyreRear", "");
+        if (!tf.isEmpty() || !trr.isEmpty()) out.put("tireSizes", tf.equals(trr) ? tf : (tf + (tf.isEmpty() || trr.isEmpty() ? "" : " / ") + trr));
+        out.put("specUpdatedAt", new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date()));
+        return out;
+    }
+
+    private JSONObject fetchFleetByteSpecs(String make, String model, int year, String engine, String fuel, String transmission) throws Exception {
+        JSONObject mk = findFleetMake(make);
+        String makeId = mk.optString("id", "");
+        if (makeId.isEmpty()) throw new IllegalStateException("FleetByte marka kimligi yok");
+        JSONObject md = findFleetModel(makeId, make, model);
+        String modelId = md.optString("id", "");
+        if (modelId.isEmpty()) throw new IllegalStateException("FleetByte model kimligi yok");
+        String url = FLEETBYTE_BASE + "/models/" + URLEncoder.encode(modelId, "UTF-8") + "/variants?year=" + year + "&pageSize=100";
+        JSONObject vr = publicJsonGet(url);
+        JSONArray items = vr.optJSONArray("items");
+        if (items == null || items.length() == 0) {
+            vr = publicJsonGet(FLEETBYTE_BASE + "/models/" + URLEncoder.encode(modelId, "UTF-8") + "/variants?pageSize=100");
+            items = vr.optJSONArray("items");
+        }
+        if (items == null || items.length() == 0) throw new IllegalStateException("FleetByte varyant bulunamadi");
+        JSONObject best = null; int bestScore = Integer.MIN_VALUE;
+        for (int i = 0; i < items.length(); i++) {
+            JSONObject c = items.optJSONObject(i); if (c == null) continue;
+            int sc = fleetVariantScore(c, engine, fuel, transmission, year);
+            if (sc > bestScore) { bestScore = sc; best = c; }
+        }
+        if (best == null) throw new IllegalStateException("FleetByte uygun varyant bulunamadi");
+        String variantId = best.optString("id", "");
+        if (variantId.isEmpty()) throw new IllegalStateException("FleetByte varyant kimligi yok");
+        JSONObject detail = publicJsonGet(FLEETBYTE_BASE + "/variants/" + URLEncoder.encode(variantId, "UTF-8"));
+        return parseFleetVariant(detail, bestScore);
+    }
+
+    private JSONObject fetchVehicleSpecsReliable(String make, String model, int year, String engine, String fuel, String transmission) throws Exception {
+        Exception otoError = null;
+        try {
+            return fetchOtoApiSpecs(make, model, year, engine, fuel, transmission);
+        } catch (Exception e) {
+            otoError = e;
+        }
+        try {
+            return fetchFleetByteSpecs(make, model, year, engine, fuel, transmission);
+        } catch (Exception fleetError) {
+            String a = otoError == null || otoError.getMessage() == null ? "kullanilamiyor" : otoError.getMessage();
+            String b = fleetError.getMessage() == null ? "kullanilamiyor" : fleetError.getMessage();
+            throw new IllegalStateException("Teknik veri alinamadi. OtoAPI: " + a + " | FleetByte: " + b);
+        }
+    }
+
 
     private JSONObject fetchVinDetails(String vin) throws Exception {
         String v = vin == null ? "" : vin.trim().toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9]", "");
