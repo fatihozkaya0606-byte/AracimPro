@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 /**
  * Akaryakıt + piyasa HTTP istemcisi.
  *
- * V15.4 öncelik sırası:
+ * V15.5 öncelik sırası:
  *   1) LIVE_DATA_API_URL ayarlıysa güvenli JSON gateway (/fuel)
  *   2) EPDK'nın resmi il bazlı XML/SOAP servisi (benzin + motorin)
  *   3) Petrol Ofisi şehir sayfası yedek kaynak (özellikle LPG / eksik alan)
@@ -37,6 +37,8 @@ public final class FuelDataClient {
     private FuelDataClient() {}
 
     private static final String EPDK_PETROL_SOAP =
+            "https://lisansws.epdk.gov.tr/services/bildirimPetrolAkaryakitFiyatlari";
+    private static final String EPDK_PETROL_SOAP_LEGACY =
             "https://lisansws.epdk.gov.tr/services/bildirimPetrolAkaryakitFiyatlari.bildirimPetrolAkaryakitFiyatlariHttpSoap11Endpoint";
     private static final String EPDK_NS = "http://genel.service.ws.epvys.g222.tubitak.gov.tr/";
 
@@ -155,7 +157,16 @@ public final class FuelDataClient {
                 "<soapenv:Header/><soapenv:Body><gen:genelSorgu>" +
                 "<sorguNo>72</sorguNo><parametreler>" + plate + "</parametreler>" +
                 "</gen:genelSorgu></soapenv:Body></soapenv:Envelope>";
-        String raw = postSoap(EPDK_PETROL_SOAP, soap, "genelSorgu", 18000);
+        String raw;
+        try {
+            raw = postSoap(EPDK_PETROL_SOAP, soap, "genelSorgu", 18000);
+        } catch (Exception primary) {
+            try {
+                raw = postSoap(EPDK_PETROL_SOAP_LEGACY, soap, "genelSorgu", 18000);
+            } catch (Exception legacy) {
+                throw new IllegalStateException("EPDK servisine ulaşılamadı: " + safeMessage(primary));
+            }
+        }
         String decoded = decodeXmlEntities(raw);
 
         double gasoline = averageFuelPrice(decoded, "gasoline");
@@ -288,7 +299,7 @@ public final class FuelDataClient {
         c.setDoOutput(true);
         c.setRequestProperty("Content-Type", "text/xml; charset=utf-8");
         c.setRequestProperty("SOAPAction", soapAction);
-        c.setRequestProperty("User-Agent", "AracimPro/5.5.4 Android");
+        c.setRequestProperty("User-Agent", "AracimPro/5.5.6 Android");
         byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
         c.setFixedLengthStreamingMode(bytes.length);
         try (OutputStream os = c.getOutputStream()) { os.write(bytes); }
@@ -305,7 +316,7 @@ public final class FuelDataClient {
         HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
         c.setConnectTimeout(timeout);
         c.setReadTimeout(timeout);
-        c.setRequestProperty("User-Agent", "AracimPro/5.5.4 Android");
+        c.setRequestProperty("User-Agent", "AracimPro/5.5.6 Android");
         c.setRequestProperty("Accept", "application/json,text/html,application/xml,text/xml,*/*");
         c.setRequestProperty("Accept-Language", "tr-TR,tr;q=0.9,en;q=0.6");
         int code = c.getResponseCode();

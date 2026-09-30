@@ -27,7 +27,7 @@ Dönen alanlar: `avg`, `min`, `max`, `quickSell`, `retailSell`, `toughSell`, `co
 
 Uygulama tokenı APK içine koymaz.
 
-## V15.4 — tek canlı veri gateway
+## V15.5 — canlı veri gateway
 
 Yeni önerilen dosya: `cloudflare-worker-live-data-gateway.js`
 
@@ -47,3 +47,7 @@ Piyasa değerleme için gerçek lisanslı sağlayıcı bilgileri gerekir:
 - `MARKET_AUTH_HEADER` ve `MARKET_AUTH_PREFIX` (sağlayıcıya göre)
 
 Sağlayıcı anahtarlarını uygulama/HTML/Gradle içine yazmayın.
+
+
+### 5.5.6 notu
+Android istemcisi EPDK'nın yayımladığı ana XML servis adresini önce dener ve erişim sorunu olursa eski SOAP binding adresine geri döner. Özel Worker sağlayıcısı bağlıysa yine ilk tercih Worker'dır.

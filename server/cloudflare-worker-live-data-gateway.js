@@ -1,5 +1,5 @@
 /**
- * Aracım Pro V15.4 - Güvenli canlı veri gateway (Cloudflare Worker)
+ * Aracım Pro V15.5 - Güvenli canlı veri gateway (Cloudflare Worker)
  *
  * Uygulama yalnızca Worker URL'sini görür. Sağlayıcı API anahtarları Worker secret'ta kalır.
  *
@@ -26,7 +26,7 @@ export default {
     if (request.method !== 'GET') return json({ error: 'Yalnız GET desteklenir' }, 405);
 
     if (url.pathname === '/' || url.pathname === '/health') {
-      return json({ ok: true, service: 'AracimPro Live Data Gateway', version: '15.4' });
+      return json({ ok: true, service: 'AracimPro Live Data Gateway', version: '15.5' });
     }
 
     if (url.pathname === '/fuel') return fuelRoute(url, env);
@@ -61,7 +61,7 @@ async function fuelRoute(url, env) {
         headers: {
           accept: 'application/json',
           'x-api-key': env.FUEL_API_KEY,
-          'user-agent': 'AracimPro/5.5.4 (+live-data-gateway)'
+          'user-agent': 'AracimPro/5.5.6 (+live-data-gateway)'
         }
       });
       raw = await safeJson(r);
