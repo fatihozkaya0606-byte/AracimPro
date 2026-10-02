@@ -53,6 +53,13 @@ import android.webkit.WebViewClient;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.ump.ConsentInformation;
+import com.google.android.ump.ConsentRequestParameters;
+import com.google.android.ump.UserMessagingPlatform;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -96,6 +103,9 @@ public class MainActivity extends Activity {
     private static final int LOCATION_PERMISSION_REQUEST = 7706;
 
     private WebView webView;
+    private AdView bannerAdView;
+    private int bannerHeightPx = 0;
+    private int lastInsetLeft = 0, lastInsetTop = 0, lastInsetRight = 0, lastInsetBottom = 0;
     private FrameLayout root;
     private String pendingFileName;
     private String pendingMime;
@@ -131,6 +141,7 @@ public class MainActivity extends Activity {
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         setContentView(root);
         showLaunchSplash();
+        initAdsWithConsent();
 
         if (Build.VERSION.SDK_INT >= 30) {
             try { getWindow().setDecorFitsSystemWindows(false); } catch (Throwable ignored) {}
@@ -280,12 +291,31 @@ public class MainActivity extends Activity {
     }
 
     private void applyWebMargins(int left, int top, int right, int bottom) {
+        lastInsetLeft=left; lastInsetTop=top; lastInsetRight=right; lastInsetBottom=bottom;
         if (webView == null) return;
-        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) webView.getLayoutParams();
-        if (lp.leftMargin != left || lp.topMargin != top || lp.rightMargin != right || lp.bottomMargin != bottom) {
-            lp.setMargins(left, top, right, bottom);
-            webView.setLayoutParams(lp);
-        }
+        int effectiveBottom=bottom+bannerHeightPx;
+        FrameLayout.LayoutParams lp=(FrameLayout.LayoutParams) webView.getLayoutParams();
+        if(lp.leftMargin!=left||lp.topMargin!=top||lp.rightMargin!=right||lp.bottomMargin!=effectiveBottom){lp.setMargins(left,top,right,effectiveBottom);webView.setLayoutParams(lp);}
+        if(bannerAdView!=null){FrameLayout.LayoutParams ap=(FrameLayout.LayoutParams)bannerAdView.getLayoutParams();if(ap!=null&&ap.bottomMargin!=bottom){ap.bottomMargin=bottom;bannerAdView.setLayoutParams(ap);}}
+    }
+
+    private void initAdsWithConsent() {
+        ConsentRequestParameters params=new ConsentRequestParameters.Builder().build();
+        ConsentInformation ci=UserMessagingPlatform.getConsentInformation(this);
+        ci.requestConsentInfoUpdate(this,params,() -> UserMessagingPlatform.loadAndShowConsentFormIfRequired(this, formError -> {if(ci.canRequestAds()) startMobileAdsAndBanner();}),requestError -> {if(ci.canRequestAds()) startMobileAdsAndBanner();});
+        if(ci.canRequestAds()) startMobileAdsAndBanner();
+    }
+
+    private void startMobileAdsAndBanner() {
+        if(bannerAdView!=null) return;
+        MobileAds.initialize(this,status -> {});
+        bannerAdView=new AdView(this); bannerAdView.setAdSize(AdSize.BANNER);
+        bannerAdView.setAdUnitId(BuildConfig.DEBUG ? "ca-app-pub-3940256099942544/6300978111" : "ca-app-pub-7205009121067400/9497290996");
+        bannerHeightPx=dp(50);
+        FrameLayout.LayoutParams ap=new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,bannerHeightPx);
+        ap.gravity=Gravity.BOTTOM; ap.bottomMargin=lastInsetBottom; root.addView(bannerAdView,ap);
+        applyWebMargins(lastInsetLeft,lastInsetTop,lastInsetRight,lastInsetBottom);
+        bannerAdView.loadAd(new AdRequest.Builder().build());
     }
 
     @Override public void onBackPressed() {
@@ -1784,6 +1814,7 @@ public class MainActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
+        if(bannerAdView!=null){try{bannerAdView.destroy();}catch(Throwable ignored){} bannerAdView=null;}
         stopSpeedTrackingNative();
         try { if (locationManager != null && nearbyLocationListener != null) locationManager.removeUpdates(nearbyLocationListener); } catch (Throwable ignored) {}
         nearbyLocationListener = null;
