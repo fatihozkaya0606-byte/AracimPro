@@ -70,6 +70,10 @@ import org.json.JSONArray;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.ump.ConsentInformation;
 import com.google.android.ump.ConsentRequestParameters;
@@ -136,6 +140,9 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     private AdView bannerAdView;
+    private InterstitialAd interstitialAd;
+    private boolean interstitialShownThisSession = false;
+    private boolean interstitialScheduled = false;
     private int bannerHeightPx = 0;
     private int lastInsetLeft = 0, lastInsetTop = 0, lastInsetRight = 0, lastInsetBottom = 0;
     private FrameLayout root;
@@ -564,6 +571,37 @@ public class MainActivity extends Activity {
         ap.gravity=Gravity.BOTTOM; ap.bottomMargin=lastInsetBottom; root.addView(bannerAdView,ap);
         applyWebMargins(lastInsetLeft,lastInsetTop,lastInsetRight,lastInsetBottom);
         bannerAdView.loadAd(new AdRequest.Builder().build());
+        loadInterstitialAd();
+        if (!interstitialScheduled) {
+            interstitialScheduled = true;
+            mainHandler.postDelayed(this::showInterstitialOnce, 5000L);
+        }
+    }
+
+    private void loadInterstitialAd() {
+        if (premiumActive || interstitialShownThisSession) return;
+        String unitId = BuildConfig.DEBUG
+                ? "ca-app-pub-3940256099942544/1033173712"
+                : "";
+        if (unitId.isEmpty()) return;
+        InterstitialAd.load(this, unitId, new AdRequest.Builder().build(),
+                new InterstitialAdLoadCallback() {
+                    @Override public void onAdLoaded(InterstitialAd ad) {
+                        interstitialAd = ad;
+                    }
+                    @Override public void onAdFailedToLoad(LoadAdError error) {
+                        interstitialAd = null;
+                    }
+                });
+    }
+
+    private void showInterstitialOnce() {
+        if (premiumActive || interstitialShownThisSession || interstitialAd == null) return;
+        interstitialShownThisSession = true;
+        InterstitialAd ad = interstitialAd;
+        interstitialAd = null;
+        ad.setFullScreenContentCallback(new FullScreenContentCallback() {});
+        ad.show(this);
     }
 
     @Override public void onBackPressed() {
