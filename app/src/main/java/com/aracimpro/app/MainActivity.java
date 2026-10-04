@@ -21,6 +21,8 @@ import android.graphics.Rect;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.pdf.PdfDocument;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -35,6 +37,7 @@ import android.os.CancellationSignal;
 import android.provider.OpenableColumns;
 import android.provider.Settings;
 import android.util.Base64;
+import android.text.Html;
 import android.view.View;
 import android.view.Gravity;
 import android.view.WindowInsets;
@@ -89,6 +92,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -123,6 +128,7 @@ public class MainActivity extends Activity {
     private LocationManager locationManager;
     private LocationListener speedLocationListener;
     private LocationListener nearbyLocationListener;
+    private LocationListener weatherLocationListener;
     private boolean speedTracking = false;
     private String pendingLocationAction = "";
     private String pendingNearbyQuery = "";
@@ -767,6 +773,18 @@ public class MainActivity extends Activity {
             return live + "/market";
         }
 
+        @JavascriptInterface public void fetchWeatherAuto() {
+            runOnUiThread(MainActivity.this::requestWeatherNative);
+        }
+
+        @JavascriptInterface public void fetchWeather(double lat, double lon) {
+            fetchWeatherNative(lat, lon);
+        }
+
+        @JavascriptInterface public void fetchRoadStatus(String city, String district) {
+            fetchRoadStatusNative(city, district);
+        }
+
         @JavascriptInterface public void startSpeedTracking() {
             runOnUiThread(() -> {
                 if (!hasLocationPermission()) { ensureLocationPermission("speed"); return; }
@@ -1369,6 +1387,10 @@ public class MainActivity extends Activity {
             startSpeedTrackingNative();
             return;
         }
+        if ("weather".equals(action)) {
+            requestWeatherNative();
+            return;
+        }
         if (action.startsWith("nearby:")) {
             String q = action.substring("nearby:".length());
             requestFreshLocationAndOpenNearby(q);
@@ -1430,6 +1452,310 @@ public class MainActivity extends Activity {
                 String.format(Locale.US, "%.7f", loc.getLatitude()) + "," +
                 String.format(Locale.US, "%.7f", loc.getLongitude()) + ")";
         webView.evaluateJavascript(js, null);
+    }
+
+
+    @SuppressWarnings("MissingPermission")
+    private void requestWeatherNative() {
+        if (!hasLocationPermission()) {
+            pendingLocationAction = "weather";
+            notifyLocationStatus("Hava durumu için konum izni gerekli.");
+            ensureLocationPermission("weather");
+            return;
+        }
+        if (!isLocationServiceEnabled()) {
+            pendingLocationAction = "weather";
+            notifyLocationStatus("Hava durumu için telefonun Konum/GPS özelliğini aç.");
+            return;
+        }
+
+        if (locationManager == null) locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        if (locationManager == null) {
+            notifyLocationStatus("Konum servisine erişilemiyor.");
+            return;
+        }
+
+        Location last = bestLastLocation();
+        if (last != null && Math.abs(System.currentTimeMillis() - last.getTime()) <= 15 * 60 * 1000L) {
+            fetchWeatherNative(last.getLatitude(), last.getLongitude());
+            return;
+        }
+
+        try {
+            if (weatherLocationListener != null) locationManager.removeUpdates(weatherLocationListener);
+        } catch (Throwable ignored) {}
+
+        final boolean[] completed = {false};
+        weatherLocationListener = new LocationListener() {
+            @Override public void onLocationChanged(Location location) {
+                if (completed[0] || location == null) return;
+                completed[0] = true;
+                try { if (locationManager != null) locationManager.removeUpdates(this); } catch (Throwable ignored) {}
+                weatherLocationListener = null;
+                fetchWeatherNative(location.getLatitude(), location.getLongitude());
+            }
+            @Override public void onProviderEnabled(String provider) {}
+            @Override public void onProviderDisabled(String provider) {}
+        };
+
+        boolean requested = false;
+        try {
+            if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, weatherLocationListener, Looper.getMainLooper());
+                requested = true;
+            }
+        } catch (Throwable ignored) {}
+        try {
+            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, weatherLocationListener, Looper.getMainLooper());
+                requested = true;
+            }
+        } catch (Throwable ignored) {}
+
+        if (!requested) {
+            Location fallback = bestLastLocation();
+            if (fallback != null) fetchWeatherNative(fallback.getLatitude(), fallback.getLongitude());
+            else notifyLocationStatus("Hava durumu için konum alınamadı.");
+            return;
+        }
+
+        mainHandler.postDelayed(() -> {
+            if (completed[0]) return;
+            completed[0] = true;
+            try { if (locationManager != null && weatherLocationListener != null) locationManager.removeUpdates(weatherLocationListener); } catch (Throwable ignored) {}
+            weatherLocationListener = null;
+            Location fallback = bestLastLocation();
+            if (fallback != null) fetchWeatherNative(fallback.getLatitude(), fallback.getLongitude());
+            else notifyLocationStatus("Hava durumu için konum alınamadı.");
+        }, 7000L);
+    }
+
+    private void fetchWeatherNative(double lat, double lon) {
+        new Thread(() -> {
+            JSONObject out = new JSONObject();
+            String error = "";
+            try {
+                String url = "https://api.open-meteo.com/v1/forecast?latitude=" +
+                        URLEncoder.encode(String.format(Locale.US, "%.6f", lat), "UTF-8") +
+                        "&longitude=" + URLEncoder.encode(String.format(Locale.US, "%.6f", lon), "UTF-8") +
+                        "&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m" +
+                        "&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max" +
+                        "&timezone=auto&forecast_days=1";
+
+                HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+                c.setConnectTimeout(8000);
+                c.setReadTimeout(10000);
+                c.setRequestProperty("User-Agent", "AracimPro/7.4 Android");
+                c.setRequestProperty("Accept", "application/json");
+
+                int code = c.getResponseCode();
+                InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
+                if (stream == null) throw new IllegalStateException("Hava servisi yanıt vermedi");
+
+                BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+                StringBuilder raw = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) raw.append(line);
+                br.close();
+                c.disconnect();
+
+                if (code < 200 || code >= 300) throw new IllegalStateException("Hava servisi HTTP " + code);
+
+                out = new JSONObject(raw.toString());
+                out.put("latitude", lat);
+                out.put("longitude", lon);
+                String[] place = resolveLocationNames(lat, lon);
+                out.put("city", place[0]);
+                out.put("district", place[1]);
+            } catch (Exception e) {
+                error = e.getMessage() == null ? "Hava durumu alınamadı" : e.getMessage();
+            }
+
+            final String payload = out.toString();
+            final String err = error;
+            runOnUiThread(() -> {
+                if (webView != null) {
+                    webView.evaluateJavascript(
+                            "window.onWeatherResult && window.onWeatherResult(" +
+                                    JSONObject.quote(payload) + "," + JSONObject.quote(err) + ")",
+                            null
+                    );
+                }
+            });
+        }).start();
+    }
+
+
+    private String[] resolveLocationNames(double lat, double lon) {
+        String city = "";
+        String district = "";
+        try {
+            Geocoder geocoder = new Geocoder(this, new Locale("tr", "TR"));
+            List<Address> list = geocoder.getFromLocation(lat, lon, 1);
+            if (list != null && !list.isEmpty()) {
+                Address a = list.get(0);
+                city = a.getAdminArea() == null ? "" : a.getAdminArea().trim();
+                district = a.getSubAdminArea() == null ? "" : a.getSubAdminArea().trim();
+                if (district.isEmpty() && a.getLocality() != null) district = a.getLocality().trim();
+                if (city.endsWith(" Province")) city = city.substring(0, city.length() - 9).trim();
+            }
+        } catch (Throwable ignored) {}
+        return new String[]{city, district};
+    }
+
+    private void fetchRoadStatusNative(String city, String district) {
+        new Thread(() -> {
+            JSONObject out = new JSONObject();
+            String error = "";
+            try {
+                out = fetchKgmRoadStatus(city, district);
+            } catch (Exception e) {
+                error = e.getMessage() == null ? "KGM yol bilgisi alınamadı" : e.getMessage();
+            }
+            final String payload = out.toString();
+            final String err = error;
+            runOnUiThread(() -> {
+                if (webView != null) {
+                    webView.evaluateJavascript(
+                            "window.onRoadStatusResult && window.onRoadStatusResult(" +
+                                    JSONObject.quote(payload) + "," + JSONObject.quote(err) + ")",
+                            null
+                    );
+                }
+            });
+        }).start();
+    }
+
+    private JSONObject fetchKgmRoadStatus(String city, String district) throws Exception {
+        String safeCity = city == null ? "" : city.trim();
+        String safeDistrict = district == null ? "" : district.trim();
+
+        String closedUrl = "https://www.kgm.gov.tr/Sayfalar/KGM/SiteTr/YolDanisma/TrafigeKapaliYollar.aspx";
+        String dailyUrl = "https://www.kgm.gov.tr/Sayfalar/KGM/SiteTr/YolDanisma/GunlukYolDurumuBulteni.aspx";
+
+        List<String> closedRows = fetchKgmTableRows(closedUrl);
+        List<String> dailyRows = fetchKgmTableRows(dailyUrl);
+
+        JSONArray alerts = new JSONArray();
+        int closedCount = 0;
+        int workCount = 0;
+
+        Set<String> seen = new HashSet<>();
+        ArrayList<String> needles = new ArrayList<>();
+        if (!safeDistrict.isEmpty()) needles.add(foldRoadText(safeDistrict));
+        if (!safeCity.isEmpty()) needles.add(foldRoadText(safeCity));
+
+        for (String row : closedRows) {
+            if (!roadRowMatchesPlace(row, needles)) continue;
+            String folded = foldRoadText(row);
+            if (!(folded.contains("KAPALI") || folded.contains("KAPAN") ||
+                    folded.contains("HEYELAN") || folded.contains("KAR") ||
+                    folded.contains("TIPI") || folded.contains("ULASIMA KAPALI"))) continue;
+
+            if (seen.add(row)) {
+                closedCount++;
+                if (alerts.length() < 4) alerts.put(row);
+            }
+        }
+
+        for (String row : dailyRows) {
+            if (!roadRowMatchesPlace(row, needles)) continue;
+            String folded = foldRoadText(row);
+            if (!(folded.contains("CALIS") || folded.contains("KONTROLLU") ||
+                    folded.contains("BAKIM") || folded.contains("ONARIM") ||
+                    folded.contains("TRAFIGE KAPAT") || folded.contains("SERVIS YOLU") ||
+                    folded.contains("TEK SERIT"))) continue;
+
+            if (seen.add(row)) {
+                workCount++;
+                if (alerts.length() < 4) alerts.put(row);
+            }
+        }
+
+        JSONObject out = new JSONObject();
+        out.put("city", safeCity);
+        out.put("district", safeDistrict);
+        out.put("closedCount", closedCount);
+        out.put("workCount", workCount);
+        out.put("alerts", alerts);
+        out.put("updatedAt", System.currentTimeMillis());
+        out.put("source", "KGM");
+
+        String place = !safeDistrict.isEmpty() ? safeDistrict : safeCity;
+        if (place.isEmpty()) place = "Konum";
+
+        if (closedCount > 0) {
+            out.put("status", "closed");
+            out.put("title", place + " • " + closedCount + " kapalı/kısıtlı yol bildirimi");
+        } else if (workCount > 0) {
+            out.put("status", "work");
+            out.put("title", place + " • " + workCount + " yol çalışması/kontrollü geçiş");
+        } else {
+            out.put("status", "clear");
+            out.put("title", place + " • KGM aktif kapanma kaydı yok");
+        }
+        return out;
+    }
+
+    private List<String> fetchKgmTableRows(String url) throws Exception {
+        HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+        c.setConnectTimeout(9000);
+        c.setReadTimeout(12000);
+        c.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 16) AracimPro/7.4");
+        c.setRequestProperty("Accept-Language", "tr-TR,tr;q=0.9");
+
+        int code = c.getResponseCode();
+        InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
+        if (stream == null) throw new IllegalStateException("KGM yanıt vermedi");
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+        StringBuilder html = new StringBuilder();
+        String line;
+        while ((line = br.readLine()) != null) html.append(line).append('\n');
+        br.close();
+        c.disconnect();
+
+        if (code < 200 || code >= 300) throw new IllegalStateException("KGM HTTP " + code);
+
+        ArrayList<String> rows = new ArrayList<>();
+        Matcher m = Pattern.compile("(?is)<tr[^>]*>(.*?)</tr>").matcher(html.toString());
+
+        while (m.find()) {
+            String raw = m.group(1)
+                    .replaceAll("(?is)<script.*?</script>", " ")
+                    .replaceAll("(?is)<style.*?</style>", " ");
+
+            String text;
+            try {
+                text = Html.fromHtml(raw, Html.FROM_HTML_MODE_LEGACY).toString();
+            } catch (Throwable t) {
+                text = raw.replaceAll("(?s)<[^>]+>", " ");
+            }
+
+            text = text.replace('\u00A0', ' ').replaceAll("\\s+", " ").trim();
+            if (text.length() >= 12) rows.add(text);
+        }
+        return rows;
+    }
+
+    private boolean roadRowMatchesPlace(String row, List<String> needles) {
+        if (needles == null || needles.isEmpty()) return false;
+        String folded = foldRoadText(row);
+
+        for (String n : needles) {
+            if (n != null && n.length() >= 3 && folded.contains(n)) return true;
+        }
+        return false;
+    }
+
+    private String foldRoadText(String value) {
+        String v = value == null ? "" : value.toUpperCase(new Locale("tr", "TR"));
+        return v.replace('İ','I')
+                .replace('Ş','S')
+                .replace('Ğ','G')
+                .replace('Ü','U')
+                .replace('Ö','O')
+                .replace('Ç','C');
     }
 
     private void openNearbyNative(String query) {
