@@ -268,6 +268,23 @@ html[dir="rtl"] body{text-align:right}
 .liveTickerDots i{width:4px;height:4px;border-radius:50%;background:#35506d}
 .liveTickerDots i.active{width:12px;border-radius:99px;background:#4ba9ff}
 
+
+/* ARACIM PRO V7.4.1 CONTINUOUS LIVE RIBBON */
+.liveTickerViewport{
+  scroll-snap-type:none !important;
+  scroll-behavior:auto !important;
+  overflow-x:auto;
+  touch-action:pan-x;
+}
+.liveTickerItem{
+  flex:0 0 auto !important;
+  width:auto !important;
+  min-width:250px;
+  max-width:320px;
+  scroll-snap-align:none !important;
+}
+.liveTickerDots{display:none !important}
+
 </style>
 </head>
 <body>
@@ -639,6 +656,9 @@ let apLiveTickerTimer=0;
 let apLiveTickerRefreshTimer=0;
 let apLiveTickerIndex=0;
 let apLiveTickerTouchUntil=0;
+let apLiveTickerRaf=0;
+let apLiveTickerLast=0;
+let apWeatherPendingAt=0;
 
 function liveTickerItems(){
   const out=[];
@@ -654,11 +674,31 @@ function liveTickerItems(){
       click:'weatherDetailModal()'
     });
   }else{
-    out.push({icon:'🌤️',title:'Hava durumu alınıyor',sub:'Konuma göre otomatik yenilenir',click:'weatherDetailModal()'});
+    const ws=String(state.prefs.weatherStatus||'');
+    const waited=apWeatherPendingAt?Date.now()-apWeatherPendingAt:0;
+    const failed=waited>15000;
+    out.push({
+      icon:'🌤️',
+      title:ws&&(/izin|GPS|alınamadı|erişilemiyor/i.test(ws))?ws:(failed?'Hava verisi alınamadı':'Hava durumu alınıyor'),
+      sub:failed?'Konum/GPS ve interneti kontrol et':'Konumdan otomatik yenilenir',
+      cls:failed?'warn':'',
+      click:'weatherDetailModal()'
+    });
   }
 
   const fuel=state.fuelMarket||{};
-  if(fuel.news?.length){
+  if(fuel.live && (+fuel.gasoline>0 || +fuel.diesel>0 || +fuel.lpg>0)){
+    const parts=[];
+    if(+fuel.gasoline>0)parts.push(`Benzin ${Number(fuel.gasoline).toFixed(2)} ₺`);
+    if(+fuel.diesel>0)parts.push(`Motorin ${Number(fuel.diesel).toFixed(2)} ₺`);
+    if(+fuel.lpg>0)parts.push(`LPG ${Number(fuel.lpg).toFixed(2)} ₺`);
+    out.push({
+      icon:'⛽',
+      title:parts.join(' • '),
+      sub:`${fuel.city||state.prefs.fuelCity||'Türkiye'} • ${fuel.source||'canlı veri'}`,
+      click:'fuelMarketModal(false)'
+    });
+  }else if(fuel.news?.length){
     out.push({
       icon:'⛽',
       title:fuel.news[0].title||'Akaryakıt haberi',
@@ -669,8 +709,8 @@ function liveTickerItems(){
   }else{
     out.push({
       icon:'⛽',
-      title:'Akaryakıt • yeni zam haberi yok',
-      sub:'Haber akışı otomatik kontrol edilir',
+      title:'Akaryakıt verisi alınıyor',
+      sub:'EPDK / haber kaynakları otomatik kontrol ediliyor',
       click:'fuelMarketModal(false)'
     });
   }
@@ -745,6 +785,7 @@ function liveTickerItems(){
 
 function liveTickerHtml(){
   const items=liveTickerItems();
+  const loop=items.length>1?[...items,...items]:items;
   return `<div class="liveRibbon" id="liveRibbon">
     <div class="liveRibbonHead">
       <span class="liveRibbonState"><i class="liveDot"></i> CANLI BİLGİ</span>
@@ -753,13 +794,12 @@ function liveTickerHtml(){
     <div class="liveTickerViewport" id="liveTickerViewport"
       ontouchstart="apLiveTickerTouchUntil=Date.now()+9000"
       onscroll="updateLiveTickerDots()">
-      ${items.map((x,i)=>`<div class="liveTickerItem ${x.cls||''}" onclick="${x.click||''}">
+      ${loop.map((x,i)=>`<div class="liveTickerItem ${x.cls||''}" onclick="${x.click||''}">
         <span class="ltIcon">${x.icon}</span>
         <span class="ltText"><b>${esc(x.title)}</b><small>${esc(x.sub||'')}</small></span>
         <span style="color:#6f91b4">›</span>
       </div>`).join('')}
     </div>
-    <div class="liveTickerDots" id="liveTickerDots">${items.map((_,i)=>`<i class="${i===0?'active':''}"></i>`).join('')}</div>
   </div>`;
 }
 
@@ -778,15 +818,21 @@ function updateLiveTickerDots(){
   dots.forEach((d,i)=>d.classList.toggle('active',i===best));
 }
 
-function advanceLiveTicker(){
-  if(Date.now()<apLiveTickerTouchUntil)return;
+function advanceLiveTicker(ts){
   const vp=document.getElementById('liveTickerViewport');
-  if(!vp)return;
-  const cards=[...vp.querySelectorAll('.liveTickerItem')];
-  if(cards.length<2)return;
-  apLiveTickerIndex=(apLiveTickerIndex+1)%cards.length;
-  vp.scrollTo({left:cards[apLiveTickerIndex].offsetLeft,behavior:'smooth'});
-  updateLiveTickerDots();
+  if(!vp){apLiveTickerRaf=requestAnimationFrame(advanceLiveTicker);return}
+
+  if(!apLiveTickerLast)apLiveTickerLast=ts;
+  const dt=Math.min(50,Math.max(0,ts-apLiveTickerLast));
+  apLiveTickerLast=ts;
+
+  if(document.visibilityState==='visible' && Date.now()>=apLiveTickerTouchUntil){
+    vp.scrollLeft += dt*0.018;
+    const half=vp.scrollWidth/2;
+    if(half>0 && vp.scrollLeft>=half)vp.scrollLeft-=half;
+  }
+
+  apLiveTickerRaf=requestAnimationFrame(advanceLiveTicker);
 }
 
 function refreshLiveTickerOnly(){
@@ -802,8 +848,12 @@ function autoLiveDataRefresh(){
   const now=Date.now();
   const wc=state.prefs.weatherCache||{};
   if(!wc.ts || now-(+wc.ts||0)>10*60*1000){
-    window._homeWeatherCapture=true;
-    try{Android.startSpeedTracking()}catch(e){}
+    apWeatherPendingAt=Date.now();
+    state.prefs.weatherStatus='Hava verisi alınıyor';
+    try{
+      if(typeof Android.fetchWeatherAuto==='function')Android.fetchWeatherAuto();
+      else {window._homeWeatherCapture=true;Android.startSpeedTracking()}
+    }catch(e){state.prefs.weatherStatus='Hava servisine erişilemiyor'}
   }
 
   const fm=state.fuelMarket||{};
@@ -817,16 +867,20 @@ function autoLiveDataRefresh(){
 function startLiveTickerAuto(){
   clearInterval(apLiveTickerTimer);
   clearInterval(apLiveTickerRefreshTimer);
-  apLiveTickerTimer=setInterval(advanceLiveTicker,4200);
+  if(apLiveTickerRaf)cancelAnimationFrame(apLiveTickerRaf);
+  apLiveTickerLast=0;
+  apLiveTickerRaf=requestAnimationFrame(advanceLiveTicker);
+
   apLiveTickerRefreshTimer=setInterval(()=>{
     if(document.visibilityState==='visible')autoLiveDataRefresh();
   },5*60*1000);
+
   setTimeout(autoLiveDataRefresh,700);
 }
 
 function applyTheme(){document.body.classList.toggle('dark',!!state.prefs.dark)}
 
-function header(){const v=activeVehicle(),u=communityAuthState;return `<header class="header"><div class="brandrow"><div class="logo">${ico('car')}</div><div><div class="brand">Aracım <b>Pro</b> <span class="badgePro">V7.4.0</span></div><div class="muted small">GLOBAL • Hoş geldiniz 👋 • Teknik katalog • kullanıcı deneyimleri • piyasa değeri • bakım</div></div><div class="grow"></div><button class="iconbtn" onclick="languageModal()" title="Dil & Ülke">${countryFlag()}</button><button class="iconbtn" onclick="openAccount()" title="Kullanıcı hesabı">${ico('user')}</button><button class="iconbtn" onclick="openSettings()">${ico('settings')}</button></div>${liveTickerHtml()}${u.signedIn?`<div style="margin-top:7px"><span class="accountPill">${esc(u.name||u.email||'Oturum açık')}</span></div>`:''}${state.vehicles.length&&current!=='home'?`<div class="vehicleSelect"><select onchange="setActive(this.value)">${state.vehicles.map(x=>`<option value="${x.id}" ${x.id===v?.id?'selected':''}>${esc((x.year||'')+' '+x.make+' '+x.model)} • ${esc(x.plate||'Plakasız')}</option>`).join('')}</select><button class="iconbtn" onclick="openVehicle()">${ico('plus')}</button></div>`:''}</header>`}
+function header(){const v=activeVehicle(),u=communityAuthState;return `<header class="header"><div class="brandrow"><div class="logo">${ico('car')}</div><div><div class="brand">Aracım <b>Pro</b> <span class="badgePro">V7.4.1</span></div><div class="muted small">GLOBAL • Hoş geldiniz 👋 • Teknik katalog • kullanıcı deneyimleri • piyasa değeri • bakım</div></div><div class="grow"></div><button class="iconbtn" onclick="languageModal()" title="Dil & Ülke">${countryFlag()}</button><button class="iconbtn" onclick="openAccount()" title="Kullanıcı hesabı">${ico('user')}</button><button class="iconbtn" onclick="openSettings()">${ico('settings')}</button></div>${liveTickerHtml()}${u.signedIn?`<div style="margin-top:7px"><span class="accountPill">${esc(u.name||u.email||'Oturum açık')}</span></div>`:''}${state.vehicles.length&&current!=='home'?`<div class="vehicleSelect"><select onchange="setActive(this.value)">${state.vehicles.map(x=>`<option value="${x.id}" ${x.id===v?.id?'selected':''}>${esc((x.year||'')+' '+x.make+' '+x.model)} • ${esc(x.plate||'Plakasız')}</option>`).join('')}</select><button class="iconbtn" onclick="openVehicle()">${ico('plus')}</button></div>`:''}</header>`}
 const navItems=[['home','home','Ana'],['garage','garage','Garaj'],['records','records','Kayıt'],['plan','wrench','Plan'],['reports','chart','Rapor'],['more','menu','Daha']];
 function nav(){return `<nav class="nav">${navItems.map(([k,i,l])=>`<button class="${current===k?'active':''}" onclick="go('${k}')"><i>${ico(i)}</i>${l}</button>`).join('')}</nav>`}
 function go(k){current=k;closeModal();render();scrollTo(0,0)}
@@ -843,9 +897,9 @@ function driveMiniCard(){return `<button class="card driveBanner wide" onclick="
 /* ARACIM PRO 7.1 JS */
 function weatherEmoji(code){code=+code||0;if(code===0)return'☀️';if(code<=2)return'🌤️';if(code===3)return'☁️';if(code===45||code===48)return'🌫️';if((code>=51&&code<=67)||(code>=80&&code<=82))return'🌧️';if((code>=71&&code<=77)||(code>=85&&code<=86))return'🌨️';if(code>=95)return'⛈️';return'🌤️'}
 function weatherName(code){code=+code||0;if(code===0)return'Açık';if(code<=2)return'Parçalı bulutlu';if(code===3)return'Bulutlu';if(code===45||code===48)return'Sisli';if(code>=51&&code<=67)return'Yağışlı';if(code>=71&&code<=77)return'Karlı';if(code>=80&&code<=82)return'Sağanak';if(code>=85&&code<=86)return'Kar sağanağı';if(code>=95)return'Gök gürültülü';return'Hava durumu'}
-function loadHomeWeather(){const c=state.prefs.weatherCache;if(c&&Date.now()-(+c.ts||0)<30*60*1000){refreshTodayBar();return}window._homeWeatherCapture=true;try{Android.startSpeedTracking()}catch(e){refreshTodayBar()}}
+function loadHomeWeather(){const c=state.prefs.weatherCache;if(c&&Date.now()-(+c.ts||0)<10*60*1000){refreshTodayBar();return}apWeatherPendingAt=Date.now();state.prefs.weatherStatus='Hava verisi alınıyor';try{if(typeof Android.fetchWeatherAuto==='function')Android.fetchWeatherAuto();else{window._homeWeatherCapture=true;Android.startSpeedTracking()}}catch(e){state.prefs.weatherStatus='Hava servisine erişilemiyor';refreshTodayBar();refreshLiveTickerOnly()}}
 function refreshTodayBar(){const c=state.prefs.weatherCache||{},t=document.getElementById('weatherTitle'),sub=document.getElementById('weatherSub'),ic=document.getElementById('weatherIcon'),chip=document.getElementById('weatherChip'),h=document.getElementById('healthChipTitle');if(t)t.textContent=c.temp!=null?`Hava ${Math.round(c.temp)}°C`:'Hava --°C';if(ic)ic.textContent=weatherEmoji(c.code);if(sub)sub.textContent=c.temp!=null?`${weatherName(c.code)} • Rüzgar ${Math.round(c.wind||0)} km/s`:'Konumdan güncelleniyor';if(chip&&c.temp!=null)chip.classList.add('weatherReady');if(h)h.textContent=vehicleHealthScore().label;const rg=fuelRangeData(),al=smartAlertItems(),rc=document.getElementById('rangeChipTitle'),ac=document.getElementById('alertChipTitle');if(rc)rc.textContent=rg.pct?`Menzil ${Math.round(rg.range)} km`:'Menzil —';if(ac)ac.textContent=`Uyarı ${al.length}`}
-window.onWeatherResult=(payload,error)=>{if(error){console.log('weather',error);refreshTodayBar();return}try{const d=JSON.parse(payload||'{}'),c=d.current||{},day=d.daily||{};state.prefs.weatherCache={temp:c.temperature_2m,feels:c.apparent_temperature,precip:c.precipitation,code:c.weather_code,wind:c.wind_speed_10m,max:Array.isArray(day.temperature_2m_max)?day.temperature_2m_max[0]:null,min:Array.isArray(day.temperature_2m_min)?day.temperature_2m_min[0]:null,rainChance:Array.isArray(day.precipitation_probability_max)?day.precipitation_probability_max[0]:null,ts:Date.now()};localStorage.setItem(KEY,JSON.stringify(state));refreshTodayBar();setTimeout(refreshLiveTickerOnly,60)}catch(e){console.log(e)}}
+window.onWeatherResult=(payload,error)=>{apWeatherPendingAt=0;if(error){state.prefs.weatherStatus=String(error||'Hava durumu alınamadı');console.log('weather',error);localStorage.setItem(KEY,JSON.stringify(state));refreshTodayBar();refreshLiveTickerOnly();return}try{const d=JSON.parse(payload||'{}'),c=d.current||{},day=d.daily||{};if(c.temperature_2m==null)throw new Error('Hava servisi sıcaklık döndürmedi');state.prefs.weatherStatus='';state.prefs.weatherCache={temp:c.temperature_2m,feels:c.apparent_temperature,precip:c.precipitation,code:c.weather_code,wind:c.wind_speed_10m,max:Array.isArray(day.temperature_2m_max)?day.temperature_2m_max[0]:null,min:Array.isArray(day.temperature_2m_min)?day.temperature_2m_min[0]:null,rainChance:Array.isArray(day.precipitation_probability_max)?day.precipitation_probability_max[0]:null,ts:Date.now()};localStorage.setItem(KEY,JSON.stringify(state));refreshTodayBar();setTimeout(refreshLiveTickerOnly,60)}catch(e){state.prefs.weatherStatus='Hava verisi okunamadı';console.log(e);refreshLiveTickerOnly()}}
 function weatherDetailModal(){const c=state.prefs.weatherCache||{};if(c.temp==null){loadHomeWeather();return modal('Hava Durumu',`<div class="notice">Konumdan hava durumu alınıyor. Birkaç saniye sonra tekrar aç.</div>`)}modal('Hava Durumu',`<div class="proPanel"><div class="proPanelTitle"><i style="font-size:24px">${weatherEmoji(c.code)}</i><div><b>${Math.round(c.temp)}°C • ${weatherName(c.code)}</b><span>Hissedilen ${Math.round(c.feels??c.temp)}°C</span></div></div><div class="assistSummary"><div class="sumCard"><span>Bugün en yüksek</span><b>${c.max!=null?Math.round(c.max)+'°C':'—'}</b></div><div class="sumCard"><span>Bugün en düşük</span><b>${c.min!=null?Math.round(c.min)+'°C':'—'}</b></div><div class="sumCard"><span>Yağış ihtimali</span><b>${c.rainChance!=null?Math.round(c.rainChance)+'%':'—'}</b></div><div class="sumCard"><span>Rüzgar</span><b>${Math.round(c.wind||0)} km/s</b></div></div>${(+c.precip>0||(+c.rainChance||0)>=50)?`<div class="notice" style="margin-top:10px">⚠️ Yağış ihtimali yüksek. Yolculukta takip mesafesini artır ve hızını koşullara göre ayarla.</div>`:''}<button class="secondary wide" style="margin-top:10px" onclick="state.prefs.weatherCache=null;save();closeModal();loadHomeWeather()">Havayı Yenile</button></div>`)}
 
 function openOfficialUrl(u){try{Android.openUri(u,'')}catch(e){location.href=u}}
@@ -1546,7 +1600,7 @@ function startLiveSpeed(){try{Android.startSpeedTracking()}catch(e){toast('GPS h
 function stopLiveSpeed(){try{Android.stopSpeedTracking()}catch(e){};const e=document.getElementById('speedAccuracy');if(e)e.textContent='Durduruldu'}
 function openLocationSettings(){try{Android.openLocationSettings()}catch(e){toast('Konum ayarları açılamadı')}}
 window.onLocationPermissionResult=ok=>{const l=document.getElementById('driveLocation');if(!ok){toast('Konum izni gerekli');if(l)l.textContent='Konum izni verilmedi.'}else if(l)l.textContent='Konum izni verildi • GPS konumu alınıyor…'};
-window.onLocationStatus=msg=>{const l=document.getElementById('driveLocation'),a=document.getElementById('speedAccuracy');if(l&&msg)l.textContent=msg;if(a&&msg&&(/GPS|Konum|konum/.test(msg)))a.textContent=msg};
+window.onLocationStatus=msg=>{const l=document.getElementById('driveLocation'),a=document.getElementById('speedAccuracy');if(l&&msg)l.textContent=msg;if(a&&msg&&(/GPS|Konum|konum/.test(msg)))a.textContent=msg;if(msg&&(/hava|konum|GPS|izin/i.test(msg))){state.prefs.weatherStatus=msg;if(/alınamadı|erişilemiyor|kapalı|izin/i.test(msg))apWeatherPendingAt=0;setTimeout(refreshLiveTickerOnly,50)}};
 window.onSpeedUpdate=(kmh,accuracy,lat,lon)=>{const s=document.getElementById('liveSpeed'),a=document.getElementById('speedAccuracy'),l=document.getElementById('driveLocation');if(s)s.textContent=Math.round(+kmh||0);if(a)a.textContent=accuracy>0?'GPS doğruluğu ±'+Math.round(accuracy)+' m':'GPS aktif';if(l)l.textContent=`Konum alındı • ${Number(lat).toFixed(5)}, ${Number(lon).toFixed(5)}`;window._lastGps={lat:+lat,lon:+lon,accuracy:+accuracy||0,ts:Date.now()};speedLimitTick(kmh);if(window._parkingCapture)saveParkingFromGps(lat,lon,accuracy);if(window._homeWeatherCapture){window._homeWeatherCapture=false;try{Android.fetchWeather(+lat,+lon)}catch(e){};if(!document.getElementById('liveSpeed'))try{Android.stopSpeedTracking()}catch(e){}}if(window._accidentLocationCapture){shareAccidentCoords(+lat,+lon);if(!document.getElementById('liveSpeed'))try{Android.stopSpeedTracking()}catch(e){}}};
 function openNearby(q){try{Android.openNearby(q)}catch(e){toast('Harita açılamıyor')}}
 function nearbyFuel(){openNearby(regionalQuery('benzin istasyonu','gas station'))}

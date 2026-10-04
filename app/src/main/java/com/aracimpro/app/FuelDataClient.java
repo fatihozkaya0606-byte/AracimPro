@@ -50,16 +50,62 @@ public final class FuelDataClient {
         JSONObject out = new JSONObject();
         String c = city == null || city.trim().isEmpty() ? "Ankara" : city.trim();
         String selected = fuelType == null || fuelType.trim().isEmpty() ? "Benzin" : fuelType.trim();
+
+        double gasoline = 0d, diesel = 0d, lpg = 0d;
+        String source = "";
+        String warning = "";
+
+        if (liveDataBaseUrl != null && !liveDataBaseUrl.trim().isEmpty()) {
+            try {
+                JSONObject g = fetchGatewayFuel(liveDataBaseUrl, c, selected);
+                gasoline = g.optDouble("gasoline", 0d);
+                diesel = g.optDouble("diesel", 0d);
+                lpg = g.optDouble("lpg", 0d);
+                source = g.optString("source", "Canlı veri");
+                warning = g.optString("warning", "");
+            } catch (Exception ignored) {}
+        }
+
+        if (gasoline <= 0d || diesel <= 0d) {
+            try {
+                JSONObject e = fetchEpdkPetrolPrices(c);
+                if (gasoline <= 0d) gasoline = e.optDouble("gasoline", 0d);
+                if (diesel <= 0d) diesel = e.optDouble("diesel", 0d);
+                if (source.isEmpty() && (gasoline > 0d || diesel > 0d)) source = "EPDK";
+            } catch (Exception e) {
+                if (warning.isEmpty()) warning = safeMessage(e);
+            }
+        }
+
+        if (gasoline <= 0d || diesel <= 0d || lpg <= 0d) {
+            try {
+                JSONObject po = fetchPetrolOfisiPrices(c);
+                if (gasoline <= 0d) gasoline = po.optDouble("gasoline", 0d);
+                if (diesel <= 0d) diesel = po.optDouble("diesel", 0d);
+                if (lpg <= 0d) lpg = po.optDouble("lpg", 0d);
+                if (source.isEmpty() && (gasoline > 0d || diesel > 0d || lpg > 0d)) source = "Petrol Ofisi";
+            } catch (Exception ignored) {}
+        }
+
+        String norm = normalize(selected);
+        double selectedPrice;
+        if (norm.contains("LPG") || norm.contains("OTOGAZ")) selectedPrice = lpg;
+        else if (norm.contains("MOTORIN") || norm.contains("DIZEL")) selectedPrice = diesel;
+        else selectedPrice = gasoline;
+
+        boolean live = gasoline > 0d || diesel > 0d || lpg > 0d;
+
         out.put("city", c);
         out.put("selectedType", selected);
         out.put("updatedAt", System.currentTimeMillis());
-        out.put("gasoline", 0d);
-        out.put("diesel", 0d);
-        out.put("lpg", 0d);
-        out.put("selectedPrice", 0d);
-        out.put("live", false);
-        out.put("source", "Akaryakıt zam haberleri");
+        out.put("gasoline", gasoline);
+        out.put("diesel", diesel);
+        out.put("lpg", lpg);
+        out.put("selectedPrice", selectedPrice);
+        out.put("live", live);
+        out.put("source", source.isEmpty() ? "Akaryakıt haberleri" : source);
         out.put("news", fetchFuelNews());
+        if (!warning.isEmpty()) out.put("warning", warning);
         return out;
     }
 
