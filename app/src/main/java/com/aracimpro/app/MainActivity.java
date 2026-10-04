@@ -566,12 +566,6 @@ public class MainActivity extends Activity {
         bannerAdView.loadAd(new AdRequest.Builder().build());
     }
 
-    @Override protected void onDestroy() {
-        try { if (billingClient != null) billingClient.endConnection(); } catch (Throwable ignored) {}
-        try { if (bannerAdView != null) bannerAdView.destroy(); } catch (Throwable ignored) {}
-        super.onDestroy();
-    }
-
     @Override public void onBackPressed() {
         if (webView != null) webView.evaluateJavascript("window.appBack && window.appBack()", null);
         else super.onBackPressed();
@@ -2481,6 +2475,7 @@ public class MainActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
+        try { if (billingClient != null) billingClient.endConnection(); } catch (Throwable ignored) {}
         for (Translator translator : uiTranslators.values()) {
             try { translator.close(); } catch (Throwable ignored) {}
         }
