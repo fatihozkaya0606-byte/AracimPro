@@ -322,7 +322,7 @@ function setGlobalPreferences(){
  const lc=document.getElementById('appLangSelect')?.value||apLang();
  const cc=document.getElementById('appCountrySelect')?.value||apCountry();
  const safeLang=(lc==='tr'||AP_ML_TARGET[lc])?lc:'tr';
- state.prefs.language=safeLang; state.prefs.country=cc;if(safeLang!=='tr')setTimeout(apShowLangLoading,0);
+ state.prefs.language=safeLang; state.prefs.country=cc;apNativeToastLang='';
  if(!state.prefs.unitSystem)state.prefs.unitSystem=AP_COUNTRIES[cc]?.u||'metric';
  localStorage.setItem(KEY,JSON.stringify(state));
  closeModal(); render();
@@ -342,7 +342,7 @@ function applyI18n(root=document){
 function setAppLanguage(code){
  if(!AP_LANGS[code])return;
  const safe=(code==='tr'||AP_ML_TARGET[code])?code:'tr';
- state.prefs.language=safe;if(safe!=='tr')setTimeout(apShowLangLoading,0);
+ state.prefs.language=safe;apNativeToastLang='';
  localStorage.setItem(KEY,JSON.stringify(state));
  closeModal();render();
  setTimeout(()=>scheduleNativeI18n(document.body),160);
@@ -358,7 +358,7 @@ function languageModal(){
 }
 
 
-/* ARACIM PRO V7.3.5 TRUE FULL LANGUAGE ENGINE */
+/* ARACIM PRO V7.3.6 TRUE FULL LANGUAGE ENGINE */
 const AP_ML_TARGET={
   en:'en',de:'de',fr:'fr',es:'es',it:'it',pt:'pt',nl:'nl',ar:'ar',
   ru:'ru',uk:'uk',fa:'fa',pl:'pl',ro:'ro',bg:'bg',el:'el',cs:'cs',
@@ -374,12 +374,12 @@ let apNativeBusy=false,apNativeTimer=0,apNativeSeq=0,apNativeToastLang='';
 
 function apNativeCache(lang){
   if(apNativeCaches[lang])return apNativeCaches[lang];
-  try{apNativeCaches[lang]=JSON.parse(localStorage.getItem('aracimpro_full_i18n_v4_'+lang)||'{}')||{}}
+  try{apNativeCaches[lang]=JSON.parse(localStorage.getItem('aracimpro_full_i18n_v6_'+lang)||'{}')||{}}
   catch(e){apNativeCaches[lang]={}}
   return apNativeCaches[lang];
 }
 function apSaveNativeCache(lang){
-  try{localStorage.setItem('aracimpro_full_i18n_v4_'+lang,JSON.stringify(apNativeCaches[lang]||{}))}catch(e){}
+  try{localStorage.setItem('aracimpro_full_i18n_v6_'+lang,JSON.stringify(apNativeCaches[lang]||{}))}catch(e){}
 }
 function apShouldTranslateUI(t){
   t=String(t||'').trim();
@@ -407,23 +407,10 @@ function apAddTranslationCandidate(groups,source,setter){
 }
 function apShowLangLoading(){
   if(apLang()==='tr')return;
-  let el=document.getElementById('apLangLoading');
-  if(!el){
-    el=document.createElement('div');
-    el.id='apLangLoading';
-    el.style.cssText='position:fixed;inset:0;z-index:99999;background:#0d1726f2;display:grid;place-items:center;color:white;text-align:center;padding:28px';
-    document.body.appendChild(el);
-  }
-  el.innerHTML=`<div><div style="font-size:42px;margin-bottom:14px">🌍</div><b style="font-size:20px">${AP_LANGS[apLang()]?.[0]||apLang()}</b><div style="margin-top:8px;opacity:.8">Uygulama dili hazırlanıyor…</div></div>`;
-  el.style.display='grid';
-  clearTimeout(window.__apLangSafetyTimer);
-  window.__apLangSafetyTimer=setTimeout(()=>apHideLangLoading(),12000);
+  try{toast('🌐 '+(AP_LANGS[apLang()]?.[0]||apLang())+' çevirisi uygulanıyor…')}catch(e){}
 }
-function apHideLangLoading(){
-  clearTimeout(window.__apLangSafetyTimer);
-  const el=document.getElementById('apLangLoading');
-  if(el)el.style.display='none';
-}
+function apHideLangLoading(){}
+
 function apRunNativeI18n(root=document){
   const lang=apLang();
   if(lang==='tr'){apHideLangLoading();return}
@@ -492,11 +479,15 @@ function apRunNativeI18n(root=document){
   const all=[...groups.keys()];
   if(!all.length){
     apHideLangLoading();
+    if(apNativeToastLang===lang){
+      apNativeToastLang='';
+      try{toast('✅ '+(AP_LANGS[lang]?.[0]||lang)+' hazır')}catch(e){}
+    }
     return;
   }
 
-  const texts=all.slice(0,80);
-  const id='ap734_'+(++apNativeSeq);
+  const texts=all.slice(0,140);
+  const id='ap736_'+(++apNativeSeq);
   const selected=new Map(texts.map(t=>[t,groups.get(t)]));
   apNativePending[id]={lang,texts,groups:selected};
   apNativeBusy=true;
@@ -539,7 +530,7 @@ window.onNativeTranslations=(requestId,payload,error)=>{
     apHideLangLoading();
     setTimeout(()=>scheduleNativeI18n(document.body,1200),1200);
   }else{
-    setTimeout(()=>scheduleNativeI18n(document.body,80),80);
+    setTimeout(()=>scheduleNativeI18n(document.body,50),50);
   }
 };
 
@@ -566,14 +557,13 @@ setTimeout(()=>{
       if(needs)scheduleNativeI18n(document.body,120);
     });
     obs.observe(document.body,{childList:true,subtree:true,characterData:true});
-    if(apLang()!=='tr')apShowLangLoading();
     scheduleNativeI18n(document.body,120);
   }catch(e){}
 },350);
 
 function applyTheme(){document.body.classList.toggle('dark',!!state.prefs.dark)}
 
-function header(){const v=activeVehicle(),u=communityAuthState;return `<header class="header"><div class="brandrow"><div class="logo">${ico('car')}</div><div><div class="brand">Aracım <b>Pro</b> <span class="badgePro">V7.3.5</span></div><div class="muted small">GLOBAL • Hoş geldiniz 👋 • Teknik katalog • kullanıcı deneyimleri • piyasa değeri • bakım</div></div><div class="grow"></div><button class="iconbtn" onclick="languageModal()" title="Dil & Ülke">${countryFlag()}</button><button class="iconbtn" onclick="openAccount()" title="Kullanıcı hesabı">${ico('user')}</button><button class="iconbtn" onclick="openSettings()">${ico('settings')}</button></div>${u.signedIn?`<div style="margin-top:7px"><span class="accountPill">${esc(u.name||u.email||'Oturum açık')}</span></div>`:''}${state.vehicles.length&&current!=='home'?`<div class="vehicleSelect"><select onchange="setActive(this.value)">${state.vehicles.map(x=>`<option value="${x.id}" ${x.id===v?.id?'selected':''}>${esc((x.year||'')+' '+x.make+' '+x.model)} • ${esc(x.plate||'Plakasız')}</option>`).join('')}</select><button class="iconbtn" onclick="openVehicle()">${ico('plus')}</button></div>`:''}</header>`}
+function header(){const v=activeVehicle(),u=communityAuthState;return `<header class="header"><div class="brandrow"><div class="logo">${ico('car')}</div><div><div class="brand">Aracım <b>Pro</b> <span class="badgePro">V7.3.6</span></div><div class="muted small">GLOBAL • Hoş geldiniz 👋 • Teknik katalog • kullanıcı deneyimleri • piyasa değeri • bakım</div></div><div class="grow"></div><button class="iconbtn" onclick="languageModal()" title="Dil & Ülke">${countryFlag()}</button><button class="iconbtn" onclick="openAccount()" title="Kullanıcı hesabı">${ico('user')}</button><button class="iconbtn" onclick="openSettings()">${ico('settings')}</button></div>${u.signedIn?`<div style="margin-top:7px"><span class="accountPill">${esc(u.name||u.email||'Oturum açık')}</span></div>`:''}${state.vehicles.length&&current!=='home'?`<div class="vehicleSelect"><select onchange="setActive(this.value)">${state.vehicles.map(x=>`<option value="${x.id}" ${x.id===v?.id?'selected':''}>${esc((x.year||'')+' '+x.make+' '+x.model)} • ${esc(x.plate||'Plakasız')}</option>`).join('')}</select><button class="iconbtn" onclick="openVehicle()">${ico('plus')}</button></div>`:''}</header>`}
 const navItems=[['home','home','Ana'],['garage','garage','Garaj'],['records','records','Kayıt'],['plan','wrench','Plan'],['reports','chart','Rapor'],['more','menu','Daha']];
 function nav(){return `<nav class="nav">${navItems.map(([k,i,l])=>`<button class="${current===k?'active':''}" onclick="go('${k}')"><i>${ico(i)}</i>${l}</button>`).join('')}</nav>`}
 function go(k){current=k;closeModal();render();scrollTo(0,0)}
