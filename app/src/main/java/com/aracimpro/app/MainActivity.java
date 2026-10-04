@@ -68,6 +68,11 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.mlkit.common.model.DownloadConditions;
+import com.google.mlkit.nl.translate.Translation;
+import com.google.mlkit.nl.translate.TranslateLanguage;
+import com.google.mlkit.nl.translate.Translator;
+import com.google.mlkit.nl.translate.TranslatorOptions;
 
 import java.io.ByteArrayOutputStream;
 import java.io.BufferedReader;
@@ -93,6 +98,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends Activity {
     private static final int CREATE_FILE_REQUEST = 7701;
@@ -127,6 +133,7 @@ public class MainActivity extends Activity {
     private FirebaseAuth communityAuth;
     private FirebaseFirestore communityDb;
     private boolean communityConfigured = false;
+    private final Map<String, Translator> uiTranslators = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -412,7 +419,78 @@ public class MainActivity extends Activity {
         return o;
     }
 
+
+    private void sendUiTranslationJs(String requestId, JSONArray translations, String error) {
+        runOnUiThread(() -> {
+            if (webView == null) return;
+            String js = "window.onNativeTranslations && window.onNativeTranslations(" +
+                    JSONObject.quote(requestId == null ? "" : requestId) + "," +
+                    JSONObject.quote(translations == null ? "[]" : translations.toString()) + "," +
+                    JSONObject.quote(error == null ? "" : error) + ")";
+            webView.evaluateJavascript(js, null);
+        });
+    }
+
     public class AndroidBridge {
+
+        @JavascriptInterface public void translateUiBatch(String targetTag, String requestId, String jsonTexts) {
+            try {
+                JSONArray input = new JSONArray(jsonTexts == null ? "[]" : jsonTexts);
+                JSONArray output = new JSONArray();
+                for (int i = 0; i < input.length(); i++) output.put(input.optString(i, ""));
+
+                String target = TranslateLanguage.fromLanguageTag(targetTag == null ? "" : targetTag);
+                if (target == null) {
+                    sendUiTranslationJs(requestId, output, "Dil modeli desteklenmiyor");
+                    return;
+                }
+                if (TranslateLanguage.TURKISH.equals(target) || input.length() == 0) {
+                    sendUiTranslationJs(requestId, output, "");
+                    return;
+                }
+
+                Translator translator = uiTranslators.get(target);
+                if (translator == null) {
+                    TranslatorOptions options = new TranslatorOptions.Builder()
+                            .setSourceLanguage(TranslateLanguage.TURKISH)
+                            .setTargetLanguage(target)
+                            .build();
+                    translator = Translation.getClient(options);
+                    uiTranslators.put(target, translator);
+                }
+
+                final Translator tr = translator;
+                DownloadConditions conditions = new DownloadConditions.Builder().build();
+                tr.downloadModelIfNeeded(conditions)
+                        .addOnSuccessListener(v -> {
+                            AtomicInteger remaining = new AtomicInteger(input.length());
+                            for (int i = 0; i < input.length(); i++) {
+                                final int index = i;
+                                final String source = input.optString(i, "");
+                                if (source.trim().isEmpty()) {
+                                    if (remaining.decrementAndGet() == 0) sendUiTranslationJs(requestId, output, "");
+                                    continue;
+                                }
+                                tr.translate(source)
+                                        .addOnSuccessListener(translated -> {
+                                            synchronized (output) {
+                                                try { output.put(index, translated == null ? source : translated); }
+                                                catch (Exception ignored) {}
+                                            }
+                                            if (remaining.decrementAndGet() == 0) sendUiTranslationJs(requestId, output, "");
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            if (remaining.decrementAndGet() == 0) sendUiTranslationJs(requestId, output, "");
+                                        });
+                            }
+                        })
+                        .addOnFailureListener(e -> sendUiTranslationJs(
+                                requestId, output, e == null ? "Dil paketi indirilemedi" : String.valueOf(e.getMessage())));
+            } catch (Exception e) {
+                sendUiTranslationJs(requestId, new JSONArray(), "Çeviri hazırlanamadı");
+            }
+        }
+
         @JavascriptInterface public String communityStatus() {
             return communityStatusJson().toString();
         }
@@ -1814,6 +1892,10 @@ public class MainActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
+        for (Translator translator : uiTranslators.values()) {
+            try { translator.close(); } catch (Throwable ignored) {}
+        }
+        uiTranslators.clear();
         if(bannerAdView!=null){try{bannerAdView.destroy();}catch(Throwable ignored){} bannerAdView=null;}
         stopSpeedTrackingNative();
         try { if (locationManager != null && nearbyLocationListener != null) locationManager.removeUpdates(nearbyLocationListener); } catch (Throwable ignored) {}
