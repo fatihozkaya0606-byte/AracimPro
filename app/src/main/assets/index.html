@@ -67,6 +67,30 @@ main{padding:16px}.hero{background:linear-gradient(145deg,#eaf4ff,#fff);border:1
 .dark .moreTile .qico{filter:saturate(.9) brightness(.85)}
 @media(max-width:345px){.moreGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.moreQuickBar{grid-template-columns:repeat(4,minmax(0,1fr))}.moreTile{min-height:96px}}
 
+
+/* ARACIM PRO 6.1 PROFESSIONAL DRIVER ASSISTANT */
+.moreFilters{display:flex;gap:7px;overflow-x:auto;padding:2px 1px 9px;margin:0 -1px 2px;scrollbar-width:none}
+.moreFilters::-webkit-scrollbar{display:none}
+.moreFilter{border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:999px;padding:8px 11px;font-size:10px;font-weight:900;white-space:nowrap;box-shadow:0 4px 13px rgba(31,92,154,.04)}
+.moreFilter.active{background:linear-gradient(135deg,var(--blue),#2d8fff);color:#fff;border-color:transparent;box-shadow:0 8px 20px rgba(22,117,237,.23)}
+.assistantHead{display:flex;align-items:center;justify-content:space-between;margin:6px 2px 8px}
+.assistantHead b{font-size:13px}.assistantHead span{font-size:9px;color:var(--muted);font-weight:800}
+.driverAssist{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:11px}
+.assistCard{position:relative;border:1px solid var(--line);background:linear-gradient(145deg,var(--card),rgba(22,117,237,.025));color:var(--ink);border-radius:17px;padding:10px 8px;text-align:left;min-height:88px;box-shadow:0 6px 18px rgba(31,92,154,.055)}
+.assistCard .assistIcon{width:32px;height:32px;border-radius:11px;display:grid;place-items:center;background:#edf5ff;color:var(--blue);margin-bottom:7px}
+.assistCard .assistIcon .svgi{width:18px;height:18px}.assistCard b{display:block;font-size:10.5px;line-height:1.12}
+.assistCard small{display:block;color:var(--muted);font-size:8.5px;line-height:1.18;margin-top:3px}
+.assistCard .dot{position:absolute;right:8px;top:9px;width:6px;height:6px;border-radius:50%;background:#21b978;box-shadow:0 0 0 3px rgba(33,185,120,.12)}
+.proPanel{border:1px solid var(--line);background:var(--card);border-radius:18px;padding:12px;box-shadow:0 7px 20px rgba(31,92,154,.05)}
+.proPanelTitle{display:flex;align-items:center;gap:8px;margin-bottom:9px}.proPanelTitle i{width:34px;height:34px;border-radius:11px;background:#edf5ff;color:var(--blue);display:grid;place-items:center;font-style:normal}
+.proPanelTitle i .svgi{width:19px;height:19px}.proPanelTitle b{font-size:14px}.proPanelTitle span{display:block;font-size:9px;color:var(--muted);margin-top:2px}
+.statusList{display:grid;gap:7px}.statusRow{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;border-radius:12px;background:var(--bg);border:1px solid var(--line);font-size:11px}
+.statusTag{font-size:9px;font-weight:900;padding:5px 7px;border-radius:999px;background:#eaf4ff;color:#136ecf;white-space:nowrap}
+.statusTag.warn{background:#fff2d9;color:#a56600}.statusTag.danger{background:#ffe8eb;color:#be3344}.statusTag.ok{background:#e7f8ef;color:#11865a}
+.proActionGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}.proActionGrid button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:12px;padding:10px 8px;font-size:10px;font-weight:900}
+.tripChecks{display:grid;grid-template-columns:1fr 1fr;gap:7px}.tripCheck{display:flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:9px;font-size:10px}.tripCheck input{width:16px;height:16px}
+.dark .moreFilter,.dark .assistCard,.dark .proPanel{box-shadow:none}
+
 </style>
 </head>
 <body>
@@ -161,7 +185,7 @@ function ico(name){return `<svg class="svgi" viewBox="0 0 24 24" aria-hidden="tr
 
 function applyTheme(){document.body.classList.toggle('dark',!!state.prefs.dark)}
 
-function header(){const v=activeVehicle(),u=communityAuthState;return `<header class="header"><div class="brandrow"><div class="logo">${ico('car')}</div><div><div class="brand">Aracım <b>Pro</b> <span class="badgePro">V6.0 TEST</span></div><div class="muted small">Teknik katalog • kullanıcı deneyimleri • piyasa değeri • bakım</div></div><div class="grow"></div><button class="iconbtn" onclick="openAccount()" title="Kullanıcı hesabı">${ico('user')}</button><button class="iconbtn" onclick="openSettings()">${ico('settings')}</button></div>${u.signedIn?`<div style="margin-top:7px"><span class="accountPill">${esc(u.name||u.email||'Oturum açık')}</span></div>`:''}${state.vehicles.length?`<div class="vehicleSelect"><select onchange="setActive(this.value)">${state.vehicles.map(x=>`<option value="${x.id}" ${x.id===v?.id?'selected':''}>${esc((x.year||'')+' '+x.make+' '+x.model)} • ${esc(x.plate||'Plakasız')}</option>`).join('')}</select><button class="iconbtn" onclick="openVehicle()">${ico('plus')}</button></div>`:''}</header>`}
+function header(){const v=activeVehicle(),u=communityAuthState;return `<header class="header"><div class="brandrow"><div class="logo">${ico('car')}</div><div><div class="brand">Aracım <b>Pro</b> <span class="badgePro">V6.1 TEST</span></div><div class="muted small">Teknik katalog • kullanıcı deneyimleri • piyasa değeri • bakım</div></div><div class="grow"></div><button class="iconbtn" onclick="openAccount()" title="Kullanıcı hesabı">${ico('user')}</button><button class="iconbtn" onclick="openSettings()">${ico('settings')}</button></div>${u.signedIn?`<div style="margin-top:7px"><span class="accountPill">${esc(u.name||u.email||'Oturum açık')}</span></div>`:''}${state.vehicles.length?`<div class="vehicleSelect"><select onchange="setActive(this.value)">${state.vehicles.map(x=>`<option value="${x.id}" ${x.id===v?.id?'selected':''}>${esc((x.year||'')+' '+x.make+' '+x.model)} • ${esc(x.plate||'Plakasız')}</option>`).join('')}</select><button class="iconbtn" onclick="openVehicle()">${ico('plus')}</button></div>`:''}</header>`}
 const navItems=[['home','home','Ana'],['garage','garage','Garaj'],['records','records','Kayıt'],['plan','wrench','Plan'],['reports','chart','Rapor'],['more','menu','Daha']];
 function nav(){return `<nav class="nav">${navItems.map(([k,i,l])=>`<button class="${current===k?'active':''}" onclick="go('${k}')"><i>${ico(i)}</i>${l}</button>`).join('')}</nav>`}
 function go(k){current=k;closeModal();render();scrollTo(0,0)}
@@ -190,7 +214,14 @@ function maintenanceView(){const a=vf(state.maintenance).sort((a,b)=>(a.complete
 function tiresView(){const a=vf(state.tires);return `<div class="sectionHead"><h2>Lastik Setleri</h2><button class="linkbtn" onclick="openTire()">+ Set</button></div>${listOrEmpty(a,x=>`<div class="row" onclick="openTire('${x.id}')"><div class="rowIcon">🛞</div><div class="rowMain"><strong>${esc(x.season)} • ${esc(x.brand)} ${esc(x.model||'')}</strong><span>${esc(x.size)} • ${x.fittedKm?num(x.fittedKm)+' km':''} • Diş: ${esc(x.tread||'—')} mm</span></div><div class="rowValue">${x.active?'<span class="chip green">Takılı</span>':''}</div></div>`)}`}
 
 function reportsView(){const a=monthlyData(6),max=Math.max(1,...a.map(x=>x.total)),v=activeVehicle(),val=currentValuation(),dep=(v?.purchasePrice&&val)?val-(+v.purchasePrice):0;return `<div class="sectionHead"><h2>Raporlar</h2><span class="chip">Tüm zamanlar</span></div><div class="card"><div class="muted small">Toplam araç gideri</div><div style="font-size:32px;font-weight:900;margin-top:4px">${money(totalAll())}</div><div class="bars">${a.map(x=>`<div class="bar"><em>${x.total?Math.round(x.total/1000)+'K':''}</em><b style="height:${Math.max(4,x.total/max*120)}px"></b><span>${x.label}</span></div>`).join('')}</div></div><div class="grid2"><div class="card metric"><div class="label">Maliyet / km</div><strong>${costPerKm()?costPerKm().toFixed(2)+' TL':'—'}</strong></div><div class="card metric"><div class="label">Güncel Değer</div><strong>${val?money(val):'—'}</strong></div><div class="card metric"><div class="label">Yakıt</div><strong>${money(totals().fuel)}</strong></div><div class="card metric"><div class="label">Değer Değişimi</div><strong class="${dep<0?'dangerText':''}">${v?.purchasePrice&&val?money(dep):'—'}</strong></div></div><div class="sectionHead"><h2>Analiz Araçları</h2></div><div class="quickGrid"><button class="quick" onclick="fuelBudgetCalculator()"><span class="qico">${ico('fuel')}</span><b>Aylık Yakıt Tahmini</b></button><button class="quick" onclick="routeCalculator()"><span class="qico">${ico('calculator')}</span><b>Yol Maliyeti</b></button><button class="quick" onclick="compareVehicles()"><span class="qico">${ico('compare')}</span><b>Araç Karşılaştır</b></button><button class="quick" onclick="valuationModal()"><span class="qico">${ico('value')}</span><b>Değer Takibi</b></button></div><div class="sectionHead"><h2>Dışa Aktar</h2></div><div class="quickGrid"><button class="quick" onclick="exportPdf()"><span class="qico">${ico('document')}</span><b>PDF Araç Dosyası</b></button><button class="quick" onclick="exportXls()"><span class="qico">${ico('records')}</span><b>Excel Raporu</b></button><button class="quick" onclick="exportCsv()"><span class="qico">${ico('records')}</span><b>CSV Raporu</b></button><button class="quick" onclick="shareSummary()"><span class="qico">${ico('cloud')}</span><b>Özeti Paylaş</b></button></div>`}
-function moreTile(action,icon,title,subtitle,accent='#1675ed',soft='#edf5ff'){return `<button class="moreTile" style="--accent:${accent};--soft:${soft}" onclick="${action}"><span class="qico">${ico(icon)}</span><span class="arrow">›</span><b>${title}</b><span class="desc">${subtitle}</span></button>`}
+function moreCategory(title){const m={
+'Canlı Sürüş':'yol','Acil Yardım':'saglik','Yol Yardım':'yol','Yakın Benzinlik':'yol','Yakın Eczane':'saglik','Yakın Cami':'gunluk','Yakın Noter':'gunluk',
+'Akaryakıt Zam':'arac','Alırken Kontrol':'arac','Teknik Özellikler':'arac','Muayene':'arac','Şarj İstasyonu':'yol','Yakın Hastane':'saglik','Sağlık Ocağı':'saglik',
+'Otel & Konaklama':'kesfet','Yeme & İçme':'kesfet','Gezilecek Yerler':'kesfet','Yakın Otopark':'yol','WC & Dinlenme':'yol','Lastikçi':'arac',
+'Toplanma Alanı':'saglik','Yakın ATM':'gunluk','Yakın Market':'gunluk','Oto Yıkama':'arac','Park & Mesire':'kesfet','Nöbetçi Eczane':'saglik',
+'Acil Kurumlar':'saglik','Oto Elektrik & Akücü':'arac','Ekspertiz':'arac','Yedek Parça':'arac','Uzun Yol Asistanı':'yol'};return m[title]||'gunluk'}
+function moreTile(action,icon,title,subtitle,accent='#1675ed',soft='#edf5ff'){const cat=moreCategory(title);return `<button class="moreTile" data-cat="${cat}" style="--accent:${accent};--soft:${soft}" onclick="${action}"><span class="qico">${ico(icon)}</span><span class="arrow">›</span><b>${title}</b><span class="desc">${subtitle}</span></button>`}
+function setMoreFilter(cat,btn){document.querySelectorAll('.moreFilter').forEach(x=>x.classList.remove('active'));if(btn)btn.classList.add('active');document.querySelectorAll('.moreGrid .moreTile').forEach(x=>{x.style.display=(cat==='all'||x.dataset.cat===cat)?'':'none'})}
 function moreView(){return `<div class="moreHub">
 <div class="moreIntro"><div><span class="eyebrow">KEŞFET & HİZMETLER</span><h2>Yolda ihtiyacın olan her şey</h2><p>Araç, sağlık, seyahat ve yakın yerler tek ekranda.</p></div></div>
 <button class="placeSearch" onclick="nearbySearchModal()"><span class="searchIcon">${ico('search')}</span><span class="searchCopy"><b>Nereye gitmek istersiniz?</b><span>Yakındaki yerleri haritada ara</span></span><span class="searchLoc">${ico('location')} Konumum</span></button>
@@ -199,6 +230,20 @@ function moreView(){return `<div class="moreHub">
 <button onclick="openAccount()"><i>${ico('user')}</i><span>Hesabım</span></button>
 <button onclick="vehicleGuideModal()"><i>${ico('info')}</i><span>Rehber</span></button>
 <button onclick="marketValueModal()"><i>${ico('value')}</i><span>Piyasa</span></button>
+</div>
+<div class="moreFilters">
+<button class="moreFilter active" onclick="setMoreFilter('all',this)">Tümü</button>
+<button class="moreFilter" onclick="setMoreFilter('arac',this)">🚗 Araç</button>
+<button class="moreFilter" onclick="setMoreFilter('yol',this)">🛣️ Yol</button>
+<button class="moreFilter" onclick="setMoreFilter('saglik',this)">❤️ Sağlık</button>
+<button class="moreFilter" onclick="setMoreFilter('kesfet',this)">🧭 Keşfet</button>
+<button class="moreFilter" onclick="setMoreFilter('gunluk',this)">📌 Günlük</button>
+</div>
+<div class="assistantHead"><b>Sürücü Asistanı</b><span>Hızlı ve kişisel araçlar</span></div>
+<div class="driverAssist">
+<button class="assistCard" onclick="parkedSpotModal()"><span class="dot"></span><span class="assistIcon">${ico('location')}</span><b>Park Yerim</b><small>Konumu kaydet & bul</small></button>
+<button class="assistCard" onclick="driverReminderModal()"><span class="assistIcon">${ico('bell')}</span><b>Hatırlatıcılar</b><small>Muayene • sigorta • MTV</small></button>
+<button class="assistCard" onclick="longTripModal()"><span class="assistIcon">${ico('road')}</span><b>Uzun Yol</b><small>Kontrol listesi & mola</small></button>
 </div>
 <div class="moreGrid">
 ${moreTile("driveCenterModal()","navigation","Canlı Sürüş","GPS hız + yakın yerler","#1675ed","#edf5ff")}
@@ -226,6 +271,12 @@ ${moreTile("nearbyATM()","atm","Yakın ATM","Banka ve ATM noktaları","#2459a8",
 ${moreTile("nearbyMarket()","market","Yakın Market","Market ve süpermarketler","#1b9a62","#ecfaf3")}
 ${moreTile("nearbyCarWash()","carwash","Oto Yıkama","Yakındaki oto yıkamalar","#1485b8","#eaf8ff")}
 ${moreTile("nearbyPark()","park","Park & Mesire","Park, piknik ve mesire","#2f9c54","#edf9f0")}
+${moreTile("nearbyDutyPharmacy()","pharmacy","Nöbetçi Eczane","Haritada ara • saatleri kontrol et","#13a25b","#eafbf1")}
+${moreTile("emergencyServicesModal()","emergency","Acil Kurumlar","112 • polis • jandarma • itfaiye","#d83c51","#fff0f3")}
+${moreTile("nearbyAutoElectric()","battery","Oto Elektrik & Akücü","Elektrik, akü ve marş desteği","#4a78bd","#edf4ff")}
+${moreTile("nearbyExpertise()","shield","Ekspertiz","Yakındaki oto ekspertizler","#13a49b","#e9fbf9")}
+${moreTile("nearbySpareParts()","wrench","Yedek Parça","Oto yedek parça mağazaları","#8056c9","#f3edff")}
+${moreTile("longTripModal()","road","Uzun Yol Asistanı","Kontrol, mola ve yol hazırlığı","#1675ed","#edf5ff")}
 </div>
 <details class="moreTools"><summary>Diğer araç ve kayıt araçları</summary><div class="moreToolsGrid">
 <button class="moreMini" onclick="refreshLiveData()">Canlı Verileri Yenile</button>
@@ -735,7 +786,7 @@ function stopLiveSpeed(){try{Android.stopSpeedTracking()}catch(e){};const e=docu
 function openLocationSettings(){try{Android.openLocationSettings()}catch(e){toast('Konum ayarları açılamadı')}}
 window.onLocationPermissionResult=ok=>{const l=document.getElementById('driveLocation');if(!ok){toast('Konum izni gerekli');if(l)l.textContent='Konum izni verilmedi.'}else if(l)l.textContent='Konum izni verildi • GPS konumu alınıyor…'};
 window.onLocationStatus=msg=>{const l=document.getElementById('driveLocation'),a=document.getElementById('speedAccuracy');if(l&&msg)l.textContent=msg;if(a&&msg&&(/GPS|Konum|konum/.test(msg)))a.textContent=msg};
-window.onSpeedUpdate=(kmh,accuracy,lat,lon)=>{const s=document.getElementById('liveSpeed'),a=document.getElementById('speedAccuracy'),l=document.getElementById('driveLocation');if(s)s.textContent=Math.round(+kmh||0);if(a)a.textContent=accuracy>0?'GPS doğruluğu ±'+Math.round(accuracy)+' m':'GPS aktif';if(l)l.textContent=`Konum alındı • ${Number(lat).toFixed(5)}, ${Number(lon).toFixed(5)}`};
+window.onSpeedUpdate=(kmh,accuracy,lat,lon)=>{const s=document.getElementById('liveSpeed'),a=document.getElementById('speedAccuracy'),l=document.getElementById('driveLocation');if(s)s.textContent=Math.round(+kmh||0);if(a)a.textContent=accuracy>0?'GPS doğruluğu ±'+Math.round(accuracy)+' m':'GPS aktif';if(l)l.textContent=`Konum alındı • ${Number(lat).toFixed(5)}, ${Number(lon).toFixed(5)}`;window._lastGps={lat:+lat,lon:+lon,accuracy:+accuracy||0,ts:Date.now()};if(window._parkingCapture)saveParkingFromGps(lat,lon,accuracy)};
 function openNearby(q){try{Android.openNearby(q)}catch(e){toast('Harita açılamıyor')}}
 function nearbyFuel(){openNearby('benzin istasyonu')}
 function nearbyInspection(){openNearby('TÜVTÜRK Araç Muayene İstasyonu')}
@@ -758,7 +809,30 @@ function nearbyATM(){openNearby('ATM banka')}
 function nearbyMarket(){openNearby('market süpermarket')}
 function nearbyCarWash(){openNearby('oto yıkama')}
 function nearbyPark(){openNearby('park mesire alanı piknik alanı')}
-function nearbySearchModal(){modal('Yakındaki Yerleri Ara',`<div class="form"><div class="field"><label>Yer veya kategori</label><input id="nearbySearchInput" autofocus placeholder="Örn. kahvaltı, otel, park, müze"></div><button class="primary" onclick="submitNearbySearch()">Haritada Ara</button><div class="moreSearchChips"><button onclick="closeModal();nearbyFood()">🍽️ Yeme & İçme</button><button onclick="closeModal();nearbyHotel()">🛏️ Konaklama</button><button onclick="closeModal();nearbyAttractions()">📍 Gezilecek Yerler</button><button onclick="closeModal();nearbyParking()">🅿️ Otopark</button><button onclick="closeModal();nearbyRoadside()">🚚 Yol Yardım</button><button onclick="closeModal();nearbyRestArea()">🚻 WC & Dinlenme</button><button onclick="closeModal();nearbyAssembly()">🆘 Toplanma Alanı</button></div></div>`)}
+function nearbyDutyPharmacy(){openNearby('nöbetçi eczane')}
+function nearbyPolice(){openNearby('polis merkezi')}
+function nearbyGendarmerie(){openNearby('jandarma karakolu')}
+function nearbyFireStation(){openNearby('itfaiye')}
+function nearbyAutoElectric(){openNearby('oto elektrikçi akücü')}
+function nearbyExpertise(){openNearby('oto ekspertiz')}
+function nearbySpareParts(){openNearby('oto yedek parça')}
+
+function parkedSpotModal(){const p=state.prefs.parkedSpot||null;const when=p?.ts?new Date(p.ts).toLocaleString('tr-TR'):'';modal('Park Yerim',`<div class="proPanel"><div class="proPanelTitle"><i>${ico('location')}</i><div><b>Aracımı Park Ettiğim Yer</b><span>GPS konumunu cihazda saklar</span></div></div>${p?`<div class="statusList"><div class="statusRow"><span>Son kayıt</span><b>${esc(when)}</b></div><div class="statusRow"><span>GPS</span><b>${Number(p.lat).toFixed(5)}, ${Number(p.lon).toFixed(5)}</b></div></div><div class="proActionGrid"><button onclick="openParkedSpot()">🧭 Yol Tarifi</button><button onclick="clearParkedSpot()">🗑️ Kaydı Sil</button></div>`:`<div class="notice">Aracını park ettiğinde konumunu tek dokunuşla kaydet. Daha sonra haritada geri bulabilirsin.</div>`}<button class="primary wide" style="margin-top:10px" onclick="captureParkedSpot()">📍 Şu Anki Konumu Kaydet</button></div>`)}
+function captureParkedSpot(){window._parkingCapture=true;toast('GPS konumu alınıyor…');try{Android.startSpeedTracking()}catch(e){window._parkingCapture=false;toast('Konum alınamadı')}}
+function saveParkingFromGps(lat,lon,accuracy){if(!window._parkingCapture)return;const a=Number(lat),o=Number(lon);if(!Number.isFinite(a)||!Number.isFinite(o))return;window._parkingCapture=false;state.prefs.parkedSpot={lat:a,lon:o,accuracy:Number(accuracy)||0,ts:Date.now()};localStorage.setItem(KEY,JSON.stringify(state));try{Android.stopSpeedTracking()}catch(e){};toast('Park yeri kaydedildi');setTimeout(parkedSpotModal,150)}
+function openParkedSpot(){const p=state.prefs.parkedSpot;if(!p)return toast('Kayıtlı park yeri yok');location.href=`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.lat+','+p.lon)}`}
+function clearParkedSpot(){delete state.prefs.parkedSpot;localStorage.setItem(KEY,JSON.stringify(state));parkedSpotModal();toast('Park yeri silindi')}
+
+function daysToDate(d){if(!d)return null;const x=new Date(d+'T12:00:00');return Math.ceil((x-new Date())/86400000)}
+function reminderState(d){const n=daysToDate(d);if(n===null)return{txt:'Tarih yok',cls:''};if(n<0)return{txt:`${Math.abs(n)} gün geçti`,cls:'danger'};if(n===0)return{txt:'Bugün',cls:'danger'};if(n<=14)return{txt:`${n} gün kaldı`,cls:'warn'};return{txt:`${n} gün kaldı`,cls:'ok'}}
+function driverReminderModal(){const r=state.prefs.driverReminders||{};const rows=[['Muayene',r.inspection],['Trafik Sigortası',r.insurance],['MTV / Vergi',r.mtv],['Lastik Değişimi',r.tire]];modal('Araç Hatırlatıcıları',`<div class="proPanel"><div class="proPanelTitle"><i>${ico('bell')}</i><div><b>Önemli Tarihler</b><span>Telefon bildirimi ile hatırlat</span></div></div><div class="statusList">${rows.map(([n,d])=>{const x=reminderState(d);return `<div class="statusRow"><span>${n}</span><span class="statusTag ${x.cls}">${x.txt}</span></div>`}).join('')}</div></div><form class="form" style="margin-top:10px" onsubmit="saveDriverReminders(event)"><div class="formrow"><div class="field"><label>Muayene Tarihi</label><input type="date" name="inspection" value="${esc(r.inspection||'')}"></div><div class="field"><label>Trafik Sigortası</label><input type="date" name="insurance" value="${esc(r.insurance||'')}"></div></div><div class="formrow"><div class="field"><label>MTV / Vergi Hatırlatma</label><input type="date" name="mtv" value="${esc(r.mtv||'')}"></div><div class="field"><label>Lastik Değişimi</label><input type="date" name="tire" value="${esc(r.tire||'')}"></div></div><button class="primary wide">Hatırlatıcıları Kaydet</button></form>`)}
+function saveDriverReminders(e){e.preventDefault();const f=new FormData(e.target),r={inspection:f.get('inspection')||'',insurance:f.get('insurance')||'',mtv:f.get('mtv')||'',tire:f.get('tire')||''};state.prefs.driverReminders=r;localStorage.setItem(KEY,JSON.stringify(state));try{Android.requestNotificationPermission()}catch(e){};[['inspection','Araç muayene zamanı'],['insurance','Trafik sigortası yenileme zamanı'],['mtv','MTV / vergi hatırlatması'],['tire','Lastik değişim zamanı']].forEach(([k,t])=>{try{if(r[k])Android.scheduleMaintenanceReminder('driver_'+k,t,r[k]);else Android.cancelMaintenanceReminder('driver_'+k)}catch(e){}});closeModal();render();toast('Hatırlatıcılar kaydedildi')}
+
+function emergencyServicesModal(){modal('Acil Kurumlar',`<div class="proPanel"><div class="proPanelTitle"><i>${ico('emergency')}</i><div><b>Acil Yardım Merkezi</b><span>Türkiye acil çağrı numarası: 112</span></div></div><div class="notice">Hayati veya acil bir durumda doğrudan 112'yi ara. Aşağıdaki kurum kısayolları haritada en yakın noktaları açar.</div><button class="danger wide" style="margin-top:10px" onclick="dial('112')">📞 112 Acil Çağrı</button><div class="proActionGrid"><button onclick="nearbyPolice()">👮 Polis Merkezi</button><button onclick="nearbyGendarmerie()">🛡️ Jandarma</button><button onclick="nearbyFireStation()">🚒 İtfaiye</button><button onclick="nearbyHospital()">🏥 Acil Servis</button></div></div>`)}
+
+function longTripModal(){const v=activeVehicle();modal('Uzun Yol Asistanı',`<div class="proPanel"><div class="proPanelTitle"><i>${ico('road')}</i><div><b>Yolculuk Öncesi Kontrol</b><span>${v?esc((v.year||'')+' '+v.make+' '+v.model):'Araç seçmeden de kontrol listesi kullanılabilir'}</span></div></div><div class="tripChecks"><label class="tripCheck"><input type="checkbox"> Lastik basıncı</label><label class="tripCheck"><input type="checkbox"> Motor yağı</label><label class="tripCheck"><input type="checkbox"> Soğutma sıvısı</label><label class="tripCheck"><input type="checkbox"> Cam suyu</label><label class="tripCheck"><input type="checkbox"> Stepne / kit</label><label class="tripCheck"><input type="checkbox"> Evraklar</label><label class="tripCheck"><input type="checkbox"> Yakıt / şarj</label><label class="tripCheck"><input type="checkbox"> Telefon şarjı</label></div><div class="proActionGrid"><button onclick="nearbyRestArea()">☕ Mola Noktası</button><button onclick="nearbyFuel()">⛽ Benzinlik</button><button onclick="nearbyHospital()">🏥 Hastane</button><button onclick="nearbyTire()">🛞 Lastikçi</button></div>${v?`<button class="primary wide" style="margin-top:9px" onclick="closeModal();routeCalculator()">Yol Maliyeti Hesapla</button>`:`<button class="secondary wide" style="margin-top:9px" onclick="closeModal();openVehicle()">Araç Ekle</button>`}</div>`)}
+
+function nearbySearchModal(){modal('Yakındaki Yerleri Ara',`<div class="form"><div class="field"><label>Yer veya kategori</label><input id="nearbySearchInput" autofocus placeholder="Örn. kahvaltı, otel, park, müze"></div><button class="primary" onclick="submitNearbySearch()">Haritada Ara</button><div class="moreSearchChips"><button onclick="closeModal();nearbyFood()">🍽️ Yeme & İçme</button><button onclick="closeModal();nearbyHotel()">🛏️ Konaklama</button><button onclick="closeModal();nearbyAttractions()">📍 Gezilecek Yerler</button><button onclick="closeModal();nearbyParking()">🅿️ Otopark</button><button onclick="closeModal();nearbyRoadside()">🚚 Yol Yardım</button><button onclick="closeModal();nearbyRestArea()">🚻 WC & Dinlenme</button><button onclick="closeModal();nearbyAssembly()">🆘 Toplanma Alanı</button><button onclick="closeModal();nearbyDutyPharmacy()">💊 Nöbetçi</button><button onclick="closeModal();nearbyAutoElectric()">🔋 Akücü</button><button onclick="closeModal();nearbyExpertise()">🔎 Ekspertiz</button></div></div>`)}
 function submitNearbySearch(){const q=(document.getElementById('nearbySearchInput')?.value||'').trim();if(!q)return toast('Aramak istediğin yeri yaz');closeModal();openNearby(q)}
 
 function requireVehicle(featureTitle){const v=activeVehicle();if(v)return v;modal(featureTitle||'Araç Gerekli',`<div class="card empty" style="margin:0"><div class="big" style="display:grid;place-items:center;color:var(--blue)">${ico('car')}</div><h3>Önce aracını ekle</h3><p class="muted">Bu bölüm seçili aracın marka, model, motor ve kilometre bilgilerine göre çalışır.</p><button class="primary wide" onclick="closeModal();openVehicle()">Aracımı Ekle</button></div>`);return null}
