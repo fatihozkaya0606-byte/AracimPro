@@ -130,7 +130,7 @@ public class MainActivity extends Activity {
 
     private static final String PREMIUM_PRODUCT_ID = "aracim_pro_premium";
     private static final String PREMIUM_MONTHLY_BASE = "aylik";
-    private static final String PREMIUM_YEARLY_BASE = "yillik";
+    private static final String PREMIUM_YEARLY_BASE = "yillik2";
     private BillingClient billingClient;
     private ProductDetails premiumProductDetails;
     private boolean premiumActive = false;
@@ -582,7 +582,7 @@ public class MainActivity extends Activity {
         if (premiumActive || interstitialShownThisSession) return;
         String unitId = BuildConfig.DEBUG
                 ? "ca-app-pub-3940256099942544/1033173712"
-                : "";
+                : "ca-app-pub-7205009121067400/2790024214";
         if (unitId.isEmpty()) return;
         InterstitialAd.load(this, unitId, new AdRequest.Builder().build(),
                 new InterstitialAdLoadCallback() {
