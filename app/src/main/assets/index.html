@@ -699,10 +699,12 @@ function liveTickerItems(){
       click:'fuelMarketModal(false)'
     });
   }else{
+    const hasTried=!!fuel.updatedAt;
     out.push({
       icon:'⛽',
-      title:'Güncel yakıt fiyatı alınıyor',
-      sub:`${state.prefs.fuelCity||'Konum belirleniyor'} • otomatik`,
+      title:hasTried?'Yakıt fiyatı şu an alınamadı':'Güncel yakıt fiyatı alınıyor',
+      sub:`${state.prefs.fuelCity||'Konum belirleniyor'} • ${hasTried?'yeniden otomatik denenecek':'otomatik'}`,
+      cls:hasTried?'warn':'',
       click:'fuelMarketModal(false)'
     });
   }
@@ -894,7 +896,7 @@ function startLiveTickerAuto(){
 
 function applyTheme(){document.body.classList.toggle('dark',!!state.prefs.dark)}
 
-function header(){const v=activeVehicle(),u=communityAuthState;return `<header class="header"><div class="brandrow"><div class="logo">${ico('car')}</div><div><div class="brand">Aracım <b>Pro</b> <span class="badgePro">V7.4.2</span></div><div class="muted small">GLOBAL • Hoş geldiniz 👋 • Teknik katalog • kullanıcı deneyimleri • piyasa değeri • bakım</div></div><div class="grow"></div><button class="iconbtn" onclick="languageModal()" title="Dil & Ülke">${countryFlag()}</button><button class="iconbtn" onclick="openAccount()" title="Kullanıcı hesabı">${ico('user')}</button><button class="iconbtn" onclick="openSettings()">${ico('settings')}</button></div>${liveTickerHtml()}${u.signedIn?`<div style="margin-top:7px"><span class="accountPill">${esc(u.name||u.email||'Oturum açık')}</span></div>`:''}${state.vehicles.length&&current!=='home'?`<div class="vehicleSelect"><select onchange="setActive(this.value)">${state.vehicles.map(x=>`<option value="${x.id}" ${x.id===v?.id?'selected':''}>${esc((x.year||'')+' '+x.make+' '+x.model)} • ${esc(x.plate||'Plakasız')}</option>`).join('')}</select><button class="iconbtn" onclick="openVehicle()">${ico('plus')}</button></div>`:''}</header>`}
+function header(){const v=activeVehicle(),u=communityAuthState;return `<header class="header"><div class="brandrow"><div class="logo">${ico('car')}</div><div><div class="brand">Aracım <b>Pro</b> <span class="badgePro">V7.4.3</span></div><div class="muted small">GLOBAL • Hoş geldiniz 👋 • Teknik katalog • kullanıcı deneyimleri • piyasa değeri • bakım</div></div><div class="grow"></div><button class="iconbtn" onclick="languageModal()" title="Dil & Ülke">${countryFlag()}</button><button class="iconbtn" onclick="openAccount()" title="Kullanıcı hesabı">${ico('user')}</button><button class="iconbtn" onclick="openSettings()">${ico('settings')}</button></div>${liveTickerHtml()}${u.signedIn?`<div style="margin-top:7px"><span class="accountPill">${esc(u.name||u.email||'Oturum açık')}</span></div>`:''}${state.vehicles.length&&current!=='home'?`<div class="vehicleSelect"><select onchange="setActive(this.value)">${state.vehicles.map(x=>`<option value="${x.id}" ${x.id===v?.id?'selected':''}>${esc((x.year||'')+' '+x.make+' '+x.model)} • ${esc(x.plate||'Plakasız')}</option>`).join('')}</select><button class="iconbtn" onclick="openVehicle()">${ico('plus')}</button></div>`:''}</header>`}
 const navItems=[['home','home','Ana'],['garage','garage','Garaj'],['records','records','Kayıt'],['plan','wrench','Plan'],['reports','chart','Rapor'],['more','menu','Daha']];
 function nav(){return `<nav class="nav">${navItems.map(([k,i,l])=>`<button class="${current===k?'active':''}" onclick="go('${k}')"><i>${ico(i)}</i>${l}</button>`).join('')}</nav>`}
 function go(k){current=k;closeModal();render();scrollTo(0,0)}

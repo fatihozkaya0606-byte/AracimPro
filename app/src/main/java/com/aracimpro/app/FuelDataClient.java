@@ -55,15 +55,14 @@ public final class FuelDataClient {
         String source = "";
         String warning = "";
 
-        if (liveDataBaseUrl != null && !liveDataBaseUrl.trim().isEmpty()) {
-            try {
-                JSONObject g = fetchGatewayFuel(liveDataBaseUrl, c, selected);
-                gasoline = g.optDouble("gasoline", 0d);
-                diesel = g.optDouble("diesel", 0d);
-                lpg = g.optDouble("lpg", 0d);
-                source = g.optString("source", "Canlı veri");
-                warning = g.optString("warning", "");
-            } catch (Exception ignored) {}
+        try {
+            JSONObject po = fetchPetrolOfisiPrices(c);
+            gasoline = po.optDouble("gasoline", 0d);
+            diesel = po.optDouble("diesel", 0d);
+            lpg = po.optDouble("lpg", 0d);
+            if (gasoline > 0d || diesel > 0d || lpg > 0d) source = "Petrol Ofisi";
+        } catch (Exception e) {
+            warning = safeMessage(e);
         }
 
         if (gasoline <= 0d || diesel <= 0d) {
@@ -75,16 +74,6 @@ public final class FuelDataClient {
             } catch (Exception e) {
                 if (warning.isEmpty()) warning = safeMessage(e);
             }
-        }
-
-        if (gasoline <= 0d || diesel <= 0d || lpg <= 0d) {
-            try {
-                JSONObject po = fetchPetrolOfisiPrices(c);
-                if (gasoline <= 0d) gasoline = po.optDouble("gasoline", 0d);
-                if (diesel <= 0d) diesel = po.optDouble("diesel", 0d);
-                if (lpg <= 0d) lpg = po.optDouble("lpg", 0d);
-                if (source.isEmpty() && (gasoline > 0d || diesel > 0d || lpg > 0d)) source = "Petrol Ofisi";
-            } catch (Exception ignored) {}
         }
 
         String norm = normalize(selected);
@@ -103,8 +92,8 @@ public final class FuelDataClient {
         out.put("lpg", lpg);
         out.put("selectedPrice", selectedPrice);
         out.put("live", live);
-        out.put("source", source.isEmpty() ? "Akaryakıt haberleri" : source);
-        out.put("news", fetchFuelNews());
+        out.put("source", source);
+        out.put("news", new JSONArray());
         if (!warning.isEmpty()) out.put("warning", warning);
         return out;
     }
@@ -204,35 +193,61 @@ public final class FuelDataClient {
     private static JSONObject fetchPetrolOfisiPrices(String city) throws Exception {
         JSONObject out = new JSONObject();
         String html = get("https://www.petrolofisi.com.tr/akaryakit-fiyatlari", 12000);
+
         String plain;
         try {
             plain = Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY).toString();
         } catch (Throwable t) {
             plain = html.replaceAll("(?is)<script.*?</script>", " ")
                     .replaceAll("(?is)<style.*?</style>", " ")
-                    .replaceAll("(?s)<[^>]+>", " ");
+                    .replaceAll("(?s)<[^>]+>", "\n");
         }
-        plain = normalize(plain);
+
         String target = normalize(city);
-        int idx = plain.indexOf(target);
-        if (idx < 0 && target.startsWith("ISTANBUL")) {
-            idx = plain.indexOf(target.contains("ANADOLU") ? "ISTANBUL (ANADOLU)" : "ISTANBUL (AVRUPA)");
-        }
-        if (idx >= 0) {
-            String chunk = plain.substring(idx, Math.min(plain.length(), idx + 2600));
-            Matcher m = Pattern.compile("(?<!\\d)(\\d{2,3}[\\.,]\\d{2})(?!\\d)").matcher(chunk);
-            List<Double> nums = new ArrayList<>();
-            while (m.find() && nums.size() < 18) {
-                double d = parsePrice(m.group(1));
-                if (d >= 10 && d <= 200) nums.add(d);
-            }
-            // Site tablosu değişirse bu alanlar yalnızca yedek amaçlıdır; resmi EPDK/gateway önceliklidir.
-            if (nums.size() >= 11) {
-                out.put("gasoline", nums.get(0));
-                out.put("diesel", nums.get(2));
-                out.put("lpg", nums.get(10));
+        String[] lines = plain.split("\\r?\\n");
+        StringBuilder block = new StringBuilder();
+        boolean found = false;
+
+        for (int i = 0; i < lines.length; i++) {
+            String n = normalize(lines[i]);
+            if (!found && (n.equals(target) || n.startsWith(target + " ") || n.endsWith(" " + target))) {
+                found = true;
+                for (int j = i; j < Math.min(lines.length, i + 28); j++) {
+                    block.append(lines[j]).append("\n");
+                }
+                break;
             }
         }
+
+        if (!found) {
+            String folded = plain.toUpperCase(new Locale("tr", "TR"))
+                    .replace('Ç','C').replace('Ğ','G').replace('İ','I')
+                    .replace('Ö','O').replace('Ş','S').replace('Ü','U');
+            int idx = folded.indexOf(target);
+            if (idx >= 0) {
+                block.append(plain.substring(idx, Math.min(plain.length(), idx + 1800)));
+                found = true;
+            }
+        }
+
+        if (!found) throw new IllegalStateException("Petrol Ofisi il fiyatı bulunamadı: " + city);
+
+        Matcher m = Pattern.compile("(?<!\\d)(\\d{2,3}[\\.,]\\d{2})(?!\\d)").matcher(block.toString());
+        List<Double> nums = new ArrayList<>();
+
+        while (m.find() && nums.size() < 24) {
+            double d = parsePrice(m.group(1));
+            if (d >= 10 && d <= 200) nums.add(d);
+        }
+
+        if (nums.size() >= 11) {
+            out.put("gasoline", nums.get(0));
+            out.put("diesel", nums.get(2));
+            out.put("lpg", nums.get(10));
+        } else {
+            throw new IllegalStateException("Petrol Ofisi fiyat satırı okunamadı");
+        }
+
         return out;
     }
 
