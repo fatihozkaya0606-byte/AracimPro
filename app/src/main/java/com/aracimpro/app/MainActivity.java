@@ -704,6 +704,59 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> openNearbyNative(query));
         }
 
+        @JavascriptInterface public void fetchWeather(double lat, double lon) {
+            new Thread(() -> {
+                String payload = "";
+                String error = "";
+                HttpURLConnection c = null;
+                try {
+                    String api = "https://api.open-meteo.com/v1/forecast?latitude=" +
+                            URLEncoder.encode(String.format(Locale.US, "%.6f", lat), "UTF-8") +
+                            "&longitude=" +
+                            URLEncoder.encode(String.format(Locale.US, "%.6f", lon), "UTF-8") +
+                            "&current=temperature_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m" +
+                            "&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max" +
+                            "&timezone=auto&forecast_days=1";
+                    c = (HttpURLConnection) new URL(api).openConnection();
+                    c.setConnectTimeout(7000);
+                    c.setReadTimeout(10000);
+                    c.setRequestProperty("User-Agent", "AracimPro/7.1");
+                    int code = c.getResponseCode();
+                    if (code < 200 || code >= 300) throw new Exception("Hava servisi HTTP " + code);
+                    BufferedReader br = new BufferedReader(new InputStreamReader(c.getInputStream(), StandardCharsets.UTF_8));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = br.readLine()) != null) sb.append(line);
+                    br.close();
+                    payload = sb.toString();
+                } catch (Exception e) {
+                    error = e.getMessage() == null ? "Hava durumu alınamadı" : e.getMessage();
+                } finally {
+                    if (c != null) c.disconnect();
+                }
+                final String p = payload, err = error;
+                runOnUiThread(() -> {
+                    if (webView != null) webView.evaluateJavascript(
+                            "window.onWeatherResult && window.onWeatherResult(" +
+                                    JSONObject.quote(p) + "," + JSONObject.quote(err) + ")", null);
+                });
+            }).start();
+        }
+
+        @JavascriptInterface public void shareText(String title, String text) {
+            runOnUiThread(() -> {
+                try {
+                    Intent send = new Intent(Intent.ACTION_SEND);
+                    send.setType("text/plain");
+                    send.putExtra(Intent.EXTRA_SUBJECT, title == null ? "Aracım Pro" : title);
+                    send.putExtra(Intent.EXTRA_TEXT, text == null ? "" : text);
+                    startActivity(Intent.createChooser(send, title == null ? "Paylaş" : title));
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Paylaşım açılamadı", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
         @JavascriptInterface public void fetchVehicleSpecs(String make, String model, int year, String engine, String fuel, String transmission, int requestId) {
             new Thread(() -> {
                 JSONObject out = new JSONObject();
