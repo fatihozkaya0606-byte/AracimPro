@@ -108,6 +108,47 @@ main{padding:16px}.hero{background:linear-gradient(145deg,#eaf4ff,#fff);border:1
 .marketBadge{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:999px;background:#eaf4ff;color:#126fce;font-size:9px;font-weight:900;margin-top:8px}
 .dark .marketHero{background:linear-gradient(145deg,rgba(35,139,255,.18),rgba(35,139,255,.05))}
 
+
+/* ARACIM PRO 7.0 SMART HOME */
+:root{--smartBlue:#1397ff;--smartPanel:#101d30;--smartLine:#28415f}
+.smartSearchRow{display:grid;grid-template-columns:minmax(0,1fr) 142px;gap:8px;margin:4px 0 10px}
+.smartSearch,.smartLocation{border:1px solid var(--smartLine);background:linear-gradient(145deg,#101c2d,#13243a);color:#fff;border-radius:18px;min-height:58px;display:flex;align-items:center;gap:10px;text-align:left;padding:10px 12px;box-shadow:0 12px 30px rgba(0,0,0,.16)}
+.smartSearch .searchIcon,.smartLocation .locIcon{width:34px;height:34px;border-radius:12px;display:grid;place-items:center;background:#0b1728;color:#b9d7ff;flex:0 0 auto}
+.smartLocation .locIcon{background:linear-gradient(135deg,#149eff,#0b70e6);color:white;box-shadow:0 7px 20px rgba(20,158,255,.25)}
+.smartSearch b,.smartLocation b{display:block;font-size:12px;line-height:1.15}
+.smartSearch small,.smartLocation small{display:block;color:#8ea4bc;font-size:8.7px;margin-top:3px;line-height:1.25}
+.smartHeroGrid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(128px,.82fr);gap:8px;margin-bottom:12px}
+.smartMap{position:relative;min-height:250px;border:1px solid var(--smartLine);border-radius:22px;overflow:hidden;background:
+radial-gradient(circle at 52% 47%,rgba(22,145,255,.35),transparent 22%),
+linear-gradient(28deg,transparent 0 46%,rgba(44,101,148,.35) 47% 49%,transparent 50%),
+linear-gradient(-24deg,transparent 0 38%,rgba(39,89,130,.35) 39% 41%,transparent 42%),
+linear-gradient(72deg,transparent 0 65%,rgba(40,91,132,.3) 66% 68%,transparent 69%),
+radial-gradient(circle at 10% 15%,rgba(11,83,118,.85),transparent 35%),
+linear-gradient(145deg,#0e2a43,#0b1b2c 60%,#0a1422);box-shadow:inset 0 0 70px rgba(0,0,0,.32)}
+.smartMap:before,.smartMap:after{content:"";position:absolute;inset:-20%;background:repeating-linear-gradient(108deg,transparent 0 22px,rgba(100,161,209,.13) 23px 25px,transparent 26px 52px);transform:rotate(7deg);pointer-events:none}
+.smartMap:after{background:repeating-linear-gradient(20deg,transparent 0 34px,rgba(88,141,184,.11) 35px 37px,transparent 38px 70px);transform:rotate(-8deg)}
+.mapCenter{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle,#2eb0ff,#0876ef 58%,rgba(7,114,239,.25) 59%);color:white;box-shadow:0 0 0 12px rgba(20,145,255,.12),0 0 34px rgba(20,145,255,.7);z-index:3;border:0}
+.mapCenter .svgi{width:25px;height:25px}
+.mapPin{position:absolute;z-index:3;width:36px;height:36px;border-radius:13px;border:1px solid rgba(255,255,255,.18);display:grid;place-items:center;color:white;box-shadow:0 8px 22px rgba(0,0,0,.35)}
+.mapPin .svgi{width:19px;height:19px}.mapPin.p1{left:14%;top:24%;background:linear-gradient(135deg,#16a86a,#0e6e49)}.mapPin.p2{right:12%;top:20%;background:linear-gradient(135deg,#ff8a1e,#b4580d)}.mapPin.p3{left:24%;bottom:26%;background:linear-gradient(135deg,#ff435c,#b51731)}.mapPin.p4{right:17%;bottom:24%;background:linear-gradient(135deg,#7f50ff,#5421c0)}.mapPin.p5{left:47%;top:12%;background:linear-gradient(135deg,#289dff,#0a61d8)}
+.mapExplore{position:absolute;left:12px;bottom:12px;z-index:4;border:1px solid #168ef7;background:rgba(7,22,39,.82);color:white;border-radius:14px;padding:9px 12px;font-size:10px;font-weight:900;display:flex;align-items:center;gap:7px}
+.vehicleHeroCard{border:1px solid var(--smartLine);border-radius:22px;background:linear-gradient(150deg,#14263d,#0b1727);padding:9px;display:flex;flex-direction:column;min-height:250px;box-shadow:0 12px 32px rgba(0,0,0,.18)}
+.vehicleHeroPhoto{height:116px;border-radius:16px;overflow:hidden;background:linear-gradient(145deg,#152a45,#06111d);display:grid;place-items:center;position:relative}
+.vehicleHeroPhoto img{width:100%;height:100%;object-fit:cover}.vehicleHeroPhoto .svgi{width:55px;height:55px;color:#5eaaff}
+.vehicleHeroTitle{font-size:13px;font-weight:950;line-height:1.15;margin-top:9px}.vehicleHeroMeta{font-size:9px;color:#99afc8;margin-top:4px;line-height:1.25}
+.marketMini{margin-top:auto;border:1px solid #284564;background:#102037;border-radius:14px;color:white;padding:9px;text-align:left;display:flex;gap:8px;align-items:center}
+.marketMini i{width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,#7e42ff,#5d24d9);display:grid;place-items:center}.marketMini .svgi{width:17px;height:17px}.marketMini b{font-size:10px}.marketMini small{display:block;font-size:8px;color:#96abc3;margin-top:2px}
+.smartSectionHead{display:flex;align-items:end;justify-content:space-between;gap:8px;margin:12px 2px 9px}.smartSectionHead h2{margin:0;font-size:22px;letter-spacing:-.4px}.smartSectionHead h2 em{font-style:normal;color:var(--smartBlue)}.smartSectionHead p{margin:3px 0 0;color:#8fa6bf;font-size:9px}.smartSectionHead button{background:none;border:0;color:#55aaff;font-weight:900;font-size:9px}
+.smartServiceGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.smartSvc{position:relative;min-height:112px;border:1px solid #29405b;border-radius:17px;background:linear-gradient(145deg,#132238,#0d192a);color:#fff;text-align:left;padding:10px 9px;overflow:hidden}
+.smartSvc:after{content:"›";position:absolute;right:8px;top:8px;color:#89a7c6;font-size:18px}.smartSvc .si{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;margin-bottom:9px;background:var(--soft);color:white}
+.smartSvc .svgi{width:20px;height:20px}.smartSvc b{display:block;font-size:10.5px;line-height:1.12}.smartSvc small{display:block;color:#98abc0;font-size:8.2px;line-height:1.24;margin-top:4px}
+.smartPromo{grid-column:span 2;position:relative;border-radius:18px;min-height:112px;overflow:hidden;border:1px solid #36506e;background:linear-gradient(135deg,#e9872e 0%,#bd5529 20%,#425f76 45%,#17314d 70%,#0c1a2a 100%);color:white;text-align:left;padding:14px;display:flex;flex-direction:column;justify-content:flex-end}
+.smartPromo:before{content:"";position:absolute;left:-10%;right:-10%;bottom:27px;height:4px;background:linear-gradient(90deg,transparent,#f8d9b4,#fff,transparent);transform:rotate(-9deg);opacity:.9;box-shadow:0 -7px 0 rgba(255,255,255,.16),0 7px 0 rgba(255,255,255,.08)}
+.smartPromo b,.smartPromo small{position:relative;z-index:2}.smartPromo b{font-size:13px;line-height:1.05}.smartPromo small{font-size:8px;color:#ecf4fb;margin-top:4px}
+.govGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.govGrid button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:13px;padding:11px;text-align:left;font-size:10px;font-weight:900}
+@media(max-width:390px){.smartSearchRow{grid-template-columns:1fr 122px}.smartSearch small{display:none}.smartHeroGrid{grid-template-columns:minmax(0,1.42fr) minmax(112px,.78fr)}.smartServiceGrid{grid-template-columns:repeat(3,minmax(0,1fr))}.smartPromo{grid-column:span 2}.smartSvc{min-height:106px}}
+
 </style>
 </head>
 <body>
@@ -195,6 +236,7 @@ assembly:'<circle cx="12" cy="12" r="2"/><path d="M12 3v5M12 16v5M3 12h5M16 12h5
 atm:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M8 15h3"/><circle cx="16" cy="14" r="2"/>',
 market:'<path d="M3 5h2l2 10h9l2-7H6"/><circle cx="9" cy="19" r="1.5"/><circle cx="16" cy="19" r="1.5"/>',
 carwash:'<path d="M5 14l2-5h10l2 5v5h-2v-2H7v2H5z"/><path d="M7 14h10"/><path d="M8 4l-1 2M12 3v3M16 4l1 2"/>',
+government:'<path d="M3 9 12 4l9 5"/><path d="M5 10h14v9H5z"/><path d="M8 10v9M12 10v9M16 10v9M3 20h18"/>',
 park:'<path d="M12 3c-3 0-5 2-5 5 0 1 .3 2 .8 2.8A4 4 0 0 0 9 18h6a4 4 0 0 0 1.2-7.2A5 5 0 0 0 12 3z"/><path d="M12 12v9M9 21h6"/>'
 
 };
@@ -202,7 +244,7 @@ function ico(name){return `<svg class="svgi" viewBox="0 0 24 24" aria-hidden="tr
 
 function applyTheme(){document.body.classList.toggle('dark',!!state.prefs.dark)}
 
-function header(){const v=activeVehicle(),u=communityAuthState;return `<header class="header"><div class="brandrow"><div class="logo">${ico('car')}</div><div><div class="brand">Aracım <b>Pro</b> <span class="badgePro">V6.2 TEST</span></div><div class="muted small">Teknik katalog • kullanıcı deneyimleri • piyasa değeri • bakım</div></div><div class="grow"></div><button class="iconbtn" onclick="openAccount()" title="Kullanıcı hesabı">${ico('user')}</button><button class="iconbtn" onclick="openSettings()">${ico('settings')}</button></div>${u.signedIn?`<div style="margin-top:7px"><span class="accountPill">${esc(u.name||u.email||'Oturum açık')}</span></div>`:''}${state.vehicles.length?`<div class="vehicleSelect"><select onchange="setActive(this.value)">${state.vehicles.map(x=>`<option value="${x.id}" ${x.id===v?.id?'selected':''}>${esc((x.year||'')+' '+x.make+' '+x.model)} • ${esc(x.plate||'Plakasız')}</option>`).join('')}</select><button class="iconbtn" onclick="openVehicle()">${ico('plus')}</button></div>`:''}</header>`}
+function header(){const v=activeVehicle(),u=communityAuthState;return `<header class="header"><div class="brandrow"><div class="logo">${ico('car')}</div><div><div class="brand">Aracım <b>Pro</b> <span class="badgePro">V7.0 TASARIM TEST</span></div><div class="muted small">Teknik katalog • kullanıcı deneyimleri • piyasa değeri • bakım</div></div><div class="grow"></div><button class="iconbtn" onclick="openAccount()" title="Kullanıcı hesabı">${ico('user')}</button><button class="iconbtn" onclick="openSettings()">${ico('settings')}</button></div>${u.signedIn?`<div style="margin-top:7px"><span class="accountPill">${esc(u.name||u.email||'Oturum açık')}</span></div>`:''}${state.vehicles.length&&current!=='home'?`<div class="vehicleSelect"><select onchange="setActive(this.value)">${state.vehicles.map(x=>`<option value="${x.id}" ${x.id===v?.id?'selected':''}>${esc((x.year||'')+' '+x.make+' '+x.model)} • ${esc(x.plate||'Plakasız')}</option>`).join('')}</select><button class="iconbtn" onclick="openVehicle()">${ico('plus')}</button></div>`:''}</header>`}
 const navItems=[['home','home','Ana'],['garage','garage','Garaj'],['records','records','Kayıt'],['plan','wrench','Plan'],['reports','chart','Rapor'],['more','menu','Daha']];
 function nav(){return `<nav class="nav">${navItems.map(([k,i,l])=>`<button class="${current===k?'active':''}" onclick="go('${k}')"><i>${ico(i)}</i>${l}</button>`).join('')}</nav>`}
 function go(k){current=k;closeModal();render();scrollTo(0,0)}
@@ -216,10 +258,50 @@ function fuelMiniCard(){const f=state.fuelMarket||{},headline=f.news?.[0]?.title
 
 function driveMiniCard(){return `<button class="card driveBanner wide" onclick="driveCenterModal()" style="text-align:left;margin-top:12px"><div style="display:flex;align-items:center;gap:10px"><span style="width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,.12);display:grid;place-items:center">${ico('speed')}</span><div><b>Canlı Sürüş Merkezi</b><div class="muted small">GPS hız • en yakın benzinlik • TÜVTÜRK • şarj istasyonu</div></div></div></button>`}
 
-function homeView(){const v=activeVehicle(),t=totals(),up=upcoming()[0];if(!v)return welcome();const photo=v.photo?`<img class="vehiclePhoto" src="${v.photo}" onerror="this.style.display='none'">`:`<div class="vehiclePhoto"><div class="emptyVehicle">${ico('car')}</div></div>`;const value=currentValuation();return `<section class="hero"><div class="heroTop">${photo}<div class="grow"><h1>${esc((v.year||'')+' '+v.make+' '+v.model)}</h1><div class="muted">${esc(v.trim||v.engine||'')} ${v.fuel?'• '+esc(v.fuel):''} ${v.transmission?'• '+esc(v.transmission):''}</div><div class="plate">TR • ${esc(v.plate||'Plakasız')}</div><div class="heroSpecs">${v.powerHp?`<span class="specPill">${num(v.powerHp)} hp</span>`:''}${v.torqueNm?`<span class="specPill">${num(v.torqueNm)} Nm</span>`:''}${v.zeroTo100?`<span class="specPill">0-100 ${v.zeroTo100} sn</span>`:''}${v.avgConsumptionL?`<span class="specPill">${v.avgConsumptionL} L/100</span>`:''}${v.drive?`<span class="specPill">${esc(v.drive)}</span>`:''}${v.body&&String(v.body).toLowerCase()!=='null'?`<span class="specPill">${esc(v.body)}</span>`:''}</div></div><button class="iconbtn" onclick="openVehicle('${v.id}')">${ico('edit')}</button></div>${v.photoSource?`<div class="sourceLine">Araç görseli: <button onclick="openPhotoSource('${v.id}')">${esc(v.photoLicense||'Wikimedia Commons')}</button></div>`:''}<div class="kmline"><div><div class="muted small">Güncel kilometre</div><b style="font-size:20px">${num(v.km)} km</b></div><button class="secondary" onclick="quickKm()">KM Güncelle</button></div><div class="kpiHero"><div class="kpiBox"><span class="muted small">Otomatik piyasa / güncel değer</span><b>${value?money(value):'Değer girilmedi'}</b><span class="muted small">${value?'':'İstersen araç düzenle bölümünden manuel değer girebilirsin.'}</span></div><div class="kpiBox"><span class="muted small">Gerçek maliyet / km</span><b>${costPerKm()?costPerKm().toFixed(2)+' TL':'—'}</b></div></div></section>${fuelMiniCard()}${driveMiniCard()}
-<div class="grid2"><div class="card metric"><div class="ico">${ico('expense')}</div><div class="label">Toplam Gider</div><strong>${money(totalAll())}</strong></div><div class="card metric"><div class="ico">${ico('fuel')}</div><div class="label">Yakıt</div><strong>${money(t.fuel)}</strong></div><div class="card metric"><div class="ico">${ico('wrench')}</div><div class="label">Bakım + Servis</div><strong>${money(t.maint+t.service)}</strong></div><div class="card metric"><div class="ico">${ico('bell')}</div><div class="label">Yaklaşan İşlem</div><strong>${up?esc(up.name):'Yok'}</strong></div></div>
-<div class="sectionHead"><h2>Araç Durumu</h2><span class="chip ${up&&(up.days<0||up.km<0)?'red':'green'}">${up&&(up.days<0||up.km<0)?'Geciken var':'İyi Durumda'}</span></div><div class="card">${up?`<b>${esc(up.name)}</b><p class="muted small">${up.dueDate?`${up.days} gün • `:''}${up.dueKm?`${num(up.km)} km kaldı`:''}</p><div class="progress"><b style="width:${Math.max(8,Math.min(100,100-(up.km<999999?Math.max(0,up.km)/100:up.days)))}%"></b></div>`:'<div class="muted">Yaklaşan bakım veya resmi işlem bulunmuyor.</div>'}</div>
-<div class="sectionHead"><h2>Hızlı İşlemler</h2></div><div class="quickGrid"><button class="quick" onclick="openFuel()"><span class="qico">${ico('fuel')}</span><b>Yakıt Ekle</b></button><button class="quick" onclick="openMaintenance()"><span class="qico">${ico('wrench')}</span><b>Bakım Planla</b></button><button class="quick" onclick="routeCalculator()"><span class="qico">${ico('calculator')}</span><b>Yol Maliyeti</b></button><button class="quick" onclick="compareVehicles()"><span class="qico">${ico('compare')}</span><b>Araç Karşılaştır</b></button><button class="quick" onclick="commentsModal()"><span class="qico">${ico('comment')}</span><b>Kullanıcı Yorumları</b><span class="muted small">Puan • gerçek tüketim • kronik sorun</span></button><button class="quick" onclick="openAccount()"><span class="qico">${ico('user')}</span><b>Kullanıcı Hesabı</b><span class="muted small">Giriş • kayıt • profil</span></button></div>`}
+function smartSvc(action,icon,title,subtitle,soft){return `<button class="smartSvc" onclick="${action}" style="--soft:${soft}"><span class="si">${ico(icon)}</span><b>${title}</b><small>${subtitle}</small></button>`}
+function homeView(){const v=activeVehicle();if(!v)return welcome();const value=currentValuation();const photo=v.photo?`<img src="${v.photo}" onerror="this.style.display='none'">`:`${ico('car')}`;return `
+<div class="smartSearchRow">
+  <button class="smartSearch" onclick="nearbySearchModal()"><span class="searchIcon">${ico('search')}</span><span><b>Nereye gitmek istersiniz?</b><small>Yakındaki yerleri, istasyonları ve hizmetleri ara…</small></span></button>
+  <button class="smartLocation" onclick="driveCenterModal()"><span class="locIcon">${ico('location')}</span><span><b>Konumum</b><small>GPS ve yakın yerler</small></span></button>
+</div>
+<div class="smartHeroGrid">
+  <div class="smartMap">
+    <button class="mapPin p1" onclick="nearbyFuel()">${ico('fuel')}</button>
+    <button class="mapPin p2" onclick="nearbyFood()">${ico('food')}</button>
+    <button class="mapPin p3" onclick="nearbyHospital()">${ico('hospital')}</button>
+    <button class="mapPin p4" onclick="nearbyHotel()">${ico('hotel')}</button>
+    <button class="mapPin p5" onclick="nearbyParking()">${ico('parking')}</button>
+    <button class="mapCenter" onclick="driveCenterModal()">${ico('navigation')}</button>
+    <button class="mapExplore" onclick="nearbySearchModal()">🗺️ Haritada Keşfet ›</button>
+  </div>
+  <div class="vehicleHeroCard">
+    <div class="vehicleHeroPhoto">${photo}</div>
+    <div class="vehicleHeroTitle">${esc((v.year||'')+' '+v.make+' '+v.model)}</div>
+    <div class="vehicleHeroMeta">${esc(v.engine||v.trim||'')} • ${num(v.km)} km</div>
+    <button class="marketMini" onclick="marketValueModal()"><i>${ico('value')}</i><span><b>Piyasa Değeri</b><small>${value?money(value):'Güncel değerini hesapla'}</small></span></button>
+  </div>
+</div>
+<div class="smartSectionHead">
+  <div><h2>Akıllı Araç <em>Merkezi</em></h2><p>Yolda, şehirde ve seyahatte ihtiyacınız olan her şey.</p></div>
+  <button onclick="go('more')">Daha Fazla ›</button>
+</div>
+<div class="smartServiceGrid">
+  ${smartSvc("driveCenterModal()","navigation","Canlı Sürüş","GPS hız • yakın yerler","#1675ed")}
+  ${smartSvc("emergencyServicesModal()","emergency","Acil Yardım","112 + acil kurumlar","#d32645")}
+  ${smartSvc("nearbyRoadside()","tow","Yol Yardım","Çekici ve oto kurtarıcı","#e7761e")}
+  ${smartSvc("nearbyFuel()","fuel","Yakın Benzinlik","Haritada en yakınları aç","#16a260")}
+  ${smartSvc("nearbyCharging()","charge","Şarj İstasyonu","Elektrikli araç şarj noktaları","#12a463")}
+  ${smartSvc("nearbyPharmacy()","pharmacy","Yakın Eczane","Haritadaki eczaneler","#e63b55")}
+  ${smartSvc("nearbyHospital()","hospital","Yakın Hastane","Konumuna göre hastaneler","#1877ed")}
+  ${smartSvc("marketValueModal()","value","Piyasa Değeri","Aracının güncel değerini öğren","#7d43e8")}
+  ${smartSvc("nearbyInspection()","inspection","Muayene","TÜVTÜRK yakın istasyonlar","#5a85ee")}
+  ${smartSvc("nearbyFood()","food","Yeme & İçme","Restoran, kafe, lezzet durakları","#d98b20")}
+  ${smartSvc("nearbyAttractions()","explore","Gezilecek Yerler","Tarihi ve turistik yerler","#11a666")}
+  ${smartSvc("nearbyHotel()","hotel","Otel & Konaklama","Yakın oteller ve konaklama","#7850e8")}
+  ${smartSvc("nearbyParking()","parking","Yakın Otopark","Açık ve kapalı otoparklar","#3c77e9")}
+  ${smartSvc("publicInstitutionsModal()","government","Kamu Kurumları","PTT, belediye, vergi, SGK…","#2f91da")}
+  <button class="smartPromo" onclick="longTripModal()"><b>Yolculuk<br>Daha Güzel<br>Planlanır</b><small>Keşfet • rota • uzun yol asistanı</small></button>
+</div>`}
 function garageView(){return `<div class="sectionHead"><h2>Garajım</h2><button class="linkbtn" onclick="openVehicle()">+ Araç</button></div><div class="list">${state.vehicles.length?state.vehicles.map(v=>`<div class="row" onclick="setActive('${v.id}')">${v.photo?`<img class="rowIcon" style="object-fit:cover" src="${v.photo}">`:`<div class="rowIcon">${ico('car')}</div>`}<div class="rowMain"><strong>${esc((v.year||'')+' '+v.make+' '+v.model)}</strong><span>${esc(v.plate||'Plakasız')} • ${num(v.km)} km${v.trim?' • '+esc(v.trim):''}</span></div><div class="rowValue">${v.id===state.activeVehicleId?'<span class="chip green">Aktif</span>':''}</div><button class="linkbtn" onclick="event.stopPropagation();openVehicle('${v.id}')">Düzenle</button></div>`).join(''):'<div class="card empty">Araç yok</div>'}</div>`}
 function recordsView(){const tabs=[['fuel','Yakıt'],['expenses','Giderler'],['trips','Yolculuk'],['services','Servis']];return `<div class="sectionHead"><h2>Kayıtlar</h2></div><div class="tabs">${tabs.map(x=>`<button class="tab ${recordsTab===x[0]?'active':''}" onclick="recordsTab='${x[0]}';render()">${x[1]}</button>`).join('')}</div>${recordsTab==='fuel'?fuelView():recordsTab==='expenses'?expenseView():recordsTab==='trips'?tripView():serviceView()}`}
 function fuelView(){const a=vf(state.fuel).sort((a,b)=>b.date.localeCompare(a.date));let avg='—';if(a.length>1){const s=[...a].sort((a,b)=>a.km-b.km),dist=s.at(-1).km-s[0].km,lit=s.slice(1).reduce((t,x)=>t+x.liters,0);if(dist>0)avg=(lit/dist*100).toFixed(1)+' L/100 km'}return `<div class="grid2"><div class="card metric"><div class="label">Yakıt Toplamı</div><strong>${money(sum(a))}</strong></div><div class="card metric"><div class="label">Ortalama Tüketim</div><strong>${avg}</strong></div></div><div class="sectionHead"><h2>Yakıt Alımları</h2><button class="linkbtn" onclick="openFuel()">+ Ekle</button></div>${listOrEmpty(a,x=>`<div class="row" onclick="openFuel('${x.id}')"><div class="rowIcon">⛽</div><div class="rowMain"><strong>${fmtDate(x.date)} • ${num(x.liters)} L</strong><span>${num(x.km)} km • ${esc(x.station||'İstasyon yok')}</span></div><div class="rowValue">${money(x.cost)}<div class="muted small">${x.liters?(x.cost/x.liters).toFixed(2)+' TL/L':''}</div></div></div>`)}`}
@@ -833,6 +915,18 @@ function nearbyFireStation(){openNearby('itfaiye')}
 function nearbyAutoElectric(){openNearby('oto elektrikçi akücü')}
 function nearbyExpertise(){openNearby('oto ekspertiz')}
 function nearbySpareParts(){openNearby('oto yedek parça')}
+function nearbyPTT(){openNearby('PTT')}
+function nearbyMunicipality(){openNearby('belediye')}
+function nearbyDistrictGovernor(){openNearby('kaymakamlık')}
+function nearbyGovernor(){openNearby('valilik')}
+function nearbyPopulation(){openNearby('nüfus müdürlüğü')}
+function nearbyTaxOffice(){openNearby('vergi dairesi')}
+function nearbySGK(){openNearby('SGK sosyal güvenlik kurumu')}
+function nearbyCourthouse(){openNearby('adliye')}
+function nearbyLandRegistry(){openNearby('tapu müdürlüğü')}
+function nearbyPoliceHQ(){openNearby('emniyet müdürlüğü')}
+function publicInstitutionsModal(){modal('Kamu Kurumları',`<div class="proPanel"><div class="proPanelTitle"><i>${ico('government')}</i><div><b>Kamu & Resmî Hizmetler</b><span>Yakındaki resmi kurumları haritada aç</span></div></div><div class="govGrid"><button onclick="nearbyPTT()">📮 PTT</button><button onclick="nearbyMunicipality()">🏛️ Belediye</button><button onclick="nearbyDistrictGovernor()">🏢 Kaymakamlık</button><button onclick="nearbyGovernor()">🏢 Valilik</button><button onclick="nearbyPopulation()">🪪 Nüfus Müdürlüğü</button><button onclick="nearbyTaxOffice()">🧾 Vergi Dairesi</button><button onclick="nearbySGK()">🛡️ SGK</button><button onclick="nearbyCourthouse()">⚖️ Adliye</button><button onclick="nearbyLandRegistry()">📜 Tapu Müdürlüğü</button><button onclick="nearbyPoliceHQ()">👮 Emniyet</button></div></div>`)}
+
 
 function parkedSpotModal(){const p=state.prefs.parkedSpot||null;const when=p?.ts?new Date(p.ts).toLocaleString('tr-TR'):'';modal('Park Yerim',`<div class="proPanel"><div class="proPanelTitle"><i>${ico('location')}</i><div><b>Aracımı Park Ettiğim Yer</b><span>GPS konumunu cihazda saklar</span></div></div>${p?`<div class="statusList"><div class="statusRow"><span>Son kayıt</span><b>${esc(when)}</b></div><div class="statusRow"><span>GPS</span><b>${Number(p.lat).toFixed(5)}, ${Number(p.lon).toFixed(5)}</b></div></div><div class="proActionGrid"><button onclick="openParkedSpot()">🧭 Yol Tarifi</button><button onclick="clearParkedSpot()">🗑️ Kaydı Sil</button></div>`:`<div class="notice">Aracını park ettiğinde konumunu tek dokunuşla kaydet. Daha sonra haritada geri bulabilirsin.</div>`}<button class="primary wide" style="margin-top:10px" onclick="captureParkedSpot()">📍 Şu Anki Konumu Kaydet</button></div>`)}
 function captureParkedSpot(){window._parkingCapture=true;toast('GPS konumu alınıyor…');try{Android.startSpeedTracking()}catch(e){window._parkingCapture=false;toast('Konum alınamadı')}}
