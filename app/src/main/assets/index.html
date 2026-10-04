@@ -322,7 +322,7 @@ function setGlobalPreferences(){
  const lc=document.getElementById('appLangSelect')?.value||apLang();
  const cc=document.getElementById('appCountrySelect')?.value||apCountry();
  const safeLang=(lc==='tr'||AP_ML_TARGET[lc])?lc:'tr';
- state.prefs.language=safeLang; state.prefs.country=cc;
+ state.prefs.language=safeLang; state.prefs.country=cc;if(safeLang!=='tr')setTimeout(apShowLangLoading,0);
  if(!state.prefs.unitSystem)state.prefs.unitSystem=AP_COUNTRIES[cc]?.u||'metric';
  localStorage.setItem(KEY,JSON.stringify(state));
  closeModal(); render();
@@ -342,7 +342,7 @@ function applyI18n(root=document){
 function setAppLanguage(code){
  if(!AP_LANGS[code])return;
  const safe=(code==='tr'||AP_ML_TARGET[code])?code:'tr';
- state.prefs.language=safe;
+ state.prefs.language=safe;if(safe!=='tr')setTimeout(apShowLangLoading,0);
  localStorage.setItem(KEY,JSON.stringify(state));
  closeModal();render();
  setTimeout(()=>scheduleNativeI18n(document.body),160);
@@ -358,7 +358,7 @@ function languageModal(){
 }
 
 
-/* ARACIM PRO V7.3.3 TRUE FULL LANGUAGE ENGINE */
+/* ARACIM PRO V7.3.4 TRUE FULL LANGUAGE ENGINE */
 const AP_ML_TARGET={
   en:'en',de:'de',fr:'fr',es:'es',it:'it',pt:'pt',nl:'nl',ar:'ar',
   ru:'ru',uk:'uk',fa:'fa',pl:'pl',ro:'ro',bg:'bg',el:'el',cs:'cs',
@@ -368,25 +368,26 @@ const AP_ML_TARGET={
 const AP_NOT_FULL_YET=new Set(['az','sr','bs']);
 const apNativePending={};
 const apNativeCaches={};
-const apTranslatedNodes=new WeakSet();
+const apNodeState=new WeakMap();
 const apTranslatedAttrs=new WeakMap();
 let apNativeBusy=false,apNativeTimer=0,apNativeSeq=0,apNativeToastLang='';
 
 function apNativeCache(lang){
   if(apNativeCaches[lang])return apNativeCaches[lang];
-  try{apNativeCaches[lang]=JSON.parse(localStorage.getItem('aracimpro_full_i18n_v3_'+lang)||'{}')||{}}
+  try{apNativeCaches[lang]=JSON.parse(localStorage.getItem('aracimpro_full_i18n_v4_'+lang)||'{}')||{}}
   catch(e){apNativeCaches[lang]={}}
   return apNativeCaches[lang];
 }
 function apSaveNativeCache(lang){
-  try{localStorage.setItem('aracimpro_full_i18n_v3_'+lang,JSON.stringify(apNativeCaches[lang]||{}))}catch(e){}
+  try{localStorage.setItem('aracimpro_full_i18n_v4_'+lang,JSON.stringify(apNativeCaches[lang]||{}))}catch(e){}
 }
 function apShouldTranslateUI(t){
   t=String(t||'').trim();
-  if(!t||t.length>420)return false;
+  if(!t||t.length>500)return false;
   if(/^https?:\/\//i.test(t))return false;
   if(/^V\d+(?:\.\d+)*$/i.test(t))return false;
   if(t==='Aracım Pro'||t==='AracımPro')return false;
+  if(/^(GPS|HGS|KGM|PTT|TÜVTÜRK|GLOBAL)$/i.test(t))return false;
   if(/^[\d\s.,:%+°•\-–—()\/₺$€£¥₽₹₼]+$/.test(t))return false;
   return /[A-Za-zÀ-ž\u0100-\u024F\u0370-\u03FF\u0400-\u04FF\u0600-\u06FF\u0900-\u097F\u10A0-\u10FF\u3040-\u30FF\u3400-\u9FFF\uAC00-\uD7AF]/.test(t);
 }
@@ -394,7 +395,9 @@ function apAttrDone(el,attr){
   const set=apTranslatedAttrs.get(el);return !!(set&&set.has(attr));
 }
 function apMarkAttrDone(el,attr){
-  let set=apTranslatedAttrs.get(el);if(!set){set=new Set();apTranslatedAttrs.set(el,set)}set.add(attr);
+  let set=apTranslatedAttrs.get(el);
+  if(!set){set=new Set();apTranslatedAttrs.set(el,set)}
+  set.add(attr);
 }
 function apAddTranslationCandidate(groups,source,setter){
   source=String(source||'').trim();
@@ -402,11 +405,28 @@ function apAddTranslationCandidate(groups,source,setter){
   if(!groups.has(source))groups.set(source,[]);
   groups.get(source).push(setter);
 }
+function apShowLangLoading(){
+  if(apLang()==='tr')return;
+  let el=document.getElementById('apLangLoading');
+  if(!el){
+    el=document.createElement('div');
+    el.id='apLangLoading';
+    el.style.cssText='position:fixed;inset:0;z-index:99999;background:#0d1726f2;display:grid;place-items:center;color:white;text-align:center;padding:28px';
+    document.body.appendChild(el);
+  }
+  el.innerHTML=`<div><div style="font-size:42px;margin-bottom:14px">🌍</div><b style="font-size:20px">${AP_LANGS[apLang()]?.[0]||apLang()}</b><div style="margin-top:8px;opacity:.8">Uygulama dili hazırlanıyor…</div></div>`;
+  el.style.display='grid';
+}
+function apHideLangLoading(){
+  const el=document.getElementById('apLangLoading');
+  if(el)el.style.display='none';
+}
 function apRunNativeI18n(root=document){
   const lang=apLang();
-  if(apNativeBusy||lang==='tr')return;
+  if(lang==='tr'){apHideLangLoading();return}
+  if(apNativeBusy)return;
   const target=AP_ML_TARGET[lang];
-  if(!target||!window.Android||typeof Android.translateUiBatch!=='function')return;
+  if(!target||!window.Android||typeof Android.translateUiBatch!=='function'){apHideLangLoading();return}
 
   const cache=apNativeCache(lang),groups=new Map();
   const scope=(root&&root.nodeType)?root:document;
@@ -415,39 +435,47 @@ function apRunNativeI18n(root=document){
   while(walker.nextNode())nodes.push(walker.currentNode);
 
   for(const node of nodes){
-    if(apTranslatedNodes.has(node))continue;
     const parent=node.parentElement;
-    if(!parent||/^(SCRIPT|STYLE|NOSCRIPT|OPTION)$/i.test(parent.tagName))continue;
-    if(parent.closest('.brand,[data-no-translate],#appLangSelect,#appCountrySelect'))continue;
+    if(!parent||/^(SCRIPT|STYLE|NOSCRIPT)$/i.test(parent.tagName))continue;
+    if(parent.closest('.brand,[data-no-translate],#appLangSelect,#appCountrySelect,#apLangLoading'))continue;
+
     const raw=node.nodeValue||'',src=raw.trim();
     if(!apShouldTranslateUI(src))continue;
 
+    const st=apNodeState.get(node);
+    if(st&&st.lang===lang&&raw.trim()===st.value)continue;
+
     if(cache[src]){
       if(node.isConnected){
-        node.nodeValue=raw.replace(src,cache[src]);
-        apTranslatedNodes.add(node);
+        const v=cache[src];
+        node.nodeValue=raw.replace(src,v);
+        apNodeState.set(node,{lang,value:v});
       }
       continue;
     }
+
     apAddTranslationCandidate(groups,src,{
       apply:(v)=>{
-        if(node.isConnected){
-          const now=node.nodeValue||'';
-          if(now.trim()===src)node.nodeValue=now.replace(src,v);
-          apTranslatedNodes.add(node);
+        if(!node.isConnected)return;
+        const now=node.nodeValue||'';
+        if(now.trim()===src){
+          node.nodeValue=now.replace(src,v);
+          apNodeState.set(node,{lang,value:v});
         }
       }
     });
   }
 
   scope.querySelectorAll?.('[placeholder],[title],[aria-label]').forEach(el=>{
-    if(el.closest('.brand,[data-no-translate],#appLangSelect,#appCountrySelect'))return;
+    if(el.closest('.brand,[data-no-translate],#appLangSelect,#appCountrySelect,#apLangLoading'))return;
     for(const attr of ['placeholder','title','aria-label']){
       if(apAttrDone(el,attr))continue;
       const src=(el.getAttribute(attr)||'').trim();
       if(!apShouldTranslateUI(src))continue;
       if(cache[src]){
-        el.setAttribute(attr,cache[src]);apMarkAttrDone(el,attr);continue;
+        el.setAttribute(attr,cache[src]);
+        apMarkAttrDone(el,attr);
+        continue;
       }
       apAddTranslationCandidate(groups,src,{
         apply:(v)=>{
@@ -459,10 +487,13 @@ function apRunNativeI18n(root=document){
   });
 
   const all=[...groups.keys()];
-  if(!all.length)return;
+  if(!all.length){
+    apHideLangLoading();
+    return;
+  }
 
-  const texts=all.slice(0,36);
-  const id='ap733_'+(++apNativeSeq);
+  const texts=all.slice(0,80);
+  const id='ap734_'+(++apNativeSeq);
   const selected=new Map(texts.map(t=>[t,groups.get(t)]));
   apNativePending[id]={lang,texts,groups:selected};
   apNativeBusy=true;
@@ -471,30 +502,43 @@ function apRunNativeI18n(root=document){
     apNativeToastLang=lang;
     try{toast('🌐 '+(AP_LANGS[lang]?.[0]||lang)+' hazırlanıyor…')}catch(e){}
   }
-  try{Android.translateUiBatch(target,id,JSON.stringify(texts))}
-  catch(e){apNativeBusy=false}
+  try{
+    Android.translateUiBatch(target,id,JSON.stringify(texts));
+  }catch(e){
+    apNativeBusy=false;
+    apHideLangLoading();
+  }
 }
-function scheduleNativeI18n(root=document){
-  if(apLang()==='tr')return;
+function scheduleNativeI18n(root=document,delay=80){
+  if(apLang()==='tr'){apHideLangLoading();return}
   clearTimeout(apNativeTimer);
-  apNativeTimer=setTimeout(()=>apRunNativeI18n(root),90);
+  apNativeTimer=setTimeout(()=>apRunNativeI18n(root),delay);
 }
 window.onNativeTranslations=(requestId,payload,error)=>{
   const req=apNativePending[requestId];
   delete apNativePending[requestId];
   apNativeBusy=false;
-  if(!req){scheduleNativeI18n(document.body);return}
+  if(!req){scheduleNativeI18n(document.body,120);return}
+
   let arr=[];
   try{arr=JSON.parse(payload||'[]')}catch(e){}
   const cache=apNativeCache(req.lang);
+
   req.texts.forEach((src,i)=>{
-    const translated=String(arr[i]||src).trim()||src;
-    if(translated!==src)cache[src]=translated;
-    (req.groups.get(src)||[]).forEach(ref=>{try{ref.apply(translated)}catch(e){}});
+    const translated=String(arr[i]||'').trim();
+    if(translated&&translated!==src){
+      cache[src]=translated;
+      (req.groups.get(src)||[]).forEach(ref=>{try{ref.apply(translated)}catch(e){}});
+    }
   });
   apSaveNativeCache(req.lang);
-  if(error)console.log('ML Translate:',error);
-  setTimeout(()=>scheduleNativeI18n(document.body),70);
+
+  if(error){
+    console.log('ML Translate:',error);
+    setTimeout(()=>scheduleNativeI18n(document.body,1000),1000);
+  }else{
+    setTimeout(()=>scheduleNativeI18n(document.body,80),80);
+  }
 };
 
 setTimeout(()=>{
@@ -505,19 +549,29 @@ setTimeout(()=>{
       render();
     }
     const obs=new MutationObserver(mutations=>{
+      let needs=false;
       for(const m of mutations){
-        if(m.type==='characterData')apTranslatedNodes.delete(m.target);
+        if(m.type==='childList'&&m.addedNodes&&m.addedNodes.length)needs=true;
+        if(m.type==='characterData'){
+          const st=apNodeState.get(m.target);
+          const now=(m.target.nodeValue||'').trim();
+          if(!st||now!==st.value){
+            apNodeState.delete(m.target);
+            needs=true;
+          }
+        }
       }
-      scheduleNativeI18n(document.body);
+      if(needs)scheduleNativeI18n(document.body,120);
     });
     obs.observe(document.body,{childList:true,subtree:true,characterData:true});
-    scheduleNativeI18n(document.body);
+    if(apLang()!=='tr')apShowLangLoading();
+    scheduleNativeI18n(document.body,120);
   }catch(e){}
-},500);
+},350);
 
 function applyTheme(){document.body.classList.toggle('dark',!!state.prefs.dark)}
 
-function header(){const v=activeVehicle(),u=communityAuthState;return `<header class="header"><div class="brandrow"><div class="logo">${ico('car')}</div><div><div class="brand">Aracım <b>Pro</b> <span class="badgePro">V7.3.3</span></div><div class="muted small">GLOBAL • Hoş geldiniz 👋 • Teknik katalog • kullanıcı deneyimleri • piyasa değeri • bakım</div></div><div class="grow"></div><button class="iconbtn" onclick="languageModal()" title="Dil & Ülke">${countryFlag()}</button><button class="iconbtn" onclick="openAccount()" title="Kullanıcı hesabı">${ico('user')}</button><button class="iconbtn" onclick="openSettings()">${ico('settings')}</button></div>${u.signedIn?`<div style="margin-top:7px"><span class="accountPill">${esc(u.name||u.email||'Oturum açık')}</span></div>`:''}${state.vehicles.length&&current!=='home'?`<div class="vehicleSelect"><select onchange="setActive(this.value)">${state.vehicles.map(x=>`<option value="${x.id}" ${x.id===v?.id?'selected':''}>${esc((x.year||'')+' '+x.make+' '+x.model)} • ${esc(x.plate||'Plakasız')}</option>`).join('')}</select><button class="iconbtn" onclick="openVehicle()">${ico('plus')}</button></div>`:''}</header>`}
+function header(){const v=activeVehicle(),u=communityAuthState;return `<header class="header"><div class="brandrow"><div class="logo">${ico('car')}</div><div><div class="brand">Aracım <b>Pro</b> <span class="badgePro">V7.3.4</span></div><div class="muted small">GLOBAL • Hoş geldiniz 👋 • Teknik katalog • kullanıcı deneyimleri • piyasa değeri • bakım</div></div><div class="grow"></div><button class="iconbtn" onclick="languageModal()" title="Dil & Ülke">${countryFlag()}</button><button class="iconbtn" onclick="openAccount()" title="Kullanıcı hesabı">${ico('user')}</button><button class="iconbtn" onclick="openSettings()">${ico('settings')}</button></div>${u.signedIn?`<div style="margin-top:7px"><span class="accountPill">${esc(u.name||u.email||'Oturum açık')}</span></div>`:''}${state.vehicles.length&&current!=='home'?`<div class="vehicleSelect"><select onchange="setActive(this.value)">${state.vehicles.map(x=>`<option value="${x.id}" ${x.id===v?.id?'selected':''}>${esc((x.year||'')+' '+x.make+' '+x.model)} • ${esc(x.plate||'Plakasız')}</option>`).join('')}</select><button class="iconbtn" onclick="openVehicle()">${ico('plus')}</button></div>`:''}</header>`}
 const navItems=[['home','home','Ana'],['garage','garage','Garaj'],['records','records','Kayıt'],['plan','wrench','Plan'],['reports','chart','Rapor'],['more','menu','Daha']];
 function nav(){return `<nav class="nav">${navItems.map(([k,i,l])=>`<button class="${current===k?'active':''}" onclick="go('${k}')"><i>${ico(i)}</i>${l}</button>`).join('')}</nav>`}
 function go(k){current=k;closeModal();render();scrollTo(0,0)}
