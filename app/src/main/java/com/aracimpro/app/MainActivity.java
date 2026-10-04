@@ -53,6 +53,17 @@ import android.webkit.WebView;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebViewClient;
 
+import com.android.billingclient.api.AcknowledgePurchaseParams;
+import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.BillingClientStateListener;
+import com.android.billingclient.api.BillingFlowParams;
+import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.PendingPurchasesParams;
+import com.android.billingclient.api.ProductDetails;
+import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.QueryProductDetailsParams;
+import com.android.billingclient.api.QueryPurchasesParams;
+
 import org.json.JSONObject;
 import org.json.JSONArray;
 
@@ -113,6 +124,16 @@ public class MainActivity extends Activity {
     private static final int PICK_DOCUMENT_REQUEST = 7705;
     private static final int LOCATION_PERMISSION_REQUEST = 7706;
 
+    private static final String PREMIUM_PRODUCT_ID = "aracim_pro_premium";
+    private static final String PREMIUM_MONTHLY_BASE = "aylik";
+    private static final String PREMIUM_YEARLY_BASE = "yillik";
+    private BillingClient billingClient;
+    private ProductDetails premiumProductDetails;
+    private boolean premiumActive = false;
+    private boolean premiumBillingReady = false;
+    private String premiumMonthlyPrice = "59,99 TL";
+    private String premiumYearlyPrice = "499,99 TL";
+
     private WebView webView;
     private AdView bannerAdView;
     private int bannerHeightPx = 0;
@@ -155,6 +176,7 @@ public class MainActivity extends Activity {
         setContentView(root);
         showLaunchSplash();
         initAdsWithConsent();
+        initPremiumBilling();
 
         if (Build.VERSION.SDK_INT >= 30) {
             try { getWindow().setDecorFitsSystemWindows(false); } catch (Throwable ignored) {}
@@ -312,6 +334,218 @@ public class MainActivity extends Activity {
         if(bannerAdView!=null){FrameLayout.LayoutParams ap=(FrameLayout.LayoutParams)bannerAdView.getLayoutParams();if(ap!=null&&ap.bottomMargin!=bottom){ap.bottomMargin=bottom;bannerAdView.setLayoutParams(ap);}}
     }
 
+
+    private void initPremiumBilling() {
+        try {
+            billingClient = BillingClient.newBuilder(this)
+                    .setListener((billingResult, purchases) -> {
+                        if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null) {
+                            handlePremiumPurchases(purchases);
+                        } else if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.USER_CANCELED) {
+                            notifyPremiumJs(billingResult.getDebugMessage());
+                        }
+                    })
+                    .enablePendingPurchases(
+                            PendingPurchasesParams.newBuilder()
+                                    .enableOneTimeProducts()
+                                    .build())
+                    .enableAutoServiceReconnection()
+                    .build();
+
+            billingClient.startConnection(new BillingClientStateListener() {
+                @Override public void onBillingSetupFinished(BillingResult billingResult) {
+                    premiumBillingReady = billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK;
+                    if (premiumBillingReady) {
+                        queryPremiumProduct();
+                        refreshPremiumPurchases();
+                    } else {
+                        notifyPremiumJs(billingResult.getDebugMessage());
+                    }
+                }
+                @Override public void onBillingServiceDisconnected() {
+                    premiumBillingReady = false;
+                    notifyPremiumJs("Google Play bağlantısı kesildi");
+                }
+            });
+        } catch (Throwable t) {
+            premiumBillingReady = false;
+            notifyPremiumJs("Google Play Billing başlatılamadı");
+        }
+    }
+
+    private void queryPremiumProduct() {
+        if (billingClient == null || !premiumBillingReady) return;
+
+        QueryProductDetailsParams.Product product =
+                QueryProductDetailsParams.Product.newBuilder()
+                        .setProductId(PREMIUM_PRODUCT_ID)
+                        .setProductType(BillingClient.ProductType.SUBS)
+                        .build();
+
+        QueryProductDetailsParams params =
+                QueryProductDetailsParams.newBuilder()
+                        .setProductList(Collections.singletonList(product))
+                        .build();
+
+        billingClient.queryProductDetailsAsync(params, (billingResult, result) -> {
+            if (billingResult.getResponseCode() != BillingClient.BillingResponseCode.OK) {
+                notifyPremiumJs(billingResult.getDebugMessage());
+                return;
+            }
+
+            List<ProductDetails> list = result.getProductDetailsList();
+            if (list == null || list.isEmpty()) {
+                premiumProductDetails = null;
+                notifyPremiumJs("Premium ürünü Play Console'da henüz etkin değil");
+                return;
+            }
+
+            premiumProductDetails = list.get(0);
+            List<ProductDetails.SubscriptionOfferDetails> offers =
+                    premiumProductDetails.getSubscriptionOfferDetails();
+
+            if (offers != null) {
+                for (ProductDetails.SubscriptionOfferDetails offer : offers) {
+                    List<ProductDetails.PricingPhase> phases =
+                            offer.getPricingPhases().getPricingPhaseList();
+                    if (phases == null || phases.isEmpty()) continue;
+
+                    ProductDetails.PricingPhase phase = phases.get(phases.size() - 1);
+                    if (PREMIUM_MONTHLY_BASE.equals(offer.getBasePlanId())) {
+                        premiumMonthlyPrice = phase.getFormattedPrice();
+                    } else if (PREMIUM_YEARLY_BASE.equals(offer.getBasePlanId())) {
+                        premiumYearlyPrice = phase.getFormattedPrice();
+                    }
+                }
+            }
+            notifyPremiumJs("");
+        });
+    }
+
+    private void refreshPremiumPurchases() {
+        if (billingClient == null || !premiumBillingReady) {
+            notifyPremiumJs("Google Play bağlantısı hazır değil");
+            return;
+        }
+
+        QueryPurchasesParams params =
+                QueryPurchasesParams.newBuilder()
+                        .setProductType(BillingClient.ProductType.SUBS)
+                        .build();
+
+        billingClient.queryPurchasesAsync(params, (billingResult, purchases) -> {
+            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                handlePremiumPurchases(purchases);
+            } else {
+                notifyPremiumJs(billingResult.getDebugMessage());
+            }
+        });
+    }
+
+    private void handlePremiumPurchases(List<Purchase> purchases) {
+        boolean active = false;
+
+        if (purchases != null) {
+            for (Purchase purchase : purchases) {
+                if (purchase.getPurchaseState() != Purchase.PurchaseState.PURCHASED) continue;
+                if (!purchase.getProducts().contains(PREMIUM_PRODUCT_ID)) continue;
+
+                active = true;
+
+                if (!purchase.isAcknowledged() && billingClient != null) {
+                    AcknowledgePurchaseParams ack =
+                            AcknowledgePurchaseParams.newBuilder()
+                                    .setPurchaseToken(purchase.getPurchaseToken())
+                                    .build();
+                    billingClient.acknowledgePurchase(ack, result -> {});
+                }
+            }
+        }
+
+        premiumActive = active;
+        if (premiumActive) removePremiumAds();
+        notifyPremiumJs("");
+    }
+
+    private void removePremiumAds() {
+        runOnUiThread(() -> {
+            try {
+                if (bannerAdView != null) {
+                    bannerAdView.destroy();
+                    root.removeView(bannerAdView);
+                    bannerAdView = null;
+                }
+            } catch (Throwable ignored) {}
+            bannerHeightPx = 0;
+            applyWebMargins(lastInsetLeft,lastInsetTop,lastInsetRight,lastInsetBottom);
+        });
+    }
+
+    private JSONObject premiumStatusJson() {
+        JSONObject o = new JSONObject();
+        try {
+            o.put("active", premiumActive);
+            o.put("ready", premiumBillingReady);
+            o.put("productReady", premiumProductDetails != null);
+            o.put("monthlyPrice", premiumMonthlyPrice);
+            o.put("yearlyPrice", premiumYearlyPrice);
+            o.put("productId", PREMIUM_PRODUCT_ID);
+        } catch (Exception ignored) {}
+        return o;
+    }
+
+    private void notifyPremiumJs(String error) {
+        runOnUiThread(() -> {
+            if (webView == null) return;
+            String js = "window.onPremiumStatus && window.onPremiumStatus(" +
+                    JSONObject.quote(premiumStatusJson().toString()) + "," +
+                    JSONObject.quote(error == null ? "" : error) + ")";
+            webView.evaluateJavascript(js, null);
+        });
+    }
+
+    private void launchPremiumPurchase(String requestedBasePlan) {
+        if (billingClient == null || !premiumBillingReady) {
+            Toast.makeText(this, "Google Play bağlantısı hazır değil", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (premiumProductDetails == null) {
+            queryPremiumProduct();
+            Toast.makeText(this, "Premium ürünü Play Console'dan etkinleştirilmelidir", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        List<ProductDetails.SubscriptionOfferDetails> offers =
+                premiumProductDetails.getSubscriptionOfferDetails();
+
+        if (offers == null || offers.isEmpty()) {
+            Toast.makeText(this, "Premium planı bulunamadı", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ProductDetails.SubscriptionOfferDetails selected = null;
+        for (ProductDetails.SubscriptionOfferDetails offer : offers) {
+            if (requestedBasePlan != null && requestedBasePlan.equals(offer.getBasePlanId())) {
+                selected = offer;
+                break;
+            }
+        }
+        if (selected == null) selected = offers.get(0);
+
+        BillingFlowParams.ProductDetailsParams productParams =
+                BillingFlowParams.ProductDetailsParams.newBuilder()
+                        .setProductDetails(premiumProductDetails)
+                        .setOfferToken(selected.getOfferToken())
+                        .build();
+
+        BillingFlowParams flowParams =
+                BillingFlowParams.newBuilder()
+                        .setProductDetailsParamsList(Collections.singletonList(productParams))
+                        .build();
+
+        billingClient.launchBillingFlow(this, flowParams);
+    }
+
     private void initAdsWithConsent() {
         ConsentRequestParameters params=new ConsentRequestParameters.Builder().build();
         ConsentInformation ci=UserMessagingPlatform.getConsentInformation(this);
@@ -320,6 +554,7 @@ public class MainActivity extends Activity {
     }
 
     private void startMobileAdsAndBanner() {
+        if(premiumActive) return;
         if(bannerAdView!=null) return;
         MobileAds.initialize(this,status -> {});
         bannerAdView=new AdView(this); bannerAdView.setAdSize(AdSize.BANNER);
@@ -329,6 +564,12 @@ public class MainActivity extends Activity {
         ap.gravity=Gravity.BOTTOM; ap.bottomMargin=lastInsetBottom; root.addView(bannerAdView,ap);
         applyWebMargins(lastInsetLeft,lastInsetTop,lastInsetRight,lastInsetBottom);
         bannerAdView.loadAd(new AdRequest.Builder().build());
+    }
+
+    @Override protected void onDestroy() {
+        try { if (billingClient != null) billingClient.endConnection(); } catch (Throwable ignored) {}
+        try { if (bannerAdView != null) bannerAdView.destroy(); } catch (Throwable ignored) {}
+        super.onDestroy();
     }
 
     @Override public void onBackPressed() {
@@ -349,6 +590,7 @@ public class MainActivity extends Activity {
         if (hasLocationPermission() && isLocationServiceEnabled() && pendingLocationAction != null && !pendingLocationAction.isEmpty()) {
             mainHandler.postDelayed(this::resumePendingLocationAction, 300L);
         }
+        if (premiumBillingReady) refreshPremiumPurchases();
         appWasBackgrounded = false;
     }
 
@@ -438,6 +680,27 @@ public class MainActivity extends Activity {
     }
 
     public class AndroidBridge {
+
+        @JavascriptInterface public String premiumStatus() {
+            return premiumStatusJson().toString();
+        }
+
+        @JavascriptInterface public void buyPremium(String plan) {
+            runOnUiThread(() -> launchPremiumPurchase(
+                    "yearly".equalsIgnoreCase(plan) ? PREMIUM_YEARLY_BASE : PREMIUM_MONTHLY_BASE));
+        }
+
+        @JavascriptInterface public void restorePremium() {
+            runOnUiThread(() -> {
+                if (!premiumBillingReady) {
+                    Toast.makeText(MainActivity.this, "Google Play bağlantısı hazır değil", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                refreshPremiumPurchases();
+                Toast.makeText(MainActivity.this, "Satın alımlar kontrol ediliyor", Toast.LENGTH_SHORT).show();
+            });
+        }
+
 
         @JavascriptInterface public void translateUiBatch(String targetTag, String requestId, String jsonTexts) {
             try {

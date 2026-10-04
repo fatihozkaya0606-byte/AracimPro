@@ -269,7 +269,7 @@ html[dir="rtl"] body{text-align:right}
 .liveTickerDots i.active{width:12px;border-radius:99px;background:#4ba9ff}
 
 
-/* ARACIM PRO V7.4.1 CONTINUOUS LIVE RIBBON */
+/* ARACIM PRO V7.5.0 CONTINUOUS LIVE RIBBON */
 .liveTickerViewport{
   scroll-snap-type:none !important;
   scroll-behavior:auto !important;
@@ -284,6 +284,25 @@ html[dir="rtl"] body{text-align:right}
   scroll-snap-align:none !important;
 }
 .liveTickerDots{display:none !important}
+
+
+/* ARACIM PRO V7.5 PREMIUM */
+.premiumMini{position:relative;border-color:rgba(255,188,64,.32)!important;background:linear-gradient(135deg,rgba(255,189,58,.08),rgba(117,74,255,.08))!important}
+.premiumMini small{display:block;margin-top:3px;font-size:8px;font-weight:900;color:#d89b20;letter-spacing:.07em}
+.premiumHero{padding:18px;border-radius:22px;color:white;background:radial-gradient(circle at 85% 10%,rgba(119,77,255,.55),transparent 38%),linear-gradient(145deg,#0a172a,#142d4b 62%,#302064);box-shadow:0 18px 42px rgba(3,20,45,.26)}
+.premiumHero h2{font-size:25px;margin:8px 0 4px}
+.premiumHero .premiumSub{color:#c5d5ea;font-size:12px;line-height:1.5}
+.premiumFeatureGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.premiumFeature{padding:10px;border-radius:14px;background:rgba(255,255,255,.08);font-size:11px;font-weight:750}
+.premiumPlans{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.premiumPlan{border:1px solid var(--line);border-radius:18px;padding:13px;background:var(--card);text-align:left}
+.premiumPlan.recommended{border:2px solid #f0ad28;box-shadow:0 8px 24px rgba(240,173,40,.14)}
+.premiumPlan .planBadge{display:inline-block;font-size:8px;font-weight:900;padding:3px 6px;border-radius:999px;background:#fff3ce;color:#8c6100;margin-bottom:6px}
+.premiumPlan b{display:block;font-size:18px}
+.premiumPlan span{font-size:10px;color:var(--muted)}
+.premiumBuy{margin-top:12px;background:linear-gradient(135deg,#f1aa24,#ffcf59)!important;color:#312000!important;border:0!important;font-weight:900!important}
+.premiumLegal{font-size:9px;color:var(--muted);line-height:1.5;margin-top:10px}
+.premiumActiveCard{padding:16px;border-radius:20px;background:linear-gradient(135deg,#0b8a63,#16ba7d);color:#fff;text-align:center}
 
 </style>
 </head>
@@ -1103,16 +1122,16 @@ ${moreTile("longTripModal()","road","Uzun Yol Asistanı","Kontrol, mola ve yol h
 <details class="moreTools"><summary>Diğer araç ve kayıt araçları</summary><div class="moreToolsGrid">
 <button class="moreMini" onclick="refreshLiveData()">Canlı Verileri Yenile</button>
 <button class="moreMini" onclick="refreshAllVehicleSpecs(true)">Araçları Yenile</button>
-<button class="moreMini" onclick="compareVehicles()">Karşılaştırma</button>
-<button class="moreMini" onclick="valuationModal()">Değer Geçmişi</button>
+<button class="moreMini premiumMini" onclick="compareVehicles()">👑 Karşılaştırma<small>PREMIUM</small></button>
+<button class="moreMini premiumMini" onclick="valuationModal()">👑 Değer Geçmişi<small>PREMIUM</small></button>
 <button class="moreMini" onclick="batteryModal()">Akü Takibi</button>
-<button class="moreMini" onclick="accidentModal()">Kaza / Hasar</button>
-<button class="moreMini" onclick="routeCalculator()">Yol Maliyeti</button>
-<button class="moreMini" onclick="documentsViewModal()">Belge Kasası</button>
+<button class="moreMini premiumMini" onclick="accidentModal()">👑 Kaza / Hasar<small>PREMIUM</small></button>
+<button class="moreMini premiumMini" onclick="routeCalculator()">👑 Yol Maliyeti<small>PREMIUM</small></button>
+<button class="moreMini premiumMini" onclick="documentsViewModal()">👑 Belge Kasası<small>PREMIUM</small></button>
 <button class="moreMini" onclick="emergencyModal()">Acil Durum</button>
 <button class="moreMini" onclick="openSettings()">Ayarlar</button>
-<button class="moreMini" onclick="premiumPreview()">Premium</button>
-<button class="moreMini" onclick="backupCloud()">Buluta Yedekle</button>
+<button class="moreMini premiumMini" onclick="premiumPreview()">👑 Premium'a Geç<small>59,99 TL / ay</small></button>
+<button class="moreMini premiumMini" onclick="backupCloud()">👑 Buluta Yedekle<small>PREMIUM</small></button>
 </div></details>
 </div>`}
 
@@ -1575,21 +1594,21 @@ function removeRec(k,id){if(confirm('Bu kayıt silinsin mi?')){state[k]=state[k]
 
 function specLine(label,value,unit=''){return `<div class="specCell"><span>${label}</span><b>${value?esc(value)+unit:'—'}</b></div>`}
 function specsModal(){const v=requireVehicle('Teknik Özellikler');if(!v)return;window._specModalOpen=true;const prod=[v.productionCity,v.productionCountry].filter(Boolean).join(' / ')||v.brandCountry||'Üretim yeri verisi henüz yok';const ev=v.fuel==='Elektrik'||v.batteryKwh||v.rangeKm;modal('Teknik Özellikler',`<div class="specSource"><div><b>${esc(v.year+' '+v.make+' '+v.model)}</b><div class="muted small">${esc(v.engine||'Motor seçilmedi')} • ${esc(v.trim||'Paket seçilmedi')}</div></div><span class="sourceBadge">${esc(v.specSource||'Teknik veri bekleniyor')}</span></div><div class="specTable">${specLine('Araç Türü',v.type)}${specLine('Kasa',v.body)}${specLine('Motor / Versiyon',v.engine)}${specLine('Motor Hacmi',v.engineCc,' cc')}${specLine('Güç',v.powerHp,' hp')}${specLine('Tork',v.torqueNm,' Nm')}${specLine('0-100',v.zeroTo100,' sn')}${specLine('Maksimum Hız',v.topSpeedKph,' km/s')}${specLine('Ortalama Tüketim',v.avgConsumptionL,' L/100 km')}${specLine('Şehir İçi',v.cityConsumptionL,' L/100 km')}${specLine('Şehir Dışı',v.hwyConsumptionL,' L/100 km')}${specLine('Yakıt Deposu',v.fuelTankL,' L')}${specLine('Ağırlık',v.weightKg,' kg')}${specLine('Bagaj Hacmi',v.trunkL,' L')}${specLine('Uzunluk',v.lengthMm,' mm')}${specLine('Genişlik',v.widthMm,' mm')}${specLine('Yükseklik',v.heightMm,' mm')}${specLine('Aks Mesafesi',v.wheelbaseMm,' mm')}${specLine('Kapı',v.doors)}${specLine('Koltuk',v.seats)}${specLine('Şanzıman',v.transmission)}${specLine('Çekiş',v.drive)}${specLine('Yakıt / Enerji',v.fuel)}${specLine('Marka Ülkesi',v.brandCountry)}${specLine('Üretim Yeri',prod)}${specLine('Üretici',v.manufacturer)}${specLine('Motor Kodu',v.engineCode)}${specLine('Enjeksiyon',v.injectionSystem)}${specLine('Besleme',v.aspiration)}${specLine('Motor Yağı',v.oilCapacityL,' L')}${specLine('Soğutma Sıvısı',v.coolantCapacityL,' L')}${specLine('AdBlue',v.adblueTankL,' L')}${specLine('Lastik',v.tireSizes)}${specLine('Jant',v.wheelSizes)}${ev?specLine('Batarya',v.batteryKwh,' kWh'):''}${ev?specLine('Elektrik Menzili',v.rangeKm,' km'):''}${ev?specLine('EV Tüketim',v.avgConsumptionKwh,' kWh/100 km'):''}${ev?specLine('AC Şarj',v.chargingAcKw,' kW'):''}${ev?specLine('DC Şarj',v.chargingDcKw,' kW'):''}${ev?specLine('Şarj Soketi',v.chargingConnector):''}</div><div class="card" style="margin-top:12px"><div class="muted small">Veri kaynağı</div><b>${esc(v.specSource||'Henüz otomatik veri alınmadı')}</b>${v.specMatchedTrim?`<div class="muted small">Eşleşen varyant: ${esc(v.specMatchedTrim)}</div>`:''}${v.specConfidence?`<div class="muted small">Eşleşme güveni: %${Math.round(v.specConfidence)}</div>`:''}${v.specUpdatedAt?`<div class="muted small">Güncelleme: ${esc(v.specUpdatedAt)}</div>`:''}${v.specError?`<div class="muted small dangerText">Son hata: ${esc(v.specError)}</div>`:''}</div><div class="grid2" style="margin-top:12px"><button class="primary" onclick="refreshTechnicalSpecs()">Teknik Verileri Otomatik Yenile</button><button class="secondary" onclick="decodeVehicleVin()">VIN'den Üretim Yerini Bul</button></div><button class="secondary wide" style="margin-top:10px" onclick="openVehicle('${v.id}')">Araç Bilgilerini Düzenle</button><div class="notice" style="margin-top:10px"><b>V15:</b> Teknik bilgiler OtoAPI varyant kataloğundan otomatik aranır. VIN zorunlu değildir; yalnız üretim fabrikası/ülkesi gibi şasiye özgü bilgiler için isteğe bağlıdır. Veri bulunamazsa yeniden sorgulama yapılabilir ve uygulama sahte değer üretmez.</div>`)}
-function compareVehicles(){const v=activeVehicle();if(!v)return;const others=state.vehicles.filter(x=>x.id!==v.id);if(!others.length){modal('Araç Karşılaştırma',`<div class="empty"><h3>İkinci araç gerekli</h3><p class="muted">Garaja karşılaştırmak istediğin aracı da ekle. Teknik özelliklerini girdikten sonra burada yan yana göreceksin.</p><button class="primary" onclick="openVehicle()">İkinci Araç Ekle</button></div>`);return}const b=others[0];modal('Araç Karşılaştırma',`<div class="field"><label>Karşılaştırılacak araç</label><select onchange="renderComparison(this.value)">${others.slice().sort((a,b)=>(a.make+' '+a.model).localeCompare(b.make+' '+b.model,'tr',{numeric:true})).map(x=>`<option value="${x.id}">${esc(x.year+' '+x.make+' '+x.model)}</option>`).join('')}</select></div><div id="comparisonBox">${comparisonHtml(v,b)}</div>`)}
+function compareVehiclesCore(){const v=activeVehicle();if(!v)return;const others=state.vehicles.filter(x=>x.id!==v.id);if(!others.length){modal('Araç Karşılaştırma',`<div class="empty"><h3>İkinci araç gerekli</h3><p class="muted">Garaja karşılaştırmak istediğin aracı da ekle. Teknik özelliklerini girdikten sonra burada yan yana göreceksin.</p><button class="primary" onclick="openVehicle()">İkinci Araç Ekle</button></div>`);return}const b=others[0];modal('Araç Karşılaştırma',`<div class="field"><label>Karşılaştırılacak araç</label><select onchange="renderComparison(this.value)">${others.slice().sort((a,b)=>(a.make+' '+a.model).localeCompare(b.make+' '+b.model,'tr',{numeric:true})).map(x=>`<option value="${x.id}">${esc(x.year+' '+x.make+' '+x.model)}</option>`).join('')}</select></div><div id="comparisonBox">${comparisonHtml(v,b)}</div>`)}
 function renderComparison(id){const v=activeVehicle(),b=state.vehicles.find(x=>x.id===id),box=document.getElementById('comparisonBox');if(box&&b)box.innerHTML=comparisonHtml(v,b)}
 function comparisonHtml(a,b){const r=(label,key,unit='')=>`<div class="specCell"><span>${label}</span><b>${a[key]?esc(a[key])+unit:'—'}</b></div><div class="specCell"><span>${label}</span><b>${b[key]?esc(b[key])+unit:'—'}</b></div>`;return `<div class="compareGrid" style="margin:12px 0 8px"><div class="compareHead">${esc(a.year+' '+a.make+' '+a.model)}</div><div class="compareHead">${esc(b.year+' '+b.make+' '+b.model)}</div></div><div class="specTable">${r('Güç','powerHp',' hp')}${r('Tork','torqueNm',' Nm')}${r('Motor','engine')}${r('Motor Hacmi','engineCc',' cc')}${r('0-100','zeroTo100',' sn')}${r('Maks. Hız','topSpeedKph',' km/s')}${r('Ort. Tüketim','avgConsumptionL',' L/100 km')}${r('Depo','fuelTankL',' L')}${r('Ağırlık','weightKg',' kg')}${r('Bagaj','trunkL',' L')}${r('Uzunluk','lengthMm',' mm')}${r('Genişlik','widthMm',' mm')}${r('Yükseklik','heightMm',' mm')}${r('Şanzıman','transmission')}${r('Çekiş','drive')}${r('Yakıt','fuel')}${r('Menzil','rangeKm',' km')}</div>`}
 function avgConsumption(){const a=vf(state.fuel).filter(x=>x.liters&&x.km).sort((a,b)=>a.km-b.km);if(a.length<2)return 0;const dist=a.at(-1).km-a[0].km,lit=a.slice(1).reduce((t,x)=>t+(+x.liters||0),0);return dist>0?lit/dist*100:0}
 function lastFuelPrice(){const a=vf(state.fuel).filter(x=>x.liters&&x.cost).sort((a,b)=>String(b.date).localeCompare(String(a.date)));return a[0]?a[0].cost/a[0].liters:(+state.prefs.fuelPrice||0)}
 function fuelBudgetCalculator(){const c=avgConsumption()||7.5,p=lastFuelPrice()||state.prefs.fuelPrice||0;modal('Aylık Yakıt Tahmini',`<form class="form" oninput="calcFuelBudget(this)"><div class="formrow"><div class="field"><label>Aylık KM</label><input name="km" type="number" value="${Math.round((state.prefs.annualKm||12000)/12)}"></div><div class="field"><label>Tüketim (L/100 km)</label><input name="cons" type="number" step="0.1" value="${c.toFixed(1)}"></div></div><div class="field"><label>Yakıt / Enerji Birim Fiyatı</label><input name="price" type="number" step="0.01" value="${p?p.toFixed(2):''}"></div><div class="card" style="margin:0"><span class="muted small">Tahmini aylık maliyet</span><div id="fuelBudgetResult" class="calcResult">—</div></div></form>`);setTimeout(()=>calcFuelBudget(document.querySelector('.sheet form')),50)}
 function calcFuelBudget(f){if(!f)return;const km=+f.km.value||0,c=+f.cons.value||0,p=+f.price.value||0,tot=km*c/100*p;document.getElementById('fuelBudgetResult').textContent=tot?money(tot):'—'}
-function routeCalculator(){const c=avgConsumption()||7.5,p=lastFuelPrice()||state.prefs.fuelPrice||0;modal('Yol Maliyeti Hesapla',`<form class="form" oninput="calcRoute(this)"><div class="formrow"><div class="field"><label>Tek yön mesafe (km)</label><input name="km" type="number" value="100"></div><div class="field"><label>Gidiş-dönüş</label><select name="round"><option value="2">Evet</option><option value="1">Hayır</option></select></div></div><div class="formrow"><div class="field"><label>Tüketim (L/100 km)</label><input name="cons" type="number" step="0.1" value="${c.toFixed(1)}"></div><div class="field"><label>Birim fiyat</label><input name="price" type="number" step="0.01" value="${p?p.toFixed(2):''}"></div></div><div class="field"><label>Otoyol / Köprü / Ek Gider</label><input name="extra" type="number" step="0.01" value="0"></div><div class="card" style="margin:0"><span class="muted small">Tahmini toplam</span><div id="routeResult" class="calcResult">—</div><div id="routeDetail" class="muted small"></div></div></form>`);setTimeout(()=>calcRoute(document.querySelector('.sheet form')),50)}
+function routeCalculatorCore(){const c=avgConsumption()||7.5,p=lastFuelPrice()||state.prefs.fuelPrice||0;modal('Yol Maliyeti Hesapla',`<form class="form" oninput="calcRoute(this)"><div class="formrow"><div class="field"><label>Tek yön mesafe (km)</label><input name="km" type="number" value="100"></div><div class="field"><label>Gidiş-dönüş</label><select name="round"><option value="2">Evet</option><option value="1">Hayır</option></select></div></div><div class="formrow"><div class="field"><label>Tüketim (L/100 km)</label><input name="cons" type="number" step="0.1" value="${c.toFixed(1)}"></div><div class="field"><label>Birim fiyat</label><input name="price" type="number" step="0.01" value="${p?p.toFixed(2):''}"></div></div><div class="field"><label>Otoyol / Köprü / Ek Gider</label><input name="extra" type="number" step="0.01" value="0"></div><div class="card" style="margin:0"><span class="muted small">Tahmini toplam</span><div id="routeResult" class="calcResult">—</div><div id="routeDetail" class="muted small"></div></div></form>`);setTimeout(()=>calcRoute(document.querySelector('.sheet form')),50)}
 function calcRoute(f){if(!f)return;const km=(+f.km.value||0)*(+f.round.value||1),cons=+f.cons.value||0,price=+f.price.value||0,extra=+f.extra.value||0,fuel=km*cons/100*price,total=fuel+extra;document.getElementById('routeResult').textContent=total?money(total):'—';document.getElementById('routeDetail').textContent=`${num(km)} km • Yakıt/enerji ${money(fuel)} • Ek gider ${money(extra)}`}
-function valuationModal(){const a=vf(state.valuations).sort((a,b)=>String(b.date).localeCompare(String(a.date)));modal('Araç Değer Takibi',`<form class="form" onsubmit="saveValuation(event)"><div class="formrow"><div class="field"><label>Tarih</label><input type="date" name="date" value="${today()}" required></div><div class="field"><label>Değer (TL)</label><input type="number" step="0.01" name="value" required></div></div><div class="field"><label>Değer Kaynağı</label><select name="note">${optList(VALUATION_SOURCES,'','Kaynak seç')}</select></div><button class="primary wide">Değer Kaydı Ekle</button></form><div class="list" style="margin-top:12px">${a.length?a.map(x=>`<div class="row"><div class="rowIcon">${ico('value')}</div><div class="rowMain"><strong>${fmtDate(x.date)}</strong><span>${esc(x.note||'')}</span></div><div class="rowValue">${money(x.value)}</div></div>`).join(''):'<div class="muted">Henüz değer kaydı yok.</div>'}</div>`) }
+function valuationModalCore(){const a=vf(state.valuations).sort((a,b)=>String(b.date).localeCompare(String(a.date)));modal('Araç Değer Takibi',`<form class="form" onsubmit="saveValuation(event)"><div class="formrow"><div class="field"><label>Tarih</label><input type="date" name="date" value="${today()}" required></div><div class="field"><label>Değer (TL)</label><input type="number" step="0.01" name="value" required></div></div><div class="field"><label>Değer Kaynağı</label><select name="note">${optList(VALUATION_SOURCES,'','Kaynak seç')}</select></div><button class="primary wide">Değer Kaydı Ekle</button></form><div class="list" style="margin-top:12px">${a.length?a.map(x=>`<div class="row"><div class="rowIcon">${ico('value')}</div><div class="rowMain"><strong>${fmtDate(x.date)}</strong><span>${esc(x.note||'')}</span></div><div class="rowValue">${money(x.value)}</div></div>`).join(''):'<div class="muted">Henüz değer kaydı yok.</div>'}</div>`) }
 function saveValuation(e){e.preventDefault();const f=new FormData(e.target),o={id:uid(),vehicleId:activeVehicle().id,date:f.get('date'),value:+f.get('value'),note:f.get('note').trim()};state.valuations.push(o);activeVehicle().currentValue=o.value;closeModal();save();valuationModal()}
 function batteriesInlineView(){const a=vf(state.batteries).sort((a,b)=>String(b.installDate).localeCompare(String(a.installDate)));return `<div class="sectionHead"><h2>Akü Geçmişi</h2><button class="linkbtn" onclick="batteryModal()">+ Akü</button></div>${listOrEmpty(a,x=>`<div class="row"><div class="rowIcon">${ico('battery')}</div><div class="rowMain"><strong>${esc(x.brand||'Akü')} ${esc(x.model||'')}</strong><span>${fmtDate(x.installDate)} • ${num(x.installKm||0)} km • ${x.warrantyMonths||0} ay garanti</span></div></div>`)}`}
 function batteryModal(){const a=vf(state.batteries).sort((a,b)=>String(b.installDate).localeCompare(String(a.installDate)));modal('Akü Takibi',`<form class="form" onsubmit="saveBattery(event)"><div class="formrow"><div class="field"><label>Marka</label><select name="brand" required>${optList(BATTERY_BRANDS,'','Marka seç')}</select></div><div class="field"><label>Kapasite / Tip</label><select name="model">${optList(BATTERY_SPECS,'','Akü seç')}</select></div></div><div class="formrow"><div class="field"><label>Takılma Tarihi</label><input type="date" name="installDate" value="${today()}" required></div><div class="field"><label>Takılma KM</label><input type="number" name="installKm" value="${activeVehicle()?.km||0}"></div></div><div class="formrow"><div class="field"><label>Garanti</label><select name="warrantyMonths">${[12,18,24,30,36,48].map(v=>`<option value="${v}" ${v===24?'selected':''}>${v} ay</option>`).join('')}</select></div><div class="field"><label>Fiyat</label><input type="number" step="0.01" name="cost"></div></div><button class="primary wide">Akü Kaydı Ekle</button></form><div class="list" style="margin-top:12px">${a.map(x=>`<div class="row"><div class="rowIcon">${ico('battery')}</div><div class="rowMain"><strong>${esc(x.brand)} ${esc(x.model||'')}</strong><span>${fmtDate(x.installDate)} • ${num(x.installKm)} km</span></div><div class="rowValue">${money(x.cost||0)}</div></div>`).join('')}</div>`) }
 function saveBattery(e){e.preventDefault();const f=new FormData(e.target);state.batteries.push({id:uid(),vehicleId:activeVehicle().id,brand:f.get('brand').trim(),model:f.get('model').trim(),installDate:f.get('installDate'),installKm:+f.get('installKm'),warrantyMonths:+f.get('warrantyMonths'),cost:+f.get('cost')||0});closeModal();save();batteryModal()}
-function accidentModal(){const a=vf(state.accidents).sort((a,b)=>String(b.date).localeCompare(String(a.date)));modal('Kaza / Hasar Kaydı',`<form class="form" onsubmit="saveAccident(event)"><div class="formrow"><div class="field"><label>Tarih</label><input type="date" name="date" value="${today()}" required></div><div class="field"><label>KM</label><input type="number" name="km" value="${activeVehicle()?.km||0}"></div></div><div class="field"><label>Hasar Türü</label><select name="title" required>${optList(ACCIDENT_TYPES,'','Hasar türü seç')}</select></div><div class="formrow"><div class="field"><label>Hasar / Onarım Tutarı</label><input type="number" step="0.01" name="cost"></div><div class="field"><label>Durum</label><select name="status">${optList(['Onarıldı','Onarım Bekliyor','Sigorta Sürecinde','Ekspertizde','Parça Bekliyor','Kayıt Amaçlı'], 'Onarıldı','Durum seç')}</select></div></div><div class="field"><label>Açıklama (isteğe bağlı)</label><textarea name="note"></textarea></div><button class="primary wide">Hasar Kaydı Ekle</button></form><div class="list" style="margin-top:12px">${a.length?a.map(x=>`<div class="row"><div class="rowIcon">${ico('crash')}</div><div class="rowMain"><strong>${esc(x.title)}</strong><span>${fmtDate(x.date)} • ${num(x.km)} km • ${esc(x.status)}</span></div><div class="rowValue">${money(x.cost||0)}</div></div>`).join(''):'<div class="muted">Kaza/hasar kaydı yok.</div>'}</div>`) }
+function accidentModalCore(){const a=vf(state.accidents).sort((a,b)=>String(b.date).localeCompare(String(a.date)));modal('Kaza / Hasar Kaydı',`<form class="form" onsubmit="saveAccident(event)"><div class="formrow"><div class="field"><label>Tarih</label><input type="date" name="date" value="${today()}" required></div><div class="field"><label>KM</label><input type="number" name="km" value="${activeVehicle()?.km||0}"></div></div><div class="field"><label>Hasar Türü</label><select name="title" required>${optList(ACCIDENT_TYPES,'','Hasar türü seç')}</select></div><div class="formrow"><div class="field"><label>Hasar / Onarım Tutarı</label><input type="number" step="0.01" name="cost"></div><div class="field"><label>Durum</label><select name="status">${optList(['Onarıldı','Onarım Bekliyor','Sigorta Sürecinde','Ekspertizde','Parça Bekliyor','Kayıt Amaçlı'], 'Onarıldı','Durum seç')}</select></div></div><div class="field"><label>Açıklama (isteğe bağlı)</label><textarea name="note"></textarea></div><button class="primary wide">Hasar Kaydı Ekle</button></form><div class="list" style="margin-top:12px">${a.length?a.map(x=>`<div class="row"><div class="rowIcon">${ico('crash')}</div><div class="rowMain"><strong>${esc(x.title)}</strong><span>${fmtDate(x.date)} • ${num(x.km)} km • ${esc(x.status)}</span></div><div class="rowValue">${money(x.cost||0)}</div></div>`).join(''):'<div class="muted">Kaza/hasar kaydı yok.</div>'}</div>`) }
 function saveAccident(e){e.preventDefault();const f=new FormData(e.target);state.accidents.push({id:uid(),vehicleId:activeVehicle().id,date:f.get('date'),km:+f.get('km'),title:f.get('title').trim(),cost:+f.get('cost')||0,status:f.get('status'),note:f.get('note').trim()});closeModal();save();accidentModal()}
 
 function pickDocument(){if(!activeVehicle())return;try{Android.pickDocument('newdoc:'+activeVehicle().id)}catch(e){alert('Belge seçici açılamadı')}}
@@ -1597,8 +1616,105 @@ window.onNativeDocumentPicked=(ctx,uri,name,mime,size)=>{if(!ctx.startsWith('new
 function editDocument(id){const x=vf(state.documents).find(v=>v.id===id);if(!x)return;modal('Belge Bilgileri',`<form class="form" onsubmit="saveDocument(event,'${id}')"><div class="field"><label>Belge</label><input disabled value="${esc(x.name)}"></div><div class="formrow"><div class="field"><label>Kategori</label><select name="category">${optList(['Ruhsat','Trafik Sigortası','Kasko','Muayene','Servis Faturası','Ekspertiz','Vergi/MTV','Diğer'],x.category,'Kategori seç')}</select></div><div class="field"><label>Tarih</label><input type="date" name="date" value="${x.date||today()}"></div></div><div class="field"><label>Geçerlilik / Bitiş Tarihi</label><input type="date" name="expiry" value="${x.expiry||''}"></div><div class="field"><label>Not</label><textarea name="note">${esc(x.note||'')}</textarea></div><button class="primary wide">Kaydet</button><button type="button" class="secondary wide" onclick="openDoc('${id}')">Belgeyi Aç</button><button type="button" class="danger wide" onclick="removeRec('documents','${id}')">Sil</button></form>`)}
 function saveDocument(e,id){e.preventDefault();const f=new FormData(e.target),x=state.documents.find(v=>v.id===id);Object.assign(x,{category:f.get('category'),date:f.get('date'),expiry:f.get('expiry'),note:f.get('note').trim()});closeModal();save()}
 function openDoc(id){const x=state.documents.find(v=>v.id===id);try{Android.openUri(x.uri,x.mime)}catch(e){alert('Belge açılamadı')}}
-function documentsViewModal(){const a=vf(state.documents);modal('Belge Kasası',`<div class="form"><button class="primary wide" onclick="pickDocument()">+ Yeni Belge Seç</button>${a.length?a.map(x=>`<div class="row"><div class="rowIcon">📄</div><div class="rowMain"><strong>${esc(x.category)}</strong><span>${esc(x.name)}${x.expiry?' • Bitiş '+fmtDate(x.expiry):''}</span></div><div class="docButtons"><button onclick="openDoc('${x.id}')">Aç</button><button onclick="editDocument('${x.id}')">✎</button></div></div>`).join(''):'<div class="empty">Belge yok</div>'}</div>`)}
-function premiumPreview(){modal('Aracım Pro Premium',`<div class="card premiumCard"><h2 style="margin-top:0">Aracım Pro Premium</h2><p class="muted">Google Play Billing bağlandığında ücretli plan bu özellikleri açacak. Şimdilik V10 testinde tüm özellikler açık.</p><div class="list"><div>✓ Reklamsız kullanım</div><div>✓ Sınırsız araç</div><div>✓ Canlı piyasa değeri / emsal analizleri</div><div>✓ Gelişmiş PDF / Excel araç geçmişi</div><div>✓ Bulut yedekleme ve cihazlar arası taşıma</div><div>✓ Gelişmiş araç karşılaştırma</div><div>✓ Teknik katalog + uyumlu lastik/jant/sıvı rehberi</div><div>✓ Kronik sorun / satın alma kontrol listesi</div><div>✓ Premium araç görsel seçenekleri</div><div>✓ Reklam kaldırma</div></div></div><div class="notice" style="margin-top:12px">Bu ekranda henüz gerçek ödeme alınmaz. Play Console hesabı yayına hazır olduğunda Google Play Billing bağlanacak.</div>`)}
+function documentsViewModalCore(){const a=vf(state.documents);modal('Belge Kasası',`<div class="form"><button class="primary wide" onclick="pickDocument()">+ Yeni Belge Seç</button>${a.length?a.map(x=>`<div class="row"><div class="rowIcon">📄</div><div class="rowMain"><strong>${esc(x.category)}</strong><span>${esc(x.name)}${x.expiry?' • Bitiş '+fmtDate(x.expiry):''}</span></div><div class="docButtons"><button onclick="openDoc('${x.id}')">Aç</button><button onclick="editDocument('${x.id}')">✎</button></div></div>`).join(''):'<div class="empty">Belge yok</div>'}</div>`)}
+
+let premiumInfo={active:false,ready:false,productReady:false,monthlyPrice:'59,99 TL',yearlyPrice:'499,99 TL'};
+
+function loadPremiumStatus(){
+  try{
+    const raw=Android.premiumStatus();
+    if(raw) premiumInfo={...premiumInfo,...JSON.parse(raw)};
+  }catch(e){}
+  return premiumInfo;
+}
+
+function isPremium(){
+  loadPremiumStatus();
+  return !!premiumInfo.active;
+}
+
+window.onPremiumStatus=(payload,error)=>{
+  try{
+    if(payload)premiumInfo={...premiumInfo,...JSON.parse(payload)};
+  }catch(e){}
+  if(premiumInfo.active){
+    try{closeModal()}catch(e){}
+    toast('👑 Aracım Pro Premium aktif');
+    render();
+  }else if(document.querySelector('.premiumHero')){
+    premiumPreview(window._premiumFeature||'');
+  }
+};
+
+function buyPremiumPlan(plan){
+  try{Android.buyPremium(plan)}catch(e){toast('Google Play ödeme ekranı açılamadı')}
+}
+
+function restorePremiumPurchase(){
+  try{Android.restorePremium()}catch(e){toast('Satın alımlar kontrol edilemedi')}
+}
+
+function documentsViewModal(){if(!isPremium())return premiumPreview('Belge Kasası');return documentsViewModalCore.apply(this,arguments)}
+function valuationModal(){if(!isPremium())return premiumPreview('Gelişmiş Değer Geçmişi');return valuationModalCore.apply(this,arguments)}
+function routeCalculator(){if(!isPremium())return premiumPreview('Yol Maliyeti');return routeCalculatorCore.apply(this,arguments)}
+function accidentModal(){if(!isPremium())return premiumPreview('Kaza / Hasar Arşivi');return accidentModalCore.apply(this,arguments)}
+function backupCloud(){if(!isPremium())return premiumPreview('Bulut Yedekleme');return backupCloudCore.apply(this,arguments)}
+function compareVehicles(){if(!isPremium())return premiumPreview('Gelişmiş Araç Karşılaştırma');return compareVehiclesCore.apply(this,arguments)}
+function exportXls(){if(!isPremium())return premiumPreview('Excel Raporu');return exportXlsCore.apply(this,arguments)}
+function premiumPreview(feature=''){
+  window._premiumFeature=feature||'';
+  loadPremiumStatus();
+
+  if(premiumInfo.active){
+    modal('Aracım Pro Premium',`<div class="premiumActiveCard">
+      <div style="font-size:36px">👑</div>
+      <h2 style="margin:6px 0">Premium Aktif</h2>
+      <div>Reklamsız kullanım ve tüm Premium araçlar açık.</div>
+    </div>`);
+    return;
+  }
+
+  const mp=esc(premiumInfo.monthlyPrice||'59,99 TL');
+  const yp=esc(premiumInfo.yearlyPrice||'499,99 TL');
+
+  modal('Aracım Pro Premium',`
+    <div class="premiumHero">
+      <div style="font-size:30px">👑</div>
+      <h2>Aracının kontrolü sende.</h2>
+      <div class="premiumSub">${feature?`<b>${esc(feature)}</b> Premium özelliğidir.<br>`:''}Reklamları kaldır, gelişmiş araç araçlarını ve raporları aç.</div>
+      <div class="premiumFeatureGrid">
+        <div class="premiumFeature">🚫 Reklamsız kullanım</div>
+        <div class="premiumFeature">📄 Belge Kasası</div>
+        <div class="premiumFeature">📊 Değer geçmişi</div>
+        <div class="premiumFeature">🛣️ Yol maliyeti</div>
+        <div class="premiumFeature">🚗 Araç karşılaştırma</div>
+        <div class="premiumFeature">☁️ Bulut yedekleme</div>
+        <div class="premiumFeature">📑 Excel raporları</div>
+        <div class="premiumFeature">🛡️ Kaza/hasar arşivi</div>
+      </div>
+    </div>
+
+    <div class="premiumPlans">
+      <button class="premiumPlan" onclick="buyPremiumPlan('monthly')">
+        <span>Aylık</span><b>${mp}</b><span>her ay</span>
+      </button>
+      <button class="premiumPlan recommended" onclick="buyPremiumPlan('yearly')">
+        <div class="planBadge">EN AVANTAJLI</div>
+        <span>Yıllık</span><b>${yp}</b><span>her yıl</span>
+      </button>
+    </div>
+
+    <button class="primary wide premiumBuy" onclick="buyPremiumPlan('monthly')">👑 Premium'a Geç</button>
+    <button class="secondary wide" style="margin-top:8px" onclick="restorePremiumPurchase()">Satın Alımları Geri Yükle</button>
+
+    <div class="premiumLegal">
+      Abonelik Google Play hesabın üzerinden tahsil edilir ve iptal edilmediği sürece otomatik yenilenir.
+      Aboneliğini Google Play abonelik ayarlarından yönetebilir veya iptal edebilirsin.
+      Gerçek fiyat Google Play tarafından ülke ve vergi durumuna göre gösterilir.
+    </div>
+  `);
+}
+
 function emergencyModal(){const x=state.emergency;modal('Acil Durum & Yardım',`<form class="form" onsubmit="saveEmergency(event)"><div class="notice">Kaza veya arıza anında kayıtlı numaralara hızlıca ulaşabilirsin. Aramalar önce telefonun arama ekranını açar.</div><div class="field"><label>Sigorta Şirketi</label><select name="insurer">${optList(INSURERS,x.insurer,"Sigorta şirketi seç")}</select></div><div class="formrow"><div class="field"><label>Sigorta Telefonu</label><input name="insurancePhone" value="${esc(x.insurancePhone)}"></div><div class="field"><label>Yol Yardım / Çekici</label><input name="roadsidePhone" value="${esc(x.roadsidePhone)}"></div></div><div class="field"><label>Yakın / Acil İrtibat</label><input name="personalPhone" value="${esc(x.personalPhone)}"></div><div class="field"><label>Poliçe No</label><input name="policyNo" value="${esc(x.policyNo)}"></div><div class="field"><label>Not</label><textarea name="note">${esc(x.note)}</textarea></div><button class="primary wide">Kaydet</button></form><div class="grid2" style="margin-top:12px"><button class="danger" onclick="dial(apEmergency())">📞 ${apEmergency()}</button>${x.insurancePhone?`<button class="secondary" onclick="dial('${esc(x.insurancePhone)}')">📞 Sigorta</button>`:''}${x.roadsidePhone?`<button class="secondary" onclick="dial('${esc(x.roadsidePhone)}')">🚚 Yol Yardım</button>`:''}${x.personalPhone?`<button class="secondary" onclick="dial('${esc(x.personalPhone)}')">👤 Yakınım</button>`:''}</div>`)}
 function saveEmergency(e){e.preventDefault();state.emergency=Object.fromEntries([...new FormData(e.target).entries()]);closeModal();save()}function dial(n){try{Android.dial(n)}catch(e){location.href='tel:'+n}}
 
@@ -1711,10 +1827,10 @@ function monthlyData(n){const out=[];const now=new Date();for(let i=n-1;i>=0;i--
 function reportText(){const v=activeVehicle();if(!v)return'';let s=`ARACIM PRO - ARAÇ GEÇMİŞ RAPORU\n\nAraç: ${v.year} ${v.make} ${v.model}\nPlaka: ${v.plate}\nKilometre: ${num(v.km)} km\nMotor/Yakıt: ${v.engine} / ${v.fuel}\n\nMALİ ÖZET\nToplam gider: ${money(totalAll())}\nYakıt: ${money(totals().fuel)}\nBakım: ${money(totals().maint)}\nServis: ${money(totals().service)}\nDiğer: ${money(totals().exp)}\n\nSERVİS GEÇMİŞİ\n`;vf(state.services).sort((a,b)=>a.date.localeCompare(b.date)).forEach(x=>s+=`${fmtDate(x.date)} | ${num(x.km)} km | ${x.work} | ${x.shop} | ${money(x.total)}\n`);s+='\nBAKIM / RESMİ İŞLEMLER\n';vf(state.maintenance).forEach(x=>s+=`${x.name} | ${x.completed?'Tamamlandı':'Planlı'} | ${x.dateDone||x.dueDate||''} | ${x.dueKm?num(x.dueKm)+' km':''} | ${money(x.cost)}\n`);s+='\nYAKIT KAYITLARI\n';vf(state.fuel).forEach(x=>s+=`${fmtDate(x.date)} | ${num(x.km)} km | ${x.liters} L | ${money(x.cost)} | ${x.station}\n`);s+='\nLASTİKLER\n';vf(state.tires).forEach(x=>s+=`${x.season} | ${x.brand} ${x.model} | ${x.size} | ${x.active?'Takılı':'Depoda'}\n`);s+='\nTEKNİK ÖZELLİKLER\n';s+=`Paket: ${v.trim||''} | Kasa: ${v.body||''} | Güç: ${v.powerHp||''} hp | Tork: ${v.torqueNm||''} Nm | Şanzıman: ${v.transmission||''} | Çekiş: ${v.drive||''}\n`;s+='\nDEĞER GEÇMİŞİ\n';vf(state.valuations).forEach(x=>s+=`${x.date} | ${money(x.value)} | ${x.note||''}\n`);s+='\nAKÜ\n';vf(state.batteries).forEach(x=>s+=`${x.installDate} | ${x.brand} ${x.model||''} | ${num(x.installKm)} km | ${money(x.cost||0)}\n`);s+='\nKAZA / HASAR\n';vf(state.accidents).forEach(x=>s+=`${x.date} | ${x.title} | ${x.status} | ${money(x.cost||0)}\n`);const p=techProfile(v);s+='\nARAÇ REHBERİ\n';s+=`Lastik: ${(p?.tires||[]).join(', ')||'Model/yıl kataloğundan aranıyor'}\nMotor yağı: ${p?.oil||'Üretici kılavuzu'}\nAntifriz: ${p?.coolant||'Üretici kılavuzu'}\nTriger: ${p?.timing||'Motor koduna göre doğrula'}\n`;const mc=latestMarketCheck();if(mc){const me=calcMarketEstimate(mc);s+='\nPİYASA DEĞERİ GÖSTERGESİ\n';s+=`Alt: ${money(me.min)} | Ortalama: ${money(me.avg)} | Üst: ${money(me.max)} | Emsal: ${mc.similarCount||0}\n`;}return s}
 function exportPdf(){try{Android.savePdf('AracimPro_Arac_Gecmisi.pdf','Aracım Pro Araç Geçmişi',reportText())}catch(e){alert('PDF kaydetme kullanılamıyor')}}
 function exportCsv(){let r=[['Tür','Tarih','KM','Açıklama','Tutar']];vf(state.fuel).forEach(x=>r.push(['Yakıt',x.date,x.km,x.station,x.cost]));vf(state.expenses).forEach(x=>r.push(['Gider',x.date,'',x.category,x.cost]));vf(state.services).forEach(x=>r.push(['Servis',x.date,x.km,x.work,x.total]));vf(state.maintenance).forEach(x=>r.push(['Bakım',x.dateDone||x.dueDate,x.dueKm||'',x.name,x.cost]));vf(state.batteries).forEach(x=>r.push(['Akü',x.installDate,x.installKm,x.brand+' '+(x.model||''),x.cost]));vf(state.accidents).forEach(x=>r.push(['Hasar',x.date,x.km,x.title,x.cost]));vf(state.valuations).forEach(x=>r.push(['Araç Değeri',x.date,'',x.note,x.value]));const csv='\uFEFF'+r.map(a=>a.map(v=>'"'+String(v??'').replaceAll('"','""')+'"').join(';')).join('\n');saveFile('AracimPro_Rapor.csv','text/csv',csv)}
-function exportXls(){const rows=[];vf(state.fuel).forEach(x=>rows.push(['Yakıt',x.date,x.km,x.station,x.cost]));vf(state.expenses).forEach(x=>rows.push(['Gider',x.date,'',x.category,x.cost]));vf(state.services).forEach(x=>rows.push(['Servis',x.date,x.km,x.work,x.total]));const html=`<html><meta charset="utf-8"><table border="1"><tr><th>Tür</th><th>Tarih</th><th>KM</th><th>Açıklama</th><th>Tutar</th></tr>${rows.map(r=>'<tr>'+r.map(v=>`<td>${esc(v)}</td>`).join('')+'</tr>').join('')}</table></html>`;saveFile('AracimPro_Rapor.xls','application/vnd.ms-excel',html)}
+function exportXlsCore(){const rows=[];vf(state.fuel).forEach(x=>rows.push(['Yakıt',x.date,x.km,x.station,x.cost]));vf(state.expenses).forEach(x=>rows.push(['Gider',x.date,'',x.category,x.cost]));vf(state.services).forEach(x=>rows.push(['Servis',x.date,x.km,x.work,x.total]));const html=`<html><meta charset="utf-8"><table border="1"><tr><th>Tür</th><th>Tarih</th><th>KM</th><th>Açıklama</th><th>Tutar</th></tr>${rows.map(r=>'<tr>'+r.map(v=>`<td>${esc(v)}</td>`).join('')+'</tr>').join('')}</table></html>`;saveFile('AracimPro_Rapor.xls','application/vnd.ms-excel',html)}
 function saveFile(n,m,c){try{Android.saveFile(n,m,c)}catch(e){const b=new Blob([c],{type:m}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=n;a.click()}}
 function shareSummary(){try{Android.shareText('Aracım Pro Raporu',reportText().slice(0,4000))}catch(e){}}
-function backup(){saveFile('AracimPro_Yedek.json','application/json',JSON.stringify(state,null,2))}function backupCloud(){modal('Buluta Yedekle',`<div class="form"><div class="notice">Kaydet ekranında Google Drive, OneDrive veya başka bir bulut sağlayıcısını seçebilirsin. Böylece hesap şifresi uygulamaya verilmez.</div><button class="primary wide" onclick="backup();closeModal()">Yedek Dosyasını Kaydet</button></div>`)}
+function backup(){saveFile('AracimPro_Yedek.json','application/json',JSON.stringify(state,null,2))}function backupCloudCore(){modal('Buluta Yedekle',`<div class="form"><div class="notice">Kaydet ekranında Google Drive, OneDrive veya başka bir bulut sağlayıcısını seçebilirsin. Böylece hesap şifresi uygulamaya verilmez.</div><button class="primary wide" onclick="backup();closeModal()">Yedek Dosyasını Kaydet</button></div>`)}
 function restore(){try{Android.openBackupFile()}catch(e){}}window.restoreBackupFromNative=c=>{try{const s=JSON.parse(c);state={...initial,...s,marketChecks:Array.isArray(s.marketChecks)?s.marketChecks:[],fuelMarket:{...initial.fuelMarket,...(s.fuelMarket||{})},emergency:{...initial.emergency,...(s.emergency||{})},prefs:{...initial.prefs,...(s.prefs||{})}};closeModal();save();toast('Yedek geri yüklendi')}catch(e){alert('Geçersiz yedek')}};
 function openSettings(){modal('Ayarlar',`<div class="form"><div class="card" style="margin:0"><b>Aracım Pro ${V} • Güncel sürüm</b><p class="muted small">Araçla ilgili her şeyi tek yerde: ayrıntılı motor/versiyon kataloğu, doğru kasa fotoğrafı, otomatik piyasa değeri, teknik rehber, bakım ve akaryakıt zam haberleri.</p></div>
 <label class="toggle"><span>🌙 Karanlık Tema</span><input type="checkbox" ${state.prefs.dark?'checked':''} onchange="state.prefs.dark=this.checked;save();openSettings()"></label><label class="toggle"><span>🔐 PIN Kilidi</span><input type="checkbox" ${state.prefs.lockEnabled?'checked':''} onchange="togglePin(this.checked)"></label><label class="toggle"><span>👆 Biyometrik Açılış</span><input type="checkbox" ${state.prefs.biometric?'checked':''} onchange="state.prefs.biometric=this.checked;save()"></label>
