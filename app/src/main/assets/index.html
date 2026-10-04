@@ -689,22 +689,13 @@ function liveTickerItems(){
   const fuel=state.fuelMarket||{};
   if(fuel.live && (+fuel.gasoline>0 || +fuel.diesel>0 || +fuel.lpg>0)){
     const parts=[];
-    if(+fuel.gasoline>0)parts.push(`Benzin ${Number(fuel.gasoline).toFixed(2)} ₺`);
-    if(+fuel.diesel>0)parts.push(`Motorin ${Number(fuel.diesel).toFixed(2)} ₺`);
-    if(+fuel.lpg>0)parts.push(`LPG ${Number(fuel.lpg).toFixed(2)} ₺`);
+    if(+fuel.gasoline>0)parts.push(`Benzin ${Number(fuel.gasoline).toFixed(2)} TL`);
+    if(+fuel.diesel>0)parts.push(`Motorin ${Number(fuel.diesel).toFixed(2)} TL`);
+    if(+fuel.lpg>0)parts.push(`LPG ${Number(fuel.lpg).toFixed(2)} TL`);
     out.push({
       icon:'⛽',
       title:parts.join(' • '),
       sub:`${fuel.city||state.prefs.fuelCity||'Konum'} • ${fuel.source||'güncel fiyat'}`,
-      click:'fuelMarketModal(false)'
-    });
-  }else{
-    const hasTried=!!fuel.updatedAt;
-    out.push({
-      icon:'⛽',
-      title:hasTried?'Yakıt fiyatı şu an alınamadı':'Güncel yakıt fiyatı alınıyor',
-      sub:`${state.prefs.fuelCity||'Konum belirleniyor'} • ${hasTried?'yeniden otomatik denenecek':'otomatik'}`,
-      cls:hasTried?'warn':'',
       click:'fuelMarketModal(false)'
     });
   }
