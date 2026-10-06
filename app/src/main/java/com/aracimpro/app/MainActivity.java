@@ -127,6 +127,12 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends Activity {
+
+    private final android.os.Handler apPremiumSplashHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+
+    private boolean apPremiumSplashHidden = false;
+
+    private android.view.View apPremiumSplashView;
     private static final int CREATE_FILE_REQUEST = 7701;
     private static final int OPEN_BACKUP_REQUEST = 7702;
     private static final int NOTIFICATION_PERMISSION_REQUEST = 7703;
@@ -289,78 +295,120 @@ public class MainActivity extends Activity {
         webView.loadUrl("file:///android_asset/index.html");
     }
 
-    private void showLaunchSplash() {
-        splashStartedAt = SystemClock.elapsedRealtime();
 
-        FrameLayout splash = new FrameLayout(this);
-        splash.setBackgroundColor(Color.rgb(2, 10, 22));
+    // AP V7.5.6 SPLASH HELPERS
+    private void apSetAdViewsVisible(android.view.View view, boolean visible) {
+        if (view == null) return;
+        String cls = view.getClass().getName().toLowerCase(java.util.Locale.ROOT);
+        if (cls.contains("adview") || cls.contains("google.android.gms.ads") || cls.contains("admob")) {
+            view.setVisibility(visible ? android.view.View.VISIBLE : android.view.View.GONE);
+            return;
+        }
+        if (view instanceof android.view.ViewGroup) {
+            android.view.ViewGroup vg = (android.view.ViewGroup) view;
+            for (int i = 0; i < vg.getChildCount(); i++) {
+                apSetAdViewsVisible(vg.getChildAt(i), visible);
+            }
+        }
+    }
 
-        // Video ilk kareyi verene kadar güvenli yedek animasyon görünür.
-        // Böylece VideoView hazırlanırken siyah/boş ekran oluşmaz.
-        LaunchIntroView fallbackIntro = new LaunchIntroView(this);
-        splash.addView(fallbackIntro, new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT));
-        fallbackIntro.start();
+    private android.widget.TextView apSplashText(String txt, float sp, int color, boolean bold) {
+        android.widget.TextView tv = new android.widget.TextView(this);
+        tv.setText(txt);
+        tv.setTextColor(color);
+        tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, sp);
+        if (bold) tv.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+        tv.setShadowLayer(12f, 0f, 2f, android.graphics.Color.argb(120, 0, 0, 0));
+        return tv;
+    }
 
-        android.widget.VideoView video = new android.widget.VideoView(this);
-        launchVideoView = video;
+private void showLaunchSplash() {
 
-        // Opaque VideoView arka planı bazı cihazlarda videoyu örtebiliyor.
-        // Şeffaf bırakıyoruz; ilk kare gelene kadar alttaki intro görünür.
-        video.setBackgroundColor(Color.TRANSPARENT);
-        try { video.setZOrderMediaOverlay(true); } catch (Throwable ignored) {}
+        if (apPremiumSplashView != null) return;
 
-        FrameLayout.LayoutParams videoLp = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                Gravity.CENTER);
-        splash.addView(video, videoLp);
+        final android.view.ViewGroup root = findViewById(android.R.id.content);
+        if (root == null) return;
 
-        launchSplash = splash;
-        root.addView(splash, new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT));
+        apSetAdViewsVisible(root, false);
+        apPremiumSplashHidden = false;
 
-        hideSystemBarsForIntro();
+        android.widget.FrameLayout splash = new android.widget.FrameLayout(this);
+        splash.setClickable(true);
+        splash.setFocusable(true);
+        splash.setBackgroundColor(android.graphics.Color.parseColor("#04111F"));
+        splash.setAlpha(1f);
+        splash.setElevation(9999f);
 
-        try {
-            Uri uri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.aracimpro_intro);
-            video.setVideoURI(uri);
-            video.setOnPreparedListener(mp -> {
-                try {
-                    mp.setLooping(false);
+        android.widget.ImageView hero = new android.widget.ImageView(this);
+        hero.setImageResource(R.drawable.intro_realistic);
+        hero.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
+        splash.addView(hero, new android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
 
-                    // Fallback intro zaten motor sesini üretiyor; çift ses olmasın.
-                    mp.setVolume(0f, 0f);
+        android.view.View dim = new android.view.View(this);
+        dim.setBackground(new android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[] {
+                        android.graphics.Color.argb(40,0,0,0),
+                        android.graphics.Color.argb(20,0,0,0),
+                        android.graphics.Color.argb(175,2,9,18)
+                }));
+        splash.addView(dim, new android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
 
-                    mp.setOnInfoListener((m, what, extra) -> {
-                        if (what == android.media.MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
-                            try { video.setBackgroundColor(Color.TRANSPARENT); } catch (Throwable ignored) {}
-                        }
-                        return false;
-                    });
+        android.widget.LinearLayout brand = new android.widget.LinearLayout(this);
+        brand.setOrientation(android.widget.LinearLayout.VERTICAL);
+        brand.setPadding(dp(20), dp(20), dp(20), dp(26));
+        brand.setGravity(android.view.Gravity.BOTTOM | android.view.Gravity.CENTER_HORIZONTAL);
 
-                    video.start();
-                } catch (Throwable ignored) {}
-            });
+        android.widget.TextView title = apSplashText("Aracım Pro", 23f, android.graphics.Color.WHITE, true);
+        title.setLetterSpacing(-0.02f);
+        title.setGravity(android.view.Gravity.CENTER);
+        brand.addView(title);
 
-            video.setOnCompletionListener(mp -> {
-                // WebView hazır değilse son kare kısa süre kalabilir.
-            });
+        android.widget.TextView sub = apSplashText("Akıllı sürüş • araç sağlığı • canlı yol verisi", 11.5f,
+                android.graphics.Color.parseColor("#B7CCE4"), false);
+        sub.setGravity(android.view.Gravity.CENTER);
+        sub.setPadding(0, dp(6), 0, dp(14));
+        brand.addView(sub);
 
-            video.setOnErrorListener((mp, what, extra) -> {
-                // Codec/Surface sorunu olursa siyah ekran göstermeyip
-                // alttaki yedek animasyona geri dön.
-                try {
-                    video.setVisibility(View.GONE);
-                    video.setBackgroundColor(Color.TRANSPARENT);
-                } catch (Throwable ignored) {}
-                return true;
-            });
+        android.widget.ProgressBar bar = new android.widget.ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        bar.setIndeterminate(true);
+        android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
+        bg.setCornerRadius(dp(999));
+        bg.setColor(android.graphics.Color.argb(60, 255, 255, 255));
+        bar.setBackground(bg);
+        android.graphics.drawable.Drawable pd = bar.getProgressDrawable();
+        if (pd != null) {
+            try { pd.setTint(android.graphics.Color.parseColor("#2AA6FF")); } catch (Throwable ignored) {}
+        }
+        android.widget.LinearLayout.LayoutParams blp = new android.widget.LinearLayout.LayoutParams(dp(190), dp(4));
+        brand.addView(bar, blp);
 
-            video.requestFocus();
-        } catch (Throwable ignored) {}
+        android.widget.FrameLayout.LayoutParams brandLp = new android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                android.view.Gravity.BOTTOM);
+        splash.addView(brand, brandLp);
+
+        apPremiumSplashView = splash;
+        root.addView(splash, new android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
+
+        hero.setScaleX(1.0f);
+        hero.setScaleY(1.0f);
+        hero.animate().scaleX(1.05f).scaleY(1.05f).setDuration(2200L).start();
+        title.setAlpha(0f);
+        sub.setAlpha(0f);
+        title.animate().alpha(1f).setDuration(360L).setStartDelay(120L).start();
+        sub.animate().alpha(1f).setDuration(360L).setStartDelay(250L).start();
+
+        apPremiumSplashHandler.removeCallbacksAndMessages(null);
+        apPremiumSplashHandler.postDelayed(this::hideLaunchSplashWhenReady, 2400L);
+
     }
 
     private void hideSystemBarsForIntro() {
@@ -400,19 +448,28 @@ public class MainActivity extends Activity {
     }
 
     private void hideLaunchSplashWhenReady() {
-        long elapsed = Math.max(0L, SystemClock.elapsedRealtime() - splashStartedAt);
-        long delay = Math.max(0L, 3650L - elapsed);
-        mainHandler.postDelayed(() -> {
-            final View v = launchSplash;
-            if (v == null) return;
-            v.animate().alpha(0f).setDuration(280L).withEndAction(() -> {
-                stopLaunchVideo();
-                stopLaunchEngineSound();
-                restoreSystemBarsAfterIntro();
-                try { if (root != null) root.removeView(v); } catch (Throwable ignored) {}
-                if (launchSplash == v) launchSplash = null;
-            }).start();
-        }, delay);
+
+        if (apPremiumSplashHidden) return;
+        apPremiumSplashHidden = true;
+
+        final android.view.ViewGroup root = findViewById(android.R.id.content);
+        final android.view.View splash = apPremiumSplashView;
+
+        if (splash == null) {
+            if (root != null) apSetAdViewsVisible(root, true);
+            return;
+        }
+
+        splash.animate().alpha(0f).setDuration(240L).withEndAction(() -> {
+            try {
+                if (splash.getParent() instanceof android.view.ViewGroup) {
+                    ((android.view.ViewGroup) splash.getParent()).removeView(splash);
+                }
+            } catch (Throwable ignored) {}
+            apPremiumSplashView = null;
+            if (root != null) apSetAdViewsVisible(root, true);
+        }).start();
+
     }
 
     private void startLaunchEngineSound() {

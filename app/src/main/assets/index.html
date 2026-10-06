@@ -1095,6 +1095,75 @@ function apHeaderStatusHtml(){
     </button>`).join('')}</div>`;
 }
 
+function apFreshnessText(ts){
+  ts=Number(ts||0);
+  if(!ts)return 'Henüz veri yok';
+  const m=Math.max(0,Math.floor((Date.now()-ts)/60000));
+  if(m<1)return 'Şimdi güncellendi';
+  if(m<60)return `${m} dk önce`;
+  const hr=Math.floor(m/60);
+  if(hr<24)return `${hr} sa önce`;
+  return new Date(ts).toLocaleDateString(apLocale());
+}
+
+function apHeaderStatusHtml(){
+  const v=activeVehicle();
+  if(!v)return '';
+  const out=[];
+  const hlt=vehicleHealthScore();
+  out.push({
+    icon:'❤️',title:`Sağlık ${hlt.score}/100`,
+    sub:hlt.notes?.[0]||'Araç kayıtları',
+    cls:hlt.score>=80?'good':hlt.score>=65?'warn':'danger',
+    click:'vehicleHealthModal()'
+  });
+
+  const rg=fuelRangeData();
+  out.push({
+    icon:'⛽',
+    title:rg.pct?`Menzil ${Math.round(rg.range)} km`:'Menzili ayarla',
+    sub:rg.pct?`Yakıt yaklaşık %${Math.round(rg.pct)}`:'Yakıt & tüketim',
+    cls:rg.pct&&rg.pct<=20?'danger':'',
+    click:'fuelRangeModal()'
+  });
+
+  const u=upcoming()?.[0];
+  if(u){
+    const left=(Number.isFinite(u.days)&&u.days<99999)?`${u.days} gün`:
+      (Number.isFinite(u.km)&&u.km<999999)?`${Math.max(0,Math.round(u.km))} km`:'Planlı';
+    out.push({
+      icon:'🔧',title:u.name||'Bakım',sub:left,
+      cls:(u.days<=7||u.km<=500)?'danger':(u.days<=30||u.km<=1500)?'warn':'',
+      click:"go('plan')"
+    });
+  }else{
+    const rd=daysToDate((state.prefs.driverReminders||{}).inspection);
+    if(rd!==null)out.push({
+      icon:'🧾',title:'Muayene',sub:rd<0?`${Math.abs(rd)} gün gecikti`:`${rd} gün kaldı`,
+      cls:rd<0?'danger':rd<=30?'warn':'',click:'driverReminderModal()'
+    });
+  }
+
+  const val=currentValuation();
+  if(val>0)out.push({icon:'📈',title:'Piyasa Değeri',sub:money(val),click:'marketValueModal()'});
+
+  const a=smartAlertItems();
+  out.push({
+    icon:'🔔',title:a.length?`${a.length} aktif uyarı`:'Uyarı yok',
+    sub:a[0]?.title||'Kontroller normal',
+    cls:a.length?'warn':'good',click:'smartAlertsModal()'
+  });
+
+  const wc=state.prefs.weatherCache||{},fm=state.fuelMarket||{},rc=state.prefs.roadCache||{};
+  const last=Math.max(+wc.ts||0,+fm.updatedAt||0,+rc.updatedAt||0);
+  out.push({icon:'⚡',title:'Canlı veri',sub:apFreshnessText(last),click:'autoLiveDataRefresh()'});
+
+  return `<div class="apStatusScroll">${out.map(x=>`
+    <button class="apStatusChip ${x.cls||''}" onclick="${x.click||''}">
+      <b><i>${x.icon}</i>${esc(x.title)}</b><small>${esc(x.sub||'')}</small>
+    </button>`).join('')}</div>`;
+}
+
 function header(){
   const v=activeVehicle(),u=communityAuthState,a=smartAlertItems(),country=countryFlag();
   const vehicleName=v?`${v.year||''} ${v.make||''} ${v.model||''}`.trim():'Araç ekle';
