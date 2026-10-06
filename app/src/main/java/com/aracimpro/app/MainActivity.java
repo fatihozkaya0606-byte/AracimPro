@@ -873,11 +873,6 @@ public class MainActivity extends Activity {
         ad.show(this);
     }
 
-    @Override public void onBackPressed() {
-        if (webView != null) webView.evaluateJavascript("window.appBack && window.appBack()", null);
-        else super.onBackPressed();
-    }
-
     @Override protected void onPause() {
         super.onPause();
         appWasBackgrounded = true;
