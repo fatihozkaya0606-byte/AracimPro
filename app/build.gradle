@@ -24,8 +24,8 @@ android {
         buildConfigField "String", "FIREBASE_APP_ID", "\"${System.getenv('FIREBASE_APP_ID') ?: ''}\""
         buildConfigField "String", "MARKET_API_URL", "\"${System.getenv('MARKET_API_URL') ?: ''}\""
         buildConfigField "String", "LIVE_DATA_API_URL", "\"${System.getenv('LIVE_DATA_API_URL') ?: ''}\""
-        versionCode 36
-        versionName '7.5.3'
+        versionCode 37
+        versionName '7.5.4'
     }
 
     signingConfigs {
@@ -48,8 +48,8 @@ android {
             }
         }
         release {
-            minifyEnabled false
-            shrinkResources false
+            minifyEnabled true
+            shrinkResources true
             debuggable false
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
