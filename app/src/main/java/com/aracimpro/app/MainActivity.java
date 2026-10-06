@@ -52,6 +52,8 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.core.view.WindowCompat;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -189,6 +191,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        WindowCompat.enableEdgeToEdge(getWindow());
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
 
         root = new FrameLayout(this);
@@ -208,11 +211,6 @@ public class MainActivity extends Activity {
         showLaunchSplash();
         initAdsWithConsent();
         initPremiumBilling();
-
-        if (Build.VERSION.SDK_INT >= 30) {
-            try { getWindow().setDecorFitsSystemWindows(false); } catch (Throwable ignored) {}
-        }
-
         final int fallbackTop = systemDimen("status_bar_height", dp(28));
         final int fallbackBottom = systemDimen("navigation_bar_height", dp(44));
         applyWebMargins(0, fallbackTop, 0, fallbackBottom);
@@ -345,7 +343,7 @@ private void showLaunchSplash() {
         splash.setElevation(9999f);
 
         android.widget.ImageView hero = new android.widget.ImageView(this);
-        hero.setImageResource(R.drawable.intro_realistic);
+        hero.setImageResource(R.drawable.intro_realistic_opt);
         hero.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
         splash.addView(hero, new android.widget.FrameLayout.LayoutParams(
                 android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
@@ -3034,18 +3032,58 @@ private void showLaunchSplash() {
             try {
                 getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
             } catch (Exception ignored) {}
-            try (InputStream in = getContentResolver().openInputStream(uri)) {
-                Bitmap src = BitmapFactory.decodeStream(in);
+            try {
+                final int max = 960;
+
+                BitmapFactory.Options bounds = new BitmapFactory.Options();
+                bounds.inJustDecodeBounds = true;
+                try (InputStream probe = getContentResolver().openInputStream(uri)) {
+                    BitmapFactory.decodeStream(probe, null, bounds);
+                }
+
+                if (bounds.outWidth <= 0 || bounds.outHeight <= 0) throw new IllegalStateException();
+
+                int sample = 1;
+                while ((bounds.outWidth / (sample * 2)) >= max ||
+                       (bounds.outHeight / (sample * 2)) >= max) {
+                    sample *= 2;
+                }
+
+                BitmapFactory.Options decode = new BitmapFactory.Options();
+                decode.inSampleSize = Math.max(1, sample);
+                decode.inPreferredConfig = Bitmap.Config.ARGB_8888;
+
+                Bitmap src;
+                try (InputStream in = getContentResolver().openInputStream(uri)) {
+                    src = BitmapFactory.decodeStream(in, null, decode);
+                }
                 if (src == null) throw new IllegalStateException();
-                int max = 960;
+
                 float scale = Math.min(1f, (float) max / Math.max(src.getWidth(), src.getHeight()));
                 Bitmap scaled = src;
-                if (scale < 1f) scaled = Bitmap.createScaledBitmap(src, Math.round(src.getWidth()*scale), Math.round(src.getHeight()*scale), true);
+                if (scale < 1f) {
+                    scaled = Bitmap.createScaledBitmap(
+                            src,
+                            Math.max(1, Math.round(src.getWidth() * scale)),
+                            Math.max(1, Math.round(src.getHeight() * scale)),
+                            true);
+                }
+
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
-                scaled.compress(Bitmap.CompressFormat.JPEG, 72, out);
-                String dataUrl = "data:image/jpeg;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
-                webView.evaluateJavascript("window.onNativeImagePicked && window.onNativeImagePicked(" + JSONObject.quote(pendingPickerContext) + "," + JSONObject.quote(dataUrl) + ")", null);
-            } catch (Exception e) { Toast.makeText(this, "Fotoğraf okunamadı", Toast.LENGTH_SHORT).show(); }
+                scaled.compress(Bitmap.CompressFormat.JPEG, 74, out);
+                String dataUrl = "data:image/jpeg;base64," +
+                        Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
+
+                webView.evaluateJavascript(
+                        "window.onNativeImagePicked && window.onNativeImagePicked(" +
+                                JSONObject.quote(pendingPickerContext) + "," +
+                                JSONObject.quote(dataUrl) + ")",
+                        null);
+
+                if (scaled != src && !src.isRecycled()) src.recycle();
+            } catch (Exception e) {
+                Toast.makeText(this, "Fotoğraf okunamadı", Toast.LENGTH_SHORT).show();
+            }
             pendingPickerContext = null;
         }
 
