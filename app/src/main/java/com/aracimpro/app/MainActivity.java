@@ -172,6 +172,7 @@ public class MainActivity extends Activity {
     private AudioTrack launchAudioTrack;
     private Thread launchAudioThread;
     private volatile boolean launchAudioStopped = false;
+    private android.widget.VideoView launchVideoView;
     private FirebaseApp communityFirebaseApp;
     private FirebaseAuth communityAuth;
     private FirebaseFirestore communityDb;
@@ -290,21 +291,91 @@ public class MainActivity extends Activity {
 
     private void showLaunchSplash() {
         splashStartedAt = SystemClock.elapsedRealtime();
-        LaunchIntroView intro = new LaunchIntroView(this);
-        launchSplash = intro;
-        root.addView(intro, new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-        intro.start();
+
+        FrameLayout splash = new FrameLayout(this);
+        splash.setBackgroundColor(Color.rgb(2, 10, 22));
+
+        android.widget.VideoView video = new android.widget.VideoView(this);
+        launchVideoView = video;
+        video.setBackgroundColor(Color.rgb(2, 10, 22));
+
+        FrameLayout.LayoutParams videoLp = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                Gravity.CENTER);
+        splash.addView(video, videoLp);
+
+        launchSplash = splash;
+        root.addView(splash, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT));
+
+        hideSystemBarsForIntro();
+
+        try {
+            Uri uri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.aracimpro_intro);
+            video.setVideoURI(uri);
+            video.setOnPreparedListener(mp -> {
+                try {
+                    mp.setLooping(false);
+                    mp.setVolume(0.88f, 0.88f);
+                    video.start();
+                } catch (Throwable ignored) {}
+            });
+            video.setOnCompletionListener(mp -> {
+                // WebView hazır değilse son kare kısa süre kalabilir; hazırsa hideLaunchSplashWhenReady kaldırır.
+            });
+            video.setOnErrorListener((mp, what, extra) -> true);
+            video.requestFocus();
+        } catch (Throwable ignored) {}
+    }
+
+    private void hideSystemBarsForIntro() {
+        try {
+            if (Build.VERSION.SDK_INT >= 30) {
+                android.view.WindowInsetsController c = getWindow().getInsetsController();
+                if (c != null) c.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+            } else {
+                getWindow().getDecorView().setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
+                        View.SYSTEM_UI_FLAG_FULLSCREEN |
+                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    private void restoreSystemBarsAfterIntro() {
+        try {
+            if (Build.VERSION.SDK_INT >= 30) {
+                android.view.WindowInsetsController c = getWindow().getInsetsController();
+                if (c != null) c.show(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
+            } else {
+                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+            }
+        } catch (Throwable ignored) {}
+    }
+
+    private void stopLaunchVideo() {
+        android.widget.VideoView v = launchVideoView;
+        launchVideoView = null;
+        if (v != null) {
+            try { v.stopPlayback(); } catch (Throwable ignored) {}
+        }
     }
 
     private void hideLaunchSplashWhenReady() {
         long elapsed = Math.max(0L, SystemClock.elapsedRealtime() - splashStartedAt);
-        long delay = Math.max(0L, 3300L - elapsed);
+        long delay = Math.max(0L, 3650L - elapsed);
         mainHandler.postDelayed(() -> {
             final View v = launchSplash;
             if (v == null) return;
-            v.animate().alpha(0f).setDuration(350L).withEndAction(() -> {
+            v.animate().alpha(0f).setDuration(280L).withEndAction(() -> {
+                stopLaunchVideo();
                 stopLaunchEngineSound();
+                restoreSystemBarsAfterIntro();
                 try { if (root != null) root.removeView(v); } catch (Throwable ignored) {}
                 if (launchSplash == v) launchSplash = null;
             }).start();
@@ -2815,6 +2886,7 @@ public class MainActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
+        stopLaunchVideo();
         stopLaunchEngineSound();
         try { if (billingClient != null) billingClient.endConnection(); } catch (Throwable ignored) {}
         for (Translator translator : uiTranslators.values()) {

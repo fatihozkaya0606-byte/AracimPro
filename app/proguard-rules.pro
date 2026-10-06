@@ -1,5 +1,5 @@
-# AracımPro R8 / ProGuard rules
-# WebView JavaScript, AndroidBridge metodlarını isimleriyle çağırır.
+# AracımPro R8 / DEX optimizasyon kuralları
+# WebView JavaScript -> AndroidBridge çağrıları korunur.
 
 -keepattributes RuntimeVisibleAnnotations,AnnotationDefault,Signature,InnerClasses,EnclosingMethod
 
