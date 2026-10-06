@@ -316,6 +316,7 @@ const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.Num
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const initial={schema:7,vehicles:[],activeVehicleId:'',fuel:[],maintenance:[],expenses:[],tires:[],services:[],trips:[],documents:[],valuations:[],batteries:[],accidents:[],marketChecks:[],fuelMarket:{city:'',gasoline:0,diesel:0,lpg:0,selectedPrice:0,selectedType:'',updatedAt:0,source:'',news:[]},emergency:{insurer:'',insurancePhone:'',roadsidePhone:'',personalPhone:'',policyNo:'',note:''},prefs:{firstRun:true,dark:false,lockEnabled:false,pinHash:'',biometric:false,kmNotify:{},fuelPrice:0,annualKm:12000,fuelAlertsEnabled:true,fuelCity:'Ankara',fuelAlertType:'Benzin',marketApiUrl:'',liveDataApiUrl:'',marketApiEnabled:false,marketProvider:'custom',marketToken:'',autoMarketOnSave:true,photoFixV11:false,specFixV12:false,specFixV14:false}};
 let state=loadState(),current='home',recordsTab='fuel',planTab='maintenance';
+const navHistory=[];
 try{const _liveDefault=String(Android.getDefaultLiveDataApiUrl?.()||'').trim();if(_liveDefault&&!state.prefs.liveDataApiUrl)state.prefs.liveDataApiUrl=_liveDefault;const _marketDefault=String(Android.getDefaultMarketApiUrl?.()||'').trim();if(_marketDefault&&!state.prefs.marketApiUrl)state.prefs.marketApiUrl=_marketDefault;if(_liveDefault||_marketDefault)localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}
 const LOCAL_PROFILE_KEY='aracimpro_local_profile_v1',LOCAL_COMMENTS_KEY='aracimpro_local_comments_v1';
 let communityAuthState={configured:false,localMode:false,signedIn:false,uid:'',name:'',email:'',emailVerified:false},communityComments=[],communityCommentsKey='',communityLoading=false,communityError='';
@@ -909,7 +910,39 @@ function applyTheme(){document.body.classList.toggle('dark',!!state.prefs.dark)}
 function header(){const v=activeVehicle(),u=communityAuthState;return `<header class="header"><div class="brandrow"><div class="logo">${ico('car')}</div><div><div class="brand">Aracım <b>Pro</b> <span class="badgePro">V7.5.1</span></div><div class="muted small">GLOBAL • Hoş geldiniz 👋 • Teknik katalog • kullanıcı deneyimleri • piyasa değeri • bakım</div></div><div class="grow"></div><button class="iconbtn" onclick="premiumPreview()" title="Premium" style="color:#b77900;font-size:22px">👑</button><button class="iconbtn" onclick="languageModal()" title="Dil & Ülke">${countryFlag()}</button><button class="iconbtn" onclick="openAccount()" title="Kullanıcı hesabı">${ico('user')}</button><button class="iconbtn" onclick="openSettings()">${ico('settings')}</button></div>${liveTickerHtml()}${u.signedIn?`<div style="margin-top:7px"><span class="accountPill">${esc(u.name||u.email||'Oturum açık')}</span></div>`:''}${state.vehicles.length&&current!=='home'?`<div class="vehicleSelect"><select onchange="setActive(this.value)">${state.vehicles.map(x=>`<option value="${x.id}" ${x.id===v?.id?'selected':''}>${esc((x.year||'')+' '+x.make+' '+x.model)} • ${esc(x.plate||'Plakasız')}</option>`).join('')}</select><button class="iconbtn" onclick="openVehicle()">${ico('plus')}</button></div>`:''}</header>`}
 const navItems=[['home','home','Ana'],['garage','garage','Garaj'],['records','records','Kayıt'],['plan','wrench','Plan'],['reports','chart','Rapor'],['more','menu','Daha']];
 function nav(){return `<nav class="nav">${navItems.map(([k,i,l])=>`<button class="${current===k?'active':''}" onclick="go('${k}')"><i>${ico(i)}</i>${l}</button>`).join('')}</nav>`}
-function go(k){current=k;closeModal();render();scrollTo(0,0)}
+function go(k){
+  if(!k||k===current){closeModal();return}
+  if(current){
+    if(navHistory[navHistory.length-1]!==current)navHistory.push(current);
+    if(navHistory.length>30)navHistory.shift();
+  }
+  current=k;
+  closeModal();
+  render();
+  scrollTo(0,0);
+}
+window.appBack=function(){
+  const modalRoot=document.getElementById('modalRoot');
+  if(modalRoot&&modalRoot.innerHTML.trim()){
+    closeModal();
+    return true;
+  }
+  if(navHistory.length){
+    current=navHistory.pop();
+    closeModal();
+    render();
+    scrollTo(0,0);
+    return true;
+  }
+  if(current!=='home'){
+    current='home';
+    closeModal();
+    render();
+    scrollTo(0,0);
+    return true;
+  }
+  return false;
+}
 function render(){applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(()=>applyI18n(app),0);setTimeout(startLiveTickerAuto,150);if(current==='home')setTimeout(loadHomeWeather,350)}
 function view(){if(!activeVehicle()&&current!=='garage'&&current!=='more')return welcome();return ({home:homeView,garage:garageView,records:recordsView,plan:planView,reports:reportsView,more:moreView}[current]||homeView)()}
 function welcome(){return `<div class="card empty"><div class="big" style="display:grid;place-items:center;color:var(--blue)">${ico('car')}</div><h3>Garajın henüz boş</h3><p class="muted">Yıl → marka → model → kasa → motor → paket adım adım seçilir; marka, model, motor ve paketler A-Z sıralıdır. Yazmak yerine seçeneklerden ilerlersin; internet varsa katalog genişletilir ve gerçek araç fotoğrafı aranır.</p><button class="primary" onclick="openVehicle()">Aracımı Ekle</button></div>`}

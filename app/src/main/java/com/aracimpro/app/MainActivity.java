@@ -1,6 +1,7 @@
 package com.aracimpro.app;
 
 import android.Manifest;
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -17,6 +18,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Insets;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -27,6 +29,9 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.hardware.biometrics.BiometricPrompt;
+import android.media.AudioAttributes;
+import android.media.AudioFormat;
+import android.media.AudioTrack;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -42,6 +47,7 @@ import android.view.View;
 import android.view.Gravity;
 import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.window.OnBackInvokedDispatcher;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -163,6 +169,9 @@ public class MainActivity extends Activity {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private View launchSplash;
     private long splashStartedAt = 0L;
+    private AudioTrack launchAudioTrack;
+    private Thread launchAudioThread;
+    private volatile boolean launchAudioStopped = false;
     private FirebaseApp communityFirebaseApp;
     private FirebaseAuth communityAuth;
     private FirebaseFirestore communityDb;
@@ -181,6 +190,13 @@ public class MainActivity extends Activity {
         root.addView(webView, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         setContentView(root);
+        if (Build.VERSION.SDK_INT >= 33) {
+            try {
+                getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                        OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                        this::handleSystemBack);
+            } catch (Throwable ignored) {}
+        }
         showLaunchSplash();
         initAdsWithConsent();
         initPremiumBilling();
@@ -274,59 +290,312 @@ public class MainActivity extends Activity {
 
     private void showLaunchSplash() {
         splashStartedAt = SystemClock.elapsedRealtime();
-        FrameLayout splash = new FrameLayout(this);
-        splash.setBackgroundColor(Color.rgb(8, 35, 66));
-
-        LinearLayout box = new LinearLayout(this);
-        box.setOrientation(LinearLayout.VERTICAL);
-        box.setGravity(Gravity.CENTER);
-        box.setPadding(dp(28), dp(28), dp(28), dp(28));
-
-        TextView title = new TextView(this);
-        title.setText("ARACIM PRO");
-        title.setTextColor(Color.WHITE);
-        title.setTextSize(34f);
-        title.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        title.setGravity(Gravity.CENTER);
-
-        TextView slogan = new TextView(this);
-        slogan.setText("Aracın için ne ararsan, hepsi burada.");
-        slogan.setTextColor(Color.rgb(221, 235, 249));
-        slogan.setTextSize(18f);
-        slogan.setGravity(Gravity.CENTER);
-        slogan.setPadding(0, dp(16), 0, 0);
-
-        TextView features = new TextView(this);
-        features.setText("Teknik veri • bakım • piyasa • topluluk");
-        features.setTextColor(Color.rgb(154, 190, 224));
-        features.setTextSize(13f);
-        features.setGravity(Gravity.CENTER);
-        features.setPadding(0, dp(10), 0, 0);
-
-        box.addView(title, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        box.addView(slogan, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-        box.addView(features, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-
-        FrameLayout.LayoutParams boxLp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
-        splash.addView(box, boxLp);
-        launchSplash = splash;
-        root.addView(splash, new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        LaunchIntroView intro = new LaunchIntroView(this);
+        launchSplash = intro;
+        root.addView(intro, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
+        intro.start();
     }
 
     private void hideLaunchSplashWhenReady() {
         long elapsed = Math.max(0L, SystemClock.elapsedRealtime() - splashStartedAt);
-        long delay = Math.max(0L, 4200L - elapsed);
+        long delay = Math.max(0L, 3300L - elapsed);
         mainHandler.postDelayed(() -> {
             final View v = launchSplash;
             if (v == null) return;
-            v.animate().alpha(0f).setDuration(450L).withEndAction(() -> {
+            v.animate().alpha(0f).setDuration(350L).withEndAction(() -> {
+                stopLaunchEngineSound();
                 try { if (root != null) root.removeView(v); } catch (Throwable ignored) {}
                 if (launchSplash == v) launchSplash = null;
             }).start();
         }, delay);
     }
 
+    private void startLaunchEngineSound() {
+        stopLaunchEngineSound();
+        launchAudioStopped = false;
+
+        launchAudioThread = new Thread(() -> {
+            AudioTrack track = null;
+            try {
+                final int sampleRate = 24000;
+                final double durationSec = 3.15;
+                final int count = (int) (sampleRate * durationSec);
+                short[] pcm = new short[count];
+                double phase = 0.0;
+
+                for (int i = 0; i < count; i++) {
+                    double u = i / (double) Math.max(1, count - 1);
+                    double frequency = 52.0 + 118.0 * Math.pow(u, 1.55);
+                    phase += (2.0 * Math.PI * frequency) / sampleRate;
+
+                    double attack = Math.min(1.0, u / 0.07);
+                    double release = Math.min(1.0, (1.0 - u) / 0.08);
+                    double envelope = attack * release;
+                    double throttle = 0.34 + 0.58 * u;
+
+                    double engine =
+                            Math.sin(phase) * 0.58 +
+                            Math.sin(phase * 2.0 + 0.28) * 0.24 +
+                            Math.sin(phase * 3.0 + 0.65) * 0.11 +
+                            Math.sin(phase * 4.0 + 0.95) * 0.05;
+
+                    double pulse = 0.94 + 0.06 * Math.sin(2.0 * Math.PI * 7.0 * u);
+                    double sample = engine * envelope * throttle * pulse * 0.50;
+
+                    pcm[i] = (short) Math.max(
+                            Short.MIN_VALUE,
+                            Math.min(Short.MAX_VALUE, (int) (sample * 32767.0)));
+                }
+
+                track = new AudioTrack.Builder()
+                        .setAudioAttributes(new AudioAttributes.Builder()
+                                .setUsage(AudioAttributes.USAGE_MEDIA)
+                                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                .build())
+                        .setAudioFormat(new AudioFormat.Builder()
+                                .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                                .setSampleRate(sampleRate)
+                                .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                                .build())
+                        .setTransferMode(AudioTrack.MODE_STATIC)
+                        .setBufferSizeInBytes(pcm.length * 2)
+                        .build();
+
+                track.write(pcm, 0, pcm.length);
+
+                if (launchAudioStopped) {
+                    try { track.release(); } catch (Throwable ignored) {}
+                    return;
+                }
+
+                launchAudioTrack = track;
+                track.setVolume(0.34f);
+                track.play();
+            } catch (Throwable ignored) {
+                if (track != null) {
+                    try { track.release(); } catch (Throwable ignored2) {}
+                }
+            }
+        }, "AracimProLaunchAudio");
+
+        launchAudioThread.start();
+    }
+
+    private void stopLaunchEngineSound() {
+        launchAudioStopped = true;
+        AudioTrack track = launchAudioTrack;
+        launchAudioTrack = null;
+
+        if (track != null) {
+            try { track.stop(); } catch (Throwable ignored) {}
+            try { track.flush(); } catch (Throwable ignored) {}
+            try { track.release(); } catch (Throwable ignored) {}
+        }
+
+        launchAudioThread = null;
+    }
+
+    private final class LaunchIntroView extends View {
+        private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Path path = new Path();
+        private ValueAnimator animator;
+        private float progress = 0f;
+
+        LaunchIntroView(android.content.Context context) {
+            super(context);
+            setBackgroundColor(Color.rgb(3, 13, 27));
+        }
+
+        void start() {
+            startLaunchEngineSound();
+
+            animator = ValueAnimator.ofFloat(0f, 1f);
+            animator.setDuration(3150L);
+            animator.setInterpolator(new android.view.animation.AccelerateDecelerateInterpolator());
+            animator.addUpdateListener(a -> {
+                progress = (Float) a.getAnimatedValue();
+                invalidate();
+            });
+            animator.start();
+        }
+
+        @Override
+        protected void onDetachedFromWindow() {
+            if (animator != null) {
+                try { animator.cancel(); } catch (Throwable ignored) {}
+                animator = null;
+            }
+            super.onDetachedFromWindow();
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            super.onDraw(canvas);
+
+            final float w = getWidth();
+            final float h = getHeight();
+            if (w <= 0 || h <= 0) return;
+
+            canvas.drawColor(Color.rgb(3, 13, 27));
+
+            final float horizon = h * 0.39f;
+
+            paint.setStyle(Paint.Style.FILL);
+            paint.setColor(Color.rgb(5, 25, 48));
+            canvas.drawRect(0, horizon - h * 0.11f, w, horizon + h * 0.04f, paint);
+
+            paint.setColor(Color.argb(95, 0, 174, 255));
+            canvas.drawRect(0, horizon - dp(2), w, horizon + dp(2), paint);
+
+            path.reset();
+            path.moveTo(w * 0.43f, horizon);
+            path.lineTo(w * 0.57f, horizon);
+            path.lineTo(w * 1.08f, h);
+            path.lineTo(-w * 0.08f, h);
+            path.close();
+
+            paint.setColor(Color.rgb(7, 18, 31));
+            canvas.drawPath(path, paint);
+
+            for (int i = 0; i < 7; i++) {
+                float z = (i + progress * 2.2f) % 7f / 7f;
+                float y = horizon + (float) Math.pow(z, 1.6) * (h - horizon);
+                float spread = 0.075f + z * 0.47f;
+                float dot = dp(1) + z * dp(5);
+
+                paint.setColor(Color.argb((int) (80 + 150 * z), 35, 186, 255));
+                canvas.drawCircle(w * (0.5f - spread), y, dot, paint);
+                canvas.drawCircle(w * (0.5f + spread), y, dot, paint);
+            }
+
+            for (int i = 0; i < 6; i++) {
+                float z = (i + progress * 3.0f) % 6f / 6f;
+                float y = horizon + z * (h - horizon);
+                float half = dp(2) + z * dp(5);
+
+                paint.setColor(Color.argb((int) (55 + 120 * z), 218, 239, 255));
+                canvas.drawRoundRect(
+                        w * 0.5f - half, y,
+                        w * 0.5f + half, y + dp(5) + z * dp(24),
+                        dp(3), dp(3), paint);
+            }
+
+            float u = Math.min(1f, progress / 0.78f);
+            float eased = 1f - (float) Math.pow(1f - u, 3.0);
+            float scale = 0.18f + 0.90f * eased;
+            float carCenterY = horizon + h * (0.055f + 0.29f * eased);
+
+            paint.setStrokeWidth(dp(2));
+            for (int i = 0; i < 5; i++) {
+                float yy = carCenterY + dp(28 + i * 18) * scale;
+                int alpha = (int) (90f * eased);
+                paint.setColor(Color.argb(alpha, 16, 171, 255));
+
+                canvas.drawLine(w * 0.14f, yy, w * (0.29f + 0.03f * i), yy, paint);
+                canvas.drawLine(w * 0.86f, yy, w * (0.71f - 0.03f * i), yy, paint);
+            }
+
+            canvas.save();
+            canvas.translate(w * 0.5f, carCenterY);
+            canvas.scale(scale, scale);
+
+            float cw = w * 0.62f;
+            float ch = cw * 0.34f;
+            float left = -cw / 2f;
+            float top = -ch / 2f;
+
+            path.reset();
+            path.moveTo(left + cw * 0.04f, top + ch * 0.72f);
+            path.quadTo(left + cw * 0.06f, top + ch * 0.40f,
+                    left + cw * 0.20f, top + ch * 0.34f);
+            path.lineTo(left + cw * 0.31f, top + ch * 0.08f);
+            path.quadTo(0, top - ch * 0.02f,
+                    left + cw * 0.69f, top + ch * 0.08f);
+            path.lineTo(left + cw * 0.80f, top + ch * 0.34f);
+            path.quadTo(left + cw * 0.94f, top + ch * 0.40f,
+                    left + cw * 0.96f, top + ch * 0.72f);
+            path.lineTo(left + cw * 0.92f, top + ch * 0.91f);
+            path.quadTo(0, top + ch * 1.02f,
+                    left + cw * 0.08f, top + ch * 0.91f);
+            path.close();
+
+            paint.setStyle(Paint.Style.FILL);
+            paint.setColor(Color.rgb(222, 234, 244));
+            canvas.drawPath(path, paint);
+
+            path.reset();
+            path.moveTo(left + cw * 0.32f, top + ch * 0.15f);
+            path.quadTo(0, top + ch * 0.04f,
+                    left + cw * 0.68f, top + ch * 0.15f);
+            path.lineTo(left + cw * 0.76f, top + ch * 0.39f);
+            path.lineTo(left + cw * 0.24f, top + ch * 0.39f);
+            path.close();
+
+            paint.setColor(Color.rgb(10, 29, 48));
+            canvas.drawPath(path, paint);
+
+            paint.setColor(Color.rgb(6, 18, 30));
+            canvas.drawRoundRect(
+                    left + cw * 0.30f, top + ch * 0.55f,
+                    left + cw * 0.70f, top + ch * 0.83f,
+                    dp(10), dp(10), paint);
+
+            paint.setColor(Color.rgb(76, 105, 128));
+            paint.setStrokeWidth(dp(1));
+            for (int i = 1; i < 4; i++) {
+                float gy = top + ch * (0.56f + i * 0.06f);
+                canvas.drawLine(left + cw * 0.33f, gy,
+                        left + cw * 0.67f, gy, paint);
+            }
+
+            float headAlpha = 0.42f + 0.58f * eased;
+            paint.setColor(Color.argb((int) (255 * headAlpha), 88, 224, 255));
+            paint.setShadowLayer(dp(16), 0, 0, Color.rgb(0, 184, 255));
+
+            canvas.drawRoundRect(
+                    left + cw * 0.10f, top + ch * 0.48f,
+                    left + cw * 0.31f, top + ch * 0.58f,
+                    dp(8), dp(8), paint);
+
+            canvas.drawRoundRect(
+                    left + cw * 0.69f, top + ch * 0.48f,
+                    left + cw * 0.90f, top + ch * 0.58f,
+                    dp(8), dp(8), paint);
+
+            paint.clearShadowLayer();
+
+            paint.setColor(Color.rgb(0, 151, 230));
+            canvas.drawRoundRect(
+                    left + cw * 0.16f, top + ch * 0.88f,
+                    left + cw * 0.84f, top + ch * 0.92f,
+                    dp(4), dp(4), paint);
+
+            canvas.restore();
+
+            float logoT = Math.max(0f, Math.min(1f, (progress - 0.66f) / 0.23f));
+            int logoAlpha = (int) (255 * logoT);
+
+            paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+            paint.setTextSize(dp(34));
+            paint.setTextAlign(Paint.Align.CENTER);
+            paint.setColor(Color.argb(logoAlpha, 245, 249, 255));
+            canvas.drawText("ARACIM", w * 0.43f, h * 0.82f, paint);
+
+            paint.setColor(Color.argb(logoAlpha, 0, 183, 255));
+            canvas.drawText("PRO", w * 0.70f, h * 0.82f, paint);
+
+            paint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.NORMAL));
+            paint.setTextSize(dp(14));
+            paint.setColor(Color.argb((int) (210 * logoT), 176, 207, 231));
+            canvas.drawText(
+                    "Aracın için ne ararsan, hepsi burada.",
+                    w * 0.5f, h * 0.865f, paint);
+        }
+    }
+
     private int dp(int value) { return Math.round(value * getResources().getDisplayMetrics().density); }
+    private float dp(float value) { return value * getResources().getDisplayMetrics().density; }
     private int systemDimen(String name, int fallback) {
         int id = getResources().getIdentifier(name, "dimen", "android");
         return id > 0 ? getResources().getDimensionPixelSize(id) : fallback;
@@ -2502,6 +2771,44 @@ public class MainActivity extends Activity {
         }
     }
 
+    private void handleSystemBack() {
+        if (webView == null) {
+            finish();
+            return;
+        }
+
+        try {
+            webView.evaluateJavascript(
+                    "(function(){try{return !!(window.appBack&&window.appBack());}catch(e){return false;}})()",
+                    result -> {
+                        boolean handled = "true".equalsIgnoreCase(String.valueOf(result).replace("\"", ""));
+                        if (handled) return;
+
+                        try {
+                            if (webView.canGoBack()) {
+                                webView.goBack();
+                            } else {
+                                finish();
+                            }
+                        } catch (Throwable ignored) {
+                            finish();
+                        }
+                    });
+        } catch (Throwable ignored) {
+            try {
+                if (webView.canGoBack()) webView.goBack();
+                else finish();
+            } catch (Throwable ignored2) {
+                finish();
+            }
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        handleSystemBack();
+    }
+
     @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST) {
@@ -2513,6 +2820,7 @@ public class MainActivity extends Activity {
     }
 
     @Override protected void onDestroy() {
+        stopLaunchEngineSound();
         try { if (billingClient != null) billingClient.endConnection(); } catch (Throwable ignored) {}
         for (Translator translator : uiTranslators.values()) {
             try { translator.close(); } catch (Throwable ignored) {}
