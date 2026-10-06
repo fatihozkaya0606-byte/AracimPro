@@ -175,6 +175,7 @@ public class MainActivity extends Activity {
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private View launchSplash;
     private long splashStartedAt = 0L;
+    private volatile boolean splashDismissAllowed = false;
     private AudioTrack launchAudioTrack;
     private Thread launchAudioThread;
     private volatile boolean launchAudioStopped = false;
@@ -326,6 +327,10 @@ private void showLaunchSplash() {
 
         if (apPremiumSplashView != null) return;
 
+        splashStartedAt = android.os.SystemClock.elapsedRealtime();
+        splashDismissAllowed = false;
+        startLaunchEngineSound();
+
         final android.view.ViewGroup root = findViewById(android.R.id.content);
         if (root == null) return;
 
@@ -407,7 +412,11 @@ private void showLaunchSplash() {
         sub.animate().alpha(1f).setDuration(360L).setStartDelay(250L).start();
 
         apPremiumSplashHandler.removeCallbacksAndMessages(null);
-        apPremiumSplashHandler.postDelayed(this::hideLaunchSplashWhenReady, 2400L);
+        apPremiumSplashHandler.removeCallbacksAndMessages(null);
+        apPremiumSplashHandler.postDelayed(() -> {
+            splashDismissAllowed = true;
+            hideLaunchSplashWhenReady();
+        }, 3800L);
 
     }
 
@@ -448,6 +457,9 @@ private void showLaunchSplash() {
     }
 
     private void hideLaunchSplashWhenReady() {
+        // WebView çok hızlı yüklense bile splash 3.8 saniyeden önce kapanamaz.
+        if (!splashDismissAllowed) return;
+
 
         if (apPremiumSplashHidden) return;
         apPremiumSplashHidden = true;
@@ -456,16 +468,18 @@ private void showLaunchSplash() {
         final android.view.View splash = apPremiumSplashView;
 
         if (splash == null) {
+            stopLaunchEngineSound();
             if (root != null) apSetAdViewsVisible(root, true);
             return;
         }
 
-        splash.animate().alpha(0f).setDuration(240L).withEndAction(() -> {
+        splash.animate().alpha(0f).setDuration(300L).withEndAction(() -> {
             try {
                 if (splash.getParent() instanceof android.view.ViewGroup) {
                     ((android.view.ViewGroup) splash.getParent()).removeView(splash);
                 }
             } catch (Throwable ignored) {}
+            stopLaunchEngineSound();
             apPremiumSplashView = null;
             if (root != null) apSetAdViewsVisible(root, true);
         }).start();
@@ -480,7 +494,7 @@ private void showLaunchSplash() {
             AudioTrack track = null;
             try {
                 final int sampleRate = 24000;
-                final double durationSec = 3.15;
+                final double durationSec = 3.70;
                 final int count = (int) (sampleRate * durationSec);
                 short[] pcm = new short[count];
                 double phase = 0.0;
