@@ -295,9 +295,21 @@ public class MainActivity extends Activity {
         FrameLayout splash = new FrameLayout(this);
         splash.setBackgroundColor(Color.rgb(2, 10, 22));
 
+        // Video ilk kareyi verene kadar güvenli yedek animasyon görünür.
+        // Böylece VideoView hazırlanırken siyah/boş ekran oluşmaz.
+        LaunchIntroView fallbackIntro = new LaunchIntroView(this);
+        splash.addView(fallbackIntro, new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT));
+        fallbackIntro.start();
+
         android.widget.VideoView video = new android.widget.VideoView(this);
         launchVideoView = video;
-        video.setBackgroundColor(Color.rgb(2, 10, 22));
+
+        // Opaque VideoView arka planı bazı cihazlarda videoyu örtebiliyor.
+        // Şeffaf bırakıyoruz; ilk kare gelene kadar alttaki intro görünür.
+        video.setBackgroundColor(Color.TRANSPARENT);
+        try { video.setZOrderMediaOverlay(true); } catch (Throwable ignored) {}
 
         FrameLayout.LayoutParams videoLp = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
@@ -318,14 +330,35 @@ public class MainActivity extends Activity {
             video.setOnPreparedListener(mp -> {
                 try {
                     mp.setLooping(false);
-                    mp.setVolume(0.88f, 0.88f);
+
+                    // Fallback intro zaten motor sesini üretiyor; çift ses olmasın.
+                    mp.setVolume(0f, 0f);
+
+                    mp.setOnInfoListener((m, what, extra) -> {
+                        if (what == android.media.MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
+                            try { video.setBackgroundColor(Color.TRANSPARENT); } catch (Throwable ignored) {}
+                        }
+                        return false;
+                    });
+
                     video.start();
                 } catch (Throwable ignored) {}
             });
+
             video.setOnCompletionListener(mp -> {
-                // WebView hazır değilse son kare kısa süre kalabilir; hazırsa hideLaunchSplashWhenReady kaldırır.
+                // WebView hazır değilse son kare kısa süre kalabilir.
             });
-            video.setOnErrorListener((mp, what, extra) -> true);
+
+            video.setOnErrorListener((mp, what, extra) -> {
+                // Codec/Surface sorunu olursa siyah ekran göstermeyip
+                // alttaki yedek animasyona geri dön.
+                try {
+                    video.setVisibility(View.GONE);
+                    video.setBackgroundColor(Color.TRANSPARENT);
+                } catch (Throwable ignored) {}
+                return true;
+            });
+
             video.requestFocus();
         } catch (Throwable ignored) {}
     }
