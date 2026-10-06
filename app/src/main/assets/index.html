@@ -304,6 +304,93 @@ html[dir="rtl"] body{text-align:right}
 .premiumLegal{font-size:9px;color:var(--muted);line-height:1.5;margin-top:10px}
 .premiumActiveCard{padding:16px;border-radius:20px;background:linear-gradient(135deg,#0b8a63,#16ba7d);color:#fff;text-align:center}
 
+
+/* ARACIM PRO V7.5.5 PREMIUM COMMAND HEADER */
+.apHeader{
+  padding:10px 12px 10px!important;
+  background:
+    radial-gradient(circle at 12% -30%,rgba(32,143,255,.18),transparent 42%),
+    linear-gradient(180deg,rgba(8,19,34,.985),rgba(11,24,40,.97))!important;
+  border-bottom:1px solid rgba(92,153,211,.20)!important;
+  box-shadow:0 10px 30px rgba(0,8,18,.14);
+  backdrop-filter:blur(22px)!important;
+}
+.apTopRow{display:flex;align-items:center;gap:9px;min-width:0}
+.apBrandWrap{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
+.apBrandMark{
+  width:48px;height:48px;border-radius:16px;flex:0 0 48px;position:relative;overflow:hidden;
+  background:
+    radial-gradient(circle at 32% 25%,rgba(94,226,255,.38),transparent 32%),
+    linear-gradient(145deg,#0f89ff,#0648bd 58%,#05275c);
+  box-shadow:inset 0 0 0 1px rgba(154,226,255,.35),0 8px 24px rgba(0,117,255,.30);
+}
+.apBrandMark:before{
+  content:"A";position:absolute;left:0;right:0;top:2px;text-align:center;
+  color:#fff;font-weight:950;font-size:29px;letter-spacing:-3px;text-shadow:0 0 14px rgba(101,224,255,.55)
+}
+.apBrandMark:after{
+  content:"";position:absolute;left:8px;right:8px;bottom:9px;height:7px;border-radius:10px 10px 4px 4px;
+  border:2px solid #75e9ff;border-top-width:3px;box-shadow:0 0 10px rgba(70,210,255,.65)
+}
+.apBrandText{font-size:23px;font-weight:900;letter-spacing:-.55px;color:#f5f9ff;line-height:1.02;white-space:nowrap}
+.apBrandText b{color:#259bff}
+.apBrandSub{margin-top:4px;color:#91a9c2;font-size:9.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.apHeaderActions{display:flex;align-items:center;gap:5px;flex:0 0 auto}
+.apAction{
+  width:36px;height:36px;border:1px solid rgba(112,157,204,.16);border-radius:12px;padding:0;
+  background:rgba(255,255,255,.055);color:#e9f4ff;display:grid;place-items:center;position:relative;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035)
+}
+.apAction .svgi{width:19px;height:19px}
+.apAction.alerting{border-color:rgba(255,177,59,.25)}
+.apActionBadge{
+  position:absolute;right:-3px;top:-4px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;
+  background:#ef4560;color:#fff;font-size:8px;font-weight:900;display:grid;place-items:center;
+  border:2px solid #0a1727
+}
+.apProAction{
+  width:auto;min-width:42px;padding:0 8px;color:#ffcf5b;font-size:9px;font-weight:950;letter-spacing:.06em
+}
+.apUtilityRow{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;margin-top:8px;padding-bottom:1px}
+.apUtilityRow::-webkit-scrollbar{display:none}
+.apUtilityPill{
+  flex:0 0 auto;border:1px solid rgba(112,157,204,.17);background:rgba(255,255,255,.045);color:#d9e9f8;
+  border-radius:999px;padding:6px 9px;font-size:8.5px;font-weight:800;display:flex;align-items:center;gap:6px
+}
+.apUtilityPill.vehicle{max-width:220px}
+.apUtilityPill.vehicle span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.apStatusScroll{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;margin-top:8px;padding:1px 0 2px}
+.apStatusScroll::-webkit-scrollbar{display:none}
+.apStatusChip{
+  flex:0 0 auto;min-width:112px;max-width:168px;padding:8px 10px;border-radius:13px;text-align:left;
+  border:1px solid rgba(111,157,205,.18);background:linear-gradient(145deg,rgba(18,42,68,.88),rgba(11,28,48,.92));
+  color:#eaf5ff
+}
+.apStatusChip i{font-style:normal;font-size:15px;margin-right:5px}
+.apStatusChip b{font-size:9.2px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.apStatusChip small{display:block;color:#819db9;font-size:7.6px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.apStatusChip.good{border-color:rgba(45,213,145,.24)}
+.apStatusChip.warn{border-color:rgba(255,183,64,.28)}
+.apStatusChip.danger{border-color:rgba(239,69,96,.32)}
+.apHeader .liveRibbon{
+  margin-top:8px!important;border-radius:15px!important;
+  border-color:rgba(65,160,248,.24)!important;
+  background:
+    radial-gradient(circle at 15% 0,rgba(22,126,226,.18),transparent 38%),
+    linear-gradient(135deg,#0a192a,#0c2741)!important;
+}
+.apHeader .liveRibbonHead{height:25px!important}
+.apHeader .liveTickerItem{min-height:50px!important}
+.apHeader .liveRibbonState{color:#eef7ff}
+.apHeader .liveAuto{
+  border:1px solid rgba(74,175,255,.18);border-radius:999px;padding:3px 7px;color:#75bfff
+}
+@media(max-width:430px){
+  .apHeaderActions{gap:4px}.apAction{width:34px;height:34px;border-radius:11px}
+  .apBrandMark{width:45px;height:45px;flex-basis:45px}
+  .apBrandText{font-size:21px}.apBrandSub{font-size:8.7px}
+}
+
 </style>
 </head>
 <body>
@@ -799,7 +886,39 @@ function liveTickerItems(){
     }
   }
 
-  return out.slice(0,8);
+  /* ARACIM PRO 7.5.5 EXTRA LIVE ITEMS */
+  const rr=state.prefs.driverReminders||{};
+  [
+    ['inspection','🧾','Muayene'],
+    ['insurance','🛡️','Trafik sigortası'],
+    ['mtv','₺','MTV / Vergi']
+  ].forEach(([key,icon,title])=>{
+    const d=daysToDate(rr[key]);
+    if(d!==null){
+      out.push({
+        icon,
+        title:d<0?`${title} ${Math.abs(d)} gün gecikti`:`${title} • ${d} gün kaldı`,
+        sub:d<0?'Tarihi geçti — kontrol et':'Resmî tarih hatırlatıcısı',
+        cls:d<0?'danger':d<=15?'warn':'',
+        click:'driverReminderModal()'
+      });
+    }
+  });
+
+  const bats=vf(state.batteries||[]).filter(x=>x.installDate)
+    .sort((a,b)=>String(b.installDate).localeCompare(String(a.installDate)));
+  if(bats[0]){
+    const months=Math.max(0,Math.floor((Date.now()-new Date(bats[0].installDate+'T12:00:00'))/(30.44*86400000)));
+    out.push({
+      icon:'🔋',
+      title:`Akü yaşı • ${months} ay`,
+      sub:months>=48?'Akü kontrolü önerilir':'Kayıtlı akü bilgisi',
+      cls:months>=48?'warn':'',
+      click:"go('records')"
+    });
+  }
+
+  return out.slice(0,12);
 }
 
 function liveTickerHtml(){
@@ -807,7 +926,7 @@ function liveTickerHtml(){
   const loop=items.length>1?[...items,...items]:items;
   return `<div class="liveRibbon" id="liveRibbon">
     <div class="liveRibbonHead">
-      <span class="liveRibbonState"><i class="liveDot"></i> CANLI BİLGİ</span>
+      <span class="liveRibbonState"><i class="liveDot"></i> ARAÇ DURUMU</span>
       <span class="liveAuto">OTOMATİK</span>
     </div>
     <div class="liveTickerViewport" id="liveTickerViewport"
@@ -907,7 +1026,111 @@ function startLiveTickerAuto(){
 
 function applyTheme(){document.body.classList.toggle('dark',!!state.prefs.dark)}
 
-function header(){const v=activeVehicle(),u=communityAuthState;return `<header class="header"><div class="brandrow"><div class="logo">${ico('car')}</div><div><div class="brand">Aracım <b>Pro</b> <span class="badgePro">V7.5.1</span></div><div class="muted small">GLOBAL • Hoş geldiniz 👋 • Teknik katalog • kullanıcı deneyimleri • piyasa değeri • bakım</div></div><div class="grow"></div><button class="iconbtn" onclick="premiumPreview()" title="Premium" style="color:#b77900;font-size:22px">👑</button><button class="iconbtn" onclick="languageModal()" title="Dil & Ülke">${countryFlag()}</button><button class="iconbtn" onclick="openAccount()" title="Kullanıcı hesabı">${ico('user')}</button><button class="iconbtn" onclick="openSettings()">${ico('settings')}</button></div>${liveTickerHtml()}${u.signedIn?`<div style="margin-top:7px"><span class="accountPill">${esc(u.name||u.email||'Oturum açık')}</span></div>`:''}${state.vehicles.length&&current!=='home'?`<div class="vehicleSelect"><select onchange="setActive(this.value)">${state.vehicles.map(x=>`<option value="${x.id}" ${x.id===v?.id?'selected':''}>${esc((x.year||'')+' '+x.make+' '+x.model)} • ${esc(x.plate||'Plakasız')}</option>`).join('')}</select><button class="iconbtn" onclick="openVehicle()">${ico('plus')}</button></div>`:''}</header>`}
+function apFreshnessText(ts){
+  ts=Number(ts||0);
+  if(!ts)return 'Henüz veri yok';
+  const m=Math.max(0,Math.floor((Date.now()-ts)/60000));
+  if(m<1)return 'Şimdi güncellendi';
+  if(m<60)return `${m} dk önce`;
+  const hr=Math.floor(m/60);
+  if(hr<24)return `${hr} sa önce`;
+  return new Date(ts).toLocaleDateString(apLocale());
+}
+
+function apHeaderStatusHtml(){
+  const v=activeVehicle();
+  if(!v)return '';
+  const out=[];
+  const hlt=vehicleHealthScore();
+  out.push({
+    icon:'❤️',title:`Sağlık ${hlt.score}/100`,
+    sub:hlt.notes?.[0]||'Araç kayıtları',
+    cls:hlt.score>=80?'good':hlt.score>=65?'warn':'danger',
+    click:'vehicleHealthModal()'
+  });
+
+  const rg=fuelRangeData();
+  out.push({
+    icon:'⛽',
+    title:rg.pct?`Menzil ${Math.round(rg.range)} km`:'Menzili ayarla',
+    sub:rg.pct?`Yakıt yaklaşık %${Math.round(rg.pct)}`:'Yakıt & tüketim',
+    cls:rg.pct&&rg.pct<=20?'danger':'',
+    click:'fuelRangeModal()'
+  });
+
+  const u=upcoming()?.[0];
+  if(u){
+    const left=(Number.isFinite(u.days)&&u.days<99999)?`${u.days} gün`:
+      (Number.isFinite(u.km)&&u.km<999999)?`${Math.max(0,Math.round(u.km))} km`:'Planlı';
+    out.push({
+      icon:'🔧',title:u.name||'Bakım',sub:left,
+      cls:(u.days<=7||u.km<=500)?'danger':(u.days<=30||u.km<=1500)?'warn':'',
+      click:"go('plan')"
+    });
+  }else{
+    const rd=daysToDate((state.prefs.driverReminders||{}).inspection);
+    if(rd!==null)out.push({
+      icon:'🧾',title:'Muayene',sub:rd<0?`${Math.abs(rd)} gün gecikti`:`${rd} gün kaldı`,
+      cls:rd<0?'danger':rd<=30?'warn':'',click:'driverReminderModal()'
+    });
+  }
+
+  const val=currentValuation();
+  if(val>0)out.push({icon:'📈',title:'Piyasa Değeri',sub:money(val),click:'marketValueModal()'});
+
+  const a=smartAlertItems();
+  out.push({
+    icon:'🔔',title:a.length?`${a.length} aktif uyarı`:'Uyarı yok',
+    sub:a[0]?.title||'Kontroller normal',
+    cls:a.length?'warn':'good',click:'smartAlertsModal()'
+  });
+
+  const wc=state.prefs.weatherCache||{},fm=state.fuelMarket||{},rc=state.prefs.roadCache||{};
+  const last=Math.max(+wc.ts||0,+fm.updatedAt||0,+rc.updatedAt||0);
+  out.push({icon:'⚡',title:'Canlı veri',sub:apFreshnessText(last),click:'autoLiveDataRefresh()'});
+
+  return `<div class="apStatusScroll">${out.map(x=>`
+    <button class="apStatusChip ${x.cls||''}" onclick="${x.click||''}">
+      <b><i>${x.icon}</i>${esc(x.title)}</b><small>${esc(x.sub||'')}</small>
+    </button>`).join('')}</div>`;
+}
+
+function header(){
+  const v=activeVehicle(),u=communityAuthState,a=smartAlertItems(),country=countryFlag();
+  const vehicleName=v?`${v.year||''} ${v.make||''} ${v.model||''}`.trim():'Araç ekle';
+  return `<header class="header apHeader">
+    <div class="apTopRow">
+      <div class="apBrandWrap">
+        <div class="apBrandMark" aria-label="Aracım Pro"></div>
+        <div style="min-width:0">
+          <div class="apBrandText">Aracım <b>Pro</b></div>
+          <div class="apBrandSub">Akıllı araç asistanın • araç, yol ve piyasa tek merkezde</div>
+        </div>
+      </div>
+      <div class="apHeaderActions">
+        <button class="apAction ${a.length?'alerting':''}" onclick="smartAlertsModal()" title="Bildirimler">
+          ${ico('bell')}${a.length?`<span class="apActionBadge">${Math.min(a.length,9)}</span>`:''}
+        </button>
+        <button class="apAction apProAction" onclick="premiumPreview()" title="Aracım Pro Premium">PRO</button>
+        <button class="apAction" onclick="openAccount()" title="Kullanıcı hesabı">${ico('user')}</button>
+        <button class="apAction" onclick="openSettings()" title="Ayarlar">${ico('settings')}</button>
+      </div>
+    </div>
+
+    <div class="apUtilityRow">
+      <button class="apUtilityPill" onclick="languageModal()">${country}<span>${countryName()}</span></button>
+      <button class="apUtilityPill vehicle" onclick="${v?"go('garage')":"openVehicle()"}">
+        ${ico('car')}<span>${esc(vehicleName)}</span>
+      </button>
+      ${u.signedIn?`<button class="apUtilityPill" onclick="openAccount()">● ${esc(u.name||u.email||'Oturum açık')}</button>`:''}
+    </div>
+
+    ${apHeaderStatusHtml()}
+    ${liveTickerHtml()}
+
+    ${state.vehicles.length&&current!=='home'?`<div class="vehicleSelect"><select onchange="setActive(this.value)">${state.vehicles.map(x=>`<option value="${x.id}" ${x.id===v?.id?'selected':''}>${esc((x.year||'')+' '+x.make+' '+x.model)} • ${esc(x.plate||'Plakasız')}</option>`).join('')}</select><button class="iconbtn" onclick="openVehicle()">${ico('plus')}</button></div>`:''}
+  </header>`;
+}
 const navItems=[['home','home','Ana'],['garage','garage','Garaj'],['records','records','Kayıt'],['plan','wrench','Plan'],['reports','chart','Rapor'],['more','menu','Daha']];
 function nav(){return `<nav class="nav">${navItems.map(([k,i,l])=>`<button class="${current===k?'active':''}" onclick="go('${k}')"><i>${ico(i)}</i>${l}</button>`).join('')}</nav>`}
 function go(k){
