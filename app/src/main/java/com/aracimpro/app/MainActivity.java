@@ -269,6 +269,8 @@ public class MainActivity extends Activity {
         });
         webView.setWebChromeClient(new WebChromeClient());
         initCommunityFirebase();
+        // Akaryakit zam/fiyat takip modulu kaldirildi.
+        try { FuelAlertScheduler.configure(MainActivity.this, false, "", ""); } catch (Throwable ignored) {}
         webView.addJavascriptInterface(new AndroidBridge(), "Android");
         webView.loadUrl("file:///android_asset/index.html");
     }
@@ -1059,6 +1061,60 @@ private void showLaunchSplash() {
         return out;
     }
 
+    private void sendPresenceCount(int count, String error) {
+        runOnUiThread(() -> {
+            if (webView == null) return;
+            String js = "window.onPresenceCount && window.onPresenceCount(" + count + "," +
+                    JSONObject.quote(error == null ? "" : error) + ")";
+            webView.evaluateJavascript(js, null);
+        });
+    }
+
+    private void refreshPresenceCount() {
+        if (!communityConfigured || communityDb == null) {
+            sendPresenceCount(-1, "Firebase presence hazır değil");
+            return;
+        }
+        try {
+            android.content.SharedPreferences prefs =
+                    getSharedPreferences("aracimpro_presence", MODE_PRIVATE);
+            String deviceId = prefs.getString("device_id", "");
+            if (deviceId == null || deviceId.trim().isEmpty()) {
+                deviceId = java.util.UUID.randomUUID().toString();
+                prefs.edit().putString("device_id", deviceId).apply();
+            }
+
+            long now = System.currentTimeMillis();
+            Map<String, Object> data = new HashMap<>();
+            data.put("lastSeen", now);
+            data.put("platform", "android");
+            data.put("version", BuildConfig.VERSION_NAME);
+
+            FirebaseUser currentUser =
+                    communityAuth == null ? null : communityAuth.getCurrentUser();
+            if (currentUser != null) data.put("uid", currentUser.getUid());
+
+            final String docId = deviceId;
+            communityDb.collection("app_presence").document(docId).set(data)
+                    .addOnCompleteListener(writeTask -> {
+                        long cutoff = System.currentTimeMillis() - 120000L;
+                        communityDb.collection("app_presence")
+                                .whereGreaterThan("lastSeen", cutoff)
+                                .limit(500)
+                                .get()
+                                .addOnCompleteListener(readTask -> {
+                                    if (!readTask.isSuccessful() || readTask.getResult() == null) {
+                                        sendPresenceCount(-1, "Aktif kullanıcı sayısı alınamadı");
+                                    } else {
+                                        sendPresenceCount(readTask.getResult().size(), "");
+                                    }
+                                });
+                    });
+        } catch (Exception e) {
+            sendPresenceCount(-1, "Presence hatası");
+        }
+    }
+
     private void sendCommunityJs(String callback, String payload, String error) {
         runOnUiThread(() -> {
             if (webView == null) return;
@@ -1178,6 +1234,10 @@ private void showLaunchSplash() {
             } catch (Exception e) {
                 sendUiTranslationJs(requestId, new JSONArray(), "Çeviri hazırlanamadı");
             }
+        }
+
+        @JavascriptInterface public void refreshPresence() {
+            refreshPresenceCount();
         }
 
         @JavascriptInterface public String communityStatus() {
