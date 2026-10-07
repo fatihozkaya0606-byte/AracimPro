@@ -51,10 +51,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.core.view.WindowCompat;
 import com.bumptech.glide.request.FutureTarget;
 import com.bumptech.glide.Glide;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.activity.ComponentActivity;
+import androidx.activity.EdgeToEdge;
 import androidx.core.view.ViewCompat;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -73,6 +74,11 @@ import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.QueryProductDetailsParams;
 import com.android.billingclient.api.QueryPurchasesParams;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -128,9 +134,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class MainActivity extends Activity {
+public class MainActivity extends ComponentActivity {
 
     private final android.os.Handler apPremiumSplashHandler = new android.os.Handler(android.os.Looper.getMainLooper());
 
@@ -189,11 +196,16 @@ public class MainActivity extends Activity {
     private FirebaseFirestore communityDb;
     private boolean communityConfigured = false;
     private final Map<String, Translator> uiTranslators = new HashMap<>();
+    private final OkHttpClient imageHttpClient = new OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .build();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        EdgeToEdge.enable(this);
         super.onCreate(savedInstanceState);
-        WindowCompat.enableEdgeToEdge(getWindow());
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
 
         root = new FrameLayout(this);
@@ -1657,6 +1669,23 @@ private void showLaunchSplash() {
         }
 
 
+        private String imageHttpGet(String url, String userAgent) throws Exception {
+            Request request = new Request.Builder()
+                    .url(url)
+                    .header("User-Agent", userAgent)
+                    .header("Accept", "application/json")
+                    .build();
+            try (Response response = imageHttpClient.newCall(request).execute()) {
+                ResponseBody body = response.body();
+                String text = body == null ? "" : body.string();
+                if (!response.isSuccessful()) {
+                    throw new IllegalStateException("HTTP " + response.code());
+                }
+                if (text.isEmpty()) throw new IllegalStateException("Boş yanıt");
+                return text;
+            }
+        }
+
         @JavascriptInterface public void searchVehicleImagesExact(String make, String model, int year, String engine) {
             new Thread(() -> {
                 JSONArray out = new JSONArray();
@@ -1680,17 +1709,10 @@ private void showLaunchSplash() {
                         String api = "https://commons.wikimedia.org/w/api.php?action=query&generator=search" +
                                 "&gsrnamespace=6&gsrlimit=35&gsrsearch=" + URLEncoder.encode(term, "UTF-8") +
                                 "&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=1400&format=json&formatversion=2&origin=*";
-                        HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
-                        c.setConnectTimeout(9000); c.setReadTimeout(12000);
-                        c.setRequestProperty("User-Agent", "AracimPro/5.2 Android (exact-vehicle-photo-search)");
-                        int code = c.getResponseCode();
-                        InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
-                        BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
-                        StringBuilder raw = new StringBuilder(); String line;
-                        while ((line = br.readLine()) != null) raw.append(line);
-                        br.close(); c.disconnect();
-
-                        JSONObject rootJson = new JSONObject(raw.toString());
+                        String raw = imageHttpGet(
+                                api,
+                                "AracimPro/7.6 Android (exact-vehicle-photo-search)");
+                        JSONObject rootJson = new JSONObject(raw);
                         JSONObject queryObj = rootJson.optJSONObject("query");
                         JSONArray pages = queryObj == null ? null : queryObj.optJSONArray("pages");
                         if (pages == null) continue;
@@ -1758,16 +1780,10 @@ private void showLaunchSplash() {
                         String api = "https://commons.wikimedia.org/w/api.php?action=query&generator=search" +
                                 "&gsrnamespace=6&gsrlimit=20&gsrsearch=" + URLEncoder.encode(term, "UTF-8") +
                                 "&prop=imageinfo&iiprop=url%7Cextmetadata&iiurlwidth=1200&format=json&formatversion=2&origin=*";
-                        HttpURLConnection c = (HttpURLConnection) new URL(api).openConnection();
-                        c.setConnectTimeout(9000); c.setReadTimeout(12000);
-                        c.setRequestProperty("User-Agent", "AracimPro/5.2 Android (vehicle-photo-search)");
-                        int code = c.getResponseCode();
-                        InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
-                        BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
-                        StringBuilder raw = new StringBuilder(); String line;
-                        while ((line = br.readLine()) != null) raw.append(line);
-                        br.close(); c.disconnect();
-                        JSONObject rootJson = new JSONObject(raw.toString());
+                        String raw = imageHttpGet(
+                                api,
+                                "AracimPro/7.6 Android (vehicle-photo-search)");
+                        JSONObject rootJson = new JSONObject(raw);
                         JSONObject queryObj = rootJson.optJSONObject("query");
                         JSONArray pages = queryObj == null ? null : queryObj.optJSONArray("pages");
                         if (pages == null) continue;
