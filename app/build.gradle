@@ -24,8 +24,8 @@ android {
         buildConfigField "String", "FIREBASE_APP_ID", "\"${System.getenv('FIREBASE_APP_ID') ?: ''}\""
         buildConfigField "String", "MARKET_API_URL", "\"${System.getenv('MARKET_API_URL') ?: ''}\""
         buildConfigField "String", "LIVE_DATA_API_URL", "\"${System.getenv('LIVE_DATA_API_URL') ?: ''}\""
-        versionCode 46
-        versionName '7.6.3'
+        versionCode 47
+        versionName '7.6.4'
     }
 
     signingConfigs {
@@ -73,6 +73,8 @@ android {
 
 
 dependencies {
+    implementation 'androidx.room:room-runtime:2.8.5'
+    implementation 'androidx.work:work-runtime:2.12.0'
     implementation 'com.github.bumptech.glide:glide:4.16.0'
     implementation 'androidx.core:core:1.17.0'
     implementation 'com.android.billingclient:billing:9.1.0'
