@@ -399,6 +399,24 @@ html[dir="rtl"] body{text-align:right}
 }
 
 </style>
+
+<style id="aracimAiStyles">
+.aiIntro{background:linear-gradient(145deg,#0b74ed,#6d4cff);color:white;border-radius:20px;padding:16px;margin-bottom:12px}
+.aiIntro b{font-size:19px;display:block}.aiIntro small{display:block;opacity:.88;margin-top:4px;line-height:1.45}
+.aiQuick{display:flex;gap:7px;overflow:auto;padding:2px 0 10px}.aiQuick button{white-space:nowrap;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 11px;font-size:11px;font-weight:800}
+.aiChat{display:flex;flex-direction:column;gap:9px;max-height:48vh;overflow:auto;padding:4px 2px 12px}
+.aiBubble{max-width:88%;padding:11px 13px;border-radius:16px;font-size:13px;line-height:1.48;white-space:pre-wrap;word-break:break-word}
+.aiBubble.user{align-self:flex-end;background:linear-gradient(145deg,var(--blue2),var(--blue));color:#fff;border-bottom-right-radius:5px}
+.aiBubble.assistant{align-self:flex-start;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-bottom-left-radius:5px}
+.aiBubble.pending{opacity:.68}
+.aiComposer{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;position:sticky;bottom:0;background:var(--card);padding-top:8px}
+.aiComposer textarea{width:100%;min-height:48px;max-height:110px;resize:none;border:1px solid var(--line);border-radius:15px;background:var(--bg);color:var(--ink);padding:12px 13px;outline:none}
+.aiComposer button{width:52px;height:48px;border:0;border-radius:15px;background:linear-gradient(145deg,#6d4cff,var(--blue));color:#fff;font-size:20px;font-weight:900}
+.aiVehicle{display:flex;gap:8px;align-items:center;margin-top:8px;font-size:11px;opacity:.92}
+.aiVehicle span{background:rgba(255,255,255,.16);padding:5px 8px;border-radius:999px}
+.aiDisclaimer{font-size:10px;color:var(--muted);line-height:1.4;margin-top:8px}
+</style>
+
 </head>
 <body>
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
@@ -1334,6 +1352,7 @@ function homeView(){const v=activeVehicle();if(!v)return welcome();const value=c
   <button onclick="go('more')">Daha Fazla ›</button>
 </div>
 <div class="smartServiceGrid">
+  ${smartSvc("aracimAiModal()","comment","Aracım AI","Aracına özel AI asistan","#6d4cff")}
   ${smartSvc("driveCenterModal()","navigation","Canlı Sürüş","GPS hız • yakın yerler","#1675ed")}
   ${smartSvc("emergencyServicesModal()","emergency","Acil Yardım",apEmergency()+' + acil kurumlar',"#d32645")}
   ${smartSvc("nearbyRoadside()","tow","Yol Yardım","Çekici ve oto kurtarıcı","#e7761e")}
@@ -1399,6 +1418,7 @@ function moreView(){return `<div class="moreHub">
 <!-- V7.2-AKILLI-MERKEZ -->
 <div class="assistantHead"><b>Akıllı Sürücü Merkezi</b><span>Günlük sürüş, yolculuk ve resmî işlemler</span></div>
 <div class="suiteGrid">
+<button class="suiteCard" onclick="aracimAiModal()"><span class="emoji">✨</span><strong>Aracım AI</strong><small>Aracına özel yapay zekâ asistanı</small></button>
 <button class="suiteCard" onclick="tripStartModal()"><span class="emoji">🧭</span><strong>Yolculuk Başlat</strong><small>Hava + yol + yakıt + kontrol</small></button>
 <button class="suiteCard" onclick="smartAlertsModal()"><span class="emoji">🔔</span><strong>Akıllı Uyarılar</strong><small>Bakım, tarih, hava, yakıt</small></button>
 <button class="suiteCard" onclick="fuelRangeModal()"><span class="emoji">⛽</span><strong>Yakıt & Menzil</strong><small>Tahmini kalan menzil</small></button>
@@ -1461,6 +1481,110 @@ ${moreTile("longTripModal()","road","Uzun Yol Asistanı","Kontrol, mola ve yol h
 </div>`}
 
 function listOrEmpty(a,fn){return a.length?`<div class="list">${a.map(fn).join('')}</div>`:`<div class="card empty"><div class="big">🗒️</div><h3>Henüz kayıt yok</h3><p class="muted">İlk kaydını ekleyerek başla.</p></div>`}
+
+/* ARACIM AI V1 */
+let _aracimAiPendingVehicleId='';
+function aracimAiStorageKey(v){return 'aracimpro_ai_v1_'+String(v?.id||'default')}
+function aracimAiLoad(v){try{const a=JSON.parse(localStorage.getItem(aracimAiStorageKey(v))||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
+function aracimAiSave(v,a){try{localStorage.setItem(aracimAiStorageKey(v),JSON.stringify((a||[]).slice(-30)))}catch(e){}}
+function aracimAiVehicleSummary(v){
+  if(!v)return'';
+  const s=[v.year,v.make,v.model,v.engine,v.trim,v.fuel,v.transmission].filter(Boolean).join(' • ');
+  return s+(v.km?` • ${num(v.km)} km`:'');
+}
+function aracimAiContext(v){
+  const services=vf(state.services||[]).slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).slice(0,5)
+    .map(x=>`${x.date||''}: ${x.work||''} ${x.km?x.km+' km':''}`).join(' | ');
+  const plans=vf(state.maintenance||[]).filter(x=>!x.completed).slice(0,6)
+    .map(x=>`${x.name||''}${x.dueKm?' @'+x.dueKm+' km':''}${x.dueDate?' '+x.dueDate:''}`).join(' | ');
+  const issues=vf(state.accidents||[]).filter(x=>x.status&&x.status!=='Onarıldı').slice(0,4)
+    .map(x=>`${x.type||x.title||'Hasar'} ${x.status||''}`).join(' | ');
+  return [
+    `Araç: ${aracimAiVehicleSummary(v)}`,
+    services?`Son servis kayıtları: ${services}`:'',
+    plans?`Planlanan bakımlar: ${plans}`:'',
+    issues?`Açık hasar/onarım kayıtları: ${issues}`:'',
+    `Araç sağlık puanı: ${vehicleHealthScore().score}/100`
+  ].filter(Boolean).join('\n');
+}
+function aracimAiBubble(m){
+  const role=m.role==='user'?'user':'assistant';
+  return `<div class="aiBubble ${role}${m.pending?' pending':''}">${esc(m.text||'')}</div>`;
+}
+function aracimAiModal(){
+  const v=activeVehicle();if(!v)return toast('Önce araç eklemelisin');
+  const a=aracimAiLoad(v);
+  const messages=a.length?a.map(aracimAiBubble).join(''):`<div class="aiBubble assistant">Merhaba 👋 Ben Aracım AI. <b>${esc((v.make||'')+' '+(v.model||''))}</b> için bakım, arıza belirtileri, kullanım ve araç bilgileri hakkında sorabilirsin.</div>`;
+  modal('✨ Aracım AI',`
+    <div class="aiIntro">
+      <b>Aracına özel yapay zekâ asistanı</b>
+      <small>Kayıtlı araç bilgilerini ve bakım geçmişini kullanarak daha ilgili cevap verir.</small>
+      <div class="aiVehicle"><span>🚗 ${esc(aracimAiVehicleSummary(v))}</span></div>
+    </div>
+    <div class="aiQuick">
+      <button onclick="aracimAiAskPreset('Bu kilometrede hangi bakımları yaptırmalıyım?')">🔧 Bakım</button>
+      <button onclick="aracimAiAskPreset('Aracımın sık görülen kronik sorunları neler?')">⚠️ Kronikler</button>
+      <button onclick="aracimAiAskPreset('Yakıt tüketimim arttıysa olası nedenler neler?')">⛽ Yakıt</button>
+      <button onclick="aracimAiAskPreset('Aracımı uzun yola çıkmadan önce nasıl kontrol etmeliyim?')">🛣️ Uzun yol</button>
+    </div>
+    <div class="aiChat" id="aiChat">${messages}</div>
+    <form class="aiComposer" onsubmit="aracimAiSend(event)">
+      <textarea id="aracimAiInput" maxlength="1200" placeholder="Örn. fren yapınca direksiyon titriyor, neden olabilir?"></textarea>
+      <button type="submit" aria-label="Gönder">➤</button>
+    </form>
+    <div class="aiDisclaimer">Aracım AI yardımcı bilgi verir; kesin arıza teşhisi veya ekspertiz yerine geçmez. Fren, direksiyon, yangın/koku, hararet gibi güvenlik kritik belirtilerde aracı güvenli şekilde durdurup uzman desteği al.</div>
+  `);
+  setTimeout(()=>{const c=document.getElementById('aiChat');if(c)c.scrollTop=c.scrollHeight;document.getElementById('aracimAiInput')?.focus()},120);
+}
+function aracimAiAskPreset(q){const i=document.getElementById('aracimAiInput');if(!i)return;i.value=q;i.focus()}
+function aracimAiSend(e){
+  e.preventDefault();
+  const v=activeVehicle(),i=document.getElementById('aracimAiInput');if(!v||!i)return;
+  const q=String(i.value||'').trim();if(!q)return;
+  let a=aracimAiLoad(v);
+  if(a.some(x=>x.pending))return toast('Önce mevcut yanıtı bekleyin');
+  a.push({role:'user',text:q,ts:Date.now()});
+  const rid='apai_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+  a.push({role:'assistant',text:'Düşünüyorum…',pending:true,requestId:rid,ts:Date.now()});
+  aracimAiSave(v,a);
+  _aracimAiPendingVehicleId=v.id;
+  aracimAiModal();
+
+  const history=a.filter(x=>!x.pending).slice(-8).map(x=>(x.role==='user'?'Kullanıcı: ':'Aracım AI: ')+x.text).join('\n');
+  const prompt=`Sen Aracım AI'sın. Bir otomobil sahibine kısa, anlaşılır ve teknik olarak temkinli yardımcı ol.
+Uygulama dili/yereli: ${apLocale()}.
+Kesin teşhis koyma. Bilmediğin şeyi uydurma. Güvenlik kritik bir belirti varsa bunu ilk paragrafta belirt ve profesyonel kontrol öner.
+Plaka, VIN, konum veya kişisel veri isteme. Cevabı mümkün olduğunca maddeler halinde ve pratik ver.
+
+ARAÇ VE KAYITLAR:
+${aracimAiContext(v)}
+
+SON KONUŞMA:
+${history}
+
+KULLANICININ YENİ SORUSU:
+${q}`;
+
+  try{Android.askAracimAi(rid,prompt)}
+  catch(err){window.onAracimAiResult(rid,'','AI bağlantısı açılamadı')}
+}
+window.onAracimAiResult=(rid,text,error)=>{
+  const vid=_aracimAiPendingVehicleId||activeVehicle()?.id||'';
+  const v=state.vehicles.find(x=>x.id===vid)||activeVehicle();if(!v)return;
+  let a=aracimAiLoad(v);
+  let idx=a.findIndex(x=>x.pending&&x.requestId===rid);
+  if(idx<0)idx=a.findIndex(x=>x.pending);
+  const reply=error?`Şu anda yanıt veremiyorum: ${String(error)}`:String(text||'Yanıt alınamadı');
+  const msg={role:'assistant',text:reply,ts:Date.now()};
+  if(idx>=0)a[idx]=msg;else a.push(msg);
+  aracimAiSave(v,a);
+  if(document.getElementById('aiChat'))aracimAiModal();
+}
+function aracimAiClear(){
+  const v=activeVehicle();if(!v)return;
+  if(confirm('Aracım AI konuşması silinsin mi?')){localStorage.removeItem(aracimAiStorageKey(v));aracimAiModal()}
+}
+
 function fab(){if(current==='records')return `<button class="fab" onclick="${recordsTab==='fuel'?'openFuel()':recordsTab==='expenses'?'openExpense()':recordsTab==='trips'?'openTrip()':'openService()'}">＋</button>`;if(current==='plan'&&planTab!=='battery')return `<button class="fab" onclick="${planTab==='maintenance'?'openMaintenance()':'openTire()'}">＋</button>`;return''}
 function modal(title,html){if(window._speedOpen){try{Android.stopSpeedTracking()}catch(e){};window._speedOpen=false}document.getElementById('modalRoot').innerHTML=`<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="sheet"><div class="grab"></div><div class="sheetHead"><h2>${title}</h2><button class="close" onclick="closeModal()">×</button></div>${html}</div></div>`;setTimeout(()=>{applyI18n(document.getElementById('modalRoot'));document.querySelector('.sheet input[autofocus]')?.focus()},100)}function closeModal(){if(window._speedOpen){try{Android.stopSpeedTracking()}catch(e){};window._speedOpen=false}window._guideOpen=false;window._specModalOpen=false;window._editingVehicle=null;window._vehicleImageResults=[];if(String(window._imageSearchMode||'').startsWith('edit'))window._imageSearchMode='';document.getElementById('modalRoot').innerHTML=''}
 function fmtDate(s){if(!s)return'';const [y,m,d]=s.split('-');return `${d}.${m}.${y}`}

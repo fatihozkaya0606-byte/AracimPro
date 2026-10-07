@@ -96,6 +96,15 @@ import com.google.firebase.auth.UserProfileChangeRequest;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.ai.FirebaseAI;
+import com.google.firebase.ai.GenerativeModel;
+import com.google.firebase.ai.java.GenerativeModelFutures;
+import com.google.firebase.ai.type.Content;
+import com.google.firebase.ai.type.GenerateContentResponse;
+import com.google.firebase.ai.type.GenerativeBackend;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.common.model.DownloadConditions;
 import com.google.mlkit.nl.translate.Translation;
 import com.google.mlkit.nl.translate.TranslateLanguage;
@@ -1030,6 +1039,14 @@ private void showLaunchSplash() {
                     .setProjectId(projectId)
                     .setApplicationId(appId)
                     .build();
+
+            // Firebase AI Logic varsayılan FirebaseApp üzerinden çalışır.
+            try {
+                FirebaseApp.getInstance();
+            } catch (Exception ignoredDefault) {
+                FirebaseApp.initializeApp(this, options);
+            }
+
             try {
                 communityFirebaseApp = FirebaseApp.getInstance("AracimProCommunity");
             } catch (Exception ignored) {
@@ -1113,6 +1130,18 @@ private void showLaunchSplash() {
         } catch (Exception e) {
             sendPresenceCount(-1, "Presence hatası");
         }
+    }
+
+
+    private void sendAracimAiJs(String requestId, String text, String error) {
+        runOnUiThread(() -> {
+            if (webView == null) return;
+            String js = "window.onAracimAiResult && window.onAracimAiResult(" +
+                    JSONObject.quote(requestId == null ? "" : requestId) + "," +
+                    JSONObject.quote(text == null ? "" : text) + "," +
+                    JSONObject.quote(error == null ? "" : error) + ")";
+            webView.evaluateJavascript(js, null);
+        });
     }
 
     private void sendCommunityJs(String callback, String payload, String error) {
@@ -1233,6 +1262,60 @@ private void showLaunchSplash() {
                                 requestId, output, e == null ? "Dil paketi indirilemedi" : String.valueOf(e.getMessage())));
             } catch (Exception e) {
                 sendUiTranslationJs(requestId, new JSONArray(), "Çeviri hazırlanamadı");
+            }
+        }
+
+
+        @JavascriptInterface public void askAracimAi(String requestId, String prompt) {
+            final String rid = requestId == null ? "" : requestId.trim();
+            final String p = prompt == null ? "" : prompt.trim();
+
+            if (rid.isEmpty() || p.isEmpty()) {
+                sendAracimAiJs(rid, "", "Soru boş olamaz");
+                return;
+            }
+            if (p.length() > 24000) {
+                sendAracimAiJs(rid, "", "Mesaj çok uzun");
+                return;
+            }
+
+            try {
+                GenerativeModel ai = FirebaseAI.getInstance(GenerativeBackend.googleAI())
+                        .generativeModel("gemini-3.8-flash");
+                GenerativeModelFutures model = GenerativeModelFutures.from(ai);
+                Content content = new Content.Builder().addText(p).build();
+                ListenableFuture<GenerateContentResponse> future = model.generateContent(content);
+
+                Futures.addCallback(future, new FutureCallback<GenerateContentResponse>() {
+                    @Override public void onSuccess(GenerateContentResponse result) {
+                        String text = result == null ? "" : result.getText();
+                        if (text == null || text.trim().isEmpty()) {
+                            sendAracimAiJs(rid, "", "AI boş yanıt döndürdü");
+                        } else {
+                            sendAracimAiJs(rid, text.trim(), "");
+                        }
+                    }
+
+                    @Override public void onFailure(Throwable t) {
+                        String msg = t == null ? "" : String.valueOf(t.getMessage());
+                        String cls = t == null ? "" : t.getClass().getSimpleName();
+
+                        if (cls.contains("ServiceDisabled")) {
+                            msg = "Firebase AI Logic bu proje için henüz etkin değil";
+                        } else if (cls.contains("QuotaExceeded")) {
+                            msg = "AI kullanım kotası doldu. Biraz sonra tekrar deneyin";
+                        } else if (cls.contains("PermissionMissing")) {
+                            msg = "Firebase AI izni/App Check ayarı eksik";
+                        } else if (msg == null || msg.trim().isEmpty()) {
+                            msg = "Aracım AI şu anda yanıt veremiyor";
+                        }
+                        sendAracimAiJs(rid, "", msg);
+                    }
+                }, Runnable::run);
+            } catch (Throwable t) {
+                String msg = t.getMessage();
+                if (msg == null || msg.trim().isEmpty()) msg = "Aracım AI başlatılamadı";
+                sendAracimAiJs(rid, "", msg);
             }
         }
 
