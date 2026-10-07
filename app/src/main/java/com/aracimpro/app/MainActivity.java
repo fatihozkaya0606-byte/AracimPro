@@ -16,7 +16,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Insets;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
@@ -45,7 +44,6 @@ import android.util.Base64;
 import android.text.Html;
 import android.view.View;
 import android.view.Gravity;
-import android.view.WindowInsets;
 import android.view.WindowManager;
 import android.window.OnBackInvokedDispatcher;
 import android.widget.FrameLayout;
@@ -54,6 +52,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.core.view.WindowCompat;
+import com.bumptech.glide.request.FutureTarget;
+import com.bumptech.glide.Glide;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.ViewCompat;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -215,49 +217,26 @@ public class MainActivity extends Activity {
         final int fallbackBottom = systemDimen("navigation_bar_height", dp(44));
         applyWebMargins(0, fallbackTop, 0, fallbackBottom);
 
-        root.setOnApplyWindowInsetsListener((v, insets) -> {
-            int left = 0, top = fallbackTop, right = 0, bottom = fallbackBottom;
+        ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
             try {
-                if (Build.VERSION.SDK_INT >= 30) {
-                    Insets bars = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
-                    Insets ime = insets.getInsets(WindowInsets.Type.ime());
-                    left = bars.left;
-                    top = Math.max(fallbackTop, bars.top);
-                    right = bars.right;
-                    bottom = Math.max(Math.max(fallbackBottom, bars.bottom), ime.bottom);
-                } else {
-                    left = insets.getSystemWindowInsetLeft();
-                    top = Math.max(fallbackTop, insets.getSystemWindowInsetTop());
-                    right = insets.getSystemWindowInsetRight();
-                    bottom = Math.max(fallbackBottom, insets.getSystemWindowInsetBottom());
-                }
-            } catch (Throwable ignored) {}
-            applyWebMargins(left, top, right, bottom);
+                androidx.core.graphics.Insets bars = insets.getInsets(
+                        WindowInsetsCompat.Type.systemBars() |
+                        WindowInsetsCompat.Type.displayCutout());
+                androidx.core.graphics.Insets ime =
+                        insets.getInsets(WindowInsetsCompat.Type.ime());
+
+                applyWebMargins(
+                        bars.left,
+                        Math.max(fallbackTop, bars.top),
+                        bars.right,
+                        Math.max(Math.max(fallbackBottom, bars.bottom), ime.bottom)
+                );
+            } catch (Throwable ignored) {
+                applyWebMargins(0, fallbackTop, 0, fallbackBottom);
+            }
             return insets;
         });
-
-        root.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
-            int left = 0, top = fallbackTop, right = 0, bottom = fallbackBottom;
-            try {
-                if (Build.VERSION.SDK_INT >= 30 && root.getRootWindowInsets() != null) {
-                    WindowInsets wi = root.getRootWindowInsets();
-                    Insets bars = wi.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
-                    Insets ime = wi.getInsets(WindowInsets.Type.ime());
-                    left = bars.left;
-                    top = Math.max(fallbackTop, bars.top);
-                    right = bars.right;
-                    bottom = Math.max(Math.max(fallbackBottom, bars.bottom), ime.bottom);
-                }
-                Rect visible = new Rect();
-                View decor = getWindow().getDecorView();
-                decor.getWindowVisibleDisplayFrame(visible);
-                int screenHeight = decor.getRootView().getHeight();
-                int hiddenBottom = Math.max(0, screenHeight - visible.bottom);
-                if (hiddenBottom > dp(120)) bottom = Math.max(bottom, hiddenBottom);
-            } catch (Throwable ignored) {}
-            applyWebMargins(left, top, right, bottom);
-        });
-        root.post(root::requestApplyInsets);
+        ViewCompat.requestApplyInsets(root);
 
         WebSettings s = webView.getSettings();
         s.setJavaScriptEnabled(true);
@@ -416,34 +395,6 @@ private void showLaunchSplash() {
             hideLaunchSplashWhenReady();
         }, 3800L);
 
-    }
-
-    private void hideSystemBarsForIntro() {
-        try {
-            if (Build.VERSION.SDK_INT >= 30) {
-                android.view.WindowInsetsController c = getWindow().getInsetsController();
-                if (c != null) c.hide(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
-            } else {
-                getWindow().getDecorView().setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
-                        View.SYSTEM_UI_FLAG_FULLSCREEN |
-                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-                        View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-            }
-        } catch (Throwable ignored) {}
-    }
-
-    private void restoreSystemBarsAfterIntro() {
-        try {
-            if (Build.VERSION.SDK_INT >= 30) {
-                android.view.WindowInsetsController c = getWindow().getInsetsController();
-                if (c != null) c.show(WindowInsets.Type.statusBars() | WindowInsets.Type.navigationBars());
-            } else {
-                getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
-            }
-        } catch (Throwable ignored) {}
     }
 
     private void stopLaunchVideo() {
@@ -1853,28 +1804,41 @@ private void showLaunchSplash() {
 
         @JavascriptInterface public void cacheRemoteImage(String contextId, String imageUrl) {
             new Thread(() -> {
-                String dataUrl = ""; String error = "";
+                String dataUrl = "";
+                String error = "";
+                FutureTarget<Bitmap> target = null;
                 try {
-                    HttpURLConnection c = (HttpURLConnection) new URL(imageUrl).openConnection();
-                    c.setConnectTimeout(9000); c.setReadTimeout(12000);
-                    c.setRequestProperty("User-Agent", "AracimPro/5.2 Android");
-                    try (InputStream in = c.getInputStream()) {
-                        Bitmap src = BitmapFactory.decodeStream(in);
-                        if (src == null) throw new IllegalStateException("Görsel okunamadı");
-                        int max = 1100;
-                        float scale = Math.min(1f, (float) max / Math.max(src.getWidth(), src.getHeight()));
-                        Bitmap scaled = src;
-                        if (scale < 1f) scaled = Bitmap.createScaledBitmap(src, Math.round(src.getWidth()*scale), Math.round(src.getHeight()*scale), true);
-                        ByteArrayOutputStream bout = new ByteArrayOutputStream();
-                        scaled.compress(Bitmap.CompressFormat.JPEG, 76, bout);
-                        dataUrl = "data:image/jpeg;base64," + Base64.encodeToString(bout.toByteArray(), Base64.NO_WRAP);
+                    target = Glide.with(getApplicationContext())
+                            .asBitmap()
+                            .load(imageUrl)
+                            .override(1100, 1100)
+                            .submit();
+
+                    Bitmap src = target.get();
+                    if (src == null) throw new IllegalStateException("Görsel okunamadı");
+
+                    ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                    src.compress(Bitmap.CompressFormat.JPEG, 76, bout);
+                    dataUrl = "data:image/jpeg;base64," +
+                            Base64.encodeToString(bout.toByteArray(), Base64.NO_WRAP);
+                } catch (Exception e) {
+                    error = e.getMessage() == null ? "Görsel kaydedilemedi" : e.getMessage();
+                } finally {
+                    if (target != null) {
+                        try { Glide.with(getApplicationContext()).clear(target); }
+                        catch (Throwable ignored) {}
                     }
-                    c.disconnect();
-                } catch (Exception e) { error = e.getMessage() == null ? "Görsel kaydedilemedi" : e.getMessage(); }
-                final String data = dataUrl, err = error;
+                }
+
+                final String data = dataUrl;
+                final String err = error;
                 runOnUiThread(() -> {
                     if (webView != null) webView.evaluateJavascript(
-                            "window.onRemoteVehicleImageCached && window.onRemoteVehicleImageCached(" + JSONObject.quote(contextId) + "," + JSONObject.quote(data) + "," + JSONObject.quote(err) + ")", null);
+                            "window.onRemoteVehicleImageCached && window.onRemoteVehicleImageCached(" +
+                                    JSONObject.quote(contextId) + "," +
+                                    JSONObject.quote(data) + "," +
+                                    JSONObject.quote(err) + ")",
+                            null);
                 });
             }).start();
         }
