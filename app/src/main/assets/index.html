@@ -398,6 +398,127 @@ html[dir="rtl"] body{text-align:right}
   .apBrandText{font-size:21px}.apBrandSub{font-size:8.7px}
 }
 
+
+/* ARACIM PRO R8 UI TEST */
+body.r8HomeMode{
+  --bg:#030914;--card:#081522;--ink:#f4f8ff;--muted:#91a7bf;--line:#17334f;
+  background:#030914;color:#f4f8ff;
+}
+body.r8HomeMode .header{
+  background:linear-gradient(180deg,rgba(3,9,20,.985),rgba(4,13,25,.96));
+  border-bottom:1px solid rgba(51,145,255,.16);
+  backdrop-filter:blur(22px);
+  box-shadow:0 18px 50px rgba(0,0,0,.28);
+}
+body.r8HomeMode .apBrandMark{display:none}
+body.r8HomeMode .apBrandText{font-size:27px;font-weight:900;letter-spacing:-1.2px;color:#f8fbff}
+body.r8HomeMode .apBrandText b{color:#31a6ff;text-shadow:0 0 22px rgba(32,151,255,.35)}
+body.r8HomeMode .apBrandSub{color:#8fa8c2;font-size:11px;margin-top:2px}
+body.r8HomeMode .apUtilityRow{display:none}
+body.r8HomeMode .apAction{
+  background:#071422!important;border:1px solid #173a5a!important;color:#d8ecff!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.04)
+}
+body.r8HomeMode main{padding:0 12px 20px;background:#030914}
+body.r8HomeMode .nav{
+  height:78px;background:rgba(3,10,19,.97);border-top:1px solid #153250;
+  box-shadow:0 -18px 45px rgba(0,0,0,.32);backdrop-filter:blur(22px)
+}
+body.r8HomeMode .nav button{color:#7890a9;font-size:9px}
+body.r8HomeMode .nav button i{font-size:20px}
+body.r8HomeMode .nav button.active{color:#31a9ff;text-shadow:0 0 18px rgba(49,169,255,.6)}
+body.r8HomeMode .fab{display:none}
+
+.r8-home{
+  --r8bg:#030914;--r8card:#071522;--r8card2:#091a2b;--r8line:#173a59;
+  --r8blue:#1b9cff;--r8cyan:#26d4ff;--r8green:#34d487;--r8orange:#ffab39;
+  color:#f4f8ff;background:
+    radial-gradient(circle at 82% 2%,rgba(20,116,255,.18),transparent 23%),
+    radial-gradient(circle at 4% 30%,rgba(0,178,255,.08),transparent 24%),
+    #030914;
+  margin:0 -12px;padding:12px 12px 30px;min-height:100vh;
+}
+.r8-home *{box-sizing:border-box}
+.r8-hero{
+  position:relative;overflow:hidden;border-radius:25px;border:1px solid rgba(41,145,230,.45);
+  background:linear-gradient(135deg,#061522 0%,#0a1c2d 52%,#06111f 100%);
+  box-shadow:0 18px 45px rgba(0,0,0,.35),inset 0 1px rgba(255,255,255,.04);
+  min-height:228px;
+}
+.r8-hero:after{
+  content:"";position:absolute;inset:auto -18% -55% 30%;height:150px;
+  background:radial-gradient(ellipse,rgba(19,130,255,.32),transparent 63%);
+  filter:blur(12px);pointer-events:none;
+}
+.r8-hero-photo{height:138px;position:relative;overflow:hidden;background:linear-gradient(145deg,#06101c,#0b2136)}
+.r8-hero-photo img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.92) contrast(1.04)}
+.r8-hero-photo:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(2,10,18,.87),rgba(3,13,23,.15) 64%,rgba(3,10,18,.22)),linear-gradient(0deg,#071522 0%,transparent 55%)}
+.r8-no-photo{height:138px;display:flex;align-items:center;justify-content:center;color:#6d849b;font-weight:800;background:linear-gradient(145deg,#071522,#0b2033)}
+.r8-hero-copy{position:absolute;z-index:2;left:17px;top:17px;max-width:60%}
+.r8-hero-copy h1{margin:0;font-size:21px;line-height:1.08;letter-spacing:-.5px;color:#fff}
+.r8-hero-copy .plate{margin-top:10px;background:#f7fbff;color:#0a1622;border:0;border-radius:7px;padding:5px 9px;font-size:11px}
+.r8-tags{display:flex;gap:6px;flex-wrap:wrap;padding:0 16px 11px;position:relative;z-index:2;margin-top:-2px}
+.r8-tag{border:1px solid #21425f;background:rgba(8,27,44,.92);color:#b7cbe0;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800}
+.r8-tag.active{color:#77eca9;border-color:#296345}.r8-tag.active:before{content:"●";margin-right:5px}
+.r8-stats{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid rgba(45,100,145,.28);position:relative;z-index:2}
+.r8-stat{padding:12px 8px;text-align:center;min-width:0}
+.r8-stat:not(:last-child){border-right:1px solid rgba(45,100,145,.22)}
+.r8-stat b{font-size:13px;display:block;color:#f7fbff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.r8-stat small{font-size:9px;color:#7f96ad;display:block;margin-top:2px}
+.r8-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.r8-card{
+  position:relative;overflow:hidden;border-radius:20px;background:linear-gradient(145deg,#071521,#081a2b);
+  border:1px solid #163550;box-shadow:0 11px 30px rgba(0,0,0,.24);min-height:145px;
+  color:#f4f8ff;text-align:left;padding:13px;
+}
+button.r8-card{width:100%;font:inherit}
+.r8-card-head{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.r8-card-head .r8-ico{width:32px;height:32px;border-radius:11px;display:grid;place-items:center;background:rgba(25,142,255,.12);color:#34aaff}
+.r8-card-head .r8-ico .svgi{width:18px;height:18px}
+.r8-card-head b{font-size:13px;line-height:1.05}
+.r8-card-head small{display:block;color:#7f96ad;font-size:9px;margin-top:3px}
+.r8-health-body{display:flex;align-items:center;gap:10px}
+.r8-ring{
+  --n:75;width:68px;height:68px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;
+  background:conic-gradient(#30d990 calc(var(--n)*1%),#14314a 0);position:relative;
+  box-shadow:0 0 24px rgba(35,211,150,.14)
+}
+.r8-ring:before{content:"";position:absolute;inset:7px;border-radius:50%;background:#071522}
+.r8-ring span{position:relative;font-weight:900;font-size:21px}.r8-ring small{position:relative;font-size:8px;color:#83a0b9}
+.r8-checks{display:grid;gap:5px;font-size:9px;color:#a9bfd3}.r8-checks i{font-style:normal;color:#3ddc8e;margin-right:4px}
+.r8-maint-list{display:grid;gap:6px}
+.r8-maint-item{padding:8px;border-radius:11px;background:#0b2032;border:1px solid #173850}
+.r8-maint-item b{font-size:10px;display:block}.r8-maint-item small{font-size:9px;color:#ffb44f}
+.r8-main-number{font-size:25px;font-weight:900;letter-spacing:-.8px}
+.r8-sub{color:#8399ae;font-size:9px}
+.r8-bars{height:36px;display:flex;gap:3px;align-items:flex-end;margin-top:9px}
+.r8-bars i{flex:1;border-radius:4px 4px 1px 1px;background:linear-gradient(#38b4ff,#1277e9);min-height:6px}
+.r8-value-trend{margin-top:13px;height:34px;position:relative}
+.r8-value-trend:before{content:"";position:absolute;left:0;right:0;bottom:7px;height:2px;background:linear-gradient(90deg,#1264be,#38bdff);transform:skewY(-10deg);box-shadow:0 0 12px #168cff}
+.r8-photo-card{padding:0;min-height:168px}
+.r8-photo-card img{width:100%;height:104px;object-fit:cover;display:block;filter:saturate(.9) contrast(1.03)}
+.r8-photo-card .shade{position:absolute;inset:0;background:linear-gradient(0deg,#071522 0 35%,transparent 72%)}
+.r8-photo-info{position:absolute;left:12px;right:12px;bottom:11px;z-index:2}
+.r8-photo-info b{font-size:13px;display:block}.r8-photo-info small{color:#9bb2c7;font-size:9px;display:block;margin-top:3px}
+.r8-wide{grid-column:1/-1;min-height:132px}
+.r8-fuel-photo{display:grid;grid-template-columns:42% 58%;padding:0}
+.r8-fuel-photo img{width:100%;height:100%;min-height:132px;object-fit:cover}
+.r8-fuel-info{padding:14px;display:flex;flex-direction:column;justify-content:center}
+.r8-fuel-info b{font-size:15px}.r8-fuel-info small{color:#8fa7bd;font-size:10px;margin:4px 0 11px}
+.r8-blue-btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid #207ac5;background:#0b3153;color:#6bc6ff;border-radius:10px;padding:8px 10px;font-size:10px;font-weight:900}
+.r8-section-title{display:flex;justify-content:space-between;align-items:center;margin:17px 3px 9px}
+.r8-section-title h2{margin:0;font-size:15px;letter-spacing:-.2px}.r8-section-title button{border:0;background:none;color:#40aefc;font-size:10px;font-weight:900}
+.r8-quick{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:9px;border:1px solid #15344f;border-radius:19px;background:#06131f}
+.r8-quick button{border:0;background:#091b2b;color:#c8d8e7;border-radius:13px;padding:9px 3px;font-size:8px;min-width:0}
+.r8-quick button i{display:grid;place-items:center;color:#38aaff;margin-bottom:5px}.r8-quick button .svgi{width:17px;height:17px}
+.r8-real-badge{position:absolute;right:8px;top:8px;z-index:3;background:rgba(3,12,22,.76);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(8px);color:#c9deef;padding:4px 6px;border-radius:999px;font-size:7px;font-weight:900;letter-spacing:.3px}
+@media(max-width:370px){
+  .r8-grid{grid-template-columns:1fr}
+  .r8-wide{grid-column:auto}
+  .r8-quick{grid-template-columns:repeat(3,1fr)}
+  .r8-hero-copy{max-width:74%}
+}
+
 </style>
 
 <style id="aracimAiStyles">
@@ -1219,7 +1340,7 @@ function header(){
     ${state.vehicles.length&&current!=='home'?`<div class="vehicleSelect"><select onchange="setActive(this.value)">${state.vehicles.map(x=>`<option value="${x.id}" ${x.id===v?.id?'selected':''}>${esc((x.year||'')+' '+x.make+' '+x.model)} • ${esc(x.plate||'Plakasız')}</option>`).join('')}</select><button class="iconbtn" onclick="openVehicle()">${ico('plus')}</button></div>`:''}
   </header>`;
 }
-const navItems=[['home','home','Ana'],['garage','garage','Garaj'],['records','records','Kayıt'],['plan','wrench','Plan'],['reports','chart','Rapor'],['more','menu','Daha']];
+const navItems=[['home','home','Ana Sayfa'],['garage','garage','Araçlarım'],['records','records','Kayıtlar'],['plan','wrench','Bakım'],['reports','chart','Rapor'],['more','menu','Daha Fazla']];
 function nav(){return `<nav class="nav">${navItems.map(([k,i,l])=>`<button class="${current===k?'active':''}" onclick="go('${k}')"><i>${ico(i)}</i>${l}</button>`).join('')}</nav>`}
 function go(k){
   if(!k||k===current){closeModal();return}
@@ -1254,7 +1375,7 @@ window.appBack=function(){
   }
   return false;
 }
-function render(){applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);if(current==='home')setTimeout(loadHomeWeather,350)}
+function render(){document.body.classList.toggle('r8HomeMode',current==='home');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);if(current==='home')setTimeout(loadHomeWeather,350)}
 function view(){if(!activeVehicle()&&current!=='garage'&&current!=='more')return welcome();return ({home:homeView,garage:garageView,records:recordsView,plan:planView,reports:reportsView,more:moreView}[current]||homeView)()}
 function welcome(){return `<div class="card empty"><div class="big" style="display:grid;place-items:center;color:var(--blue)">${ico('car')}</div><h3>Garajın henüz boş</h3><p class="muted">Yıl → marka → model → kasa → motor → paket adım adım seçilir; marka, model, motor ve paketler A-Z sıralıdır. Yazmak yerine seçeneklerden ilerlersin; internet varsa katalog genişletilir ve gerçek araç fotoğrafı aranır.</p><button class="primary" onclick="openVehicle()">Aracımı Ekle</button></div>`}
 function vehicleDistance(){const v=activeVehicle();if(!v)return 0;const kms=[...(vf(state.fuel).map(x=>+x.km||0)),...(vf(state.services).map(x=>+x.km||0)),...(vf(state.trips).flatMap(x=>[+x.startKm||0,+x.endKm||0]))].filter(Boolean);if(!kms.length)return v.km||0;return Math.max(...kms)-Math.min(...kms)}
@@ -1317,62 +1438,104 @@ function nightDriveModal(){modal('Gece Sürüş Modu',`<div class="statusHero"><
 function travelCenterModal(){modal('Seyahat Merkezi',`<div class="officialGrid"><button onclick="nearbyHotel()">🛏️ Otel</button><button onclick="nearbyFood()">🍽️ Yeme & İçme</button><button onclick="nearbyAttractions()">📸 Gezilecek Yerler</button><button onclick="nearbyPark()">🌳 Park & Mesire</button><button onclick="nearbyRestArea()">🚻 WC & Dinlenme</button><button onclick="nearbyParking()">🅿️ Otopark</button><button onclick="nearbyATM()">🏧 ATM</button><button onclick="nearbyMarket()">🛒 Market</button></div>`)}
 
 function smartSvc(action,icon,title,subtitle,soft){return `<button class="smartSvc" onclick="${action}" style="--soft:${soft}"><span class="si">${ico(icon)}</span><b>${title}</b><small>${subtitle}</small></button>`}
-function homeView(){const v=activeVehicle();if(!v)return welcome();const value=currentValuation();const photo=v.photo?`<img src="${v.photo}" onerror="this.style.display='none'">`:`${ico('car')}`;return `
-<div class="smartSearchRow">
-  <button class="smartSearch" onclick="nearbySearchModal()"><span class="searchIcon">${ico('search')}</span><span><b>Nereye gitmek istersiniz?</b><small>Yakındaki yerleri, istasyonları ve hizmetleri ara…</small></span></button>
-  <button class="smartLocation" onclick="driveCenterModal()"><span class="locIcon">${ico('location')}</span><span><b>Konumum</b><small>GPS ve yakın yerler</small></span></button>
+function homeView(){const v=activeVehicle();if(!v)return welcome();
+const value=currentValuation(),h=vehicleHealthScore(),due=upcoming().slice(0,2),fuels=vf(state.fuel||[]).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||'')));
+let avg=fuelRangeData().cons||0;
+if(fuels.length>1){const dist=(+fuels.at(-1).km||0)-(+fuels[0].km||0),lit=fuels.slice(1).reduce((t,x)=>t+(+x.liters||0),0);if(dist>0&&lit>0)avg=lit/dist*100}
+const fuelSpent=sum(fuels),tireCount=vf(state.tires||[]).length;
+const photo=v.photo?`<img src="${v.photo}" alt="${esc(v.make+' '+v.model)}" onerror="this.parentNode.innerHTML='<div class=&quot;r8-no-photo&quot;>Araç fotoğrafı ekle</div>'">`:`<div class="r8-no-photo" onclick="openVehicle('${v.id}')">📷 Araç fotoğrafı ekle</div>`;
+const dueHtml=due.length?due.map(x=>`<div class="r8-maint-item"><b>${esc(x.name||x.title||'Bakım')}</b><small>${x.km<999999?Math.max(0,Math.round(x.km))+' km kaldı':x.days<99999?Math.max(0,Math.round(x.days))+' gün kaldı':'Planlandı'}</small></div>`).join(''):`<div class="r8-maint-item"><b>Yaklaşan bakım yok</b><small>Kayıtlarınıza göre</small></div>`;
+return `<div class="r8-home">
+
+<section class="r8-hero">
+  <div class="r8-hero-photo">${photo}</div>
+  <div class="r8-hero-copy">
+    <h1>${esc((v.year||'')+' '+v.make)}<br>${esc(v.model+' '+(v.engine||''))}</h1>
+    ${v.plate?`<span class="plate">${esc(v.plate)}</span>`:''}
+  </div>
+  <div class="r8-tags">
+    <span class="r8-tag active">Aktif Araç</span>
+    ${v.fuel?`<span class="r8-tag">${esc(v.fuel)}</span>`:''}
+    ${v.transmission?`<span class="r8-tag">${esc(v.transmission)}</span>`:''}
+    ${v.trim?`<span class="r8-tag">${esc(v.trim)}</span>`:''}
+  </div>
+  <div class="r8-stats">
+    <div class="r8-stat"><b>${num(v.km||0)} km</b><small>Toplam Kilometre</small></div>
+    <div class="r8-stat"><b>${avg?avg.toFixed(1):'—'} L/100km</b><small>Ortalama Tüketim</small></div>
+    <div class="r8-stat"><b>${h.score>=80?'Çok İyi':h.score>=60?'İyi':'Kontrol'}</b><small>Genel Durum</small></div>
+  </div>
+</section>
+
+<div class="r8-grid">
+  <button class="r8-card r8-photo-card" onclick="vehicleHealthModal()">
+    <span class="r8-real-badge">GERÇEK FOTOĞRAF</span>
+    <img src="r8ui/health.jpg" alt="Gerçek araç sağlık görseli">
+    <span class="shade"></span>
+    <span class="r8-photo-info"><b>Araç Sağlığı</b><small>Skor ${h.score}/100 • motor, bakım ve durum görünümü</small></span>
+  </button>
+
+  <button class="r8-card r8-photo-card" onclick="go('plan')">
+    <span class="r8-real-badge">GERÇEK FOTOĞRAF</span>
+    <img src="r8ui/maintenance.jpg" alt="Gerçek bakım servisi fotoğrafı">
+    <span class="shade"></span>
+    <span class="r8-photo-info"><b>Bakım Hatırlatıcıları</b><small>${due.length?due.length+' yaklaşan işlem':'Kayıtlarına göre takip'}</small></span>
+  </button>
+
+  <button class="r8-card" onclick="go('records');recordsTab='fuel';render()">
+    <div class="r8-card-head"><span class="r8-ico">${ico('fuel')}</span><span><b>Yakıt Takibi</b><small>Kayıtlı gerçek veriler</small></span></div>
+    <div class="r8-main-number">${avg?avg.toFixed(1):'—'} <span style="font-size:10px">L/100km</span></div>
+    <div class="r8-sub">Toplam kayıtlı yakıt gideri ${money(fuelSpent)}</div>
+    <div class="r8-bars"><i style="height:28%"></i><i style="height:48%"></i><i style="height:38%"></i><i style="height:65%"></i><i style="height:52%"></i><i style="height:83%"></i><i style="height:72%"></i></div>
+  </button>
+
+  <button class="r8-card r8-photo-card" onclick="marketValueModal()">
+    <span class="r8-real-badge">GERÇEK FOTOĞRAF</span>
+    <img src="r8ui/market.jpg" alt="Gerçek araç piyasa fotoğrafı">
+    <span class="shade"></span>
+    <span class="r8-photo-info"><b>Piyasa Değeri</b><small>${value?money(value):'Güncel değeri hesapla'}</small></span>
+  </button>
+
+  <button class="r8-card r8-photo-card" onclick="planTab='tires';go('plan');render()">
+    <span class="r8-real-badge">GERÇEK FOTOĞRAF</span>
+    <img src="r8ui/tire.jpg" alt="Gerçek lastik fotoğrafı">
+    <span class="shade"></span>
+    <span class="r8-photo-info"><b>Lastik Bilgileri</b><small>${tireCount?tireCount+' lastik kaydı':'Lastik kayıtlarını görüntüle / ekle'}</small></span>
+  </button>
+
+  <button class="r8-card r8-photo-card" onclick="nearbyService()">
+    <span class="r8-real-badge">GERÇEK FOTOĞRAF</span>
+    <img src="r8ui/service.jpg" alt="Gerçek oto servis fotoğrafı">
+    <span class="shade"></span>
+    <span class="r8-photo-info"><b>En Yakın Servisler</b><small>Konumuna göre gerçek servisleri haritada aç</small></span>
+  </button>
+
+  <button class="r8-card r8-wide r8-fuel-photo" onclick="nearbyFuel()">
+    <img src="r8ui/fuel_station.jpg" alt="Gerçek benzinlik fotoğrafı">
+    <span class="r8-fuel-info"><b>Yakındaki Benzinlikler</b><small>Konumuna göre en yakın akaryakıt istasyonlarını aç.</small><span class="r8-blue-btn">Haritada Gör ›</span></span>
+  </button>
 </div>
 
-<div class="todayStrip" id="todayStrip">
-  <button class="todayChip" id="weatherChip" onclick="weatherDetailModal()"><span class="tcIcon" id="weatherIcon">🌤️</span><span><b id="weatherTitle">Hava --°C</b><small id="weatherSub">Konumdan güncelleniyor</small></span></button>
-  <button class="todayChip" onclick="roadStatusModal()"><span class="tcIcon">🛣️</span><span><b>Yol Durumu</b><small>KGM kapalı yollar & çalışmalar</small></span></button>
-  <button class="todayChip" onclick="vehicleHealthModal()"><span class="tcIcon">❤️</span><span><b id="healthChipTitle">${vehicleHealthScore().label}</b><small>Araç sağlık puanı</small></span></button>
-  <button class="todayChip" onclick="routeCalculator()"><span class="tcIcon">⛽</span><span><b>Yol Maliyeti</b><small>Mesafe + tüketim + yakıt</small></span></button><button class="todayChip" onclick="fuelRangeModal()"><span class="tcIcon">⛽</span><span><b id="rangeChipTitle">Menzil —</b><small>Yakıt & tüketim hesabı</small></span></button><button class="todayChip" onclick="smartAlertsModal()"><span class="tcIcon">🔔</span><span><b id="alertChipTitle">Uyarı 0</b><small>Bakım • tarih • hava</small></span></button>
-  <button class="todayChip warn" onclick="accidentAssistModal()"><span class="tcIcon">🆘</span><span><b>Kaza Modu</b><small>${apEmergency()} • konum • tutanak</small></span></button>
+<div class="r8-grid" style="margin-top:10px">
+  <button class="r8-card r8-wide r8-photo-card" onclick="go('reports')">
+    <span class="r8-real-badge">GERÇEK FOTOĞRAF</span>
+    <img src="r8ui/reports.jpg" alt="Gerçek yol ve sürüş fotoğrafı">
+    <span class="shade"></span>
+    <span class="r8-photo-info"><b>Raporlar ve Analiz</b><small>Yakıt, masraf ve kullanım raporlarını görüntüle</small></span>
+  </button>
 </div>
-<div class="smartHeroGrid">
-  <div class="smartMap">
-    <button class="mapPin p1" onclick="nearbyFuel()">${ico('fuel')}</button>
-    <button class="mapPin p2" onclick="nearbyFood()">${ico('food')}</button>
-    <button class="mapPin p3" onclick="nearbyHospital()">${ico('hospital')}</button>
-    <button class="mapPin p4" onclick="nearbyHotel()">${ico('hotel')}</button>
-    <button class="mapPin p5" onclick="nearbyParking()">${ico('parking')}</button>
-    <button class="mapCenter" onclick="driveCenterModal()">${ico('navigation')}</button>
-    <button class="mapExplore" onclick="nearbySearchModal()">🗺️ Haritada Keşfet ›</button>
-  </div>
-  <div class="vehicleHeroCard">
-    <div class="vehicleHeroPhoto">${photo}</div>
-    <div class="vehicleHeroTitle">${esc((v.year||'')+' '+v.make+' '+v.model)}</div>
-    <div class="vehicleHeroMeta">${esc(v.engine||v.trim||'')} • ${num(v.km)} km</div>
-    <button class="marketMini" onclick="marketValueModal()"><i>${ico('value')}</i><span><b>Piyasa Değeri</b><small>${value?money(value):'Güncel değerini hesapla'}</small></span></button>
-  </div>
+
+<div class="r8-section-title"><h2>⚡ Hızlı İşlemler</h2><button onclick="go('more')">Tüm İşlemler ›</button></div>
+<div class="r8-quick">
+  <button onclick="openFuel()"><i>${ico('fuel')}</i>Yakıt Ekle</button>
+  <button onclick="openService()"><i>${ico('wrench')}</i>Bakım Ekle</button>
+  <button onclick="openExpense()"><i>${ico('expense')}</i>Masraf Ekle</button>
+  <button onclick="nearbyService()"><i>${ico('location')}</i>Servis Bul</button>
+  <button onclick="marketValueModal()"><i>${ico('value')}</i>Piyasa Değeri</button>
+  <button onclick="go('reports')"><i>${ico('chart')}</i>Rapor Al</button>
 </div>
-<div class="smartSectionHead">
-  <div><h2>Akıllı Araç <em>Merkezi</em></h2><p>Yolda, şehirde ve seyahatte ihtiyacınız olan her şey.</p></div>
-  <button onclick="go('more')">Daha Fazla ›</button>
-</div>
-<div class="smartServiceGrid">
-  ${smartSvc("aracimAiModal()","comment","Aracım AI","Aracına özel AI asistan","#6d4cff")}
-  ${smartSvc("driveCenterModal()","navigation","Canlı Sürüş","GPS hız • yakın yerler","#1675ed")}
-  ${smartSvc("emergencyServicesModal()","emergency","Acil Yardım",apEmergency()+' + acil kurumlar',"#d32645")}
-  ${smartSvc("nearbyRoadside()","tow","Yol Yardım","Çekici ve oto kurtarıcı","#e7761e")}
-  ${smartSvc("nearbyFuel()","fuel","Yakın Benzinlik","Haritada en yakınları aç","#16a260")}
-  ${smartSvc("nearbyCharging()","charge","Şarj İstasyonu","Elektrikli araç şarj noktaları","#12a463")}
-  ${smartSvc("nearbyPharmacy()","pharmacy","Yakın Eczane","Haritadaki eczaneler","#e63b55")}
-  ${smartSvc("nearbyHospital()","hospital","Yakın Hastane","Konumuna göre hastaneler","#1877ed")}
-  ${smartSvc("marketValueModal()","value","Piyasa Değeri","Aracının güncel değerini öğren","#7d43e8")}
-  ${smartSvc("nearbyInspection()","inspection","Muayene","Yakındaki araç muayene noktaları","#5a85ee")}
-  ${smartSvc("nearbyFood()","food","Yeme & İçme","Restoran, kafe, lezzet durakları","#d98b20")}
-  ${smartSvc("nearbyAttractions()","explore","Gezilecek Yerler","Tarihi ve turistik yerler","#11a666")}
-  ${smartSvc("nearbyHotel()","hotel","Otel & Konaklama","Yakın oteller ve konaklama","#7850e8")}
-  ${smartSvc("nearbyParking()","parking","Yakın Otopark","Açık ve kapalı otoparklar","#3c77e9")}
-  ${smartSvc("publicInstitutionsModal()","government","Kamu Kurumları","Posta, belediye, vergi ve resmî kurumlar","#2f91da")}
-  ${smartSvc("roadStatusModal()","road","Hava & Yol","Yol durumu + hava uyarıları","#2b8bd8")}
-  ${smartSvc("vehicleHealthModal()","shield","Araç Sağlığı","Bakım kayıtlarından sağlık puanı","#13a49b")}
-  ${smartSvc("routeCalculator()","fuel","Rota Maliyeti","Mesafe + tüketim + yakıt","#d98b20")}
-  ${smartSvc("accidentAssistModal()","emergency","Kaza Modu",apEmergency()+' • konum • tutanak',"#d32645")}
-  <button class="smartPromo" onclick="longTripModal()"><b>Yolculuk<br>Daha Güzel<br>Planlanır</b><small>Keşfet • rota • uzun yol asistanı</small></button>
+
 </div>`}
+
 function garageView(){return `<div class="sectionHead"><h2>Garajım</h2><button class="linkbtn" onclick="openVehicle()">+ Araç</button></div><div class="list">${state.vehicles.length?state.vehicles.map(v=>`<div class="row" onclick="setActive('${v.id}')">${v.photo?`<img class="rowIcon" style="object-fit:cover" src="${v.photo}">`:`<div class="rowIcon">${ico('car')}</div>`}<div class="rowMain"><strong>${esc((v.year||'')+' '+v.make+' '+v.model)}</strong><span>${esc(v.plate||'Plakasız')} • ${num(v.km)} km${v.trim?' • '+esc(v.trim):''}</span></div><div class="rowValue">${v.id===state.activeVehicleId?'<span class="chip green">Aktif</span>':''}</div><button class="linkbtn" onclick="event.stopPropagation();openVehicle('${v.id}')">Düzenle</button></div>`).join(''):'<div class="card empty">Araç yok</div>'}</div>`}
 function recordsView(){const tabs=[['fuel','Yakıt'],['expenses','Giderler'],['trips','Yolculuk'],['services','Servis']];return `<div class="sectionHead"><h2>Kayıtlar</h2></div><div class="tabs">${tabs.map(x=>`<button class="tab ${recordsTab===x[0]?'active':''}" onclick="recordsTab='${x[0]}';render()">${x[1]}</button>`).join('')}</div>${recordsTab==='fuel'?fuelView():recordsTab==='expenses'?expenseView():recordsTab==='trips'?tripView():serviceView()}`}
 function fuelView(){const a=vf(state.fuel).sort((a,b)=>b.date.localeCompare(a.date));let avg='—';if(a.length>1){const s=[...a].sort((a,b)=>a.km-b.km),dist=s.at(-1).km-s[0].km,lit=s.slice(1).reduce((t,x)=>t+x.liters,0);if(dist>0)avg=(lit/dist*100).toFixed(1)+' L/100 km'}return `<div class="grid2"><div class="card metric"><div class="label">Yakıt Toplamı</div><strong>${money(sum(a))}</strong></div><div class="card metric"><div class="label">Ortalama Tüketim</div><strong>${avg}</strong></div></div><div class="sectionHead"><h2>Yakıt Alımları</h2><button class="linkbtn" onclick="openFuel()">+ Ekle</button></div>${listOrEmpty(a,x=>`<div class="row" onclick="openFuel('${x.id}')"><div class="rowIcon">⛽</div><div class="rowMain"><strong>${fmtDate(x.date)} • ${num(x.liters)} L</strong><span>${num(x.km)} km • ${esc(x.station||'İstasyon yok')}</span></div><div class="rowValue">${money(x.cost)}<div class="muted small">${x.liters?(x.cost/x.liters).toFixed(2)+' TL/L':''}</div></div></div>`)}`}
