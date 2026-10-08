@@ -14,7 +14,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -54,6 +53,8 @@ import android.widget.Toast;
 import androidx.core.view.WindowCompat;
 import com.bumptech.glide.request.FutureTarget;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.bitmap.DownsampleStrategy;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.ViewCompat;
 import android.webkit.JavascriptInterface;
@@ -1963,7 +1964,9 @@ private void showLaunchSplash() {
                     target = Glide.with(getApplicationContext())
                             .asBitmap()
                             .load(imageUrl)
-                            .override(1100, 1100)
+                            .override(960, 960)
+                            .downsample(DownsampleStrategy.AT_MOST)
+                            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
                             .submit();
 
                     Bitmap src = target.get();
@@ -3395,63 +3398,53 @@ private void showLaunchSplash() {
         }
 
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            Uri uri = data.getData();
+            final Uri uri = data.getData();
+            final String pickerContext = pendingPickerContext;
+            pendingPickerContext = null;
+
             try {
                 getContentResolver().takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
             } catch (Exception ignored) {}
-            try {
-                final int max = 960;
 
-                BitmapFactory.Options bounds = new BitmapFactory.Options();
-                bounds.inJustDecodeBounds = true;
-                try (InputStream probe = getContentResolver().openInputStream(uri)) {
-                    BitmapFactory.decodeStream(probe, null, bounds);
+            new Thread(() -> {
+                FutureTarget<Bitmap> target = null;
+                try {
+                    target = Glide.with(getApplicationContext())
+                            .asBitmap()
+                            .load(uri)
+                            .override(960, 960)
+                            .downsample(DownsampleStrategy.AT_MOST)
+                            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                            .submit();
+
+                    Bitmap src = target.get();
+                    if (src == null) throw new IllegalStateException("Fotoğraf okunamadı");
+
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    src.compress(Bitmap.CompressFormat.JPEG, 74, out);
+
+                    final String dataUrl = "data:image/jpeg;base64," +
+                            Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
+
+                    runOnUiThread(() -> {
+                        if (webView != null) {
+                            webView.evaluateJavascript(
+                                    "window.onNativeImagePicked && window.onNativeImagePicked(" +
+                                            JSONObject.quote(pickerContext) + "," +
+                                            JSONObject.quote(dataUrl) + ")",
+                                    null);
+                        }
+                    });
+                } catch (Exception e) {
+                    runOnUiThread(() ->
+                            Toast.makeText(MainActivity.this, "Fotoğraf okunamadı", Toast.LENGTH_SHORT).show());
+                } finally {
+                    if (target != null) {
+                        try { Glide.with(getApplicationContext()).clear(target); }
+                        catch (Throwable ignored) {}
+                    }
                 }
-
-                if (bounds.outWidth <= 0 || bounds.outHeight <= 0) throw new IllegalStateException();
-
-                int sample = 1;
-                while ((bounds.outWidth / (sample * 2)) >= max ||
-                       (bounds.outHeight / (sample * 2)) >= max) {
-                    sample *= 2;
-                }
-
-                BitmapFactory.Options decode = new BitmapFactory.Options();
-                decode.inSampleSize = Math.max(1, sample);
-                decode.inPreferredConfig = Bitmap.Config.ARGB_8888;
-
-                Bitmap src;
-                try (InputStream in = getContentResolver().openInputStream(uri)) {
-                    src = BitmapFactory.decodeStream(in, null, decode);
-                }
-                if (src == null) throw new IllegalStateException();
-
-                float scale = Math.min(1f, (float) max / Math.max(src.getWidth(), src.getHeight()));
-                Bitmap scaled = src;
-                if (scale < 1f) {
-                    scaled = Bitmap.createScaledBitmap(
-                            src,
-                            Math.max(1, Math.round(src.getWidth() * scale)),
-                            Math.max(1, Math.round(src.getHeight() * scale)),
-                            true);
-                }
-
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                scaled.compress(Bitmap.CompressFormat.JPEG, 74, out);
-                String dataUrl = "data:image/jpeg;base64," +
-                        Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
-
-                webView.evaluateJavascript(
-                        "window.onNativeImagePicked && window.onNativeImagePicked(" +
-                                JSONObject.quote(pendingPickerContext) + "," +
-                                JSONObject.quote(dataUrl) + ")",
-                        null);
-
-                if (scaled != src && !src.isRecycled()) src.recycle();
-            } catch (Exception e) {
-                Toast.makeText(this, "Fotoğraf okunamadı", Toast.LENGTH_SHORT).show();
-            }
-            pendingPickerContext = null;
+            }).start();
         }
 
         if (requestCode == PICK_DOCUMENT_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
