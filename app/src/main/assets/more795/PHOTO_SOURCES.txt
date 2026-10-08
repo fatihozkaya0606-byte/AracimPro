@@ -1,0 +1,46 @@
+drive: File:Southern Motorway Auckland traffic - copyright-free photo released to public domain.jpg | Kiwiev | CC0 | https://commons.wikimedia.org/wiki/File:Southern_Motorway_Auckland_traffic_-_copyright-free_photo_released_to_public_domain.jpg
+roadside: File:Naha Okinawa Japan JAF-Towing-car-01.jpg | CEphoto, Uwe Aranas | CC BY-SA 3.0 | https://commons.wikimedia.org/wiki/File:Naha_Okinawa_Japan_JAF-Towing-car-01.jpg
+fuel: File:Petrol stations at night 02.jpg | RamaGaspar | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Petrol_stations_at_night_02.jpg
+engine: FALLBACK maintenance.jpg | Uygun JPEG bulunamadı
+community: File:Metropolitan car club meeting.JPG | CZmarlin  — Christopher Ziemnowicz, releases all rights but a photo credit would be appreciated if this image is used anywhere other than Wikipedia. Please leave a note at Wikipedia here. Thank you! | Public domain | https://commons.wikimedia.org/wiki/File:Metropolitan_car_club_meeting.JPG
+profile: File:Alex Müller (racing driver).jpg | Petr Gabriel Photo | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Alex_M%C3%BCller_(racing_driver).jpg
+guide: File:1951 Nash-Healey luxury sports gran turismo car at Rambler Ranch 4of6.jpg | CZmarlin  — Christopher Ziemnowicz, a photo credit would be appreciated if this image is used anywhere other than Wikipedia. Please also include the location of the image: the Rambler Ranch collection in Elizabeth, Colorado. See: https://www.ramblerranch.com | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:1951_Nash-Healey_luxury_sports_gran_turismo_car_at_Rambler_Ranch_4of6.jpg
+market: File:Car showroom, Sticker Lane - geograph.org.uk - 2248223.jpg | Humphrey Bolton | CC BY-SA 2.0 | https://commons.wikimedia.org/wiki/File:Car_showroom,_Sticker_Lane_-_geograph.org.uk_-_2248223.jpg
+parking: File:Abandoned car in Marine Park (10852p).jpg | Rhododendrites | CC BY-SA 4.0 | https://commons.wikimedia.org/wiki/File:Abandoned_car_in_Marine_Park_(10852p).jpg
+reminder: FALLBACK fuel_station.jpg | Uygun JPEG bulunamadı
+roadtrip: File:Manzanita Beach Road (Tillamook County, Oregon scenic images) (tilDA0022).jpg | Gary Halvorson, Oregon State Archives | Attribution | https://commons.wikimedia.org/wiki/File:Manzanita_Beach_Road_(Tillamook_County,_Oregon_scenic_images)_(tilDA0022).jpg
+alerts: File:Dashboard display showing warning lights in a vehicle during nighttime driving.jpg | Shixart1985 | CC BY 2.0 | https://commons.wikimedia.org/wiki/File:Dashboard_display_showing_warning_lights_in_a_vehicle_during_nighttime_driving.jpg
+highway: File:M6 Toll plaza, Great Wyrley.jpg | Adrian Bailey | CC BY-SA 2.0 | https://commons.wikimedia.org/wiki/File:M6_Toll_plaza,_Great_Wyrley.jpg
+documents: File:Singapore restricted use vehicle registration plate RU232*.jpg | ZhongHan. | CC BY 2.5 | https://commons.wikimedia.org/wiki/File:Singapore_restricted_use_vehicle_registration_plate_RU232*.jpg
+speed: FALLBACK reports.jpg | HTTP Error 429: Too many requests (f061ab2)
+government: File:Turkish government building, Sultanahmet.jpg | Филип Романски | CC BY-SA 3.0 | https://commons.wikimedia.org/wiki/File:Turkish_government_building,_Sultanahmet.jpg
+service: File:GC Auto workshop, 3 Apr 2026.jpg | Andykatib | CC0 | https://commons.wikimedia.org/wiki/File:GC_Auto_workshop,_3_Apr_2026.jpg
+winter: File:" 13 - ITALY - Fiat Panda 4x4 - wheel with tire - Snow tires.JPG | Pava | CC BY-SA 3.0 it | https://commons.wikimedia.org/wiki/File:%22_13_-_ITALY_-_Fiat_Panda_4x4_-_wheel_with_tire_-_Snow_tires.JPG
+night: File:Night time car with highway.jpg | Mythili Perumal | CC0 | https://commons.wikimedia.org/wiki/File:Night_time_car_with_highway.jpg
+travel: FALLBACK health.jpg | HTTP Error 429: Too Many Requests
+emergency: FALLBACK tire.jpg | HTTP Error 429: Too Many Requests
+pharmacy: FALLBACK reports.jpg | HTTP Error 429: Too Many Requests
+mosque: FALLBACK service.jpg | HTTP Error 429: Too Many Requests
+notary: FALLBACK fuel_station.jpg | HTTP Error 429: Too Many Requests
+fuelprice: FALLBACK maintenance.jpg | HTTP Error 429: Too Many Requests
+inspection: FALLBACK market.jpg | HTTP Error 429: Too Many Requests
+charging: FALLBACK health.jpg | HTTP Error 429: Too Many Requests
+hospital: FALLBACK tire.jpg | HTTP Error 429: Too Many Requests
+healthcenter: FALLBACK reports.jpg | HTTP Error 429: Too Many Requests
+hotel: FALLBACK service.jpg | HTTP Error 429: Too Many Requests
+restaurant: FALLBACK fuel_station.jpg | HTTP Error 429: Too Many Requests
+attraction: FALLBACK maintenance.jpg | HTTP Error 429: Too Many Requests
+parkinggarage: FALLBACK market.jpg | HTTP Error 429: Too Many Requests
+restarea: FALLBACK health.jpg | HTTP Error 429: Too Many Requests
+tire: FALLBACK tire.jpg | HTTP Error 429: Too Many Requests
+assembly: FALLBACK reports.jpg | HTTP Error 429: Too Many Requests
+atm: FALLBACK service.jpg | HTTP Error 429: Too Many Requests
+supermarket: FALLBACK fuel_station.jpg | HTTP Error 429: Too Many Requests
+carwash: FALLBACK maintenance.jpg | HTTP Error 429: Too Many Requests
+park: FALLBACK market.jpg | HTTP Error 429: Too Many Requests
+battery: FALLBACK health.jpg | HTTP Error 429: Too Many Requests
+expertise: FALLBACK tire.jpg | HTTP Error 429: Too Many Requests
+parts: FALLBACK reports.jpg | HTTP Error 429: Too Many Requests
+accident: FALLBACK service.jpg | HTTP Error 429: Too Many Requests
+cloud: FALLBACK fuel_station.jpg | HTTP Error 429: Too Many Requests
+backup: FALLBACK maintenance.jpg | HTTP Error 429: Too Many Requests

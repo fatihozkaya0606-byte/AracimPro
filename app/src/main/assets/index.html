@@ -1174,6 +1174,140 @@ body.r8MoreMode main{padding:0 10px 22px!important}
   .more794Card,.more794Card.featured{min-height:165px}
 }
 
+
+/* THEME RESTORE 7.9.5 */
+/* Fotoğraflar daha canlı; yazı okunurluğu için yalnız alt bölüm koyulaşır. */
+.more794Card img{
+  filter:saturate(1.18) contrast(1.05) brightness(1.09)!important;
+}
+.more794Card:after{
+  background:linear-gradient(0deg,rgba(2,10,18,.90) 0%,rgba(2,10,18,.56) 36%,rgba(2,10,18,.04) 72%)!important;
+}
+.fullv2-banner img,.fullv2-more-photo img,.r8-photo-card img,.r8-hero-photo img{
+  filter:saturate(1.12) contrast(1.04) brightness(1.06)!important;
+}
+.apThemeAction{font-size:17px!important}
+
+/* AÇIK TEMA — Full Premium'ın zorunlu koyu CSS'ini geri alır. */
+body:not(.dark){
+  --bg:#f1f6fc!important;
+  --card:#ffffff!important;
+  --ink:#10213c!important;
+  --muted:#6f8399!important;
+  --line:#d7e2ee!important;
+  --blue:#1675ed!important;
+  --blue2:#2e91ff!important;
+  --shadow:0 10px 28px rgba(30,72,120,.10)!important;
+  background:#f1f6fc!important;
+  color:#10213c!important;
+}
+body:not(.dark) .header{
+  background:rgba(248,251,255,.97)!important;
+  border-bottom:1px solid #d9e5f0!important;
+  box-shadow:0 10px 30px rgba(23,61,102,.08)!important;
+}
+body:not(.dark) main{background:#f1f6fc!important}
+body:not(.dark) .apBrandText{color:#10213c!important}
+body:not(.dark) .apBrandSub{color:#71869b!important}
+body:not(.dark) .apAction,
+body:not(.dark) .iconbtn,
+body:not(.dark) .apUtilityPill{
+  background:#fff!important;color:#17314c!important;border-color:#d4e1ed!important;
+  box-shadow:0 6px 18px rgba(25,67,111,.08)!important;
+}
+body:not(.dark) .nav{
+  background:rgba(255,255,255,.98)!important;
+  border-top:1px solid #d8e3ee!important;
+  box-shadow:0 -10px 28px rgba(25,66,108,.09)!important;
+}
+body:not(.dark) .nav button{color:#71869b!important;text-shadow:none!important}
+body:not(.dark) .nav button.active{color:#1675ed!important;text-shadow:none!important}
+body:not(.dark) .sheet{
+  background:#fff!important;color:#10213c!important;
+  border-color:#d8e3ee!important;box-shadow:0 -14px 42px rgba(18,55,96,.18)!important;
+}
+body:not(.dark) .overlay{background:rgba(27,51,77,.34)!important}
+body:not(.dark) input,
+body:not(.dark) select,
+body:not(.dark) textarea{
+  background:#f7faff!important;color:#10213c!important;border-color:#d3dfeb!important;
+}
+body:not(.dark) .card,
+body:not(.dark) .row,
+body:not(.dark) .quick,
+body:not(.dark) .reviewCard,
+body:not(.dark) .statusHero,
+body:not(.dark) .proPanel,
+body:not(.dark) .sumCard,
+body:not(.dark) .smartSvc,
+body:not(.dark) .suiteCard,
+body:not(.dark) .todayChip,
+body:not(.dark) .smartSearch,
+body:not(.dark) .smartLocation,
+body:not(.dark) .vehicleHeroCard,
+body:not(.dark) .marketMini,
+body:not(.dark) .moreCard,
+body:not(.dark) .officialGrid button,
+body:not(.dark) .proActionGrid button,
+body:not(.dark) .toggle{
+  background:#fff!important;color:#10213c!important;border-color:#d7e2ee!important;
+  box-shadow:0 9px 25px rgba(23,65,109,.08)!important;
+}
+body:not(.dark) .muted,
+body:not(.dark) .small,
+body:not(.dark) .hint,
+body:not(.dark) .rowMain span,
+body:not(.dark) .metric .label{color:#71869b!important}
+body:not(.dark) .sectionHead h2{color:#10213c!important}
+body:not(.dark) .secondary{background:#eaf3ff!important;color:#106bcf!important;border-color:#cfe1f5!important}
+body:not(.dark) .chip{background:#e7f2ff!important;color:#0b6ccf!important;border-color:#c5def5!important}
+
+/* Ana sayfa açık tema: premium düzen korunur, çevre ve kartlar açılır. */
+body.r8HomeMode:not(.dark){
+  --bg:#eef5fc!important;--card:#fff!important;--ink:#10213c!important;
+  --muted:#71869b!important;--line:#d5e2ee!important;
+  background:#eef5fc!important;color:#10213c!important;
+}
+body.r8HomeMode:not(.dark) main{background:#eef5fc!important}
+body.r8HomeMode:not(.dark) .ref791{
+  color:#10213c!important;
+  background:radial-gradient(circle at 85% 0,rgba(45,145,255,.11),transparent 24%),#eef5fc!important;
+}
+body.r8HomeMode:not(.dark) .ref791-card{
+  background:#fff!important;border-color:#cdddea!important;color:#10213c!important;
+  box-shadow:0 10px 28px rgba(31,72,115,.09)!important;
+}
+body.r8HomeMode:not(.dark) .ref791-head b,
+body.r8HomeMode:not(.dark) .ref791-big{color:#10213c!important}
+body.r8HomeMode:not(.dark) .ref791-head small,
+body.r8HomeMode:not(.dark) .ref791-sub,
+body.r8HomeMode:not(.dark) .ref791-checks{color:#71869b!important}
+body.r8HomeMode:not(.dark) .ref791-maintrow,
+body.r8HomeMode:not(.dark) .ref791-price,
+body.r8HomeMode:not(.dark) .ref791-quick{
+  background:#f7faff!important;border-color:#d4e2ee!important;color:#10213c!important;
+}
+
+/* Daha Fazla açık tema: fotoğraflar aynı kalır, ekran/nav/başlıklar açılır. */
+body.r8MoreMode:not(.dark) .more794{
+  color:#10213c!important;
+  background:radial-gradient(circle at 88% 0,rgba(43,150,255,.12),transparent 24%),#eef5fc!important;
+}
+body.r8MoreMode:not(.dark) .more794Vehicle{
+  background:#fff!important;color:#10213c!important;border-color:#cfddea!important;
+  box-shadow:0 7px 20px rgba(29,69,111,.08)!important;
+}
+body.r8MoreMode:not(.dark) .more794Title h1,
+body.r8MoreMode:not(.dark) .more794Section h2{color:#10213c!important}
+body.r8MoreMode:not(.dark) .more794Title p{color:#71869b!important}
+
+/* KOYU TEMA aynen premium neon görünüm. */
+body.dark{
+  --bg:#030914!important;--card:#071522!important;--ink:#f4f8ff!important;
+  --muted:#95abc0!important;--line:#173651!important;--blue:#28a8ff!important;
+  background:#030914!important;color:#f4f8ff!important;
+}
+
 </style>
 
 <style id="aracimAiStyles">
@@ -1225,22 +1359,22 @@ function fullV2Banner(title,sub,img){
   return `<div class="fullv2-banner"><img src="${img}" alt="${esc(title)}"><div class="fullv2-banner-copy"><b>${esc(title)}</b><small>${esc(sub)}</small></div></div>`
 }
 const _fullv2GarageView=garageView;
-garageView=function(){return fullV2Banner('Araçlarım','Kayıtlı araçlarını premium garaj görünümünde yönet.','r8real/service.jpg')+_fullv2GarageView()}
+garageView=function(){return fullV2Banner('Araçlarım','Kayıtlı araçlarını premium garaj görünümünde yönet.','r8ui/service.jpg')+_fullv2GarageView()}
 const _fullv2RecordsView=recordsView;
-recordsView=function(){return fullV2Banner('Kayıtlar','Yakıt, gider, yolculuk ve servis geçmişin tek yerde.','r8real/fuel.jpg')+_fullv2RecordsView()}
+recordsView=function(){return fullV2Banner('Kayıtlar','Yakıt, gider, yolculuk ve servis geçmişin tek yerde.','r8ui/fuel_station.jpg')+_fullv2RecordsView()}
 const _fullv2PlanView=planView;
-planView=function(){return fullV2Banner('Bakım & Plan','Bakım, lastik ve akü işlemlerini premium görünümle takip et.','r8real/maintenance.jpg')+_fullv2PlanView()}
+planView=function(){return fullV2Banner('Bakım & Plan','Bakım, lastik ve akü işlemlerini premium görünümle takip et.','r8ui/maintenance.jpg')+_fullv2PlanView()}
 const _fullv2ReportsView=reportsView;
-reportsView=function(){return fullV2Banner('Raporlar','Yakıt, masraf ve araç sağlığı verilerini analiz et.','r8real/market.jpg')+_fullv2ReportsView()}
+reportsView=function(){return fullV2Banner('Raporlar','Yakıt, masraf ve araç sağlığı verilerini analiz et.','r8ui/market.jpg')+_fullv2ReportsView()}
 const _fullv2MoreView=moreView;
 moreView=function(){
   const photoGrid=`<div class="fullv2-more-photo-grid">
-    <button class="fullv2-more-photo" onclick="nearbyFuel()"><img src="r8real/station.jpg"><span><b>Yakın Benzinlik</b><small>Gerçek istasyonları haritada aç</small></span></button>
-    <button class="fullv2-more-photo" onclick="nearbyService()"><img src="r8real/service.jpg"><span><b>Servis & Yol Yardım</b><small>Yakın servis ve yardım noktaları</small></span></button>
-    <button class="fullv2-more-photo" onclick="planTab='tires';go('plan');render()"><img src="r8real/tire.jpg"><span><b>Lastik Merkezi</b><small>Lastik kayıtları ve bakım</small></span></button>
-    <button class="fullv2-more-photo" onclick="go('records')"><img src="r8real/fuel.jpg"><span><b>Kayıt Merkezi</b><small>Yakıt, bakım ve gider geçmişi</small></span></button>
+    <button class="fullv2-more-photo" onclick="nearbyFuel()"><img src="r8ui/fuel_station.jpg"><span><b>Yakın Benzinlik</b><small>Gerçek istasyonları haritada aç</small></span></button>
+    <button class="fullv2-more-photo" onclick="nearbyService()"><img src="r8ui/service.jpg"><span><b>Servis & Yol Yardım</b><small>Yakın servis ve yardım noktaları</small></span></button>
+    <button class="fullv2-more-photo" onclick="planTab='tires';go('plan');render()"><img src="r8ui/tire.jpg"><span><b>Lastik Merkezi</b><small>Lastik kayıtları ve bakım</small></span></button>
+    <button class="fullv2-more-photo" onclick="go('records')"><img src="r8ui/fuel_station.jpg"><span><b>Kayıt Merkezi</b><small>Yakıt, bakım ve gider geçmişi</small></span></button>
   </div>`;
-  return fullV2Banner('Daha Fazla','Yakın yerler, servisler ve yardımcı araçlar.','r8real/service.jpg')+photoGrid+_fullv2MoreView()
+  return fullV2Banner('Daha Fazla','Yakın yerler, servisler ve yardımcı araçlar.','r8ui/service.jpg')+photoGrid+_fullv2MoreView()
 }
 
 syncCommunityStatus();closeModal();render();toast('Cihaz profili oluşturuldu')}
@@ -1976,6 +2110,7 @@ function apHeaderStatusHtml(){
     </button>`).join('')}</div>`;
 }
 
+function toggleThemeQuick(){state.prefs.dark=!state.prefs.dark;save()}
 function header(){
   const v=activeVehicle(),u=communityAuthState,a=smartAlertItems(),country=countryFlag();
   const vehicleName=v?`${v.year||''} ${v.make||''} ${v.model||''}`.trim():'Araç ekle';
@@ -2000,6 +2135,7 @@ function header(){
           </button>
           <button class="apAction apProAction" onclick="premiumPreview()" title="Aracım Pro Premium">PRO</button>
           <button class="apAction" onclick="openAccount()" title="Kullanıcı hesabı">${ico('user')}</button>
+          <button class="apAction apThemeAction" onclick="toggleThemeQuick()" title="Açık/Koyu Tema">${state.prefs.dark?'☀️':'🌙'}</button>
           <button class="apAction" onclick="openSettings()" title="Ayarlar">${ico('settings')}</button>
         </div>
       </div>
@@ -2254,89 +2390,89 @@ function moreView(){const v=activeVehicle();return `<div class="more794">
 
 <div class="more794Section"><h2>Öne Çıkan Hizmetler</h2><small>Hızlı erişim</small></div>
 <div class="more794Grid">
-${more794Card("driveCenterModal()","r8ui/reports.jpg","navigation","Canlı Sürüş","Anlık konum, rota ve sürüş detayları","featured")}
-${more794Card("nearbyRoadside()","r8ui/service.jpg","tow","Yol Yardım","Çekici ve oto kurtarıcı","featured")}
-${more794Card("nearbyFuel()","r8ui/fuel_station.jpg","fuel","Yakın Benzinlik","Haritada en yakın istasyonları aç","featured")}
-${more794Card("faultGuideModal()","r8ui/maintenance.jpg","settings","Akıllı Arıza Rehberi","Belirti, olası neden ve ilk kontroller","featured")}
+${more794Card("driveCenterModal()","more795/drive.jpg","navigation","Canlı Sürüş","Anlık konum, rota ve sürüş detayları","featured")}
+${more794Card("nearbyRoadside()","more795/roadside.jpg","tow","Yol Yardım","Çekici ve oto kurtarıcı","featured")}
+${more794Card("nearbyFuel()","more795/fuel.jpg","fuel","Yakın Benzinlik","Haritada en yakın istasyonları aç","featured")}
+${more794Card("faultGuideModal()","more795/engine.jpg","settings","Akıllı Arıza Rehberi","Belirti, olası neden ve ilk kontroller","featured")}
 </div>
 
 <div class="more794Section"><h2>Kişisel & Hızlı</h2><small>Hesap ve araç araçları</small></div>
 <div class="more794Grid compact more794Mini">
-${more794Card("commentsModal()","r8ui/reports.jpg","comment","Yorumlar","Topluluk yorumları")}
-${more794Card("openAccount()","r8ui/health.jpg","user","Hesabım","Profil ve hesap bilgileri")}
-${more794Card("vehicleGuideModal()","r8ui/maintenance.jpg","info","Rehber","Araç kullanım rehberi")}
-${more794Card("marketValueModal()","r8ui/market.jpg","value","Piyasa","Güncel piyasa değeri")}
-${more794Card("parkedSpotModal()","r8ui/reports.jpg","location","Park Yerim","Konumu kaydet ve geri bul")}
-${more794Card("driverReminderModal()","r8ui/maintenance.jpg","bell","Hatırlatıcılar","Muayene, sigorta ve MTV")}
-${more794Card("longTripModal()","r8ui/reports.jpg","road","Uzun Yol","Kontrol listesi ve mola")}
+${more794Card("commentsModal()","more795/community.jpg","comment","Yorumlar","Topluluk yorumları")}
+${more794Card("openAccount()","more795/profile.jpg","user","Hesabım","Profil ve hesap bilgileri")}
+${more794Card("vehicleGuideModal()","more795/guide.jpg","info","Rehber","Araç kullanım rehberi")}
+${more794Card("marketValueModal()","more795/market.jpg","value","Piyasa","Güncel piyasa değeri")}
+${more794Card("parkedSpotModal()","more795/parking.jpg","location","Park Yerim","Konumu kaydet ve geri bul")}
+${more794Card("driverReminderModal()","more795/reminder.jpg","bell","Hatırlatıcılar","Muayene, sigorta ve MTV")}
+${more794Card("longTripModal()","more795/roadtrip.jpg","road","Uzun Yol","Kontrol listesi ve mola")}
 </div>
 
 <div class="more794Section"><h2>Akıllı Sürücü Merkezi</h2><small>Günlük sürüş ve yolculuk</small></div>
 <div class="more794Grid compact more794Mini">
-${more794EmojiCard("faultGuideModal()","r8ui/maintenance.jpg","✨","Akıllı Arıza Rehberi","Çevrimdışı arıza ve bakım rehberi")}
-${more794EmojiCard("tripStartModal()","r8ui/reports.jpg","🧭","Yolculuk Başlat","Hava + yol + yakıt + kontrol")}
-${more794EmojiCard("smartAlertsModal()","r8ui/health.jpg","🔔","Akıllı Uyarılar","Bakım, tarih, hava, yakıt")}
-${more794EmojiCard("fuelRangeModal()","r8ui/fuel_station.jpg","⛽","Yakıt & Menzil","Tahmini kalan menzil")}
-${more794EmojiCard("hgsHighwayModal()","r8ui/reports.jpg","🛣️",regionRoadTitle(),regionRoadSub())}
-${more794EmojiCard("vehicleDocumentsCenter()","r8ui/market.jpg","📁","Araç Belgeleri","Muayene, sigorta, MTV")}
-${more794EmojiCard("speedLimitModal()","r8ui/reports.jpg","⚠️","Hız Uyarısı","Manuel limit + GPS")}
-${more794EmojiCard("officialServicesModal()","r8ui/market.jpg",countryFlag(),"Resmî İşlemler",regionOfficialSub())}
-${more794EmojiCard("serviceCenterModal()","r8ui/service.jpg","🔧","Servis & Usta","Servis, akü, lastik, ekspertiz")}
-${more794EmojiCard("seasonalPrepModal()","r8ui/tire.jpg","❄️","Mevsim Hazırlığı","Kış / yaz kontrolü")}
-${more794EmojiCard("nightDriveModal()","r8ui/reports.jpg","🌙","Gece Sürüşü","Acil ve 24 saat hizmetler")}
-${more794EmojiCard("travelCenterModal()","r8ui/reports.jpg","🧳","Seyahat Merkezi","Otel, yemek, keşif, mola")}
-${more794EmojiCard("parkedSpotModal()","r8ui/health.jpg","📍","Aracımı Bul","Park yerine geri dön")}
+${more794EmojiCard("faultGuideModal()","more795/engine.jpg","✨","Akıllı Arıza Rehberi","Çevrimdışı arıza ve bakım rehberi")}
+${more794EmojiCard("tripStartModal()","more795/roadtrip.jpg","🧭","Yolculuk Başlat","Hava + yol + yakıt + kontrol")}
+${more794EmojiCard("smartAlertsModal()","more795/alerts.jpg","🔔","Akıllı Uyarılar","Bakım, tarih, hava, yakıt")}
+${more794EmojiCard("fuelRangeModal()","more795/fuel.jpg","⛽","Yakıt & Menzil","Tahmini kalan menzil")}
+${more794EmojiCard("hgsHighwayModal()","more795/highway.jpg","🛣️",regionRoadTitle(),regionRoadSub())}
+${more794EmojiCard("vehicleDocumentsCenter()","more795/documents.jpg","📁","Araç Belgeleri","Muayene, sigorta, MTV")}
+${more794EmojiCard("speedLimitModal()","more795/speed.jpg","⚠️","Hız Uyarısı","Manuel limit + GPS")}
+${more794EmojiCard("officialServicesModal()","more795/government.jpg",countryFlag(),"Resmî İşlemler",regionOfficialSub())}
+${more794EmojiCard("serviceCenterModal()","more795/service.jpg","🔧","Servis & Usta","Servis, akü, lastik, ekspertiz")}
+${more794EmojiCard("seasonalPrepModal()","more795/winter.jpg","❄️","Mevsim Hazırlığı","Kış / yaz kontrolü")}
+${more794EmojiCard("nightDriveModal()","more795/night.jpg","🌙","Gece Sürüşü","Acil ve 24 saat hizmetler")}
+${more794EmojiCard("travelCenterModal()","more795/travel.jpg","🧳","Seyahat Merkezi","Otel, yemek, keşif, mola")}
+${more794EmojiCard("parkedSpotModal()","more795/parking.jpg","📍","Aracımı Bul","Park yerine geri dön")}
 </div>
 
 <div class="more794Section"><h2>Tüm Araç Hizmetleri</h2><small>Hiçbir özellik kaldırılmadı</small></div>
 <div class="more794Grid compact more794Mini">
-${more794Card("driveCenterModal()","r8ui/reports.jpg","navigation","Canlı Sürüş","GPS hız + yakın yerler")}
-${more794Card("emergencyModal()","r8ui/health.jpg","emergency","Acil Yardım",apEmergency()+' + kayıtlı acil kişiler')}
-${more794Card("nearbyRoadside()","r8ui/service.jpg","tow","Yol Yardım","Çekici ve oto kurtarıcı")}
-${more794Card("nearbyFuel()","r8ui/fuel_station.jpg","fuel","Yakın Benzinlik","Haritada en yakınları aç")}
-${more794Card("nearbyPharmacy()","r8ui/health.jpg","pharmacy","Yakın Eczane","Haritada eczaneler")}
-${more794Card("nearbyMosque()","r8ui/reports.jpg","mosque","Yakın Cami","Haritada camiler")}
-${more794Card("nearbyNotary()","r8ui/market.jpg","notary","Yakın Noter","Haritada noterler")}
-${more794Card("fuelMarketModal()","r8ui/fuel_station.jpg","fuelrise","Akaryakıt Zam","Yaklaşan zam haberleri")}
-${more794Card("purchaseChecklistModal()","r8ui/service.jpg","shield","Alırken Kontrol","Kronik risk + ekspertiz")}
-${more794Card("specsModal()","r8ui/maintenance.jpg","settings","Teknik Özellikler","Motor, donanım, boyutlar")}
-${more794Card("nearbyInspection()","r8ui/service.jpg","inspection","Muayene","Yakındaki araç muayene noktaları")}
-${more794Card("nearbyCharging()","r8ui/fuel_station.jpg","charge","Şarj İstasyonu","Elektrikli araç şarj")}
-${more794Card("nearbyHospital()","r8ui/health.jpg","hospital","Yakın Hastane","Konumuna göre hastaneler")}
-${more794Card("nearbyHealthCenter()","r8ui/health.jpg","hospital","Sağlık Ocağı","Aile sağlığı merkezleri")}
-${more794Card("nearbyHotel()","r8ui/reports.jpg","hotel","Otel & Konaklama","Yakın oteller ve konaklama")}
-${more794Card("nearbyFood()","r8ui/reports.jpg","food","Yeme & İçme","Restoran, kafe, lezzet")}
-${more794Card("nearbyAttractions()","r8ui/reports.jpg","explore","Gezilecek Yerler","Tarihi ve turistik yerler")}
-${more794Card("nearbyParking()","r8ui/reports.jpg","parking","Yakın Otopark","Açık ve kapalı otopark")}
-${more794Card("nearbyRestArea()","r8ui/reports.jpg","rest","WC & Dinlenme","Dinlenme tesisi ve tuvalet")}
-${more794Card("nearbyTire()","r8ui/tire.jpg","tire","Lastikçi","Yakındaki lastikçiler")}
-${more794Card("nearbyAssembly()","r8ui/health.jpg","assembly","Toplanma Alanı","Afet toplanma noktaları")}
-${more794Card("nearbyATM()","r8ui/market.jpg","atm","Yakın ATM","Banka ve ATM noktaları")}
-${more794Card("nearbyMarket()","r8ui/market.jpg","market","Yakın Market","Market ve süpermarketler")}
-${more794Card("nearbyCarWash()","r8ui/service.jpg","carwash","Oto Yıkama","Yakındaki oto yıkamalar")}
-${more794Card("nearbyPark()","r8ui/reports.jpg","park","Park & Mesire","Park, piknik ve mesire")}
-${more794Card("nearbyDutyPharmacy()","r8ui/health.jpg","pharmacy","Nöbetçi Eczane","Haritada ara • saatleri kontrol et")}
-${more794Card("emergencyServicesModal()","r8ui/health.jpg","emergency","Acil Kurumlar","112 • polis • jandarma • itfaiye")}
-${more794Card("nearbyAutoElectric()","r8ui/maintenance.jpg","battery","Oto Elektrik & Akücü","Elektrik, akü ve marş desteği")}
-${more794Card("nearbyExpertise()","r8ui/service.jpg","shield","Ekspertiz","Yakındaki oto ekspertizler")}
-${more794Card("nearbySpareParts()","r8ui/maintenance.jpg","wrench","Yedek Parça","Oto yedek parça mağazaları")}
-${more794Card("longTripModal()","r8ui/reports.jpg","road","Uzun Yol Asistanı","Kontrol, mola ve yol hazırlığı")}
+${more794Card("driveCenterModal()","more795/drive.jpg","navigation","Canlı Sürüş","GPS hız + yakın yerler")}
+${more794Card("emergencyModal()","more795/emergency.jpg","emergency","Acil Yardım",apEmergency()+' + kayıtlı acil kişiler')}
+${more794Card("nearbyRoadside()","more795/roadside.jpg","tow","Yol Yardım","Çekici ve oto kurtarıcı")}
+${more794Card("nearbyFuel()","more795/fuel.jpg","fuel","Yakın Benzinlik","Haritada en yakınları aç")}
+${more794Card("nearbyPharmacy()","more795/pharmacy.jpg","pharmacy","Yakın Eczane","Haritada eczaneler")}
+${more794Card("nearbyMosque()","more795/mosque.jpg","mosque","Yakın Cami","Haritada camiler")}
+${more794Card("nearbyNotary()","more795/notary.jpg","notary","Yakın Noter","Haritada noterler")}
+${more794Card("fuelMarketModal()","more795/fuelprice.jpg","fuelrise","Akaryakıt Zam","Yaklaşan zam haberleri")}
+${more794Card("purchaseChecklistModal()","more795/expertise.jpg","shield","Alırken Kontrol","Kronik risk + ekspertiz")}
+${more794Card("specsModal()","more795/engine.jpg","settings","Teknik Özellikler","Motor, donanım, boyutlar")}
+${more794Card("nearbyInspection()","more795/inspection.jpg","inspection","Muayene","Yakındaki araç muayene noktaları")}
+${more794Card("nearbyCharging()","more795/charging.jpg","charge","Şarj İstasyonu","Elektrikli araç şarj")}
+${more794Card("nearbyHospital()","more795/hospital.jpg","hospital","Yakın Hastane","Konumuna göre hastaneler")}
+${more794Card("nearbyHealthCenter()","more795/healthcenter.jpg","hospital","Sağlık Ocağı","Aile sağlığı merkezleri")}
+${more794Card("nearbyHotel()","more795/hotel.jpg","hotel","Otel & Konaklama","Yakın oteller ve konaklama")}
+${more794Card("nearbyFood()","more795/restaurant.jpg","food","Yeme & İçme","Restoran, kafe, lezzet")}
+${more794Card("nearbyAttractions()","more795/attraction.jpg","explore","Gezilecek Yerler","Tarihi ve turistik yerler")}
+${more794Card("nearbyParking()","more795/parkinggarage.jpg","parking","Yakın Otopark","Açık ve kapalı otopark")}
+${more794Card("nearbyRestArea()","more795/restarea.jpg","rest","WC & Dinlenme","Dinlenme tesisi ve tuvalet")}
+${more794Card("nearbyTire()","more795/tire.jpg","tire","Lastikçi","Yakındaki lastikçiler")}
+${more794Card("nearbyAssembly()","more795/assembly.jpg","assembly","Toplanma Alanı","Afet toplanma noktaları")}
+${more794Card("nearbyATM()","more795/atm.jpg","atm","Yakın ATM","Banka ve ATM noktaları")}
+${more794Card("nearbyMarket()","more795/supermarket.jpg","market","Yakın Market","Market ve süpermarketler")}
+${more794Card("nearbyCarWash()","more795/carwash.jpg","carwash","Oto Yıkama","Yakındaki oto yıkamalar")}
+${more794Card("nearbyPark()","more795/park.jpg","park","Park & Mesire","Park, piknik ve mesire")}
+${more794Card("nearbyDutyPharmacy()","more795/pharmacy.jpg","pharmacy","Nöbetçi Eczane","Haritada ara • saatleri kontrol et")}
+${more794Card("emergencyServicesModal()","more795/emergency.jpg","emergency","Acil Kurumlar","112 • polis • jandarma • itfaiye")}
+${more794Card("nearbyAutoElectric()","more795/battery.jpg","battery","Oto Elektrik & Akücü","Elektrik, akü ve marş desteği")}
+${more794Card("nearbyExpertise()","more795/expertise.jpg","shield","Ekspertiz","Yakındaki oto ekspertizler")}
+${more794Card("nearbySpareParts()","more795/parts.jpg","wrench","Yedek Parça","Oto yedek parça mağazaları")}
+${more794Card("longTripModal()","more795/roadtrip.jpg","road","Uzun Yol Asistanı","Kontrol, mola ve yol hazırlığı")}
 </div>
 
 <div class="more794Section"><h2>Diğer Araç & Kayıt Araçları</h2><small>Tam özellik</small></div>
 <div class="more794Grid compact more794Mini more794Tools">
-${more794Card("refreshLiveData()","r8ui/reports.jpg","refresh","Canlı Verileri Yenile","Güncel verileri tekrar al")}
-${more794Card("refreshAllVehicleSpecs(true)","r8ui/maintenance.jpg","car","Araçları Yenile","Teknik araç verilerini yenile")}
-${more794Card("compareVehicles()","r8ui/market.jpg","chart","Karşılaştırma","Araçları yan yana karşılaştır")}
-${more794Card("valuationModal()","r8ui/market.jpg","value","Değer Geçmişi","Piyasa değer değişimini gör")}
-${more794Card("batteryModal()","r8ui/maintenance.jpg","battery","Akü Takibi","Akü durum ve geçmişi")}
-${more794Card("accidentModal()","r8ui/service.jpg","shield","Kaza / Hasar","Hasar ve onarım kayıtları")}
-${more794Card("routeCalculator()","r8ui/reports.jpg","road","Yol Maliyeti","Rota yakıt maliyetini hesapla")}
-${more794Card("documentsViewModal()","r8ui/market.jpg","document","Belge Kasası","Araç belgelerini görüntüle")}
-${more794Card("emergencyModal()","r8ui/health.jpg","emergency","Acil Durum","Acil yardım ve kişiler")}
-${more794Card("openSettings()","r8ui/maintenance.jpg","settings","Ayarlar","Uygulama tercihleri")}
-${more794Card("premiumPreview()","r8ui/market.jpg","star","Premium","Premium özellikleri görüntüle")}
-${more794Card("backupCloud()","r8ui/reports.jpg","cloud","Buluta Yedekle","Verilerini güvenle yedekle")}
+${more794Card("refreshLiveData()","more795/drive.jpg","refresh","Canlı Verileri Yenile","Güncel verileri tekrar al")}
+${more794Card("refreshAllVehicleSpecs(true)","more795/service.jpg","car","Araçları Yenile","Teknik araç verilerini yenile")}
+${more794Card("compareVehicles()","more795/market.jpg","chart","Karşılaştırma","Araçları yan yana karşılaştır")}
+${more794Card("valuationModal()","more795/market.jpg","value","Değer Geçmişi","Piyasa değer değişimini gör")}
+${more794Card("batteryModal()","more795/battery.jpg","battery","Akü Takibi","Akü durum ve geçmişi")}
+${more794Card("accidentModal()","more795/accident.jpg","shield","Kaza / Hasar","Hasar ve onarım kayıtları")}
+${more794Card("routeCalculator()","more795/roadtrip.jpg","road","Yol Maliyeti","Rota yakıt maliyetini hesapla")}
+${more794Card("documentsViewModal()","more795/documents.jpg","document","Belge Kasası","Araç belgelerini görüntüle")}
+${more794Card("emergencyModal()","more795/emergency.jpg","emergency","Acil Durum","Acil yardım ve kişiler")}
+${more794Card("openSettings()","more795/guide.jpg","settings","Ayarlar","Uygulama tercihleri")}
+${more794Card("premiumPreview()","more795/market.jpg","star","Premium","Premium özellikleri görüntüle")}
+${more794Card("backupCloud()","more795/backup.jpg","cloud","Buluta Yedekle","Verilerini güvenle yedekle")}
 </div>
 </div>`}
 
