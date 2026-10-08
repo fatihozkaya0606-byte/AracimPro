@@ -519,6 +519,100 @@ button.r8-card{width:100%;font:inherit}
   .r8-hero-copy{max-width:74%}
 }
 
+
+/* FULL PREMIUM V2 GLOBAL */
+body{
+  --bg:#030914!important;
+  --card:#071522!important;
+  --ink:#f4f8ff!important;
+  --muted:#95abc0!important;
+  --line:#173651!important;
+  --blue:#28a8ff!important;
+  background:#030914!important;
+  color:#f4f8ff!important;
+}
+.header{
+  background:linear-gradient(180deg,rgba(3,9,20,.985),rgba(4,13,25,.96))!important;
+  border-bottom:1px solid rgba(51,145,255,.16)!important;
+  box-shadow:0 18px 50px rgba(0,0,0,.28)!important;
+  backdrop-filter:blur(22px);
+}
+main{background:#030914!important}
+.card,.row,.quick,.reviewCard,.statusHero,.proPanel,.sumCard,.assistSummary .sumCard,
+.smartSvc,.suiteCard,.todayChip,.smartSearch,.smartLocation,.vehicleHeroCard,.marketMini,
+.moreCard,.officialGrid button,.proActionGrid button,.toggle,.field input,.field select,.field textarea{
+  background:linear-gradient(145deg,#071521,#081a2b)!important;
+  color:#f4f8ff!important;
+  border-color:#173651!important;
+  box-shadow:0 10px 28px rgba(0,0,0,.22)!important;
+}
+.row,.card,.quick,.reviewCard,.statusHero,.proPanel,.sumCard,.smartSvc,.suiteCard,.todayChip,
+.smartSearch,.smartLocation,.vehicleHeroCard,.marketMini,.moreCard,.officialGrid button,.proActionGrid button{
+  border-radius:20px!important;
+}
+button{transition:transform .12s ease,filter .12s ease}
+button:active{transform:scale(.985)}
+.nav{
+  background:rgba(3,10,19,.97)!important;
+  border-top:1px solid #153250!important;
+  box-shadow:0 -18px 45px rgba(0,0,0,.30)!important;
+  backdrop-filter:blur(22px)
+}
+.nav button{color:#8298ad!important}
+.nav button.active{color:#31a9ff!important;text-shadow:0 0 18px rgba(49,169,255,.45)}
+.sheet{
+  background:linear-gradient(180deg,#081522,#06111d)!important;
+  color:#f4f8ff!important;
+  border:1px solid #173651!important;
+  box-shadow:0 -18px 50px rgba(0,0,0,.45)!important
+}
+.overlay{background:rgba(0,5,12,.68)!important;backdrop-filter:blur(5px)}
+input,select,textarea{
+  background:#091a2a!important;
+  color:#f3f8ff!important;
+  border:1px solid #1b3b59!important;
+}
+.muted,.small,.hint,.rowMain span,.metric .label{color:#91a7bc!important}
+.sectionHead h2{color:#fff!important}
+.linkbtn{color:#3bafff!important}
+.tab{background:#091a2a!important;color:#9db1c5!important;border-color:#173651!important}
+.tab.active{background:linear-gradient(145deg,#1e9fff,#1675ed)!important;color:#fff!important}
+.primary{background:linear-gradient(145deg,#27a8ff,#176fe7)!important;box-shadow:0 10px 24px rgba(20,130,255,.25)!important}
+.secondary{background:#0c2840!important;color:#67c3ff!important;border:1px solid #1b4d73!important}
+.danger{background:#35141b!important;color:#ff8b9a!important;border:1px solid #6b2632!important}
+.chip{background:#0b2942!important;color:#89ccff!important;border:1px solid #1c5078!important}
+.chip.green{background:#0d3024!important;color:#6ce2a2!important;border-color:#1e6246!important}
+.chip.orange{background:#37280d!important;color:#ffc66d!important;border-color:#765319!important}
+.chip.red{background:#35151b!important;color:#ff929f!important;border-color:#6d2833!important}
+.fullv2-banner{
+  position:relative;overflow:hidden;margin:0 0 14px;border-radius:23px;min-height:138px;
+  border:1px solid #17486e;box-shadow:0 16px 36px rgba(0,0,0,.28);background:#06121e
+}
+.fullv2-banner img{width:100%;height:138px;object-fit:cover;display:block;filter:saturate(.92) contrast(1.05)}
+.fullv2-banner:after{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(2,9,17,.90),rgba(2,9,17,.24) 70%),
+             linear-gradient(0deg,rgba(3,11,20,.72),transparent 62%)
+}
+.fullv2-banner-copy{position:absolute;z-index:2;left:16px;right:16px;top:17px;color:#fff;max-width:74%}
+.fullv2-banner-copy b{display:block;font-size:22px;letter-spacing:-.5px}
+.fullv2-banner-copy small{display:block;margin-top:6px;color:#c1d5e7!important;line-height:1.35}
+.fullv2-badge{
+  position:absolute;z-index:3;right:10px;top:10px;background:rgba(3,12,22,.78);
+  border:1px solid rgba(255,255,255,.16);color:#d4e4f1;padding:5px 7px;border-radius:999px;
+  font-size:7px;font-weight:900;letter-spacing:.4px
+}
+.fullv2-more-photo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.fullv2-more-photo{
+  position:relative;overflow:hidden;min-height:135px;border-radius:19px;border:1px solid #173651;
+  background:#071522
+}
+.fullv2-more-photo img{width:100%;height:135px;object-fit:cover;display:block}
+.fullv2-more-photo:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(4,13,22,.92),rgba(4,13,22,.06) 70%)}
+.fullv2-more-photo span{position:absolute;z-index:2;left:11px;right:11px;bottom:10px;color:#fff;text-align:left}
+.fullv2-more-photo b{display:block;font-size:12px}.fullv2-more-photo small{display:block;font-size:8px;color:#b7cadd!important;margin-top:3px}
+@media(max-width:370px){.fullv2-more-photo-grid{grid-template-columns:1fr}}
+
 </style>
 
 <style id="aracimAiStyles">
@@ -564,7 +658,31 @@ function getLocalProfile(){try{return JSON.parse(localStorage.getItem(LOCAL_PROF
 function saveLocalProfile(o){localStorage.setItem(LOCAL_PROFILE_KEY,JSON.stringify(o||{}))}
 function getLocalComments(){try{const a=JSON.parse(localStorage.getItem(LOCAL_COMMENTS_KEY)||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
 function setLocalComments(a){localStorage.setItem(LOCAL_COMMENTS_KEY,JSON.stringify(a||[]))}
-function localProfileCreate(e){e.preventDefault();const f=new FormData(e.target),name=String(f.get('name')||'').trim(),email=String(f.get('email')||'').trim();if(name.length<2)return toast('Görünen ad en az 2 karakter olmalı');saveLocalProfile({uid:'local_'+Date.now(),name,email,createdAt:Date.now()});syncCommunityStatus();closeModal();render();toast('Cihaz profili oluşturuldu')}
+function localProfileCreate(e){e.preventDefault();const f=new FormData(e.target),name=String(f.get('name')||'').trim(),email=String(f.get('email')||'').trim();if(name.length<2)return toast('Görünen ad en az 2 karakter olmalı');saveLocalProfile({uid:'local_'+Date.now(),name,email,createdAt:Date.now()});
+/* FULL PREMIUM V2 VIEW WRAPPERS */
+function fullV2Banner(title,sub,img){
+  return `<div class="fullv2-banner"><span class="fullv2-badge">GERÇEK FOTOĞRAF</span><img src="${img}" alt="${esc(title)}"><div class="fullv2-banner-copy"><b>${esc(title)}</b><small>${esc(sub)}</small></div></div>`
+}
+const _fullv2GarageView=garageView;
+garageView=function(){return fullV2Banner('Araçlarım','Kayıtlı araçlarını premium garaj görünümünde yönet.','r8real/service.jpg')+_fullv2GarageView()}
+const _fullv2RecordsView=recordsView;
+recordsView=function(){return fullV2Banner('Kayıtlar','Yakıt, gider, yolculuk ve servis geçmişin tek yerde.','r8real/fuel.jpg')+_fullv2RecordsView()}
+const _fullv2PlanView=planView;
+planView=function(){return fullV2Banner('Bakım & Plan','Bakım, lastik ve akü işlemlerini premium görünümle takip et.','r8real/maintenance.jpg')+_fullv2PlanView()}
+const _fullv2ReportsView=reportsView;
+reportsView=function(){return fullV2Banner('Raporlar','Yakıt, masraf ve araç sağlığı verilerini analiz et.','r8real/market.jpg')+_fullv2ReportsView()}
+const _fullv2MoreView=moreView;
+moreView=function(){
+  const photoGrid=`<div class="fullv2-more-photo-grid">
+    <button class="fullv2-more-photo" onclick="nearbyFuel()"><img src="r8real/station.jpg"><span><b>Yakın Benzinlik</b><small>Gerçek istasyonları haritada aç</small></span></button>
+    <button class="fullv2-more-photo" onclick="nearbyService()"><img src="r8real/service.jpg"><span><b>Servis & Yol Yardım</b><small>Yakın servis ve yardım noktaları</small></span></button>
+    <button class="fullv2-more-photo" onclick="planTab='tires';go('plan');render()"><img src="r8real/tire.jpg"><span><b>Lastik Merkezi</b><small>Lastik kayıtları ve bakım</small></span></button>
+    <button class="fullv2-more-photo" onclick="go('records')"><img src="r8real/fuel.jpg"><span><b>Kayıt Merkezi</b><small>Yakıt, bakım ve gider geçmişi</small></span></button>
+  </div>`;
+  return fullV2Banner('Daha Fazla','Yakın yerler, servisler ve yardımcı araçlar.','r8real/service.jpg')+photoGrid+_fullv2MoreView()
+}
+
+syncCommunityStatus();closeModal();render();toast('Cihaz profili oluşturuldu')}
 function localProfileDelete(){if(!confirm('Bu cihazdaki profili silmek istiyor musun?'))return;localStorage.removeItem(LOCAL_PROFILE_KEY);syncCommunityStatus();closeModal();render();toast('Cihaz profili silindi')}
 
 function loadState(){let s;try{s=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){};if(!s)return structuredClone(initial);if(s.vehicle&&!s.vehicles){const id='v_'+uid();return {...initial,vehicles:[{id,...s.vehicle,photo:''}],activeVehicleId:id,fuel:(s.fuel||[]).map(x=>({...x,vehicleId:id})),maintenance:(s.maintenance||[]).map(x=>({...x,vehicleId:id})),prefs:{...initial.prefs,...(s.prefs||{}),firstRun:false}}}return {...initial,...s,valuations:s.valuations||[],batteries:s.batteries||[],accidents:s.accidents||[],marketChecks:s.marketChecks||[],fuelMarket:{...initial.fuelMarket,...(s.fuelMarket||{})},emergency:{...initial.emergency,...(s.emergency||{})},prefs:{...initial.prefs,...(s.prefs||{})}}}
