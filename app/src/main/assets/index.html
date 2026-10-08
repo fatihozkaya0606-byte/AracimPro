@@ -1587,6 +1587,83 @@ body:not(.dark) .apMarketCopy b{color:#10213c!important}
 body:not(.dark) .apMarketCopy small{color:#71869b!important}
 body:not(.dark) .apMarketRefresh{background:#eef6ff!important;border-color:#cbdfee!important;color:#1675ed!important}
 </style>
+<style id="aracimpro7102">
+/* 7.10.2 5SN KAYAR CANLI PİYASA */
+.apMarketStrip{
+  height:52px!important;
+  padding:4px 0 4px 6px!important;
+  gap:5px!important;
+  overflow:hidden!important;
+}
+.apMarketLive{
+  position:relative;z-index:5;
+  flex:0 0 50px!important;
+  height:42px!important;
+  justify-content:center!important;
+  pointer-events:none!important;
+  border-right:1px solid rgba(112,167,202,.20)!important;
+}
+.apMarketViewport{
+  position:relative;
+  flex:1;min-width:0;height:43px;
+  overflow:hidden!important;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 5%,#000 95%,transparent 100%);
+  mask-image:linear-gradient(90deg,transparent 0,#000 5%,#000 95%,transparent 100%);
+}
+.apMarketTrack{
+  position:absolute;left:0;top:0;
+  height:43px;
+  display:flex;
+  width:max-content;
+  animation:apMarketMarquee5 22s linear infinite;
+  will-change:transform;
+}
+.apMarketSet{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  height:43px;
+  padding-right:12px;
+}
+.apMarketItem{
+  display:flex!important;
+  align-items:center!important;
+  gap:5px!important;
+  min-width:118px!important;
+  height:43px!important;
+  padding:4px 4px!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  color:inherit!important;
+}
+.apMarketIco{font-size:15px!important}
+.apMarketCopy small{font-size:7px!important}
+.apMarketCopy b{font-size:10.5px!important}
+.apMarketItem>small{font-size:6.8px!important}
+.apMarketRefresh,.apMarketAge{display:none!important}
+@keyframes apMarketMarquee5{
+  from{transform:translate3d(0,0,0)}
+  to{transform:translate3d(-50%,0,0)}
+}
+.marketAutoBadge{
+  display:flex;align-items:center;gap:5px;
+  padding:7px 9px;border-radius:999px;
+  background:rgba(38,199,129,.10);
+  border:1px solid rgba(38,199,129,.28);
+  color:#20ad70;font-size:7px;font-weight:950;
+}
+.marketAutoBadge i{
+  width:6px;height:6px;border-radius:50%;
+  background:#28ce84;
+  box-shadow:0 0 8px rgba(40,206,132,.75);
+}
+body:not(.dark) .apMarketLive{
+  background:rgba(255,255,255,.96)!important;
+  border-right-color:#dce7f0!important;
+}
+body:not(.dark) .apMarketItem{background:transparent!important}
+</style>
 </head>
 <body>
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
@@ -2383,27 +2460,31 @@ function marketTickerStripHtml(){
   const a=Array.isArray(d.items)?d.items:[];
   const by={};
   a.forEach(x=>by[x.key]=x);
+
   const defs=[
     ['usd','💵','Dolar'],
     ['eur','💶','Euro'],
     ['gold','🟡','Gram Altın'],
     ['bist','📈','BIST 100']
   ];
-  const age=d.updatedAt?Math.max(0,Math.floor((Date.now()-Number(d.updatedAt))/60000)):null;
-  return `<div class="apMarketStrip" id="apMarketStrip">
-    <button class="apMarketLive" onclick="marketTickerModal()"><i></i><span>CANLI</span></button>
-    <div class="apMarketScroll">
-      ${defs.map(([key,ico,label])=>{
-        const x=by[key]||{key,label};
-        return `<button class="apMarketItem" onclick="marketTickerModal()">
-          <span class="apMarketIco">${ico}</span>
-          <span class="apMarketCopy"><small>${label}</small><b>${apMarketFmt(x)}</b></span>
-          ${apMarketChange(x)}
-        </button>`;
-      }).join('')}
+
+  const itemHtml=defs.map(([key,icon,label])=>{
+    const x=by[key]||{key,label};
+    return `<span class="apMarketItem">
+      <span class="apMarketIco">${icon}</span>
+      <span class="apMarketCopy"><small>${label}</small><b>${apMarketFmt(x)}</b></span>
+      ${apMarketChange(x)}
+    </span>`;
+  }).join('');
+
+  return `<div class="apMarketStrip" id="apMarketStrip" onclick="marketTickerModal()">
+    <div class="apMarketLive"><i></i><span>CANLI</span></div>
+    <div class="apMarketViewport">
+      <div class="apMarketTrack">
+        <div class="apMarketSet">${itemHtml}</div>
+        <div class="apMarketSet" aria-hidden="true">${itemHtml}</div>
+      </div>
     </div>
-    <button class="apMarketRefresh" onclick="refreshMarketTicker(true)" title="Piyasayı Yenile">↻</button>
-    <span class="apMarketAge">${age===null?'':age<1?'şimdi':age+' dk'}</span>
   </div>`;
 }
 function refreshMarketStripDom(){
@@ -2419,17 +2500,22 @@ function refreshMarketTicker(showToast=false){
   if(showToast)toast('Canlı piyasa yenileniyor…');
   try{Android.fetchMarketTicker()}
   catch(e){apMarketTickerBusy=false;if(showToast)toast('Piyasa servisine erişilemiyor')}
-  setTimeout(()=>{apMarketTickerBusy=false},15000);
+  setTimeout(()=>{apMarketTickerBusy=false},4500);
 }
 function startMarketTickerAuto(){
   clearInterval(apMarketTickerTimer);
-  const d=state.prefs.marketTicker||{};
-  if(!d.updatedAt || Date.now()-Number(d.updatedAt)>60000){
-    setTimeout(()=>refreshMarketTicker(false),250);
-  }
-  apMarketTickerTimer=setInterval(()=>{
+
+  // Header çizildikten hemen sonra ilk sorgu.
+  setTimeout(()=>{
     if(document.visibilityState==='visible')refreshMarketTicker(false);
-  },60000);
+  },150);
+
+  // Uygulama ön plandayken 5 saniyede bir otomatik sorgu.
+  apMarketTickerTimer=setInterval(()=>{
+    if(document.visibilityState==='visible' && !apMarketTickerBusy){
+      refreshMarketTicker(false);
+    }
+  },5000);
 }
 window.onMarketTickerResult=(payload,error)=>{
   apMarketTickerBusy=false;
@@ -2447,8 +2533,8 @@ function marketTickerModal(){
   const a=Array.isArray(d.items)?d.items:[];
   modal('Canlı Piyasa',`
     <div class="marketModalHead">
-      <div><b>💹 Canlı Piyasa</b><small>${d.updatedAt?new Date(Number(d.updatedAt)).toLocaleTimeString('tr-TR'):'Henüz veri yok'}</small></div>
-      <button class="secondary" onclick="refreshMarketTicker(true)">Yenile</button>
+      <div><b>💹 Canlı Piyasa</b><small>${d.updatedAt?new Date(Number(d.updatedAt)).toLocaleTimeString('tr-TR'):'Henüz veri yok'} • otomatik</small></div>
+      <span class="marketAutoBadge"><i></i> 5 SN</span>
     </div>
     <div class="marketModalGrid">
       ${a.length?a.map(x=>`<div class="marketModalCard">
