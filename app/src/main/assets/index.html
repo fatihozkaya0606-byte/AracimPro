@@ -1523,6 +1523,70 @@ body.r8MoreMode .more796Section{margin-top:14px!important}
 .fuelInfoNote b{display:block;font-size:10px}
 .fuelInfoNote span{display:block;color:var(--muted);font-size:8px;line-height:1.4;margin-top:3px}
 </style>
+<style id="aracimpro7100">
+/* 7.10.0 CANLI PİYASA */
+.apMarketStrip{
+  position:relative;display:flex;align-items:center;gap:5px;
+  margin:7px 0 2px;padding:5px 5px 5px 6px;border-radius:15px;
+  background:linear-gradient(135deg,rgba(8,24,40,.96),rgba(5,16,28,.96));
+  border:1px solid #173a55;box-shadow:0 7px 20px rgba(0,0,0,.18);
+  overflow:hidden
+}
+.apMarketLive{
+  flex:0 0 auto;display:flex;align-items:center;gap:4px;border:0;background:transparent;
+  color:#42d694;font-size:7px;font-weight:950;padding:4px
+}
+.apMarketLive i{
+  width:6px;height:6px;border-radius:50%;background:#29d88b;
+  box-shadow:0 0 9px rgba(41,216,139,.8)
+}
+.apMarketScroll{
+  display:flex;gap:5px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0
+}
+.apMarketScroll::-webkit-scrollbar{display:none}
+.apMarketItem{
+  flex:0 0 auto;min-width:102px;height:43px;display:flex;align-items:center;gap:5px;
+  padding:5px 7px;border-radius:11px;border:1px solid #173b57;background:#091a2a;color:#fff;text-align:left
+}
+.apMarketIco{font-size:15px}
+.apMarketCopy{display:flex;flex-direction:column;line-height:1.05}
+.apMarketCopy small{font-size:6.7px;color:#89a2b8;margin-bottom:3px}
+.apMarketCopy b{font-size:10px;color:#f5f9ff;white-space:nowrap}
+.apMarketItem>small{font-size:6.5px;font-weight:900;margin-left:auto;white-space:nowrap}
+.apMarketItem>small.up{color:#34d38b}
+.apMarketItem>small.down{color:#ff6f7c}
+.apMarketItem>small.flat{color:#8ea4b8}
+.apMarketRefresh{
+  flex:0 0 auto;width:27px;height:27px;border-radius:9px;border:1px solid #1c4b70;
+  background:#0a2034;color:#48baff;font-size:16px
+}
+.apMarketAge{position:absolute;right:7px;bottom:1px;font-size:5.7px;color:#617b91}
+.marketModalHead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.marketModalHead b{display:block;font-size:15px}
+.marketModalHead small{display:block;color:var(--muted);font-size:8px;margin-top:3px}
+.marketModalGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.marketModalCard{
+  padding:12px;border-radius:16px;background:var(--card);border:1px solid var(--line);
+  box-shadow:var(--shadow)
+}
+.marketModalCard span{display:block;color:var(--muted);font-size:8px}
+.marketModalCard b{display:block;font-size:17px;margin-top:5px}
+.marketModalCard small{display:block;margin-top:4px;font-size:8px;font-weight:900}
+.marketModalCard small.up{color:#25b976}
+.marketModalCard small.down{color:#e85969}
+.marketModalCard small.flat{color:var(--muted)}
+
+body:not(.dark) .apMarketStrip{
+  background:rgba(255,255,255,.97)!important;border-color:#d5e2ee!important;
+  box-shadow:0 7px 20px rgba(30,70,112,.08)!important
+}
+body:not(.dark) .apMarketItem{
+  background:#f7faff!important;border-color:#d8e5f0!important;color:#10213c!important
+}
+body:not(.dark) .apMarketCopy b{color:#10213c!important}
+body:not(.dark) .apMarketCopy small{color:#71869b!important}
+body:not(.dark) .apMarketRefresh{background:#eef6ff!important;border-color:#cbdfee!important;color:#1675ed!important}
+</style>
 </head>
 <body>
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
@@ -2296,6 +2360,108 @@ function apHeaderStatusHtml(){
 }
 
 function toggleThemeQuick(){state.prefs.dark=!state.prefs.dark;save()}
+
+let apMarketTickerTimer=0;
+let apMarketTickerBusy=false;
+
+function apMarketFmt(item){
+  const n=Number(item?.price||0);
+  if(!n)return '—';
+  if(item.key==='bist')return n.toLocaleString('tr-TR',{maximumFractionDigits:0});
+  if(item.key==='gold')return n.toLocaleString('tr-TR',{minimumFractionDigits:0,maximumFractionDigits:0})+' ₺';
+  return n.toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₺';
+}
+function apMarketChange(item){
+  const n=Number(item?.change||0);
+  if(!Number.isFinite(n))return '';
+  const cls=n>0?'up':n<0?'down':'flat';
+  const arrow=n>0?'▲':n<0?'▼':'•';
+  return `<small class="${cls}">${arrow} ${Math.abs(n).toFixed(2)}%</small>`;
+}
+function marketTickerStripHtml(){
+  const d=state.prefs.marketTicker||{};
+  const a=Array.isArray(d.items)?d.items:[];
+  const by={};
+  a.forEach(x=>by[x.key]=x);
+  const defs=[
+    ['usd','💵','Dolar'],
+    ['eur','💶','Euro'],
+    ['gold','🟡','Gram Altın'],
+    ['bist','📈','BIST 100']
+  ];
+  const age=d.updatedAt?Math.max(0,Math.floor((Date.now()-Number(d.updatedAt))/60000)):null;
+  return `<div class="apMarketStrip" id="apMarketStrip">
+    <button class="apMarketLive" onclick="marketTickerModal()"><i></i><span>CANLI</span></button>
+    <div class="apMarketScroll">
+      ${defs.map(([key,ico,label])=>{
+        const x=by[key]||{key,label};
+        return `<button class="apMarketItem" onclick="marketTickerModal()">
+          <span class="apMarketIco">${ico}</span>
+          <span class="apMarketCopy"><small>${label}</small><b>${apMarketFmt(x)}</b></span>
+          ${apMarketChange(x)}
+        </button>`;
+      }).join('')}
+    </div>
+    <button class="apMarketRefresh" onclick="refreshMarketTicker(true)" title="Piyasayı Yenile">↻</button>
+    <span class="apMarketAge">${age===null?'':age<1?'şimdi':age+' dk'}</span>
+  </div>`;
+}
+function refreshMarketStripDom(){
+  const old=document.getElementById('apMarketStrip');
+  if(!old)return;
+  const holder=document.createElement('div');
+  holder.innerHTML=marketTickerStripHtml();
+  old.replaceWith(holder.firstElementChild);
+}
+function refreshMarketTicker(showToast=false){
+  if(apMarketTickerBusy)return;
+  apMarketTickerBusy=true;
+  if(showToast)toast('Canlı piyasa yenileniyor…');
+  try{Android.fetchMarketTicker()}
+  catch(e){apMarketTickerBusy=false;if(showToast)toast('Piyasa servisine erişilemiyor')}
+  setTimeout(()=>{apMarketTickerBusy=false},15000);
+}
+function startMarketTickerAuto(){
+  clearInterval(apMarketTickerTimer);
+  const d=state.prefs.marketTicker||{};
+  if(!d.updatedAt || Date.now()-Number(d.updatedAt)>60000){
+    setTimeout(()=>refreshMarketTicker(false),250);
+  }
+  apMarketTickerTimer=setInterval(()=>{
+    if(document.visibilityState==='visible')refreshMarketTicker(false);
+  },60000);
+}
+window.onMarketTickerResult=(payload,error)=>{
+  apMarketTickerBusy=false;
+  let d={};
+  try{d=JSON.parse(payload||'{}')}catch(e){}
+  if(d&&Array.isArray(d.items)&&d.items.length){
+    state.prefs.marketTicker=d;
+    localStorage.setItem(KEY,JSON.stringify(state));
+    refreshMarketStripDom();
+  }
+  if(error)console.log('marketTicker',error);
+};
+function marketTickerModal(){
+  const d=state.prefs.marketTicker||{};
+  const a=Array.isArray(d.items)?d.items:[];
+  modal('Canlı Piyasa',`
+    <div class="marketModalHead">
+      <div><b>💹 Canlı Piyasa</b><small>${d.updatedAt?new Date(Number(d.updatedAt)).toLocaleTimeString('tr-TR'):'Henüz veri yok'}</small></div>
+      <button class="secondary" onclick="refreshMarketTicker(true)">Yenile</button>
+    </div>
+    <div class="marketModalGrid">
+      ${a.length?a.map(x=>`<div class="marketModalCard">
+        <span>${esc(x.label||'')}</span>
+        <b>${apMarketFmt(x)}</b>
+        ${apMarketChange(x)}
+      </div>`).join(''):`<div class="notice">Piyasa verisi yükleniyor…</div>`}
+    </div>
+    <div class="hint" style="margin-top:10px">Kaynak: ${esc(d.source||'Piyasa veri sağlayıcısı')}. Veriler kısa süre gecikmeli olabilir. Gram altın, ons altın ve Dolar/TL üzerinden yaklaşık hesaplanır.</div>
+  `);
+  if(!a.length)setTimeout(()=>refreshMarketTicker(false),100);
+}
+
 function header(){
   const v=activeVehicle(),u=communityAuthState,a=smartAlertItems(),country=countryFlag();
   const vehicleName=v?`${v.year||''} ${v.make||''} ${v.model||''}`.trim():'Araç ekle';
@@ -2325,6 +2491,8 @@ function header(){
         </div>
       </div>
     </div>
+
+    ${marketTickerStripHtml()}
 
     <div class="apUtilityRow">
       <button class="apUtilityPill" onclick="languageModal()">${country}<span>${countryName()}</span></button>
@@ -2375,7 +2543,7 @@ window.appBack=function(){
   }
   return false;
 }
-function render(){document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);if(current==='home')setTimeout(loadHomeWeather,350)}
+function render(){document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);if(current==='home'){setTimeout(loadHomeWeather,350);setTimeout(ensureHomeFuelPrices,850)}}
 function view(){if(!activeVehicle()&&current!=='garage'&&current!=='more')return welcome();return ({home:homeView,garage:garageView,records:recordsView,plan:planView,reports:reportsView,more:moreView}[current]||homeView)()}
 function welcome(){return `<div class="card empty"><div class="big" style="display:grid;place-items:center;color:var(--blue)">${ico('car')}</div><h3>Garajın henüz boş</h3><p class="muted">Yıl → marka → model → kasa → motor → paket adım adım seçilir; marka, model, motor ve paketler A-Z sıralıdır. Yazmak yerine seçeneklerden ilerlersin; internet varsa katalog genişletilir ve gerçek araç fotoğrafı aranır.</p><button class="primary" onclick="openVehicle()">Aracımı Ekle</button></div>`}
 function vehicleDistance(){const v=activeVehicle();if(!v)return 0;const kms=[...(vf(state.fuel).map(x=>+x.km||0)),...(vf(state.services).map(x=>+x.km||0)),...(vf(state.trips).flatMap(x=>[+x.startKm||0,+x.endKm||0]))].filter(Boolean);if(!kms.length)return v.km||0;return Math.max(...kms)-Math.min(...kms)}
@@ -2439,6 +2607,43 @@ function travelCenterModal(){modal('Seyahat Merkezi',`<div class="officialGrid">
 
 function smartSvc(action,icon,title,subtitle,soft){return `<button class="smartSvc" onclick="${action}" style="--soft:${soft}"><span class="si">${ico(icon)}</span><b>${title}</b><small>${subtitle}</small></button>`}
 
+
+let apHomeFuelAutoBusy=false;
+let apHomeFuelAutoLast=0;
+
+function homeFuelSummary(){
+  const d=state.prefs.nearbyFuelPrices||{};
+  const rows=Array.isArray(d.brands)?d.brands:[];
+  const min=(key)=>{
+    const a=rows.map(x=>Number(x?.[key]||0)).filter(x=>x>0);
+    return a.length?Math.min(...a):0;
+  };
+  if(rows.length){
+    return {
+      city:[d.district,d.city].filter(Boolean).join(' / ')||d.city||'Konum',
+      gasoline:min('gasoline'),
+      diesel:min('diesel'),
+      lpg:min('lpg'),
+      updatedAt:Number(d.updatedAt||0),
+      source:'Konumuna göre'
+    };
+  }
+  return state.fuelMarket||{};
+}
+
+function ensureHomeFuelPrices(){
+  if(current!=='home'||apHomeFuelAutoBusy)return;
+  const now=Date.now();
+  const nearby=state.prefs.nearbyFuelPrices||{};
+  if(Number(nearby.updatedAt||0)>0 && now-Number(nearby.updatedAt)<15*60*1000)return;
+  if(now-apHomeFuelAutoLast<12000)return;
+  apHomeFuelAutoBusy=true;
+  apHomeFuelAutoLast=now;
+  try{Android.fetchNearbyFuelPricesAuto()}
+  catch(e){apHomeFuelAutoBusy=false}
+  setTimeout(()=>{apHomeFuelAutoBusy=false},18000);
+}
+
 function ensureRef791VehiclePhoto(){
   const v=activeVehicle();
   if(!v||v.photo||!v.make||!v.model)return;
@@ -2451,7 +2656,7 @@ function ensureRef791VehiclePhoto(){
 
 function homeView(){const v=activeVehicle();if(!v)return welcome();
 setTimeout(ensureRef791VehiclePhoto,120);
-const value=currentValuation(),h=vehicleHealthScore(),due=upcoming().slice(0,2),fuels=vf(state.fuel||[]).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))),fm=state.fuelMarket||{};
+const value=currentValuation(),h=vehicleHealthScore(),due=upcoming().slice(0,2),fuels=vf(state.fuel||[]).sort((a,b)=>String(a.date||'').localeCompare(String(b.date||''))),fm=homeFuelSummary();
 let avg=fuelRangeData().cons||0;
 if(fuels.length>1){const dist=(+fuels.at(-1).km||0)-(+fuels[0].km||0),lit=fuels.slice(1).reduce((t,x)=>t+(+x.liters||0),0);if(dist>0&&lit>0)avg=lit/dist*100}
 const fuelSpent=sum(fuels),tireCount=vf(state.tires||[]).length,d1=due[0],d2=due[1];
@@ -3669,15 +3874,31 @@ function refreshNearbyFuelPrices(showToast=true){
 }
 window.onNearbyFuelPricesResult=(payload,error)=>{
   apNearbyFuelPriceLoading=false;
+  apHomeFuelAutoBusy=false;
   let d={};
   try{d=JSON.parse(payload||'{}')}catch(e){}
   if(d&&Array.isArray(d.brands)&&d.brands.length){
     state.prefs.nearbyFuelPrices=d;
+    const min=(key)=>{
+      const a=d.brands.map(x=>Number(x?.[key]||0)).filter(x=>x>0);
+      return a.length?Math.min(...a):0;
+    };
+    state.fuelMarket={
+      ...initial.fuelMarket,
+      ...(state.fuelMarket||{}),
+      city:[d.district,d.city].filter(Boolean).join(' / ')||d.city||'Konum',
+      gasoline:min('gasoline'),
+      diesel:min('diesel'),
+      lpg:min('lpg'),
+      updatedAt:Number(d.updatedAt||Date.now()),
+      source:'Konuma göre'
+    };
     if(d.city)state.prefs.fuelCity=d.city;
     localStorage.setItem(KEY,JSON.stringify(state));
   }
   if(error)toast(error);
-  if(document.getElementById('modalRoot')?.innerHTML)fuelPricesModal(false);
+  if(current==='home')render();
+  else if(document.getElementById('modalRoot')?.innerHTML)fuelPricesModal(false);
 };
 
 function fuelMarketModal(force=false){const f=state.fuelMarket||{};modal('Akaryakıt Zam Takibi',`<div id="fuelMarketModalMarker" class="card fuelBanner" style="margin:0"><div style="display:flex;justify-content:space-between;gap:8px"><div><b>Yaklaşan akaryakıt zamları</b><div class="muted small">${f.updatedAt?new Date(+f.updatedAt).toLocaleString(apLocale()):'Henüz kontrol edilmedi'} • Haber taraması</div></div><button class="secondary" onclick="refreshFuelDashboard(true)" style="background:#fff">Kontrol et</button></div></div><div class="sectionHead"><h2>Son Zam Haberleri</h2><span class="sourceBadge">Haber akışı</span></div>${f.news?.length?`<div class="card">${f.news.map(n=>`<div class="newsRow" onclick="openNews('${esc(n.link||'')}')"><b>${esc(n.title)}</b><div class="muted small">${esc(n.pubDate||'')}</div></div>`).join('')}</div>`:`<div class="notice">Yeni zam haberi bulunamadı. “Kontrol et”e bas.</div>`}<div class="card" style="margin-top:12px"><label class="toggle"><span><b>Zam haberi bildirimi</b><div class="muted small">Uygulama kapalıyken yaklaşık 6 saatte bir kontrol eder; yeni zam haberi varsa bildirir.</div></span><input type="checkbox" ${state.prefs.fuelAlertsEnabled?'checked':''} onchange="toggleFuelAlerts(this.checked)"></label><div class="hint" style="margin-top:10px">Canlı pompa fiyatı gösterilmez. Yalnızca yaklaşan zam haberleri takip edilir.</div></div>${force?`<div class="notice" style="margin-top:12px">Haberler kontrol ediliyor…</div>`:''}`);if(force)refreshFuelDashboard(false)}

@@ -1604,6 +1604,10 @@ private void showLaunchSplash() {
             runOnUiThread(MainActivity.this::requestFuelPricesNative);
         }
 
+        @JavascriptInterface public void fetchMarketTicker() {
+            fetchMarketTickerNative();
+        }
+
         @JavascriptInterface public void fetchWeatherAuto() {
             runOnUiThread(MainActivity.this::requestWeatherNative);
         }
@@ -2489,6 +2493,139 @@ private void showLaunchSplash() {
                 );
             }
         });
+    }
+
+
+
+    private void fetchMarketTickerNative() {
+        new Thread(() -> {
+            JSONObject out = new JSONObject();
+            String error = "";
+            try {
+                JSONObject usd = fetchYahooMarketQuote("USDTRY=X");
+                JSONObject eur = fetchYahooMarketQuote("EURTRY=X");
+                JSONObject goldOz = fetchYahooMarketQuote("GC=F");
+                JSONObject bist = fetchYahooMarketQuote("XU100.IS");
+
+                double usdPrice = usd.optDouble("price", 0d);
+                double goldOzUsd = goldOz.optDouble("price", 0d);
+                double gramGold = (usdPrice > 0d && goldOzUsd > 0d)
+                        ? (goldOzUsd * usdPrice / 31.1034768d)
+                        : 0d;
+
+                double usdChange = usd.optDouble("change", 0d);
+                double goldChange = goldOz.optDouble("change", 0d);
+                double gramChange =
+                        (((1d + usdChange / 100d) * (1d + goldChange / 100d)) - 1d) * 100d;
+
+                JSONArray items = new JSONArray();
+
+                JSONObject a = new JSONObject();
+                a.put("key", "usd");
+                a.put("label", "Dolar");
+                a.put("symbol", "$");
+                a.put("price", usdPrice);
+                a.put("change", usdChange);
+                a.put("suffix", "₺");
+                items.put(a);
+
+                JSONObject b = new JSONObject();
+                b.put("key", "eur");
+                b.put("label", "Euro");
+                b.put("symbol", "€");
+                b.put("price", eur.optDouble("price", 0d));
+                b.put("change", eur.optDouble("change", 0d));
+                b.put("suffix", "₺");
+                items.put(b);
+
+                JSONObject g = new JSONObject();
+                g.put("key", "gold");
+                g.put("label", "Gram Altın");
+                g.put("symbol", "●");
+                g.put("price", gramGold);
+                g.put("change", gramChange);
+                g.put("suffix", "₺");
+                items.put(g);
+
+                JSONObject x = new JSONObject();
+                x.put("key", "bist");
+                x.put("label", "BIST 100");
+                x.put("symbol", "📈");
+                x.put("price", bist.optDouble("price", 0d));
+                x.put("change", bist.optDouble("change", 0d));
+                x.put("suffix", "");
+                items.put(x);
+
+                out.put("items", items);
+                out.put("updatedAt", System.currentTimeMillis());
+                out.put("source", "Yahoo Finance piyasa verisi");
+                out.put("note", "Veriler piyasa sağlayıcısına göre kısa süre gecikmeli olabilir.");
+            } catch (Exception e) {
+                error = e.getMessage() == null ? "Piyasa verisi alınamadı" : e.getMessage();
+            }
+
+            final String payload = out.toString();
+            final String err = error;
+            runOnUiThread(() -> {
+                if (webView != null) {
+                    webView.evaluateJavascript(
+                            "window.onMarketTickerResult && window.onMarketTickerResult(" +
+                                    JSONObject.quote(payload) + "," + JSONObject.quote(err) + ")",
+                            null
+                    );
+                }
+            });
+        }).start();
+    }
+
+    private JSONObject fetchYahooMarketQuote(String symbol) throws Exception {
+        String url = "https://query1.finance.yahoo.com/v8/finance/chart/" +
+                URLEncoder.encode(symbol, "UTF-8") +
+                "?interval=1m&range=1d";
+
+        HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+        c.setConnectTimeout(8000);
+        c.setReadTimeout(10000);
+        c.setRequestProperty("User-Agent", "Mozilla/5.0 AracimPro/7.10 Android");
+        c.setRequestProperty("Accept", "application/json");
+
+        int code = c.getResponseCode();
+        InputStream stream = code >= 200 && code < 300 ? c.getInputStream() : c.getErrorStream();
+        if (stream == null) throw new IllegalStateException("Piyasa servisi yanıt vermedi");
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+        StringBuilder raw = new StringBuilder();
+        String line;
+        while ((line = br.readLine()) != null) raw.append(line);
+        br.close();
+        c.disconnect();
+
+        if (code < 200 || code >= 300)
+            throw new IllegalStateException("Piyasa servisi HTTP " + code);
+
+        JSONObject root = new JSONObject(raw.toString());
+        JSONObject chart = root.optJSONObject("chart");
+        JSONArray result = chart == null ? null : chart.optJSONArray("result");
+        if (result == null || result.length() == 0)
+            throw new IllegalStateException("Piyasa verisi bulunamadı: " + symbol);
+
+        JSONObject item = result.optJSONObject(0);
+        JSONObject meta = item == null ? null : item.optJSONObject("meta");
+        if (meta == null) throw new IllegalStateException("Piyasa meta verisi eksik");
+
+        double price = meta.optDouble("regularMarketPrice", 0d);
+        if (price <= 0d) price = meta.optDouble("previousClose", 0d);
+
+        double prev = meta.optDouble("chartPreviousClose", 0d);
+        if (prev <= 0d) prev = meta.optDouble("previousClose", 0d);
+
+        double change = (price > 0d && prev > 0d) ? ((price - prev) / prev * 100d) : 0d;
+
+        JSONObject out = new JSONObject();
+        out.put("price", price);
+        out.put("previous", prev);
+        out.put("change", change);
+        return out;
     }
 
 
