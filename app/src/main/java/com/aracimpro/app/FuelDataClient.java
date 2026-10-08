@@ -273,6 +273,228 @@ public final class FuelDataClient {
         return arr;
     }
 
+
+    /**
+     * Konuma göre marka/bölge yakıt fiyatlarını toplar.
+     *
+     * Kaynaklar:
+     * - Petrol Ofisi resmi il/ilçe fiyat sayfası
+     * - Lukoil Türkiye resmi il/ilçe fiyat sayfası
+     * - Opet resmi fiyat sayfası (sunucu tarafında fiyat dönerse)
+     * - EPDK il bazlı bayi fiyatı resmi XML servisi
+     *
+     * Not: Marka sayfalarındaki rakamlar tavsiye/bölge fiyatı olabilir.
+     * Nihai pompa fiyatı istasyonun ticari kararına göre farklılaşabilir.
+     */
+    public static JSONObject fetchNearbyBrandPrices(String city, String district) throws Exception {
+        String c = city == null ? "" : city.trim();
+        String d = district == null ? "" : district.trim();
+        if (c.isEmpty()) throw new IllegalArgumentException("Konumdan il bilgisi alınamadı");
+
+        JSONObject out = new JSONObject();
+        JSONArray brands = new JSONArray();
+        JSONArray warnings = new JSONArray();
+
+        try {
+            JSONObject po = fetchPetrolOfisiDistrictPrices(c, d);
+            if (po != null) brands.put(po);
+        } catch (Exception e) {
+            warnings.put("Petrol Ofisi: " + safeMessage(e));
+        }
+
+        try {
+            JSONObject lk = fetchLukoilDistrictPrices(c, d);
+            if (lk != null) brands.put(lk);
+        } catch (Exception e) {
+            warnings.put("Lukoil: " + safeMessage(e));
+        }
+
+        try {
+            JSONObject op = fetchOpetRegionPrices(c, d);
+            if (op != null) brands.put(op);
+        } catch (Exception e) {
+            warnings.put("Opet: " + safeMessage(e));
+        }
+
+        try {
+            JSONObject ep = fetchEpdkPetrolPrices(c);
+            double g = ep.optDouble("gasoline", 0d);
+            double m = ep.optDouble("diesel", 0d);
+            if (g > 0d || m > 0d) {
+                JSONObject row = new JSONObject();
+                row.put("brand", "EPDK İl Referansı");
+                row.put("gasoline", g);
+                row.put("diesel", m);
+                row.put("lpg", 0d);
+                row.put("scope", c + " il geneli");
+                row.put("source", "EPDK resmi bayi fiyatları");
+                row.put("mapQuery", "benzin istasyonu");
+                brands.put(row);
+            }
+        } catch (Exception e) {
+            warnings.put("EPDK: " + safeMessage(e));
+        }
+
+        if (brands.length() == 0) {
+            JSONObject fallback = fetchDashboard(c, "Benzin", "");
+            JSONObject row = new JSONObject();
+            row.put("brand", fallback.optString("source", "Bölge Fiyatı"));
+            row.put("gasoline", fallback.optDouble("gasoline", 0d));
+            row.put("diesel", fallback.optDouble("diesel", 0d));
+            row.put("lpg", fallback.optDouble("lpg", 0d));
+            row.put("scope", c + (d.isEmpty() ? "" : " / " + d));
+            row.put("source", fallback.optString("source", "Bölge referansı"));
+            row.put("mapQuery", "benzin istasyonu");
+            brands.put(row);
+        }
+
+        out.put("city", c);
+        out.put("district", d);
+        out.put("updatedAt", System.currentTimeMillis());
+        out.put("brands", brands);
+        out.put("warnings", warnings);
+        out.put("notice", "Gösterilen marka/bölge fiyatı ile istasyonun nihai pompa fiyatı arasında fark olabilir.");
+        return out;
+    }
+
+    private static JSONObject fetchPetrolOfisiDistrictPrices(String city, String district) throws Exception {
+        String slug = citySlug(city);
+        String url = "https://www.petrolofisi.com.tr/akaryakit-fiyatlari/" + slug + "-akaryakit-fiyatlari";
+        String html = get(url, 15000);
+        String block = findLocationPriceBlock(html, district, city);
+        List<Double> nums = extractPriceNumbers(block);
+        if (nums.size() < 2) throw new IllegalStateException("İlçe/bölge fiyat satırı okunamadı");
+
+        double gasoline, diesel, lpg = 0d;
+        if (nums.size() >= 11) {
+            // PO tablosu KDV dahil ve hariç rakamları yan yana verir.
+            gasoline = nums.get(0);
+            diesel = nums.get(2);
+            lpg = nums.get(10);
+        } else {
+            gasoline = nums.get(0);
+            diesel = nums.get(1);
+            if (nums.size() >= 3) lpg = nums.get(2);
+        }
+        if (!reasonableFuel(gasoline) && !reasonableFuel(diesel))
+            throw new IllegalStateException("Geçerli fiyat bulunamadı");
+
+        JSONObject row = new JSONObject();
+        row.put("brand", "Petrol Ofisi");
+        row.put("gasoline", reasonableFuel(gasoline) ? gasoline : 0d);
+        row.put("diesel", reasonableFuel(diesel) ? diesel : 0d);
+        row.put("lpg", reasonableFuel(lpg) ? lpg : 0d);
+        row.put("scope", !district.trim().isEmpty() ? district + " / " + city : city);
+        row.put("source", "Petrol Ofisi resmi fiyat sayfası");
+        row.put("mapQuery", "Petrol Ofisi benzin istasyonu");
+        return row;
+    }
+
+    private static JSONObject fetchLukoilDistrictPrices(String city, String district) throws Exception {
+        String date = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(new Date());
+        String cityParam = normalize(city);
+        String url = "https://www.lukoil.com.tr/akaryakit-fiyatlari?cityName=" +
+                URLEncoder.encode(cityParam, "UTF-8") +
+                "&priceDate=" + URLEncoder.encode(date, "UTF-8") +
+                "&priceType=pompa";
+        String html = get(url, 15000);
+        String block = findLocationPriceBlock(html, district, city);
+        List<Double> nums = extractPriceNumbers(block);
+        if (nums.size() < 2) throw new IllegalStateException("Bölge fiyat satırı okunamadı");
+
+        double gasoline = nums.get(0);
+        double diesel = nums.size() >= 3 ? nums.get(2) : nums.get(1);
+        if (!reasonableFuel(gasoline) && !reasonableFuel(diesel))
+            throw new IllegalStateException("Geçerli fiyat bulunamadı");
+
+        JSONObject row = new JSONObject();
+        row.put("brand", "Lukoil");
+        row.put("gasoline", reasonableFuel(gasoline) ? gasoline : 0d);
+        row.put("diesel", reasonableFuel(diesel) ? diesel : 0d);
+        row.put("lpg", 0d);
+        row.put("scope", !district.trim().isEmpty() ? district + " / " + city : city);
+        row.put("source", "Lukoil Türkiye resmi pompa fiyatı");
+        row.put("mapQuery", "Lukoil benzin istasyonu");
+        return row;
+    }
+
+    private static JSONObject fetchOpetRegionPrices(String city, String district) throws Exception {
+        String url = "https://www.opet.com.tr/akaryakit-fiyatlari/" + citySlug(city);
+        String html = get(url, 15000);
+        String block = findLocationPriceBlock(html, district, city);
+        List<Double> nums = extractPriceNumbers(block);
+
+        // Opet fiyatları bazı günlerde tarayıcıda JavaScript ile üretildiği için
+        // sunucu HTML'sinde rakam yoksa yanlış fiyat uydurmak yerine bu satır gösterilmez.
+        if (nums.size() < 2) throw new IllegalStateException("Fiyatlar sayfa HTML'sinde yayınlanmıyor");
+
+        double gasoline = nums.get(0);
+        double diesel = nums.get(1);
+        if (!reasonableFuel(gasoline) || !reasonableFuel(diesel))
+            throw new IllegalStateException("Geçerli fiyat bulunamadı");
+
+        JSONObject row = new JSONObject();
+        row.put("brand", "Opet");
+        row.put("gasoline", gasoline);
+        row.put("diesel", diesel);
+        row.put("lpg", nums.size() >= 3 && reasonableFuel(nums.get(2)) ? nums.get(2) : 0d);
+        row.put("scope", !district.trim().isEmpty() ? district + " / " + city : city);
+        row.put("source", "Opet resmi tavsiye fiyatı");
+        row.put("mapQuery", "Opet benzin istasyonu");
+        return row;
+    }
+
+    private static String citySlug(String value) {
+        String n = normalize(value).toLowerCase(Locale.ROOT);
+        return n.replaceAll("[^a-z0-9 ]+", " ").replaceAll("\\s+", "-").replaceAll("^-+|-+$", "");
+    }
+
+    private static String findLocationPriceBlock(String rawHtml, String district, String city) {
+        String plain;
+        try {
+            plain = Html.fromHtml(rawHtml, Html.FROM_HTML_MODE_LEGACY).toString();
+        } catch (Throwable t) {
+            plain = rawHtml.replaceAll("(?is)<script.*?</script>", " ")
+                    .replaceAll("(?is)<style.*?</style>", " ")
+                    .replaceAll("(?s)<[^>]+>", "\n");
+        }
+
+        String[] lines = plain.replace('\u00A0', ' ').split("\\r?\\n");
+        String targetDistrict = normalize(district);
+        String targetCity = normalize(city);
+
+        for (int pass = 0; pass < 2; pass++) {
+            String target = pass == 0 ? targetDistrict : targetCity;
+            if (target == null || target.length() < 3) continue;
+            for (int i = 0; i < lines.length; i++) {
+                String n = normalize(lines[i]);
+                if (n.equals(target) || n.startsWith(target + " ") || n.endsWith(" " + target)) {
+                    StringBuilder b = new StringBuilder();
+                    for (int j = i; j < Math.min(lines.length, i + 26); j++) {
+                        String x = lines[j] == null ? "" : lines[j].trim();
+                        if (!x.isEmpty()) b.append(x).append('\n');
+                    }
+                    return b.toString();
+                }
+            }
+        }
+        throw new IllegalStateException("Konum satırı bulunamadı");
+    }
+
+    private static List<Double> extractPriceNumbers(String block) {
+        List<Double> out = new ArrayList<>();
+        Matcher m = Pattern.compile("(?<!\\d)(\\d{2,3}[\\.,]\\d{2})(?!\\d)").matcher(block == null ? "" : block);
+        while (m.find() && out.size() < 24) {
+            double d = parsePrice(m.group(1));
+            if (reasonableFuel(d)) out.add(d);
+        }
+        return out;
+    }
+
+    private static boolean reasonableFuel(double d) {
+        return Double.isFinite(d) && d >= 15d && d <= 200d;
+    }
+
     public static JSONObject fetchMarketValue(String endpoint, JSONObject vehicle) throws Exception {
         if (endpoint == null || endpoint.trim().isEmpty()) throw new IllegalArgumentException("Canlı değerleme sunucusu ayarlanmamış");
         StringBuilder u = new StringBuilder(endpoint.trim());

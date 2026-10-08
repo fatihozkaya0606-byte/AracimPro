@@ -182,6 +182,7 @@ public class MainActivity extends Activity {
     private LocationListener speedLocationListener;
     private LocationListener nearbyLocationListener;
     private LocationListener weatherLocationListener;
+    private LocationListener fuelPriceLocationListener;
     private boolean speedTracking = false;
     private String pendingLocationAction = "";
     private String pendingNearbyQuery = "";
@@ -1599,6 +1600,10 @@ private void showLaunchSplash() {
             return live + "/market";
         }
 
+        @JavascriptInterface public void fetchNearbyFuelPricesAuto() {
+            runOnUiThread(MainActivity.this::requestFuelPricesNative);
+        }
+
         @JavascriptInterface public void fetchWeatherAuto() {
             runOnUiThread(MainActivity.this::requestWeatherNative);
         }
@@ -2230,6 +2235,10 @@ private void showLaunchSplash() {
             requestWeatherNative();
             return;
         }
+        if ("fuelprices".equals(action)) {
+            requestFuelPricesNative();
+            return;
+        }
         if (action.startsWith("nearby:")) {
             String q = action.substring("nearby:".length());
             requestFreshLocationAndOpenNearby(q);
@@ -2368,6 +2377,120 @@ private void showLaunchSplash() {
             else notifyLocationStatus("Hava durumu için konum alınamadı.");
         }, 7000L);
     }
+
+
+    @SuppressWarnings("MissingPermission")
+    private void requestFuelPricesNative() {
+        if (!hasLocationPermission()) {
+            pendingLocationAction = "fuelprices";
+            notifyLocationStatus("Yakıt fiyatları için konum izni gerekli.");
+            ensureLocationPermission("fuelprices");
+            return;
+        }
+        if (!isLocationServiceEnabled()) {
+            pendingLocationAction = "fuelprices";
+            emitNearbyFuelPrices(new JSONObject(), "Yakıt fiyatları için telefonun Konum/GPS özelliğini aç.");
+            openLocationSettingsNative();
+            return;
+        }
+
+        if (locationManager == null) locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        if (locationManager == null) {
+            emitNearbyFuelPrices(new JSONObject(), "Konum servisine erişilemiyor.");
+            return;
+        }
+
+        Location last = bestLastLocation();
+        if (last != null && Math.abs(System.currentTimeMillis() - last.getTime()) <= 15 * 60 * 1000L) {
+            fetchFuelPricesForLocation(last.getLatitude(), last.getLongitude());
+            return;
+        }
+
+        try {
+            if (fuelPriceLocationListener != null) locationManager.removeUpdates(fuelPriceLocationListener);
+        } catch (Throwable ignored) {}
+
+        final boolean[] completed = {false};
+        fuelPriceLocationListener = new LocationListener() {
+            @Override public void onLocationChanged(Location location) {
+                if (completed[0] || location == null) return;
+                completed[0] = true;
+                try { if (locationManager != null) locationManager.removeUpdates(this); } catch (Throwable ignored) {}
+                fuelPriceLocationListener = null;
+                fetchFuelPricesForLocation(location.getLatitude(), location.getLongitude());
+            }
+            @Override public void onProviderEnabled(String provider) {}
+            @Override public void onProviderDisabled(String provider) {}
+        };
+
+        boolean requested = false;
+        try {
+            if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                locationManager.requestSingleUpdate(LocationManager.NETWORK_PROVIDER, fuelPriceLocationListener, Looper.getMainLooper());
+                requested = true;
+            }
+        } catch (Throwable ignored) {}
+        try {
+            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                locationManager.requestSingleUpdate(LocationManager.GPS_PROVIDER, fuelPriceLocationListener, Looper.getMainLooper());
+                requested = true;
+            }
+        } catch (Throwable ignored) {}
+
+        if (!requested) {
+            Location fallback = bestLastLocation();
+            if (fallback != null) fetchFuelPricesForLocation(fallback.getLatitude(), fallback.getLongitude());
+            else emitNearbyFuelPrices(new JSONObject(), "Güncel konum alınamadı.");
+            return;
+        }
+
+        mainHandler.postDelayed(() -> {
+            if (completed[0]) return;
+            completed[0] = true;
+            try {
+                if (locationManager != null && fuelPriceLocationListener != null)
+                    locationManager.removeUpdates(fuelPriceLocationListener);
+            } catch (Throwable ignored) {}
+            fuelPriceLocationListener = null;
+            Location fallback = bestLastLocation();
+            if (fallback != null) fetchFuelPricesForLocation(fallback.getLatitude(), fallback.getLongitude());
+            else emitNearbyFuelPrices(new JSONObject(), "Güncel konum alınamadı.");
+        }, 6500L);
+    }
+
+    private void fetchFuelPricesForLocation(double lat, double lon) {
+        new Thread(() -> {
+            JSONObject out = new JSONObject();
+            String error = "";
+            try {
+                String[] place = resolveLocationNames(lat, lon);
+                String city = place[0] == null ? "" : place[0].trim();
+                String district = place[1] == null ? "" : place[1].trim();
+                if (city.isEmpty()) throw new IllegalStateException("Konumdan il bilgisi belirlenemedi");
+                out = FuelDataClient.fetchNearbyBrandPrices(city, district);
+                out.put("latitude", lat);
+                out.put("longitude", lon);
+            } catch (Exception e) {
+                error = e.getMessage() == null ? "Yakıt fiyatları alınamadı" : e.getMessage();
+            }
+            emitNearbyFuelPrices(out, error);
+        }).start();
+    }
+
+    private void emitNearbyFuelPrices(JSONObject out, String error) {
+        final String payload = out == null ? "{}" : out.toString();
+        final String err = error == null ? "" : error;
+        runOnUiThread(() -> {
+            if (webView != null) {
+                webView.evaluateJavascript(
+                        "window.onNearbyFuelPricesResult && window.onNearbyFuelPricesResult(" +
+                                JSONObject.quote(payload) + "," + JSONObject.quote(err) + ")",
+                        null
+                );
+            }
+        });
+    }
+
 
     private void fetchWeatherNative(double lat, double lon) {
         new Thread(() -> {
