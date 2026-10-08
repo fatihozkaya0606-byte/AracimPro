@@ -1012,6 +1012,36 @@ body.r8HomeMode .nav button{font-size:8px!important}
   .ref791-car{width:83%;right:-18%}
 }
 
+
+/* MORE PHOTO UI 7.9.2 */
+body.r8MoreMode .apUtilityRow,body.r8MoreMode .apStatusRail,body.r8MoreMode .liveRibbon{display:none!important}
+body.r8MoreMode .header{padding-bottom:8px!important}
+body.r8MoreMode main{padding:0 10px 18px!important}
+.more792{margin:0 -10px;padding:10px 10px 28px;min-height:100vh;color:#f6f9ff;background:radial-gradient(circle at 88% 2%,rgba(29,137,255,.17),transparent 22%),radial-gradient(circle at 5% 30%,rgba(0,179,255,.06),transparent 24%),#030914}
+.more792-title{display:flex;gap:11px;align-items:flex-start;margin:12px 2px 12px}
+.more792-title:before{content:"";width:4px;height:55px;border-radius:99px;background:#27aaff;box-shadow:0 0 16px rgba(39,170,255,.85)}
+.more792-title h1{margin:0;color:#fff;font-size:28px;letter-spacing:-.7px}
+.more792-title p{margin:3px 0 0;color:#93aabd;font-size:11px}
+.more792-biggrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.more792-card{position:relative;min-height:178px;overflow:hidden;border:1px solid #17496f;border-radius:20px;padding:0;background:#071522;color:#fff;text-align:left;box-shadow:0 10px 28px rgba(0,0,0,.23)}
+.more792-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.more792-card:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(3,12,21,.97) 0%,rgba(3,12,21,.68) 42%,rgba(3,12,21,.08) 78%)}
+.more792-copy{position:absolute;z-index:2;left:12px;right:42px;bottom:11px}
+.more792-copy b{display:block;font-size:14px;color:#fff}
+.more792-copy small{display:block;margin-top:4px;color:#c0cfdd;font-size:9px;line-height:1.3}
+.more792-arrow{position:absolute;right:10px;bottom:10px;z-index:3;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:#fff;background:rgba(8,28,45,.86);border:1px solid #275377;font-size:23px}
+.more792-section{display:flex;justify-content:space-between;align-items:center;margin:17px 3px 9px}
+.more792-section h2{margin:0;font-size:15px;color:#fff}
+.more792-smallgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.more792-mini{position:relative;min-height:132px;overflow:hidden;padding:0;border-radius:18px;border:1px solid #163f60;background:#071522;color:#fff;text-align:left;box-shadow:0 9px 24px rgba(0,0,0,.20)}
+.more792-mini img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.more792-mini:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(3,12,21,.97) 0%,rgba(3,12,21,.72) 48%,rgba(3,12,21,.18) 100%)}
+.more792-mini .more792-copy{left:9px;right:28px;bottom:9px}
+.more792-mini .more792-copy b{font-size:10px}
+.more792-mini .more792-copy small{font-size:7.5px}
+.more792-mini .more792-arrow{width:27px;height:27px;right:7px;bottom:7px;font-size:17px}
+@media(max-width:370px){.more792-smallgrid{grid-template-columns:1fr 1fr}.more792-biggrid{grid-template-columns:1fr}}
+
 </style>
 
 <style id="aracimAiStyles">
@@ -1892,7 +1922,7 @@ window.appBack=function(){
   }
   return false;
 }
-function render(){document.body.classList.toggle('r8HomeMode',current==='home');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);if(current==='home')setTimeout(loadHomeWeather,350)}
+function render(){document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);if(current==='home')setTimeout(loadHomeWeather,350)}
 function view(){if(!activeVehicle()&&current!=='garage'&&current!=='more')return welcome();return ({home:homeView,garage:garageView,records:recordsView,plan:planView,reports:reportsView,more:moreView}[current]||homeView)()}
 function welcome(){return `<div class="card empty"><div class="big" style="display:grid;place-items:center;color:var(--blue)">${ico('car')}</div><h3>Garajın henüz boş</h3><p class="muted">Yıl → marka → model → kasa → motor → paket adım adım seçilir; marka, model, motor ve paketler A-Z sıralıdır. Yazmak yerine seçeneklerden ilerlersin; internet varsa katalog genişletilir ve gerçek araç fotoğrafı aranır.</p><button class="primary" onclick="openVehicle()">Aracımı Ekle</button></div>`}
 function vehicleDistance(){const v=activeVehicle();if(!v)return 0;const kms=[...(vf(state.fuel).map(x=>+x.km||0)),...(vf(state.services).map(x=>+x.km||0)),...(vf(state.trips).flatMap(x=>[+x.startKm||0,+x.endKm||0]))].filter(Boolean);if(!kms.length)return v.km||0;return Math.max(...kms)-Math.min(...kms)}
@@ -2082,93 +2112,31 @@ function moreCategory(title){const m={
 'Acil Kurumlar':'saglik','Oto Elektrik & Akücü':'arac','Ekspertiz':'arac','Yedek Parça':'arac','Uzun Yol Asistanı':'yol'};return m[title]||'gunluk'}
 function moreTile(action,icon,title,subtitle,accent='#1675ed',soft='#edf5ff'){const cat=moreCategory(title);return `<button class="moreTile" data-cat="${cat}" style="--accent:${accent};--soft:${soft}" onclick="${action}"><span class="qico">${ico(icon)}</span><span class="arrow">›</span><b>${title}</b><span class="desc">${subtitle}</span></button>`}
 function setMoreFilter(cat,btn){document.querySelectorAll('.moreFilter').forEach(x=>x.classList.remove('active'));if(btn)btn.classList.add('active');document.querySelectorAll('.moreGrid .moreTile').forEach(x=>{x.style.display=(cat==='all'||x.dataset.cat===cat)?'':'none'})}
-function moreView(){return `<div class="moreHub">
-<div class="moreIntro"><div><span class="eyebrow">KEŞFET & HİZMETLER</span><h2>Yolda ihtiyacın olan her şey</h2><p>Araç, sağlık, seyahat ve yakın yerler tek ekranda.</p></div></div>
-<button class="placeSearch" onclick="nearbySearchModal()"><span class="searchIcon">${ico('search')}</span><span class="searchCopy"><b>Nereye gitmek istersiniz?</b><span>Yakındaki yerleri haritada ara</span></span><span class="searchLoc">${ico('location')} Konumum</span></button>
-<div class="moreQuickBar">
-<button onclick="commentsModal()"><i>${ico('comment')}</i><span>Yorumlar</span></button>
-<button onclick="openAccount()"><i>${ico('user')}</i><span>Hesabım</span></button>
-<button onclick="vehicleGuideModal()"><i>${ico('info')}</i><span>Rehber</span></button>
-<button onclick="marketValueModal()"><i>${ico('value')}</i><span>Piyasa</span></button>
+function more792Card(action,img,title,sub){return `<button class="more792-card" onclick="${action}"><img src="${img}" alt="${esc(title)}"><div class="more792-copy"><b>${esc(title)}</b><small>${esc(sub)}</small></div><span class="more792-arrow">›</span></button>`}
+function more792Mini(action,img,title,sub){return `<button class="more792-mini" onclick="${action}"><img src="${img}" alt="${esc(title)}"><div class="more792-copy"><b>${esc(title)}</b><small>${esc(sub)}</small></div><span class="more792-arrow">›</span></button>`}
+function moreView(){return `<div class="more792">
+<div class="more792-title"><div><h1>Daha Fazla</h1><p>Aracınız için ihtiyacınız olan tüm hizmetler tek yerde.</p></div></div>
+<div class="more792-biggrid">
+${more792Card("driveCenterModal()","r8real/road.jpg","Canlı Sürüş","Anlık konum, rota ve sürüş detayları")}
+${more792Card("nearbyRoadside()","r8real/service.jpg","Yol Yardım","7/24 yol yardım hizmetleri")}
+${more792Card("nearbyFuel()","r8real/station.jpg","Yakın Benzinlik","Size en yakın benzin istasyonları")}
+${more792Card("faultGuideModal()","r8real/maintenance.jpg","Akıllı Arıza Rehberi","Arıza nedenleri, kontroller ve bakım önerileri")}
 </div>
-<div class="moreFilters">
-<button class="moreFilter active" onclick="setMoreFilter('all',this)">Tümü</button>
-<button class="moreFilter" onclick="setMoreFilter('arac',this)">🚗 Araç</button>
-<button class="moreFilter" onclick="setMoreFilter('yol',this)">🛣️ Yol</button>
-<button class="moreFilter" onclick="setMoreFilter('saglik',this)">❤️ Sağlık</button>
-<button class="moreFilter" onclick="setMoreFilter('kesfet',this)">🧭 Keşfet</button>
-<button class="moreFilter" onclick="setMoreFilter('gunluk',this)">📌 Günlük</button>
-</div>
-<div class="assistantHead"><b>Sürücü Asistanı</b><span>Hızlı ve kişisel araçlar</span></div>
-<div class="driverAssist">
-<button class="assistCard" onclick="parkedSpotModal()"><span class="dot"></span><span class="assistIcon">${ico('location')}</span><b>Park Yerim</b><small>Konumu kaydet & bul</small></button>
-<button class="assistCard" onclick="driverReminderModal()"><span class="assistIcon">${ico('bell')}</span><b>Hatırlatıcılar</b><small>Muayene • sigorta • MTV</small></button>
-<button class="assistCard" onclick="longTripModal()"><span class="assistIcon">${ico('road')}</span><b>Uzun Yol</b><small>Kontrol listesi & mola</small></button>
-</div>
-<!-- V7.2-AKILLI-MERKEZ -->
-<div class="assistantHead"><b>Akıllı Sürücü Merkezi</b><span>Günlük sürüş, yolculuk ve resmî işlemler</span></div>
-<div class="suiteGrid">
-<button class="suiteCard" onclick="aracimAiModal()"><span class="emoji">✨</span><strong>Akıllı Arıza Rehberi</strong><small>Firebase gerektirmeyen arıza ve bakım rehberi</small></button>
-<button class="suiteCard" onclick="tripStartModal()"><span class="emoji">🧭</span><strong>Yolculuk Başlat</strong><small>Hava + yol + yakıt + kontrol</small></button>
-<button class="suiteCard" onclick="smartAlertsModal()"><span class="emoji">🔔</span><strong>Akıllı Uyarılar</strong><small>Bakım, tarih, hava, yakıt</small></button>
-<button class="suiteCard" onclick="fuelRangeModal()"><span class="emoji">⛽</span><strong>Yakıt & Menzil</strong><small>Tahmini kalan menzil</small></button>
-<button class="suiteCard" onclick="hgsHighwayModal()"><span class="emoji">🛣️</span><strong>${regionRoadTitle()}</strong><small>${regionRoadSub()}</small></button>
-<button class="suiteCard" onclick="vehicleDocumentsCenter()"><span class="emoji">📁</span><strong>Araç Belgeleri</strong><small>Muayene, sigorta, MTV</small></button>
-<button class="suiteCard" onclick="speedLimitModal()"><span class="emoji">⚠️</span><strong>Hız Uyarısı</strong><small>Manuel limit + GPS</small></button>
-<button class="suiteCard" onclick="officialServicesModal()"><span class="emoji">${countryFlag()}</span><strong>Resmî İşlemler</strong><small>${regionOfficialSub()}</small></button>
-<button class="suiteCard" onclick="serviceCenterModal()"><span class="emoji">🔧</span><strong>Servis & Usta</strong><small>Servis, akü, lastik, ekspertiz</small></button>
-<button class="suiteCard" onclick="seasonalPrepModal()"><span class="emoji">❄️</span><strong>Mevsim Hazırlığı</strong><small>Kış / yaz kontrolü</small></button>
-<button class="suiteCard" onclick="nightDriveModal()"><span class="emoji">🌙</span><strong>Gece Sürüşü</strong><small>Acil ve 24 saat hizmetler</small></button>
-<button class="suiteCard" onclick="travelCenterModal()"><span class="emoji">🧳</span><strong>Seyahat Merkezi</strong><small>Otel, yemek, keşif, mola</small></button>
-<button class="suiteCard" onclick="parkedSpotModal()"><span class="emoji">📍</span><strong>Aracımı Bul</strong><small>Park yerine geri dön</small></button>
-</div>
-<div class="moreGrid">
-${moreTile("driveCenterModal()","navigation","Canlı Sürüş","GPS hız + yakın yerler","#1675ed","#edf5ff")}
-${moreTile("emergencyModal()","emergency","Acil Yardım",apEmergency()+' + kayıtlı acil kişiler',"#e23d55","#fff0f3")}
-${moreTile("nearbyRoadside()","tow","Yol Yardım","Çekici ve oto kurtarıcı","#ef6c35","#fff3ed")}
-${moreTile("nearbyFuel()","fuel","Yakın Benzinlik","Haritada en yakınları aç","#e83f67","#fff0f4")}
-${moreTile("nearbyPharmacy()","pharmacy","Yakın Eczane","Haritada eczaneler","#12a85b","#eafbf1")}
-${moreTile("nearbyMosque()","mosque","Yakın Cami","Haritada camiler","#1976d2","#eaf4ff")}
-${moreTile("nearbyNotary()","notary","Yakın Noter","Haritada noterler","#7c3aed","#f3edff")}
-${moreTile("purchaseChecklistModal()","shield","Alırken Kontrol","Kronik risk + ekspertiz","#14a7a0","#e8fbfa")}
-${moreTile("specsModal()","settings","Teknik Özellikler","Motor, donanım, boyutlar","#1675ed","#edf5ff")}
-${moreTile("nearbyInspection()","inspection","Muayene","Yakındaki araç muayene noktaları","#2878d8","#edf5ff")}
-${moreTile("nearbyCharging()","charge","Şarj İstasyonu","Elektrikli araç şarj","#08a85a","#e9fbf1")}
-${moreTile("nearbyHospital()","hospital","Yakın Hastane","Konumuna göre hastaneler","#df315b","#fff0f4")}
-${moreTile("nearbyHealthCenter()","hospital","Sağlık Ocağı","Aile sağlığı merkezleri","#e34b70","#fff1f4")}
-${moreTile("nearbyHotel()","hotel","Otel & Konaklama","Yakın oteller ve konaklama","#7c3aed","#f3edff")}
-${moreTile("nearbyFood()","food","Yeme & İçme","Restoran, kafe, lezzet","#f28c18","#fff4e6")}
-${moreTile("nearbyAttractions()","explore","Gezilecek Yerler","Tarihi ve turistik yerler","#13a45a","#ebfaf1")}
-${moreTile("nearbyParking()","parking","Yakın Otopark","Açık ve kapalı otopark","#5067d8","#eef0ff")}
-${moreTile("nearbyRestArea()","rest","WC & Dinlenme","Dinlenme tesisi ve tuvalet","#8b6b45","#f7f1ea")}
-${moreTile("nearbyTire()","tire","Lastikçi","Yakındaki lastikçiler","#455a64","#eef2f4")}
-${moreTile("nearbyAssembly()","assembly","Toplanma Alanı","Afet toplanma noktaları","#d64b4b","#fff0f0")}
-${moreTile("nearbyATM()","atm","Yakın ATM","Banka ve ATM noktaları","#2459a8","#edf4ff")}
-${moreTile("nearbyMarket()","market","Yakın Market","Market ve süpermarketler","#1b9a62","#ecfaf3")}
-${moreTile("nearbyCarWash()","carwash","Oto Yıkama","Yakındaki oto yıkamalar","#1485b8","#eaf8ff")}
-${moreTile("nearbyPark()","park","Park & Mesire","Park, piknik ve mesire","#2f9c54","#edf9f0")}
-${moreTile("nearbyDutyPharmacy()","pharmacy","Nöbetçi Eczane","Haritada ara • saatleri kontrol et","#13a25b","#eafbf1")}
-${moreTile("emergencyServicesModal()","emergency","Acil Kurumlar","112 • polis • jandarma • itfaiye","#d83c51","#fff0f3")}
-${moreTile("nearbyAutoElectric()","battery","Oto Elektrik & Akücü","Elektrik, akü ve marş desteği","#4a78bd","#edf4ff")}
-${moreTile("nearbyExpertise()","shield","Ekspertiz","Yakındaki oto ekspertizler","#13a49b","#e9fbf9")}
-${moreTile("nearbySpareParts()","wrench","Yedek Parça","Oto yedek parça mağazaları","#8056c9","#f3edff")}
-${moreTile("longTripModal()","road","Uzun Yol Asistanı","Kontrol, mola ve yol hazırlığı","#1675ed","#edf5ff")}
-</div>
-<details class="moreTools"><summary>Diğer araç ve kayıt araçları</summary><div class="moreToolsGrid">
-<button class="moreMini" onclick="refreshLiveData()">Canlı Verileri Yenile</button>
-<button class="moreMini" onclick="refreshAllVehicleSpecs(true)">Araçları Yenile</button>
-<button class="moreMini premiumMini" onclick="compareVehicles()">👑 Karşılaştırma<small>PREMIUM</small></button>
-<button class="moreMini premiumMini" onclick="valuationModal()">👑 Değer Geçmişi<small>PREMIUM</small></button>
-<button class="moreMini" onclick="batteryModal()">Akü Takibi</button>
-<button class="moreMini premiumMini" onclick="accidentModal()">👑 Kaza / Hasar<small>PREMIUM</small></button>
-<button class="moreMini premiumMini" onclick="routeCalculator()">👑 Yol Maliyeti<small>PREMIUM</small></button>
-<button class="moreMini premiumMini" onclick="documentsViewModal()">👑 Belge Kasası<small>PREMIUM</small></button>
-<button class="moreMini" onclick="emergencyModal()">Acil Durum</button>
-<button class="moreMini" onclick="openSettings()">Ayarlar</button>
-<button class="moreMini premiumMini" onclick="premiumPreview()">👑 Premium'a Geç<small>59,99 TL / ay</small></button>
-<button class="moreMini premiumMini" onclick="backupCloud()">👑 Buluta Yedekle<small>PREMIUM</small></button>
-</div></details>
-</div>`}
+<div class="more792-section"><h2>⚡ Tüm Araç Hizmetleri</h2><span></span></div>
+<div class="more792-smallgrid">
+${more792Mini("hgsHighwayModal()","r8real/road.jpg","HGS & Otoyol","PTT ve KGM resmî bağlantıları")}
+${more792Mini("vehicleDocumentsCenter()","r8real/market.jpg","Araç Belgeleri","Muayene, sigorta, MTV")}
+${more792Mini("speedLimitModal()","r8real/road.jpg","Hız Uyarısı","Manuel limit + GPS")}
+${more792Mini("officialServicesModal()","r8real/service.jpg","Resmî İşlemler","e-Devlet • GİB • MHRS")}
+${more792Mini("nearbyInspection()","r8real/service.jpg","Muayene","Araç muayene noktaları")}
+${more792Mini("nearbyHospital()","r8real/road.jpg","Yakın Hastane","Size en yakın hastaneler")}
+${more792Mini("nearbyPharmacy()","r8real/service.jpg","Yakın Eczane","Nöbetçi ve yakın eczaneler")}
+${more792Mini("nearbyMosque()","r8real/road.jpg","Yakın Cami","Harita üzerinde camiler")}
+${more792Mini("nearbyNotary()","r8real/market.jpg","Yakın Noter","Size en yakın noterler")}
+${more792Mini("nearbyFuel()","r8real/station.jpg","Sarı İstasyonu","LPG istasyonları ve fiyatları")}
+${more792Mini("specsModal()","r8real/engine.jpg","Teknik Özellikler","Motor, performans ve donanım")}
+${more792Mini("purchaseChecklistModal()","r8real/maintenance.jpg","Alırken Kontrol","İkinci el alım kontrol listesi")}
+</div></div>`}
 
 function listOrEmpty(a,fn){return a.length?`<div class="list">${a.map(fn).join('')}</div>`:`<div class="card empty"><div class="big">🗒️</div><h3>Henüz kayıt yok</h3><p class="muted">İlk kaydını ekleyerek başla.</p></div>`}
 
