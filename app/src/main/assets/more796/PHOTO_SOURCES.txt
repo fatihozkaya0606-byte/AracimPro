@@ -1,0 +1,53 @@
+drive	File:Cars and Streets of Istanbul, Turkey 47.jpg	Mostafameraji	CC BY-SA 4.0	https://commons.wikimedia.org/wiki/File:Cars_and_Streets_of_Istanbul,_Turkey_47.jpg
+roadside	File:2017 or later Ford F-550 FDOT Road Ranger Tow Truck-4.jpg	DanTD	CC BY-SA 4.0	https://commons.wikimedia.org/wiki/File:2017_or_later_Ford_F-550_FDOT_Road_Ranger_Tow_Truck-4.jpg
+fuel	File:Flex Fuel and Unleaded 88 gas pump.jpg	Jleedev	CC BY-SA 4.0	https://commons.wikimedia.org/wiki/File:Flex_Fuel_and_Unleaded_88_gas_pump.jpg
+engine	File:Engine components displayed in a red car during a mechanical inspection process at a garage.jpg	Shixart1985	CC BY 2.0	https://commons.wikimedia.org/wiki/File:Engine_components_displayed_in_a_red_car_during_a_mechanical_inspection_process_at_a_garage.jpg
+community	YEDEK	app/src/main/assets/r8ui/reports.jpg		Uygun JPEG yok: cars gathering Turkey
+profile	File:Türk Uluslararası Sürücü Belgesi Örneği.jpg	Türkiye Turing ve Otomobil Kurumu	Public domain	https://commons.wikimedia.org/wiki/File:T%C3%BCrk_Uluslararas%C4%B1_S%C3%BCr%C3%BCc%C3%BC_Belgesi_%C3%96rne%C4%9Fi.jpg
+guide	YEDEK	app/src/main/assets/r8ui/maintenance.jpg		HTTP Error 429: Too Many Requests
+market	File:Cars and Streets of Istanbul, Turkey 20.jpg	Mostafameraji	CC BY-SA 4.0	https://commons.wikimedia.org/wiki/File:Cars_and_Streets_of_Istanbul,_Turkey_20.jpg
+parking	File:Turkey Street car park - geograph.org.uk - 3426370.jpg	N Chadwick	CC BY-SA 2.0	https://commons.wikimedia.org/wiki/File:Turkey_Street_car_park_-_geograph.org.uk_-_3426370.jpg
+reminder	YEDEK	app/src/main/assets/r8ui/maintenance.jpg		HTTP Error 429: Too Many Requests
+roadtrip	YEDEK	app/src/main/assets/r8ui/reports.jpg		HTTP Error 429: Too Many Requests
+alerts	YEDEK	app/src/main/assets/r8ui/health.jpg		HTTP Error 429: Too Many Requests
+range	YEDEK	app/src/main/assets/r8ui/fuel_station.jpg		HTTP Error 429: Too Many Requests
+highway	YEDEK	app/src/main/assets/r8ui/reports.jpg		HTTP Error 429: Too Many Requests
+documents	YEDEK	app/src/main/assets/r8ui/market.jpg		HTTP Error 429: Too Many Requests
+speed	YEDEK	app/src/main/assets/r8ui/reports.jpg		HTTP Error 429: Too Many Requests
+government	YEDEK	app/src/main/assets/r8ui/market.jpg		HTTP Error 429: Too Many Requests
+service	YEDEK	app/src/main/assets/r8ui/service.jpg		HTTP Error 429: Too Many Requests
+winter	YEDEK	app/src/main/assets/r8ui/tire.jpg		HTTP Error 429: Too Many Requests
+night	YEDEK	app/src/main/assets/r8ui/reports.jpg		HTTP Error 429: Too Many Requests
+travel	YEDEK	app/src/main/assets/r8ui/reports.jpg		HTTP Error 429: Too Many Requests
+emergency	YEDEK	app/src/main/assets/r8ui/health.jpg		HTTP Error 429: Too Many Requests
+pharmacy	YEDEK	app/src/main/assets/r8ui/health.jpg		HTTP Error 429: Too Many Requests
+mosque	YEDEK	app/src/main/assets/r8ui/reports.jpg		HTTP Error 429: Too Many Requests
+notary	YEDEK	app/src/main/assets/r8ui/market.jpg		HTTP Error 429: Too Many Requests
+fuelprice	YEDEK	app/src/main/assets/r8ui/fuel_station.jpg		HTTP Error 429: Too Many Requests
+buycheck	YEDEK	app/src/main/assets/r8ui/service.jpg		HTTP Error 429: Too Many Requests
+inspection	YEDEK	app/src/main/assets/r8ui/service.jpg		HTTP Error 429: Too Many Requests
+charging	YEDEK	app/src/main/assets/r8ui/fuel_station.jpg		HTTP Error 429: Too Many Requests
+hospital	YEDEK	app/src/main/assets/r8ui/health.jpg		HTTP Error 429: Too Many Requests
+healthcenter	YEDEK	app/src/main/assets/r8ui/health.jpg		HTTP Error 429: Too Many Requests
+hotel	YEDEK	app/src/main/assets/r8ui/reports.jpg		HTTP Error 429: Too Many Requests
+restaurant	YEDEK	app/src/main/assets/r8ui/reports.jpg		HTTP Error 429: Too Many Requests
+attraction	YEDEK	app/src/main/assets/r8ui/reports.jpg		HTTP Error 429: Too Many Requests
+parkinggarage	YEDEK	app/src/main/assets/r8ui/reports.jpg		HTTP Error 429: Too Many Requests
+restarea	YEDEK	app/src/main/assets/r8ui/reports.jpg		HTTP Error 429: Too Many Requests
+tire	YEDEK	app/src/main/assets/r8ui/tire.jpg		HTTP Error 429: Too Many Requests
+assembly	YEDEK	app/src/main/assets/r8ui/health.jpg		HTTP Error 429: Too Many Requests
+atm	YEDEK	app/src/main/assets/r8ui/market.jpg		HTTP Error 429: Too Many Requests
+supermarket	YEDEK	app/src/main/assets/r8ui/market.jpg		HTTP Error 429: Too Many Requests
+carwash	YEDEK	app/src/main/assets/r8ui/service.jpg		HTTP Error 429: Too Many Requests
+park	YEDEK	app/src/main/assets/r8ui/reports.jpg		HTTP Error 429: Too Many Requests
+pharmacy_night	YEDEK	app/src/main/assets/r8ui/health.jpg		HTTP Error 429: Too Many Requests
+autoelectric	YEDEK	app/src/main/assets/r8ui/maintenance.jpg		HTTP Error 429: Too Many Requests
+parts	YEDEK	app/src/main/assets/r8ui/maintenance.jpg		HTTP Error 429: Too Many Requests
+telemetry	YEDEK	app/src/main/assets/r8ui/reports.jpg		HTTP Error 429: Too Many Requests
+compare	YEDEK	app/src/main/assets/r8ui/market.jpg		HTTP Error 429: Too Many Requests
+battery	YEDEK	app/src/main/assets/r8ui/maintenance.jpg		HTTP Error 429: Too Many Requests
+accident	YEDEK	app/src/main/assets/r8ui/service.jpg		HTTP Error 429: Too Many Requests
+routecost	File:Ege Yolculuk 90 - Izmir Otoyolu - Autobahn - Highway - panoramio.jpg	Bir_Ege_Hikayesi ©	CC BY 3.0	https://commons.wikimedia.org/wiki/File:Ege_Yolculuk_90_-_Izmir_Otoyolu_-_Autobahn_-_Highway_-_panoramio.jpg
+cloud	YEDEK	app/src/main/assets/r8ui/reports.jpg		Uygun JPEG yok: cloud backup laptop
+settings	File:Mercedes 190 SL 1957 dashboard.jpg	Palauenc05	CC BY-SA 4.0	https://commons.wikimedia.org/wiki/File:Mercedes_190_SL_1957_dashboard.jpg
+premium	File:Dülmen, Rolls-Royce Phantom II -- 2024 -- 5846.jpg	Dietmar Rabich	CC BY-SA 4.0	https://commons.wikimedia.org/wiki/File:D%C3%BClmen,_Rolls-Royce_Phantom_II_--_2024_--_5846.jpg
