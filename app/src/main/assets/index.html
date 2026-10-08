@@ -1838,7 +1838,7 @@ function moreView(){return `<div class="moreHub">
 <!-- V7.2-AKILLI-MERKEZ -->
 <div class="assistantHead"><b>Akıllı Sürücü Merkezi</b><span>Günlük sürüş, yolculuk ve resmî işlemler</span></div>
 <div class="suiteGrid">
-<button class="suiteCard" onclick="aracimAiModal()"><span class="emoji">✨</span><strong>Aracım AI</strong><small>Aracına özel yapay zekâ asistanı</small></button>
+<button class="suiteCard" onclick="aracimAiModal()"><span class="emoji">✨</span><strong>Akıllı Arıza Rehberi</strong><small>Firebase gerektirmeyen arıza ve bakım rehberi</small></button>
 <button class="suiteCard" onclick="tripStartModal()"><span class="emoji">🧭</span><strong>Yolculuk Başlat</strong><small>Hava + yol + yakıt + kontrol</small></button>
 <button class="suiteCard" onclick="smartAlertsModal()"><span class="emoji">🔔</span><strong>Akıllı Uyarılar</strong><small>Bakım, tarih, hava, yakıt</small></button>
 <button class="suiteCard" onclick="fuelRangeModal()"><span class="emoji">⛽</span><strong>Yakıt & Menzil</strong><small>Tahmini kalan menzil</small></button>
@@ -1902,108 +1902,168 @@ ${moreTile("longTripModal()","road","Uzun Yol Asistanı","Kontrol, mola ve yol h
 
 function listOrEmpty(a,fn){return a.length?`<div class="list">${a.map(fn).join('')}</div>`:`<div class="card empty"><div class="big">🗒️</div><h3>Henüz kayıt yok</h3><p class="muted">İlk kaydını ekleyerek başla.</p></div>`}
 
-/* ARACIM AI V1 */
-let _aracimAiPendingVehicleId='';
-function aracimAiStorageKey(v){return 'aracimpro_ai_v1_'+String(v?.id||'default')}
-function aracimAiLoad(v){try{const a=JSON.parse(localStorage.getItem(aracimAiStorageKey(v))||'[]');return Array.isArray(a)?a:[]}catch(e){return[]}}
-function aracimAiSave(v,a){try{localStorage.setItem(aracimAiStorageKey(v),JSON.stringify((a||[]).slice(-30)))}catch(e){}}
+/* AKILLI ARIZA REHBERI V1 • FIREBASE/API YOK */
 function aracimAiVehicleSummary(v){
   if(!v)return'';
   const s=[v.year,v.make,v.model,v.engine,v.trim,v.fuel,v.transmission].filter(Boolean).join(' • ');
   return s+(v.km?` • ${num(v.km)} km`:'');
 }
-function aracimAiContext(v){
-  const services=vf(state.services||[]).slice().sort((a,b)=>String(b.date||'').localeCompare(String(a.date||''))).slice(0,5)
-    .map(x=>`${x.date||''}: ${x.work||''} ${x.km?x.km+' km':''}`).join(' | ');
-  const plans=vf(state.maintenance||[]).filter(x=>!x.completed).slice(0,6)
-    .map(x=>`${x.name||''}${x.dueKm?' @'+x.dueKm+' km':''}${x.dueDate?' '+x.dueDate:''}`).join(' | ');
-  const issues=vf(state.accidents||[]).filter(x=>x.status&&x.status!=='Onarıldı').slice(0,4)
-    .map(x=>`${x.type||x.title||'Hasar'} ${x.status||''}`).join(' | ');
-  return [
-    `Araç: ${aracimAiVehicleSummary(v)}`,
-    services?`Son servis kayıtları: ${services}`:'',
-    plans?`Planlanan bakımlar: ${plans}`:'',
-    issues?`Açık hasar/onarım kayıtları: ${issues}`:'',
-    `Araç sağlık puanı: ${vehicleHealthScore().score}/100`
-  ].filter(Boolean).join('\n');
+function faultNorm(t){
+  return String(t||'').toLocaleLowerCase('tr-TR')
+    .replaceAll('ı','i').replaceAll('ğ','g').replaceAll('ü','u')
+    .replaceAll('ş','s').replaceAll('ö','o').replaceAll('ç','c');
 }
-function aracimAiBubble(m){
-  const role=m.role==='user'?'user':'assistant';
-  return `<div class="aiBubble ${role}${m.pending?' pending':''}">${esc(m.text||'')}</div>`;
+function faultResult(level,title,causes,checks,stop=false){
+  const color=level==='KRİTİK'?'#ff6278':level==='DİKKAT'?'#ffbd59':'#53dc94';
+  const icon=level==='KRİTİK'?'🔴':level==='DİKKAT'?'🟠':'🟢';
+  return {level,title,causes,checks,stop,color,icon};
 }
-function aracimAiModal(){
+function diagnoseFault(q,v){
+  const t=faultNorm(q), km=+v?.km||0;
+
+  if(/fren.*(titr|salla)|direksiyon.*(fren.*titr|fren.*salla)/.test(t))
+    return faultResult('DİKKAT','Frenlemede direksiyon titremesi',
+      ['Ön fren disklerinde eğrilik / yüzey bozukluğu','Balata-disk yüzey uyumsuzluğu','Ön takım veya rot başında boşluk','Lastik/jant balans problemi'],
+      ['Fren disklerinin salgısını ölçtür','Balata ve disk yüzeyini birlikte kontrol ettir','Rot-balans ve ön takım boşluk kontrolü yaptır']);
+
+  if(/direksiyon.*(ses|gicir|surt|tak|tik|kut)|surt.*direksiyon/.test(t))
+    return faultResult('DİKKAT','Direksiyondan gelen ses',
+      ['Direksiyon kolon mafsalı veya rulmanı','Amortisör üst takoz/rulmanı','Rot başı, rotil veya z-rot boşluğu','Direksiyon kutusu / elektrik destek mekanizması'],
+      ['Ses araç dururken mi hareket halinde mi kontrol et','Tam sağ-sol çevirince artıyor mu gözle','Ön takım ve kolon mafsalını lifte kontrol ettir']);
+
+  if(/hararet|isinma|sicaklik.*yuksek|su kaynat/.test(t))
+    return faultResult('KRİTİK','Motor harareti',
+      ['Soğutma suyu eksikliği veya kaçak','Termostat arızası','Radyatör fanı çalışmıyor olabilir','Devirdaim pompası problemi'],
+      ['Aracı güvenli yerde durdur','Motor sıcakken radyatör kapağını açma','Soğuduktan sonra su/antifriz seviyesini kontrol et','Fan ve kaçak kontrolü yaptır'],true);
+
+  if(/yag.*(lamba|isik|basinc)|motor yag.*uyari/.test(t))
+    return faultResult('KRİTİK','Motor yağ basıncı uyarısı',
+      ['Yağ seviyesi çok düşük olabilir','Yağ pompası / basınç problemi','Yağ filtresi tıkanıklığı','Yağ basınç sensörü arızası'],
+      ['Motoru zorlamadan güvenli yerde durdur','Yağ seviyesini düz zeminde kontrol et','Uyarı devam ediyorsa motoru çalıştırmadan servise götür'],true);
+
+  if(/fren.*(yumusa|dibe|tutm|bosal)|pedal.*dibe/.test(t))
+    return faultResult('KRİTİK','Fren pedalında ciddi anormallik',
+      ['Fren hidroliği kaçağı','Sistemde hava','Ana merkez arızası','Balata/kaliper sorunu'],
+      ['Aracı kullanmayı bırak','Fren hidroliği seviyesini yalnız gözle kontrol et','Çekiciyle servise götür'],true);
+
+  if(/duman|yanik.*koku|benzin.*koku|yakit.*koku|yangin/.test(t))
+    return faultResult('KRİTİK','Duman / yanık veya yakıt kokusu',
+      ['Elektrik tesisatı ısınması','Yakıt kaçağı','Yağ veya sıvının sıcak yüzeye teması','Kayış/kavrama aşırı ısınması'],
+      ['Aracı güvenli yerde durdur','Kontak kapat ve motordan uzaklaş','Yakıt kokusu veya duman güçlüyse tekrar çalıştırma'],true);
+
+  if(/motor.*(titr|sars)|rolanti.*(dalga|bozuk|titr)/.test(t))
+    return faultResult('DİKKAT','Motor titremesi / düzensiz rölanti',
+      ['Buji veya ateşleme bobini','Kirli boğaz kelebeği','Enjektör veya yakıt besleme','Motor kulağı / takozu','Vakum kaçağı'],
+      ['Arıza lambası yanıyor mu kontrol et','Soğuk-sıcak motorda farkı gözle','OBD arıza kodu okut','Buji/bobin ve motor takozlarını kontrol ettir']);
+
+  if(/cekis.*(dust|azal)|gaz.*yem|hizlan.*zayif|performans.*dus/.test(t))
+    return faultResult('DİKKAT','Çekiş / performans düşüşü',
+      ['Hava filtresi veya yakıt filtresi','Ateşleme / buji-bobin','MAF/MAP sensörü','Yakıt basıncı','Katalitik konvertör veya egzoz tıkanıklığı'],
+      ['Motor arıza lambasını kontrol et','OBD taraması yaptır','Hava filtresi ve bakım geçmişini kontrol et']);
+
+  if(/yakit.*(art|fazla|cok)|tuketim.*(art|yuksek)/.test(t))
+    return faultResult('NORMAL','Yakıt tüketimi artışı',
+      ['Lastik basınçlarının düşük olması','Kısa mesafe / soğuk motor kullanımı','Hava filtresi kirlenmesi','Buji/bobin verimsizliği','Oksijen sensörü veya termostat'],
+      ['Lastik basınçlarını üretici değerine getir','Son bakım tarihini kontrol et','Tüketimi 2-3 depo üzerinden ölç','Ani artış varsa OBD kontrolü yaptır']);
+
+  if(/aku|mars.*(bas|zayif)|zor calis|gec calis/.test(t))
+    return faultResult('DİKKAT','Akü / marş problemi',
+      ['Akü zayıflamış olabilir','Kutup başlarında oksitlenme','Şarj dinamosu düşük şarj ediyor olabilir','Marş motoru yıpranmış olabilir'],
+      ['Kontak kapalı akü voltajını ölç','Çalışırken şarj voltajını kontrol ettir','Kutup başlarını kontrol et']);
+
+  if(/lastik.*(ses|ugultu)|ugultu.*(hiz|teker)|rulman/.test(t))
+    return faultResult('DİKKAT','Teker / rulman uğultusu',
+      ['Teker rulmanı','Düzensiz lastik aşınması','Balans veya jant deformasyonu'],
+      ['Ses hızla artıyor mu kontrol et','Sağa-sola hafif yük aktarımında ses değişiyor mu gözle','Rulman ve lastik yüzeyini serviste kontrol ettir']);
+
+  if(/klima.*(sogut|sicak)|klima.*calism/.test(t))
+    return faultResult('NORMAL','Klima performans sorunu',
+      ['Klima gazı düşük olabilir','Polen filtresi tıkalı olabilir','Kompresör / kavrama sorunu','Kondenser fanı problemi'],
+      ['Polen filtresini kontrol et','Klima basınç testi yaptır','Kompresör devreye giriyor mu kontrol ettir']);
+
+  if(/ses|tik|tak|vur|ugultu|gicir|surt/.test(t))
+    return faultResult('DİKKAT','Tanımlanamayan mekanik ses',
+      ['Ön takım / süspansiyon','Kayış-rulman grubu','Egzoz bağlantısı','Motor veya şanzıman takozları'],
+      ['Sesin hangi hızda çıktığını not et','Bozuk yol / fren / gaz / direksiyon ile ilişkisini gözle','Ses kaydı alıp serviste dinlet']);
+
+  if(/bakim|hangi bakim|degismeli/.test(t)){
+    const extra=km>=120000?['Bu kilometrede triger/zincir sistemi motor tipine göre kontrol edilmeli','Şanzıman yağı geçmişi bilinmiyorsa üretici prosedürüne göre kontrol edilmeli']:[];
+    return faultResult('NORMAL','Bakım kontrolü',
+      ['Motor yağı ve yağ filtresi','Hava / polen filtresi','Fren sistemi ve sıvılar','Lastik, akü ve soğutma sistemi',...extra],
+      ['Bakım kitapçığındaki km/yıl aralığını esas al','Uygulamadaki bakım kayıtlarıyla eksikleri karşılaştır']);
+  }
+
+  if(/uzun yol|yola cik/.test(t))
+    return faultResult('NORMAL','Uzun yol öncesi kontrol',
+      ['Lastik basıncı ve diş derinliği','Motor yağı ve soğutma suyu','Frenler ve aydınlatma','Akü durumu','Stepne / tamir kiti'],
+      ['Yakıt ve menzil planını yap','Cam suyu ve silecekleri kontrol et','Yol öncesi uyarı lambası olmadığından emin ol']);
+
+  if(/kronik/.test(t))
+    return faultResult('NORMAL','Kronik sorun sorgusu',
+      ['Kronik arızalar motor, şanzıman, üretim yılı ve donanıma göre değişir','Tek bir belirti olmadan kesin kronik arıza söylenemez'],
+      ['Belirtiyi yaz: örn. “direksiyondan sürtme sesi geliyor”','Motor kodu ve kilometre bilgisi kayıtlıysa değerlendirme daha anlamlı olur']);
+
+  return faultResult('NORMAL','Belirtiyi biraz daha tarif et',
+    ['Ses, titreşim, koku, uyarı lambası veya performans değişimi gibi ayrıntılar gerekli'],
+    ['Ne zaman oluyor? Dururken / hızlanırken / fren yaparken / direksiyon çevirirken belirt','Soğuk veya sıcak motorda farkı yaz','Gösterge panelinde uyarı varsa adını yaz']);
+}
+function faultBubble(kind,html){return `<div class="aiBubble ${kind}">${html}</div>`}
+function faultGuideModal(){
   const v=activeVehicle();if(!v)return toast('Önce araç eklemelisin');
-  const a=aracimAiLoad(v);
-  const messages=a.length?a.map(aracimAiBubble).join(''):`<div class="aiBubble assistant">Merhaba 👋 Ben Aracım AI. <b>${esc((v.make||'')+' '+(v.model||''))}</b> için bakım, arıza belirtileri, kullanım ve araç bilgileri hakkında sorabilirsin.</div>`;
-  modal('✨ Aracım AI',`
+  modal('🛠️ Akıllı Arıza Rehberi',`
     <div class="aiIntro">
-      <b>Aracına özel yapay zekâ asistanı</b>
-      <small>Kayıtlı araç bilgilerini ve bakım geçmişini kullanarak daha ilgili cevap verir.</small>
+      <b>Firebase yok • internet gerekmez</b>
+      <small>Belirtiyi seç veya yaz. Araç bilgine göre olası nedenleri, aciliyet seviyesini ve ilk kontrolleri gösterir.</small>
       <div class="aiVehicle"><span>🚗 ${esc(aracimAiVehicleSummary(v))}</span></div>
     </div>
     <div class="aiQuick">
-      <button onclick="aracimAiAskPreset('Bu kilometrede hangi bakımları yaptırmalıyım?')">🔧 Bakım</button>
-      <button onclick="aracimAiAskPreset('Aracımın sık görülen kronik sorunları neler?')">⚠️ Kronikler</button>
-      <button onclick="aracimAiAskPreset('Yakıt tüketimim arttıysa olası nedenler neler?')">⛽ Yakıt</button>
-      <button onclick="aracimAiAskPreset('Aracımı uzun yola çıkmadan önce nasıl kontrol etmeliyim?')">🛣️ Uzun yol</button>
+      <button onclick="faultPreset('Direksiyondan sürtme sesi geliyor')">🛞 Direksiyon sesi</button>
+      <button onclick="faultPreset('Fren yapınca direksiyon titriyor')">🛑 Fren titremesi</button>
+      <button onclick="faultPreset('Motor rölantide titriyor')">⚙️ Motor titreme</button>
+      <button onclick="faultPreset('Yakıt tüketimim arttı')">⛽ Yakıt artışı</button>
+      <button onclick="faultPreset('Aracım hararet yapıyor')">🌡️ Hararet</button>
+      <button onclick="faultPreset('Marş zor basıyor')">🔋 Akü / marş</button>
     </div>
-    <div class="aiChat" id="aiChat">${messages}</div>
-    <form class="aiComposer" onsubmit="aracimAiSend(event)">
-      <textarea id="aracimAiInput" maxlength="1200" placeholder="Örn. fren yapınca direksiyon titriyor, neden olabilir?"></textarea>
-      <button type="submit" aria-label="Gönder">➤</button>
+    <div class="aiChat" id="faultChat">
+      ${faultBubble('assistant','Belirtiyi aşağıya yaz. Örn: <b>“80 km/s üzerinde uğultu geliyor”</b>')}
+    </div>
+    <form class="aiComposer" onsubmit="faultGuideSend(event)">
+      <textarea id="faultInput" maxlength="500" placeholder="Örn. direksiyonu çevirirken sürtme sesi geliyor"></textarea>
+      <button type="submit" aria-label="Analiz et">➤</button>
     </form>
-    <div class="aiDisclaimer">Aracım AI yardımcı bilgi verir; kesin arıza teşhisi veya ekspertiz yerine geçmez. Fren, direksiyon, yangın/koku, hararet gibi güvenlik kritik belirtilerde aracı güvenli şekilde durdurup uzman desteği al.</div>
+    <div class="aiDisclaimer">Bu rehber kesin teşhis değildir. Fren, direksiyon, hararet, yağ basıncı, duman/yangın veya yakıt kaçağı gibi kritik durumlarda aracı güvenli şekilde durdurup uzman desteği al.</div>
   `);
-  setTimeout(()=>{const c=document.getElementById('aiChat');if(c)c.scrollTop=c.scrollHeight;document.getElementById('aracimAiInput')?.focus()},120);
+  setTimeout(()=>document.getElementById('faultInput')?.focus(),100)
 }
-function aracimAiAskPreset(q){const i=document.getElementById('aracimAiInput');if(!i)return;i.value=q;i.focus()}
-function aracimAiSend(e){
-  e.preventDefault();
-  const v=activeVehicle(),i=document.getElementById('aracimAiInput');if(!v||!i)return;
-  const q=String(i.value||'').trim();if(!q)return;
-  let a=aracimAiLoad(v);
-  if(a.some(x=>x.pending))return toast('Önce mevcut yanıtı bekleyin');
-  a.push({role:'user',text:q,ts:Date.now()});
-  const rid='apai_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
-  a.push({role:'assistant',text:'Düşünüyorum…',pending:true,requestId:rid,ts:Date.now()});
-  aracimAiSave(v,a);
-  _aracimAiPendingVehicleId=v.id;
-  aracimAiModal();
-
-  const history=a.filter(x=>!x.pending).slice(-8).map(x=>(x.role==='user'?'Kullanıcı: ':'Aracım AI: ')+x.text).join('\n');
-  const prompt=`Sen Aracım AI'sın. Bir otomobil sahibine kısa, anlaşılır ve teknik olarak temkinli yardımcı ol.
-Uygulama dili/yereli: ${apLocale()}.
-Kesin teşhis koyma. Bilmediğin şeyi uydurma. Güvenlik kritik bir belirti varsa bunu ilk paragrafta belirt ve profesyonel kontrol öner.
-Plaka, VIN, konum veya kişisel veri isteme. Cevabı mümkün olduğunca maddeler halinde ve pratik ver.
-
-ARAÇ VE KAYITLAR:
-${aracimAiContext(v)}
-
-SON KONUŞMA:
-${history}
-
-KULLANICININ YENİ SORUSU:
-${q}`;
-
-  try{Android.askAracimAi(rid,prompt)}
-  catch(err){window.onAracimAiResult(rid,'','AI bağlantısı açılamadı')}
+function faultPreset(q){
+  const i=document.getElementById('faultInput');if(!i)return;i.value=q;faultGuideRun(q)
 }
-window.onAracimAiResult=(rid,text,error)=>{
-  const vid=_aracimAiPendingVehicleId||activeVehicle()?.id||'';
-  const v=state.vehicles.find(x=>x.id===vid)||activeVehicle();if(!v)return;
-  let a=aracimAiLoad(v);
-  let idx=a.findIndex(x=>x.pending&&x.requestId===rid);
-  if(idx<0)idx=a.findIndex(x=>x.pending);
-  const reply=error?`Şu anda yanıt veremiyorum: ${String(error)}`:String(text||'Yanıt alınamadı');
-  const msg={role:'assistant',text:reply,ts:Date.now()};
-  if(idx>=0)a[idx]=msg;else a.push(msg);
-  aracimAiSave(v,a);
-  if(document.getElementById('aiChat'))aracimAiModal();
-}
-function aracimAiClear(){
+function faultGuideSend(e){e.preventDefault();const i=document.getElementById('faultInput');const q=String(i?.value||'').trim();if(q)faultGuideRun(q)}
+function faultGuideRun(q){
   const v=activeVehicle();if(!v)return;
-  if(confirm('Aracım AI konuşması silinsin mi?')){localStorage.removeItem(aracimAiStorageKey(v));aracimAiModal()}
+  const r=diagnoseFault(q,v),c=document.getElementById('faultChat');if(!c)return;
+  const stop=r.stop?`<div style="margin-top:10px;padding:10px;border-radius:12px;background:#35151b;border:1px solid #71313b;color:#ff9aa6"><b>⛔ Aracı kullanmaya devam etme.</b> Güvenli yerde durdur ve profesyonel destek al.</div>`:'';
+  const html=`
+    ${faultBubble('user',esc(q))}
+    <div class="aiBubble assistant">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <b style="color:${r.color}">${r.icon} ${r.level}</b>
+        <b>${esc(r.title)}</b>
+      </div>
+      <b>Olası nedenler</b>
+      <ul style="margin:7px 0 10px;padding-left:19px">${r.causes.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+      <b>İlk kontroller</b>
+      <ul style="margin:7px 0 0;padding-left:19px">${r.checks.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
+      ${stop}
+      <div style="margin-top:10px;color:#89a2b9;font-size:11px">Araç: ${esc(aracimAiVehicleSummary(v))}</div>
+    </div>`;
+  c.innerHTML+=html;c.scrollTop=c.scrollHeight;
+  const i=document.getElementById('faultInput');if(i)i.value='';
 }
+/* Eski çağrılar bozulmasın */
+function aracimAiModal(){faultGuideModal()}
+function aracimAiAskPreset(q){faultPreset(q)}
+function aracimAiClear(){}
 
 function fab(){if(current==='records')return `<button class="fab" onclick="${recordsTab==='fuel'?'openFuel()':recordsTab==='expenses'?'openExpense()':recordsTab==='trips'?'openTrip()':'openService()'}">＋</button>`;if(current==='plan'&&planTab!=='battery')return `<button class="fab" onclick="${planTab==='maintenance'?'openMaintenance()':'openTire()'}">＋</button>`;return''}
 function modal(title,html){if(window._speedOpen){try{Android.stopSpeedTracking()}catch(e){};window._speedOpen=false}document.getElementById('modalRoot').innerHTML=`<div class="overlay" onclick="if(event.target===this)closeModal()"><div class="sheet"><div class="grab"></div><div class="sheetHead"><h2>${title}</h2><button class="close" onclick="closeModal()">×</button></div>${html}</div></div>`;setTimeout(()=>{applyI18n(document.getElementById('modalRoot'));document.querySelector('.sheet input[autofocus]')?.focus()},100)}function closeModal(){if(window._speedOpen){try{Android.stopSpeedTracking()}catch(e){};window._speedOpen=false}window._guideOpen=false;window._specModalOpen=false;window._editingVehicle=null;window._vehicleImageResults=[];if(String(window._imageSearchMode||'').startsWith('edit'))window._imageSearchMode='';document.getElementById('modalRoot').innerHTML=''}
