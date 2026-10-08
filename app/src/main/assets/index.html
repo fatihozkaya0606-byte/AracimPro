@@ -1783,6 +1783,78 @@ body:not(.dark) .apMarketStrip7103 .apMarketLive{
 }
 body:not(.dark) .apTickerPrice{color:#10213c!important}
 </style>
+<style id="aracimpro7104">
+/* 7.10.4 SOLA KAYAN BUYUK PIYASA + GUNLUK KISAYOL */
+.apMarketStrip7103{
+  height:60px!important;
+  padding:4px 0 4px 7px!important;
+}
+.apMarketStrip7103 .apMarketLive{
+  flex-basis:58px!important;
+  height:50px!important;
+  font-size:8px!important;
+}
+.apMarketLive i{
+  width:7px!important;height:7px!important;
+}
+.apTickerViewport{height:50px!important}
+.apTickerTrack{
+  height:50px!important;
+  transform:translate3d(0,0,0)!important;
+  animation:apTickerLeft7104 20s linear infinite!important;
+}
+.apTickerSet{height:50px!important;padding-right:18px!important}
+.apTickerUnit{
+  height:50px!important;
+  gap:6px!important;
+  padding:0 11px!important;
+}
+.apTickerIcon{font-size:19px!important}
+.apTickerUnit b{font-size:9px!important}
+.apTickerPrice{font-size:13px!important;font-weight:900!important}
+.apTickerChange{font-size:8px!important}
+.apTickerDot{font-size:15px!important;margin-left:7px!important}
+
+@keyframes apTickerLeft7104{
+  0%{transform:translate3d(0,0,0)}
+  100%{transform:translate3d(-50%,0,0)}
+}
+
+@keyframes apTickerRight7103{
+  0%{transform:translate3d(0,0,0)}
+  100%{transform:translate3d(-50%,0,0)}
+}
+
+.dailyQuickTitle{
+  display:flex;align-items:end;justify-content:space-between;
+  margin:17px 3px 8px;
+}
+.dailyQuickTitle b{font-size:14px}
+.dailyQuickTitle small{font-size:8px;color:var(--muted)}
+.dailyQuickGrid{
+  display:grid;grid-template-columns:repeat(6,1fr);gap:6px;
+  padding:9px;border:1px solid var(--line);border-radius:18px;
+  background:var(--card);box-shadow:var(--shadow)
+}
+.dailyQuickGrid button{
+  border:0;border-radius:13px;padding:9px 2px;
+  background:var(--bg);color:var(--ink);
+  min-width:0;font-size:7px
+}
+.dailyQuickGrid button span{
+  display:block;font-size:19px;margin-bottom:5px
+}
+.dailyQuickGrid button b{
+  display:block;font-size:7px;white-space:nowrap
+}
+.welcome7104{padding-bottom:10px}
+.welcome7104Card{margin-bottom:0}
+
+@media(max-width:390px){
+  .dailyQuickGrid{grid-template-columns:repeat(3,1fr)}
+  .dailyQuickGrid button b{font-size:8px}
+}
+</style>
 </head>
 <body>
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
@@ -2773,13 +2845,35 @@ window.appBack=function(){
   }
   return false;
 }
-function render(){document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);if(current==='home'){setTimeout(loadHomeWeather,350);setTimeout(ensureHomeFuelPrices,850)}}
+function render(){document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);if(current==='home'){setTimeout(loadHomeWeather,350)}}
 function view(){if(!activeVehicle()&&current!=='garage'&&current!=='more')return welcome();return ({home:homeView,garage:garageView,records:recordsView,plan:planView,reports:reportsView,more:moreView}[current]||homeView)()}
-function welcome(){return `<div class="card empty"><div class="big" style="display:grid;place-items:center;color:var(--blue)">${ico('car')}</div><h3>Garajın henüz boş</h3><p class="muted">Yıl → marka → model → kasa → motor → paket adım adım seçilir; marka, model, motor ve paketler A-Z sıralıdır. Yazmak yerine seçeneklerden ilerlersin; internet varsa katalog genişletilir ve gerçek araç fotoğrafı aranır.</p><button class="primary" onclick="openVehicle()">Aracımı Ekle</button></div>`}
+
+function dailyQuickHtml(){
+  return `<div class="dailyQuickTitle"><b>📍 Günlük Kısayollar</b><small>Yakınındaki temel yerler</small></div>
+  <div class="dailyQuickGrid">
+    <button onclick="nearbyPharmacy()"><span>💊</span><b>Eczane</b></button>
+    <button onclick="nearbyHospital()"><span>🏥</span><b>Hastane</b></button>
+    <button onclick="nearbyATM()"><span>🏧</span><b>ATM</b></button>
+    <button onclick="nearbyMarket()"><span>🛒</span><b>Market</b></button>
+    <button onclick="nearbyFuel()"><span>⛽</span><b>Benzinlik</b></button>
+    <button onclick="nearbyParking()"><span>🅿️</span><b>Otopark</b></button>
+  </div>`;
+}
+
+function welcome(){return `<div class="welcome7104">
+  <div class="card empty welcome7104Card">
+    <div class="big" style="display:grid;place-items:center;color:var(--blue)">${ico('car')}</div>
+    <h3>Garajın henüz boş</h3>
+    <p class="muted">Aracını eklediğinde bakım, kayıt, rapor ve araç özellikleri açılır.</p>
+    <button class="primary" onclick="openVehicle()">Aracımı Ekle</button>
+  </div>
+  ${dailyQuickHtml()}
+</div>`}
+
 function vehicleDistance(){const v=activeVehicle();if(!v)return 0;const kms=[...(vf(state.fuel).map(x=>+x.km||0)),...(vf(state.services).map(x=>+x.km||0)),...(vf(state.trips).flatMap(x=>[+x.startKm||0,+x.endKm||0]))].filter(Boolean);if(!kms.length)return v.km||0;return Math.max(...kms)-Math.min(...kms)}
 function currentValuation(){const v=activeVehicle();if(!v)return 0;const a=vf(state.valuations).sort((a,b)=>(+b.ts||0)-(+a.ts||0)||String(b.date).localeCompare(String(a.date)));return +(a[0]?.value||v.currentValue||0)}
 function costPerKm(){const d=vehicleDistance();return d>0?totalAll()/d:0}
-function fuelMiniCard(){const f=state.fuelMarket||{},headline=f.news?.[0]?.title||'';if(!f.updatedAt)return `<button class="card fuelBanner wide" onclick="fuelPricesModal()" style="text-align:left"><b>⛽ Yakıt Fiyatları</b><div class="muted small">Konumuna göre güncel fiyatları karşılaştır</div></button>`;const age=Math.round((Date.now()-(+f.updatedAt||0))/3600000);return `<button class="card fuelBanner wide" onclick="fuelPricesModal()" style="text-align:left"><div style="display:flex;justify-content:space-between;gap:8px"><div><b>⛽ Yakıt Fiyatları</b><div class="muted small">${age<24?age+' saat önce':'Son kontrol '+new Date(+f.updatedAt).toLocaleDateString(apLocale())}</div></div><span class="chip" style="background:#fff;color:#116bc9">Kontrol et</span></div>${headline?`<div class="small" style="margin-top:10px">${esc(headline)}</div>`:`<div class="small" style="margin-top:10px">Konumuna göre fiyatları görmek için aç.</div>`}</button>`}
+function fuelMiniCard(){return ''}
 
 function driveMiniCard(){return `<button class="card driveBanner wide" onclick="driveCenterModal()" style="text-align:left;margin-top:12px"><div style="display:flex;align-items:center;gap:10px"><span style="width:42px;height:42px;border-radius:14px;background:rgba(255,255,255,.12);display:grid;place-items:center">${ico('speed')}</span><div><b>Canlı Sürüş Merkezi</b><div class="muted small">GPS hız • benzinlik • muayene • şarj</div></div></div></button>`}
 
@@ -2957,16 +3051,6 @@ return `<div class="ref791">
     <img src="r8ui/maintenance.jpg" alt="Akıllı Arıza Rehberi">
     <div class="ref791-guidecopy"><b>Akıllı Arıza Rehberi</b><small>Belirtiyi yaz, olası nedenleri ve aciliyet seviyesini öğren.</small><span class="ref791-question">“Direksiyondan ses geliyor, neden olabilir?” ›</span></div>
   </button>
-
-  <button class="ref791-card ref791-wide" onclick="fuelPricesModal()">
-    <div class="ref791-head"><span class="ref791-icon">⛽</span><span><b>Güncel Yakıt Fiyatları</b><small>${fm.city||'Seçili şehir'}</small></span></div>
-    <div class="ref791-fuelprices">
-      <div class="ref791-price"><span>Benzin</span><b>${fm.gasoline?Number(fm.gasoline).toFixed(2)+' ₺/L':'—'}</b></div>
-      <div class="ref791-price"><span>Motorin</span><b>${fm.diesel?Number(fm.diesel).toFixed(2)+' ₺/L':'—'}</b></div>
-      <div class="ref791-price"><span>LPG</span><b>${fm.lpg?Number(fm.lpg).toFixed(2)+' ₺/L':'—'}</b></div>
-    </div>
-  </button>
-
 </div>
 
 <div class="ref791-qtitle"><b>⚡ Hızlı İşlemler</b><button onclick="go('more')">Tüm işlemler ›</button></div>
@@ -2978,6 +3062,8 @@ return `<div class="ref791">
   <button onclick="marketValueModal()"><i>${ico('value')}</i>Piyasa</button>
   <button onclick="go('reports')"><i>${ico('chart')}</i>Rapor Al</button>
 </div>
+
+${dailyQuickHtml()}
 
 </div>`}
 
@@ -2994,7 +3080,7 @@ function tiresView(){const a=vf(state.tires);return `<div class="sectionHead"><h
 function reportsView(){const a=monthlyData(6),max=Math.max(1,...a.map(x=>x.total)),v=activeVehicle(),val=currentValuation(),dep=(v?.purchasePrice&&val)?val-(+v.purchasePrice):0;return `<div class="sectionHead"><h2>Raporlar</h2><span class="chip">Tüm zamanlar</span></div><div class="card"><div class="muted small">Toplam araç gideri</div><div style="font-size:32px;font-weight:900;margin-top:4px">${money(totalAll())}</div><div class="bars">${a.map(x=>`<div class="bar"><em>${x.total?Math.round(x.total/1000)+'K':''}</em><b style="height:${Math.max(4,x.total/max*120)}px"></b><span>${x.label}</span></div>`).join('')}</div></div><div class="grid2"><div class="card metric"><div class="label">Maliyet / km</div><strong>${costPerKm()?costPerKm().toFixed(2)+' TL':'—'}</strong></div><div class="card metric"><div class="label">Güncel Değer</div><strong>${val?money(val):'—'}</strong></div><div class="card metric"><div class="label">Yakıt</div><strong>${money(totals().fuel)}</strong></div><div class="card metric"><div class="label">Değer Değişimi</div><strong class="${dep<0?'dangerText':''}">${v?.purchasePrice&&val?money(dep):'—'}</strong></div></div><div class="sectionHead"><h2>Analiz Araçları</h2></div><div class="quickGrid"><button class="quick" onclick="fuelBudgetCalculator()"><span class="qico">${ico('fuel')}</span><b>Aylık Yakıt Tahmini</b></button><button class="quick" onclick="routeCalculator()"><span class="qico">${ico('calculator')}</span><b>Yol Maliyeti</b></button><button class="quick" onclick="compareVehicles()"><span class="qico">${ico('compare')}</span><b>Araç Karşılaştır</b></button><button class="quick" onclick="valuationModal()"><span class="qico">${ico('value')}</span><b>Değer Takibi</b></button></div><div class="sectionHead"><h2>Dışa Aktar</h2></div><div class="quickGrid"><button class="quick" onclick="exportPdf()"><span class="qico">${ico('document')}</span><b>PDF Araç Dosyası</b></button><button class="quick" onclick="exportXls()"><span class="qico">${ico('records')}</span><b>Excel Raporu</b></button><button class="quick" onclick="exportCsv()"><span class="qico">${ico('records')}</span><b>CSV Raporu</b></button><button class="quick" onclick="shareSummary()"><span class="qico">${ico('cloud')}</span><b>Özeti Paylaş</b></button></div>`}
 function moreCategory(title){const m={
 'Canlı Sürüş':'yol','Acil Yardım':'saglik','Yol Yardım':'yol','Yakın Benzinlik':'yol','Yakın Eczane':'saglik','Yakın Cami':'gunluk','Yakın Noter':'gunluk',
-'Akaryakıt Zam':'arac','Yakıt Fiyatları':'arac','Alırken Kontrol':'arac','Teknik Özellikler':'arac','Muayene':'arac','Şarj İstasyonu':'yol','Yakın Hastane':'saglik','Sağlık Ocağı':'saglik',
+'Akaryakıt Zam':'arac','Alırken Kontrol':'arac','Teknik Özellikler':'arac','Muayene':'arac','Şarj İstasyonu':'yol','Yakın Hastane':'saglik','Sağlık Ocağı':'saglik',
 'Otel & Konaklama':'kesfet','Yeme & İçme':'kesfet','Gezilecek Yerler':'kesfet','Yakın Otopark':'yol','WC & Dinlenme':'yol','Lastikçi':'arac',
 'Toplanma Alanı':'saglik','Yakın ATM':'gunluk','Yakın Market':'gunluk','Oto Yıkama':'arac','Park & Mesire':'kesfet','Nöbetçi Eczane':'saglik',
 'Acil Kurumlar':'saglik','Oto Elektrik & Akücü':'arac','Ekspertiz':'arac','Yedek Parça':'arac','Uzun Yol Asistanı':'yol'};return m[title]||'gunluk'}
@@ -3125,7 +3211,7 @@ ${more796Card("nearbyFuel()","fuel","fuel","Yakın Benzinlik","Haritada en yakı
 ${more796Card("nearbyPharmacy()","pharmacy","pharmacy","Yakın Eczane","Haritada eczaneler")}
 ${more796Card("nearbyMosque()","mosque","mosque","Yakın Cami","Haritada camiler")}
 ${more796Card("nearbyNotary()","notary","notary","Yakın Noter","Haritada noterler")}
-${more796Card("fuelPricesModal()","fuelprice","fuel","Yakıt Fiyatları","Konumuna göre benzin • motorin • LPG")}
+
 ${more796Card("purchaseChecklistModal()","buycheck","shield","Alırken Kontrol","Kronik risk + ekspertiz")}
 ${more796Card("specsModal()","engine","settings","Teknik Özellikler","Motor, donanım ve boyutlar")}
 ${more796Card("nearbyInspection()","inspection","inspection","Muayene","Yakındaki araç muayene noktaları")}
