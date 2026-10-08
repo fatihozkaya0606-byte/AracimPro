@@ -1855,6 +1855,14 @@ body:not(.dark) .apTickerPrice{color:#10213c!important}
   .dailyQuickGrid button b{font-size:8px}
 }
 </style>
+<style id="aracimpro7105">
+/* 7.10.5 JS KAYAR PIYASA FIX */
+.apTickerTrack{
+  animation:none!important;
+  transition:none!important;
+  will-change:transform!important;
+}
+</style>
 </head>
 <body>
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
@@ -2718,6 +2726,44 @@ function refreshMarketTicker(showToast=false){
   setTimeout(()=>{apMarketTickerBusy=false},4500);
 }
 
+
+let apTickerMotionTimer7105=0;
+let apTickerX7105=0;
+
+function startTickerMotion7105(){
+  clearInterval(apTickerMotionTimer7105);
+
+  const track=document.querySelector('.apTickerTrack');
+  if(!track)return;
+
+  apTickerX7105=0;
+  track.style.setProperty('animation','none','important');
+  track.style.setProperty('transform','translate3d(0px,0,0)','important');
+
+  apTickerMotionTimer7105=setInterval(()=>{
+    const t=document.querySelector('.apTickerTrack');
+    const set=t?.querySelector('.apTickerSet');
+    if(!t||!set)return;
+
+    const w=set.getBoundingClientRect().width;
+    if(!w||w<20)return;
+
+    // Her tikte 1.15 px sola: yaklaşık 46 px/sn.
+    apTickerX7105-=1.15;
+
+    // İlk kopya tamamen soldan çıkınca aynı noktaya kesintisiz sar.
+    if(apTickerX7105<=-w){
+      apTickerX7105+=w;
+    }
+
+    t.style.setProperty(
+      'transform',
+      'translate3d('+apTickerX7105.toFixed(2)+'px,0,0)',
+      'important'
+    );
+  },25);
+}
+
 function startMarketTickerAuto(){
   clearInterval(apMarketTickerTimer);
 
@@ -2845,7 +2891,7 @@ window.appBack=function(){
   }
   return false;
 }
-function render(){document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);if(current==='home'){setTimeout(loadHomeWeather,350)}}
+function render(){document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);setTimeout(startTickerMotion7105,420);if(current==='home'){setTimeout(loadHomeWeather,350)}}
 function view(){if(!activeVehicle()&&current!=='garage'&&current!=='more')return welcome();return ({home:homeView,garage:garageView,records:recordsView,plan:planView,reports:reportsView,more:moreView}[current]||homeView)()}
 
 function dailyQuickHtml(){
