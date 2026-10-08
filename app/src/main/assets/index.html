@@ -1460,6 +1460,31 @@ body.r8HomeMode:not(.dark) .ref791-quick{
   .more796Card.big{min-height:142px}
 }
 </style>
+<style id="aracimpro797">
+/* 7.9.7 MANUEL FOTOĞRAF SON AYAR */
+.more796Card{
+  min-height:116px!important;
+  border-radius:17px!important;
+}
+.more796Card.big{min-height:142px!important}
+.more796Card img{
+  filter:saturate(1.16) contrast(1.03) brightness(1.13)!important;
+}
+.more796Card:after{
+  background:linear-gradient(
+    0deg,
+    rgba(2,9,17,.88) 0%,
+    rgba(2,9,17,.48) 35%,
+    rgba(2,9,17,.06) 67%,
+    rgba(2,9,17,0) 82%
+  )!important;
+}
+.more796Copy{bottom:8px!important}
+.more796Copy b{font-size:10.8px!important}
+.more796Copy small{font-size:7.4px!important}
+body.r8MoreMode .header{padding-top:7px!important;padding-bottom:6px!important}
+body.r8MoreMode .more796Section{margin-top:14px!important}
+</style>
 </head>
 <body>
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
@@ -2507,8 +2532,73 @@ function more792Mini(action,img,title,sub){return `<button class="more792-mini" 
 function more794Card(action,img,icon,title,sub,featured=''){return `<button class="more794Card ${featured}" onclick="${action}"><img src="${img}" alt="${esc(title)}"><span class="more794Icon">${ico(icon)}</span><div class="more794Copy"><b>${esc(title)}</b><small>${esc(sub)}</small></div><span class="more794Arrow">›</span></button>`}
 function more794EmojiCard(action,img,emoji,title,sub,featured=''){return `<button class="more794Card ${featured}" onclick="${action}"><img src="${img}" alt="${esc(title)}"><span class="more794Icon">${emoji}</span><div class="more794Copy"><b>${esc(title)}</b><small>${esc(sub)}</small></div><span class="more794Arrow">›</span></button>`}
 
-function more796Card(action,img,icon,title,sub,featured=''){return `<button class="more796Card ${featured}" onclick="${action}"><img src="more796/${img}.jpg" alt="${esc(String(title))}"><span class="more796Icon">${ico(icon)}</span><div class="more796Copy"><b>${esc(String(title))}</b><small>${esc(String(sub))}</small></div><span class="more796Arrow">&rsaquo;</span></button>`}
-function more796Emoji(action,img,emoji,title,sub){return `<button class="more796Card" onclick="${action}"><img src="more796/${img}.jpg" alt="${esc(String(title))}"><span class="more796Icon emoji">${emoji}</span><div class="more796Copy"><b>${esc(String(title))}</b><small>${esc(String(sub))}</small></div><span class="more796Arrow">&rsaquo;</span></button>`}
+
+const MORE797_IMAGES={
+  drive:'drive.jpg',
+  roadside:'roadside.jpg',
+  fuel:'fuel.jpg',
+  engine:'engine.jpg',
+
+  community:'community.jpg',
+  profile:'profile.jpg',
+  guide:'guide.jpg',
+  market:'market.jpg',
+  parking:'parking.jpg',
+  reminder:'reminder.jpg',
+  roadtrip:'roadtrip.jpg',
+
+  alerts:'alerts.jpg',
+  range:'range.jpg',
+  highway:'highway.jpg',
+  documents:'documents.jpg',
+  speed:'speed.png',
+  government:'government.jpg',
+  service:'service.jpg',
+  winter:'winter.jpg',
+  night:'night.jpg',
+  travel:'travel.jpg',
+
+  emergency:'emergency.jpg',
+  pharmacy:'pharmacy.jpg',
+  pharmacy_night:'pharmacy.jpg',
+  mosque:'mosque.jpg',
+  notary:'notary.jpg',
+  fuelprice:'fuelprice.jpg',
+  buycheck:'buycheck.jpg',
+  inspection:'inspection.jpg',
+  charging:'charging.jpg',
+  hospital:'hospital.jpg',
+  healthcenter:'healthcenter.jpg',
+  hotel:'hotel.jpg',
+  restaurant:'restaurant.jpg',
+  attraction:'attraction.jpg',
+  parkinggarage:'parkinggarage.jpg',
+  restarea:'restarea.jpg',
+  tire:'tire.jpg',
+  assembly:'assembly.jpg',
+  atm:'atm.jpg',
+  supermarket:'supermarket.jpg',
+  carwash:'carwash.jpg',
+  park:'park.jpg',
+  autoelectric:'autoelectric.jpg',
+  parts:'parts.jpg',
+
+  telemetry:'telemetry.jpg',
+  compare:'compare.jpg',
+  battery:'battery.jpg',
+  accident:'accident.jpg',
+  routecost:'routecost.jpg',
+  settings:'settings.jpg',
+  premium:'premium.jpg',
+  cloud:'cloud.png'
+};
+function more797Src(key){
+  const file=MORE797_IMAGES[key];
+  return file?'more797/'+file:'';
+}
+
+function more796Card(action,img,icon,title,sub,featured=''){return `<button class="more796Card ${featured}" onclick="${action}"><img src="${more797Src(img)}" alt="${esc(String(title))}"><span class="more796Icon">${ico(icon)}</span><div class="more796Copy"><b>${esc(String(title))}</b><small>${esc(String(sub))}</small></div><span class="more796Arrow">&rsaquo;</span></button>`}
+function more796Emoji(action,img,emoji,title,sub){return `<button class="more796Card" onclick="${action}"><img src="${more797Src(img)}" alt="${esc(String(title))}"><span class="more796Icon emoji">${emoji}</span><div class="more796Copy"><b>${esc(String(title))}</b><small>${esc(String(sub))}</small></div><span class="more796Arrow">&rsaquo;</span></button>`}
 function more796Section(title,sub){return `<div class="more796Section"><h2>${esc(title)}</h2><small>${esc(sub)}</small></div>`}
 function moreView(){const v=activeVehicle();return `<div class="more796">
 <div class="more796Top">
