@@ -13,9 +13,9 @@
         android:allowBackup="false"
         android:usesCleartextTraffic="false"
         android:networkSecurityConfig="@xml/network_security_config"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@drawable/ic_launcher_new"
         android:label="Aracım Pro"
-        android:roundIcon="@drawable/ic_launcher"
+        android:roundIcon="@drawable/ic_launcher_new"
         android:supportsRtl="true"
         android:theme="@style/Theme.AracimPro">
 
