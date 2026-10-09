@@ -205,6 +205,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        installLocalCrashRecorder();
         WindowCompat.enableEdgeToEdge(getWindow());
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
 
@@ -1107,6 +1108,54 @@ private void showLaunchSplash() {
         return out;
     }
 
+
+    private void installLocalCrashRecorder() {
+        try {
+            final Thread.UncaughtExceptionHandler previous = Thread.getDefaultUncaughtExceptionHandler();
+            if (previous != null && previous.getClass().getName().contains("AracimProCrashHandler")) return;
+
+            Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                @Override public void uncaughtException(Thread thread, Throwable error) {
+                    try {
+                        StringBuilder b = new StringBuilder();
+                        b.append("Zaman: ").append(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.US).format(new java.util.Date())).append("\\n");
+                        b.append("Sürüm: ").append(BuildConfig.VERSION_NAME).append("\\n");
+                        b.append("Android: ").append(android.os.Build.VERSION.RELEASE).append(" (SDK ").append(android.os.Build.VERSION.SDK_INT).append(")\\n");
+                        b.append("Cihaz: ").append(android.os.Build.MANUFACTURER).append(" ").append(android.os.Build.MODEL).append("\\n");
+                        b.append("Thread: ").append(thread == null ? "" : thread.getName()).append("\\n");
+                        if (error != null) {
+                            b.append(error.getClass().getName()).append(": ").append(error.getMessage() == null ? "" : error.getMessage()).append("\\n");
+                            StackTraceElement[] st = error.getStackTrace();
+                            for (int i=0; st != null && i<Math.min(st.length, 24); i++) b.append("  at ").append(st[i].toString()).append("\\n");
+                        }
+                        getSharedPreferences("aracimpro_diag", MODE_PRIVATE).edit()
+                                .putString("last_native_crash", b.toString())
+                                .putLong("last_native_crash_ts", System.currentTimeMillis())
+                                .apply();
+                    } catch (Throwable ignored) {}
+
+                    if (previous != null) previous.uncaughtException(thread, error);
+                    else {
+                        android.os.Process.killProcess(android.os.Process.myPid());
+                        System.exit(10);
+                    }
+                }
+            });
+        } catch (Throwable ignored) {}
+    }
+
+    private String getDiagnosticsJson() {
+        JSONObject o = new JSONObject();
+        try {
+            o.put("version", BuildConfig.VERSION_NAME);
+            o.put("versionCode", BuildConfig.VERSION_CODE);
+            o.put("android", android.os.Build.VERSION.RELEASE + " / SDK " + android.os.Build.VERSION.SDK_INT);
+            o.put("device", android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL);
+            o.put("lastCrash", getSharedPreferences("aracimpro_diag", MODE_PRIVATE).getString("last_native_crash", ""));
+        } catch (Throwable ignored) {}
+        return o.toString();
+    }
+
     private void sendPresenceCount(int count, String error) {
         runOnUiThread(() -> {
             if (webView == null) return;
@@ -1493,6 +1542,16 @@ private void showLaunchSplash() {
             });
         }
 
+        @JavascriptInterface public String getDiagnostics() {
+            return getDiagnosticsJson();
+        }
+
+        @JavascriptInterface public void clearDiagnostics() {
+            try {
+                getSharedPreferences("aracimpro_diag", MODE_PRIVATE).edit().remove("last_native_crash").apply();
+            } catch (Throwable ignored) {}
+        }
+
         @JavascriptInterface public void shareText(String title, String text) {
             runOnUiThread(() -> {
                 Intent i = new Intent(Intent.ACTION_SEND);
@@ -1522,7 +1581,7 @@ private void showLaunchSplash() {
             runOnUiThread(() -> {
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
-                intent.setType("application/json");
+                intent.setType("*/*");
                 startActivityForResult(intent, OPEN_BACKUP_REQUEST);
             });
         }

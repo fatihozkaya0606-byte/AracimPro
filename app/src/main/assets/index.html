@@ -1933,12 +1933,36 @@ body.r8MoreMode:not(.dark) .moreCatDetailTop p{color:#71869b}
 @media(max-width:370px){.moreFavGrid{gap:6px}.moreFavButton{min-height:77px}.moreCatTile{min-height:88px;padding:10px}}
 </style>
 
+
+<style id="aracimpro7113">
+.apCenterHero{border-radius:19px;padding:15px;margin-bottom:10px;background:linear-gradient(135deg,#0869df,#22a4ff);color:#fff;box-shadow:0 10px 25px rgba(13,87,150,.18)}
+.apCenterHero h2{margin:0;font-size:19px}.apCenterHero p{margin:5px 0 0;font-size:9px;color:rgba(255,255,255,.88)}
+.apCenterStats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.apCenterStat{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:12px}
+.apCenterStat span{display:block;color:var(--muted);font-size:8px}.apCenterStat b{display:block;margin-top:4px;font-size:16px}
+.apBreakdown{display:grid;gap:7px;margin-top:10px}
+.apBreakRow{display:grid;grid-template-columns:95px 1fr auto;gap:7px;align-items:center}
+.apBreakRow>span{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.apBreakTrack{height:7px;border-radius:999px;background:rgba(120,145,170,.18);overflow:hidden}
+.apBreakTrack i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#1675ed,#31b7ff)}
+.apBreakRow b{font-size:9px}
+.apTimeline{position:relative;margin:8px 0 0;padding-left:20px}
+.apTimeline:before{content:"";position:absolute;left:7px;top:5px;bottom:5px;width:2px;background:linear-gradient(#29a8ff,#7b52ef)}
+.apTimelineItem{position:relative;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:10px 10px 10px 12px;margin:0 0 8px}
+.apTimelineItem:before{content:"";position:absolute;left:-18px;top:15px;width:10px;height:10px;border-radius:50%;background:#24a8ff;border:2px solid var(--bg)}
+.apTimelineItem small{display:block;color:var(--muted);font-size:8px}.apTimelineItem b{display:block;font-size:11px;margin:2px 0}.apTimelineItem span{font-size:8px;color:var(--muted)}
+.apFeedbackBtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:9px 0}
+.apDiagBox{white-space:pre-wrap;word-break:break-word;font-family:monospace;font-size:8px;line-height:1.45;background:rgba(30,60,90,.08);padding:10px;border-radius:12px;max-height:250px;overflow:auto}
+.apWhatsNew{display:grid;gap:8px}.apWhatsNew div{border:1px solid var(--line);background:var(--card);padding:10px;border-radius:14px;font-size:10px}
+.apBackupNote{font-size:8px;color:var(--muted);line-height:1.5;margin-top:8px}
+</style>
+
 </head>
 <body>
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
 <script>
 const KEY='aracim_pro_v1';
-const V='5.5.6';
+const V='7.11.3';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.NumberFormat(apLocale(),{style:'currency',currency:apCurrency(),maximumFractionDigits:2}).format(Number(n)||0);const num=n=>(Number(n)||0).toLocaleString(apLocale());
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -2967,7 +2991,7 @@ window.appBack=function(){
   }
   return false;
 }
-function render(){document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);setTimeout(startTickerMotion7105,420);if(current==='home'){setTimeout(loadHomeWeather,350)}}
+function render(){document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);setTimeout(startTickerMotion7105,420);setTimeout(showWhatsNewOnce,850);if(current==='home'){setTimeout(loadHomeWeather,350)}}
 function view(){if(!activeVehicle()&&current!=='garage'&&current!=='more')return welcome();return ({home:homeView,garage:garageView,records:recordsView,plan:planView,reports:reportsView,more:moreView}[current]||homeView)()}
 
 function dailyQuickHtml(){
@@ -3231,8 +3255,8 @@ const MORE797_IMAGES={
   alerts:'alerts.jpg',
   range:'range.jpg',
   highway:'highway.jpg',
-  documents:'documents.jpg',
-  vault:'vault.jpg',
+  documents:'documents_safe.svg',
+  vault:'documents_safe.svg',
   speed:'speed.png',
   government:'government.jpg',
   service:'service.jpg',
@@ -3344,6 +3368,13 @@ function moreAllServices(){
     {id:'accident',cat:'service',action:"accidentModal()",img:'accident',icon:'shield',title:'Kaza / Hasar',sub:'Hasar ve onarım kayıtları'},
     {id:'routecost',cat:'tools',action:"routeCalculator()",img:'routecost',icon:'road',title:'Yol Maliyeti',sub:'Rota yakıt maliyetini hesapla'},
     {id:'vault',cat:'docs',action:"documentsViewModal()",img:'vault',icon:'document',title:'Belge Kasası',sub:'Araç belgelerini görüntüle'},
+    {id:'expense-center',cat:'tools',action:"expenseCenterModal()",img:'market',icon:'chart',title:'Masraf Merkezi',sub:'Aylık, yıllık ve toplam araç giderleri'},
+    {id:'timeline',cat:'tools',action:"vehicleTimelineModal()",img:'compare',icon:'records',title:'Araç Geçmişi',sub:'Tüm kayıtları zaman çizelgesinde gör'},
+    {id:'service-pdf',cat:'docs',action:"exportServicePdf()",img:'documents',icon:'document',title:'Servis PDF Raporu',sub:'Servis ve bakım geçmişini PDF kaydet'},
+    {id:'secure-backup',cat:'account',action:"encryptedBackup()",img:'cloud',icon:'shield',title:'Şifreli Yerel Yedek',sub:'AES-GCM ile parolalı yedek oluştur'},
+    {id:'feedback',cat:'account',action:"feedbackModal()",img:'community',icon:'comment',title:'Hata / Öneri',sub:'Geri bildirimini paylaş'},
+    {id:'diagnostics',cat:'account',action:"diagnosticsModal()",img:'settings',icon:'settings',title:'Hata Günlüğü',sub:'Cihazda tutulan tanılama kayıtları'},
+    {id:'whatsnew',cat:'account',action:"whatsNewModal()",img:'alerts',icon:'bell',title:'Yenilikler',sub:'Bu sürümde neler değişti'},
     {id:'settings',cat:'account',action:"openSettings()",img:'settings',icon:'settings',title:'Ayarlar',sub:'Uygulama tercihleri'},
     {id:'premium',cat:'account',action:"premiumPreview()",img:'premium',icon:'star',title:'Premium',sub:'Premium özellikleri görüntüle'},
     {id:'cloud',cat:'account',action:"backupCloud()",img:'cloud',icon:'cloud',title:'Buluta Yedekle',sub:'Verilerini güvenle yedekle'}
@@ -3425,6 +3456,194 @@ function moreCategoryDetail(id){
   </div>`;
 }
 function moreView(){return window.moreCatOpen?moreCategoryDetail(window.moreCatOpen):moreCategoryHome()}
+
+/* ARACIMPRO 7.11.3 • MASRAF / GEÇMİŞ / PDF / YEDEK / TANI */
+const AP_WHATSNEW='7.11.3';
+const AP_CRASH_KEY='aracimpro_js_crashlog_v1';
+
+function apRecordJsCrash(kind,msg,src,line,col,stack){
+  try{
+    const a=JSON.parse(localStorage.getItem(AP_CRASH_KEY)||'[]');
+    a.unshift({ts:Date.now(),kind:String(kind||'JS'),msg:String(msg||'').slice(0,1000),src:String(src||'').slice(0,300),line:+line||0,col:+col||0,stack:String(stack||'').slice(0,4000),v:V});
+    localStorage.setItem(AP_CRASH_KEY,JSON.stringify(a.slice(0,20)));
+  }catch(e){}
+}
+if(!window.__apCrashHooks){
+  window.__apCrashHooks=true;
+  window.addEventListener('error',e=>apRecordJsCrash('JS',e.message,e.filename,e.lineno,e.colno,e.error&&e.error.stack));
+  window.addEventListener('unhandledrejection',e=>apRecordJsCrash('Promise',e.reason&&e.reason.message||String(e.reason||''),'',0,0,e.reason&&e.reason.stack));
+}
+
+function expenseCenterRows(){
+  const rows=[];
+  vf(state.fuel).forEach(x=>rows.push({kind:'Yakıt',date:x.date,cost:+x.cost||0}));
+  vf(state.expenses).forEach(x=>rows.push({kind:x.category||'Diğer',date:x.date,cost:+x.cost||0}));
+  vf(state.services).forEach(x=>rows.push({kind:'Servis',date:x.date,cost:+x.total||0}));
+  vf(state.maintenance).forEach(x=>{if(+x.cost>0)rows.push({kind:'Bakım',date:x.dateDone||x.dueDate,cost:+x.cost||0})});
+  vf(state.accidents).forEach(x=>{if(+x.cost>0)rows.push({kind:'Kaza / Hasar',date:x.date,cost:+x.cost||0})});
+  vf(state.batteries).forEach(x=>{if(+x.cost>0)rows.push({kind:'Akü',date:x.installDate,cost:+x.cost||0})});
+  vf(state.trips).forEach(x=>{if(+x.cost>0)rows.push({kind:'Yolculuk',date:x.date,cost:+x.cost||0})});
+  return rows.filter(x=>x.date);
+}
+function expenseCenterModal(){
+  if(!activeVehicle())return toast('Önce araç ekle');
+  const rows=expenseCenterRows(),now=new Date(),ym=now.toISOString().slice(0,7),yy=String(now.getFullYear());
+  const month=rows.filter(x=>String(x.date||'').startsWith(ym)).reduce((a,x)=>a+x.cost,0);
+  const year=rows.filter(x=>String(x.date||'').startsWith(yy)).reduce((a,x)=>a+x.cost,0);
+  const all=rows.reduce((a,x)=>a+x.cost,0);
+  const by={};rows.forEach(x=>by[x.kind]=(by[x.kind]||0)+x.cost);
+  const parts=Object.entries(by).sort((a,b)=>b[1]-a[1]),max=Math.max(1,...parts.map(x=>x[1]));
+  modal('Masraf Merkezi',`
+    <div class="apCenterHero"><h2>💰 Masraf Merkezi</h2><p>Yakıt, bakım, servis, sigorta, MTV ve diğer araç giderleri tek yerde.</p></div>
+    <div class="apCenterStats">
+      <div class="apCenterStat"><span>BU AY</span><b>${money(month)}</b></div>
+      <div class="apCenterStat"><span>BU YIL</span><b>${money(year)}</b></div>
+      <div class="apCenterStat"><span>TÜM ZAMANLAR</span><b>${money(all)}</b></div>
+      <div class="apCenterStat"><span>KM BAŞINA</span><b>${costPerKm()?costPerKm().toFixed(2)+' TL':'—'}</b></div>
+    </div>
+    <div class="sectionHead"><h2>Dağılım</h2></div>
+    <div class="apBreakdown">${parts.length?parts.map(([k,v])=>`<div class="apBreakRow"><span>${esc(k)}</span><div class="apBreakTrack"><i style="width:${Math.max(3,v/max*100)}%"></i></div><b>${money(v)}</b></div>`).join(''):'<div class="notice">Henüz masraf kaydı yok.</div>'}</div>
+    <div class="apFeedbackBtns" style="margin-top:14px">
+      <button class="secondary" onclick="closeModal();recordsTab='expenses';go('records');setTimeout(()=>openExpense(),180)">+ Gider Ekle</button>
+      <button class="secondary" onclick="closeModal();recordsTab='fuel';go('records');setTimeout(()=>openFuel(),180)">+ Yakıt Ekle</button>
+      <button class="secondary" onclick="closeModal();recordsTab='services';go('records');setTimeout(()=>openService(),180)">+ Servis Ekle</button>
+      <button class="secondary" onclick="closeModal();go('reports')">Raporlara Git</button>
+    </div>`);
+}
+
+function vehicleTimelineItems(){
+  const a=[];
+  vf(state.services).forEach(x=>a.push({date:x.date,icon:'🧰',title:x.work||'Servis',sub:`${num(x.km||0)} km • ${x.shop||''}`,cost:+x.total||0}));
+  vf(state.fuel).forEach(x=>a.push({date:x.date,icon:'⛽',title:'Yakıt',sub:`${num(x.km||0)} km • ${x.station||''}`,cost:+x.cost||0}));
+  vf(state.expenses).forEach(x=>a.push({date:x.date,icon:'💸',title:x.category||'Gider',sub:x.note||'',cost:+x.cost||0}));
+  vf(state.maintenance).forEach(x=>a.push({date:x.dateDone||x.dueDate,icon:x.completed?'✅':'🔧',title:x.name||'Bakım',sub:x.completed?'Tamamlandı':'Planlı',cost:+x.cost||0}));
+  vf(state.trips).forEach(x=>a.push({date:x.date,icon:'🛣️',title:x.route||x.purpose||'Yolculuk',sub:`${num(Math.max(0,(+x.endKm||0)-(+x.startKm||0)))} km`,cost:+x.cost||0}));
+  vf(state.accidents).forEach(x=>a.push({date:x.date,icon:'🛡️',title:x.title||'Kaza / Hasar',sub:x.status||'',cost:+x.cost||0}));
+  vf(state.batteries).forEach(x=>a.push({date:x.installDate,icon:'🔋',title:'Akü Değişimi',sub:`${x.brand||''} ${x.model||''} • ${num(x.installKm||0)} km`,cost:+x.cost||0}));
+  vf(state.valuations).forEach(x=>a.push({date:x.date,icon:'📈',title:'Araç Değeri',sub:x.note||'',value:+x.value||0}));
+  return a.filter(x=>x.date).sort((x,y)=>String(y.date).localeCompare(String(x.date)));
+}
+function vehicleTimelineModal(){
+  if(!activeVehicle())return toast('Önce araç ekle');
+  const a=vehicleTimelineItems().slice(0,120);
+  modal('Araç Geçmişi',`
+    <div class="apCenterHero"><h2>🕘 Araç Geçmişi</h2><p>Bakım, servis, yakıt, gider ve önemli kayıtların kronolojik özeti.</p></div>
+    ${a.length?`<div class="apTimeline">${a.map(x=>`<div class="apTimelineItem"><small>${fmtDate(x.date)}</small><b>${x.icon} ${esc(x.title)}</b><span>${esc(x.sub||'')}${x.value?' • '+money(x.value):x.cost?' • '+money(x.cost):''}</span></div>`).join('')}</div>`:'<div class="notice">Henüz geçmiş kaydı yok.</div>'}`);
+}
+
+function servicePdfText(){
+  const v=activeVehicle();if(!v)return'';
+  const services=[...vf(state.services)].sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  const maint=[...vf(state.maintenance)].sort((a,b)=>String(a.dateDone||a.dueDate).localeCompare(String(b.dateDone||b.dueDate)));
+  let t=`ARACIM PRO - SERVİS / BAKIM GEÇMİŞİ\n\nAraç: ${v.year||''} ${v.make||''} ${v.model||''}\nPaket: ${v.trim||''}\nPlaka: ${v.plate||'Plakasız'}\nGüncel KM: ${num(v.km||0)}\nOluşturma: ${new Date().toLocaleString(apLocale())}\n\n`;
+  t+='SERVİS KAYITLARI\n';
+  if(!services.length)t+='Kayıt yok\n';
+  services.forEach(x=>t+=`${fmtDate(x.date)} | ${num(x.km||0)} km | ${x.work||''} | ${x.shop||''} | Parça: ${x.parts||'-'} | Toplam: ${money(x.total||0)}\n`);
+  t+='\nBAKIM / RESMÎ İŞLEMLER\n';
+  if(!maint.length)t+='Kayıt yok\n';
+  maint.forEach(x=>t+=`${x.name||''} | ${x.completed?'Tamamlandı':'Planlı'} | ${x.dateDone||x.dueDate||''} | ${x.dueKm?num(x.dueKm)+' km':'-'} | ${money(x.cost||0)}\n`);
+  t+=`\nToplam servis: ${money(sum(vf(state.services),'total'))}\nToplam bakım: ${money(sum(vf(state.maintenance))}\n`;
+  return t;
+}
+function exportServicePdf(){
+  if(!activeVehicle())return toast('Önce araç ekle');
+  try{Android.savePdf('AracimPro_Servis_Gecmisi.pdf','Aracım Pro Servis / Bakım Geçmişi',servicePdfText());toast('PDF hazırlanıyor')}catch(e){toast('PDF oluşturulamadı')}
+}
+
+function whatsNewModal(){
+  modal('7.11.3 Yenilikler',`<div class="apCenterHero"><h2>🚘 Aracım Pro güncellendi</h2><p>Bu sürümde düzen, veri güvenliği ve araç yönetimi geliştirildi.</p></div>
+  <div class="apWhatsNew">
+    <div>🗂️ Daha Fazla ekranı kategorilere ayrıldı ve arama eklendi.</div>
+    <div>⭐ Sık kullanılan özellikler kişiselleştirilebilir.</div>
+    <div>💰 Masraf Merkezi eklendi.</div>
+    <div>🕘 Araç Geçmişi zaman çizelgesi eklendi.</div>
+    <div>📄 Servis / bakım geçmişi PDF olarak dışa aktarılabilir.</div>
+    <div>🔐 AES-GCM şifreli yerel yedek eklendi.</div>
+    <div>🧰 Hata günlüğü ve öneri paylaşımı eklendi.</div>
+    <div>🪪 Kişisel belge görselleri kaldırıldı; genel araç evrakı görseli kullanılıyor.</div>
+  </div>`);
+}
+function showWhatsNewOnce(){
+  try{
+    const k='aracimpro_whatsnew_seen';
+    if(localStorage.getItem(k)===AP_WHATSNEW)return;
+    if(document.querySelector('.sheet'))return;
+    localStorage.setItem(k,AP_WHATSNEW);
+    whatsNewModal();
+  }catch(e){}
+}
+
+function feedbackModal(){
+  modal('Hata Bildir / Öneri Gönder',`
+    <div class="apCenterHero"><h2>💬 Geri Bildirim</h2><p>Rapor yalnız sen Paylaş düğmesine bastığında telefonun paylaşım ekranına gönderilir.</p></div>
+    <div class="field"><label>Tür</label><select id="apFeedbackType"><option>Hata Bildirimi</option><option>Öneri</option><option>Diğer</option></select></div>
+    <div class="field"><label>Açıklama</label><textarea id="apFeedbackText" maxlength="1500" placeholder="Ne oldu veya ne eklenmesini istersin?"></textarea></div>
+    <button class="primary wide" onclick="shareFeedback()">Paylaş</button>`);
+}
+function nativeDiagnostics(){
+  try{return JSON.parse(Android.getDiagnostics()||'{}')}catch(e){return{}}
+}
+function shareFeedback(){
+  const type=document.getElementById('apFeedbackType')?.value||'Geri Bildirim';
+  const msg=(document.getElementById('apFeedbackText')?.value||'').trim();
+  if(msg.length<3)return toast('Kısa bir açıklama yaz');
+  const d=nativeDiagnostics(),v=activeVehicle();
+  const text=`${type}\n\n${msg}\n\n--- Tanılama ---\nAracım Pro: ${V}\nAndroid: ${d.android||navigator.userAgent}\nCihaz: ${d.device||''}\nAraç: ${v?(v.year||'')+' '+(v.make||'')+' '+(v.model||''):'Yok'}\n`;
+  try{Android.shareText('Aracım Pro - '+type,text)}catch(e){toast('Paylaşım açılamadı')}
+}
+
+function diagnosticsModal(){
+  let js=[];try{js=JSON.parse(localStorage.getItem(AP_CRASH_KEY)||'[]')}catch(e){}
+  const d=nativeDiagnostics();
+  const nativeLog=String(d.lastCrash||'').trim();
+  const jsText=js.slice(0,8).map(x=>`${new Date(x.ts).toLocaleString(apLocale())} • ${x.kind}\n${x.msg}\n${x.src||''}:${x.line||0}\n${x.stack||''}`).join('\n\n---\n\n');
+  modal('Hata Günlüğü',`
+    <div class="notice">Bu kayıtlar cihazında tutulur. Otomatik olarak sunucuya gönderilmez.</div>
+    <div class="sectionHead"><h2>Native çökme kaydı</h2></div>
+    <div class="apDiagBox">${esc(nativeLog||'Kayıt yok')}</div>
+    <div class="sectionHead"><h2>Web / JavaScript kayıtları</h2></div>
+    <div class="apDiagBox">${esc(jsText||'Kayıt yok')}</div>
+    <div class="apFeedbackBtns">
+      <button class="secondary" onclick="feedbackModal()">Raporla / Öneri</button>
+      <button class="danger" onclick="clearDiagnostics()">Kayıtları Temizle</button>
+    </div>`);
+}
+function clearDiagnostics(){
+  localStorage.removeItem(AP_CRASH_KEY);
+  try{Android.clearDiagnostics()}catch(e){}
+  closeModal();toast('Hata kayıtları temizlendi');
+}
+
+function apB64(bytes){
+  let s='',a=new Uint8Array(bytes);for(let i=0;i<a.length;i+=0x8000)s+=String.fromCharCode(...a.subarray(i,i+0x8000));return btoa(s)
+}
+function apUnb64(s){const x=atob(s),a=new Uint8Array(x.length);for(let i=0;i<x.length;i++)a[i]=x.charCodeAt(i);return a}
+async function encryptedBackup(){
+  if(!window.crypto?.subtle)return toast('Bu cihazda şifreli yedek desteklenmiyor');
+  const p1=prompt('Yedek için güçlü bir parola belirle (en az 6 karakter):');if(p1===null)return;
+  if(p1.length<6)return toast('Parola en az 6 karakter olmalı');
+  const p2=prompt('Parolayı tekrar yaz:');if(p1!==p2)return toast('Parolalar eşleşmedi');
+  try{
+    const enc=new TextEncoder(),salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+    const base=await crypto.subtle.importKey('raw',enc.encode(p1),'PBKDF2',false,['deriveKey']);
+    const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:150000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt']);
+    const data=enc.encode(JSON.stringify(state));
+    const cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,data);
+    const wrapper={format:'AracimProEncryptedBackup',v:1,kdf:'PBKDF2-SHA256',iterations:150000,cipher:'AES-256-GCM',salt:apB64(salt),iv:apB64(iv),data:apB64(cipher)};
+    saveFile('AracimPro_Sifreli_Yedek.aracimpro','application/octet-stream',JSON.stringify(wrapper));
+    toast('Şifreli yedek hazır');
+  }catch(e){apRecordJsCrash('Backup',e.message,'',0,0,e.stack);toast('Şifreli yedek oluşturulamadı')}
+}
+async function apDecryptBackup(o,password){
+  const enc=new TextEncoder(),base=await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveKey']);
+  const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:apUnb64(o.salt),iterations:+o.iterations||150000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['decrypt']);
+  const plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:apUnb64(o.iv)},key,apUnb64(o.data));
+  return new TextDecoder().decode(plain);
+}
+function restoreStateObject(o){
+  state={...initial,...o,marketChecks:Array.isArray(o.marketChecks)?o.marketChecks:[],fuelMarket:{...initial.fuelMarket,...(o.fuelMarket||{})},emergency:{...initial.emergency,...(o.emergency||{})},prefs:{...initial.prefs,...(o.prefs||{})}};
+  closeModal();save();toast('Yedek geri yüklendi');
+}
 
 function listOrEmpty(a,fn){return a.length?`<div class="list">${a.map(fn).join('')}</div>`:`<div class="card empty"><div class="big">🗒️</div><h3>Henüz kayıt yok</h3><p class="muted">İlk kaydını ekleyerek başla.</p></div>`}
 
@@ -4404,12 +4623,23 @@ function exportXlsCore(){const rows=[];vf(state.fuel).forEach(x=>rows.push(['Yak
 function saveFile(n,m,c){try{Android.saveFile(n,m,c)}catch(e){const b=new Blob([c],{type:m}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=n;a.click()}}
 function shareSummary(){try{Android.shareText('Aracım Pro Raporu',reportText().slice(0,4000))}catch(e){}}
 function backup(){saveFile('AracimPro_Yedek.json','application/json',JSON.stringify(state,null,2))}function backupCloudCore(){modal('Buluta Yedekle',`<div class="form"><div class="notice">Kaydet ekranında Google Drive, OneDrive veya başka bir bulut sağlayıcısını seçebilirsin. Böylece hesap şifresi uygulamaya verilmez.</div><button class="primary wide" onclick="backup();closeModal()">Yedek Dosyasını Kaydet</button></div>`)}
-function restore(){try{Android.openBackupFile()}catch(e){}}window.restoreBackupFromNative=c=>{try{const s=JSON.parse(c);state={...initial,...s,marketChecks:Array.isArray(s.marketChecks)?s.marketChecks:[],fuelMarket:{...initial.fuelMarket,...(s.fuelMarket||{})},emergency:{...initial.emergency,...(s.emergency||{})},prefs:{...initial.prefs,...(s.prefs||{})}};closeModal();save();toast('Yedek geri yüklendi')}catch(e){alert('Geçersiz yedek')}};
+function restore(){try{Android.openBackupFile()}catch(e){}}window.restoreBackupFromNative=async c=>{
+  try{
+    const o=JSON.parse(c);
+    if(o&&o.format==='AracimProEncryptedBackup'){
+      const pw=prompt('Şifreli yedek parolası:');if(pw===null)return;
+      try{const plain=await apDecryptBackup(o,pw);restoreStateObject(JSON.parse(plain))}
+      catch(e){toast('Parola yanlış veya yedek bozuk')}
+      return;
+    }
+    restoreStateObject(o);
+  }catch(e){alert('Geçersiz yedek')}
+};
 function openSettings(){modal('Ayarlar',`<div class="form"><div class="card" style="margin:0"><b>Aracım Pro ${V} • Güncel sürüm</b><p class="muted small">Araçla ilgili her şeyi tek yerde: ayrıntılı motor/versiyon kataloğu, doğru kasa fotoğrafı, otomatik piyasa değeri, teknik rehber, bakım ve sürüş araçları.</p></div>
 <label class="toggle"><span>🌙 Karanlık Tema</span><input type="checkbox" ${state.prefs.dark?'checked':''} onchange="state.prefs.dark=this.checked;save();openSettings()"></label><label class="toggle"><span>🔐 PIN Kilidi</span><input type="checkbox" ${state.prefs.lockEnabled?'checked':''} onchange="togglePin(this.checked)"></label><label class="toggle"><span>👆 Biyometrik Açılış</span><input type="checkbox" ${state.prefs.biometric?'checked':''} onchange="state.prefs.biometric=this.checked;save()"></label>
 <div class="sectionHead"><h2>Teknik Veri / OtoAPI</h2></div><div class="card"><b>Kesin varyant + önbellek aktif</b><div class="muted small">V15.5, seçilen OtoAPI carId kaydını araçta saklar; aynı araç için tekrar marka/model araması yapmaz. Free planda günlük 50 istek olduğu için kayıtlı tüm araçlar açılışta otomatik sorgulanmaz.</div><button type="button" class="secondary wide" style="margin-top:8px" onclick="showOtoUsage()">API Kotamı Göster</button><div id="otoUsageStatus" class="hint">Kota bilgisini görmek için düğmeye bas.</div></div><div class="sectionHead"><h2>Piyasa Değeri</h2></div><label class="toggle"><span><b>Araç kaydında otomatik değerleme</b><div class="muted small">Araç kaydedildiğinde otomatik sorgula / referans uygula</div></span><input type="checkbox" ${state.prefs.autoMarketOnSave!==false?'checked':''} onchange="state.prefs.autoMarketOnSave=this.checked;save()"></label><div class="field"><label>Canlı Değerleme Sunucu Uç Noktası</label><input value="${esc(state.prefs.marketApiUrl||'')}" placeholder="https://.../vehicle-value" onchange="state.prefs.marketApiUrl=this.value.trim();save()"></div><div class="hint">Gerçek piyasa verisi teknik OtoAPI.net'ten gelmez. V15.5, lisanslı Türkiye değerleme sağlayıcısını güvenli Worker üzerinden destekler. MARKET_API_URL ayrı girilebilir; LIVE_DATA_API_URL bağlıysa /market yolu otomatik kullanılır. Sağlayıcı tokenı/endpoint'i kurulmadan fiyat uydurulmaz ve alan boş kalır.</div>
 <div class="sectionHead"><h2>Hesaplama</h2></div><div class="formrow"><div class="field"><label>Varsayılan Yakıt/Enerji Birim Fiyatı</label><input type="number" step="0.01" value="${state.prefs.fuelPrice||''}" onchange="state.prefs.fuelPrice=+this.value;save()"></div><div class="field"><label>Yıllık Tahmini KM</label><input type="number" value="${state.prefs.annualKm||12000}" onchange="state.prefs.annualKm=+this.value;save()"></div></div>
-<div class="sectionHead"><h2>Veri & Güvenlik</h2></div><button class="secondary wide" onclick="backup()">Yedek Al</button><button class="secondary wide" onclick="backupCloud()">Google Drive / Buluta Yedekle</button><button class="secondary wide" onclick="restore()">Yedekten Geri Yükle</button><button class="secondary wide" onclick="try{Android.requestNotificationPermission();toast('Bildirim izni kontrol edildi')}catch(e){}">Bildirim İznini Kontrol Et</button><button class="danger wide" onclick="resetApp()">Tüm Verileri Sil</button><div class="hint">Belge kasasındaki dosya bağlantıları telefondaki dosyalara işaret eder. Telefon değişiminde belgeleri ayrıca taşıman gerekebilir.</div></div>`)}
+<div class="sectionHead"><h2>Veri & Güvenlik</h2></div><button class="secondary wide" onclick="encryptedBackup()">🔐 Şifreli Yerel Yedek</button><button class="secondary wide" onclick="backup()">Yedek Al</button><button class="secondary wide" onclick="backupCloud()">Google Drive / Buluta Yedekle</button><button class="secondary wide" onclick="restore()">Yedekten Geri Yükle</button><button class="secondary wide" onclick="try{Android.requestNotificationPermission();toast('Bildirim izni kontrol edildi')}catch(e){}">Bildirim İznini Kontrol Et</button><button class="secondary wide" onclick="feedbackModal()">💬 Hata Bildir / Öneri Gönder</button><button class="secondary wide" onclick="diagnosticsModal()">🧰 Hata Günlüğü</button><button class="secondary wide" onclick="whatsNewModal()">✨ Yenilikler</button><button class="danger wide" onclick="resetApp()">Tüm Verileri Sil</button><div class="hint">Belge kasasındaki dosya bağlantıları telefondaki dosyalara işaret eder. Telefon değişiminde belgeleri ayrıca taşıman gerekebilir.</div></div>`)}
 function pinHash(p){let h=2166136261;for(const c of p){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(16)}
 function togglePin(on){if(on){modal('PIN Belirle',`<form class="form" onsubmit="savePin(event)"><div class="field"><label>4-8 haneli PIN</label><input autofocus class="pin" inputmode="numeric" pattern="[0-9]{4,8}" name="pin" required></div><button class="primary wide">PIN'i Kaydet</button></form>`)}else{state.prefs.lockEnabled=false;state.prefs.pinHash='';save();openSettings()}}
 function savePin(e){e.preventDefault();const p=new FormData(e.target).get('pin');state.prefs.pinHash=pinHash(p);state.prefs.lockEnabled=true;closeModal();save();toast('PIN kilidi açıldı')}

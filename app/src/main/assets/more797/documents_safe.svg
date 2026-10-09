@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#061426"/>
+      <stop offset="0.55" stop-color="#0b3970"/>
+      <stop offset="1" stop-color="#1286d8"/>
+    </linearGradient>
+    <linearGradient id="folder" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffb323"/>
+      <stop offset="1" stop-color="#ff7b00"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <circle cx="985" cy="120" r="220" fill="#36b8ff" opacity=".13"/>
+  <circle cx="160" cy="720" r="300" fill="#092446" opacity=".65"/>
+
+  <!-- generic car -->
+  <g transform="translate(90,365)">
+    <path d="M75 158 L135 65 Q155 35 202 35 H545 Q590 35 612 70 L665 158
+             Q718 169 738 216 V278 Q738 305 708 305 H660 V278 H142 V305 H90
+             Q60 305 60 276 V218 Q60 177 75 158Z"
+          fill="#e9f7ff" opacity=".95"/>
+    <path d="M166 75 H548 Q570 75 583 96 L618 153 H122 L160 94 Q162 87 166 75Z"
+          fill="#41b9ff" opacity=".75"/>
+    <circle cx="172" cy="274" r="52" fill="#07131f"/>
+    <circle cx="624" cy="274" r="52" fill="#07131f"/>
+    <circle cx="172" cy="274" r="23" fill="#8ddcff"/>
+    <circle cx="624" cy="274" r="23" fill="#8ddcff"/>
+  </g>
+
+  <!-- generic vehicle document folder -->
+  <g transform="translate(690,255)">
+    <path d="M35 90 Q35 55 70 55 H185 L225 95 H420 Q455 95 455 130 V405 Q455 440 420 440 H70 Q35 440 35 405Z"
+          fill="url(#folder)"/>
+    <rect x="105" y="130" width="275" height="235" rx="18" fill="#fff"/>
+    <rect x="135" y="170" width="165" height="18" rx="9" fill="#183d63"/>
+    <rect x="135" y="210" width="210" height="14" rx="7" fill="#92a9bd"/>
+    <rect x="135" y="242" width="190" height="14" rx="7" fill="#92a9bd"/>
+    <rect x="135" y="300" width="95" height="40" rx="12" fill="#1b9be5"/>
+    <path d="M263 321 l23 23 46-55" fill="none" stroke="#13a86b" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <text x="70" y="95" font-family="sans-serif" font-size="55" font-weight="700" fill="#ffffff">ARAÇ BELGELERİ</text>
+  <text x="73" y="145" font-family="sans-serif" font-size="27" fill="#bde6ff">Muayene • sigorta • MTV • araç evrakları</text>
+</svg>
