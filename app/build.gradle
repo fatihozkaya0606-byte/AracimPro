@@ -24,8 +24,8 @@ android {
         buildConfigField "String", "FIREBASE_APP_ID", "\"${System.getenv('FIREBASE_APP_ID') ?: ''}\""
         buildConfigField "String", "MARKET_API_URL", "\"${System.getenv('MARKET_API_URL') ?: ''}\""
         buildConfigField "String", "LIVE_DATA_API_URL", "\"${System.getenv('LIVE_DATA_API_URL') ?: ''}\""
-        versionCode 79
-        versionName '7.11.5'
+        versionCode 80
+        versionName '7.11.6'
     }
 
     signingConfigs {
