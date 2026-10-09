@@ -1,22 +1,66 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function validShortString(v, maxLen) {
+      return v is string && v.size() <= maxLen;
+    }
+
+    function validComment(d) {
+      return d.keys().hasOnly([
+               'modelKey','make','model','year','engine','trim',
+               'rating','mileage','realConsumption',
+               'text','pros','cons','issue',
+               'userId','userName','createdAt','createdAtServer','likes'
+             ])
+             && validShortString(d.modelKey, 180)
+             && d.modelKey.size() >= 1
+             && validShortString(d.make, 80)
+             && validShortString(d.model, 120)
+             && d.year is int && d.year >= 1886 && d.year <= 2100
+             && validShortString(d.engine, 120)
+             && validShortString(d.trim, 120)
+             && d.rating is int && d.rating >= 1 && d.rating <= 5
+             && d.mileage is int && d.mileage >= 0 && d.mileage <= 10000000
+             && d.realConsumption is number && d.realConsumption >= 0 && d.realConsumption <= 100
+             && d.text is string && d.text.size() >= 3 && d.text.size() <= 1200
+             && validShortString(d.pros, 1200)
+             && validShortString(d.cons, 1200)
+             && validShortString(d.issue, 1200)
+             && d.userId == request.auth.uid
+             && validShortString(d.userName, 120)
+             && d.createdAt is int && d.createdAt > 0
+             && d.createdAtServer == request.time
+             && d.likes == 0;
+    }
+
     match /vehicle_comments/{commentId} {
       allow read: if true;
-      allow create: if request.auth != null
-                    && request.resource.data.userId == request.auth.uid
-                    && request.resource.data.rating >= 1
-                    && request.resource.data.rating <= 5
-                    && request.resource.data.text is string
-                    && request.resource.data.text.size() >= 3
-                    && request.resource.data.text.size() <= 1200;
-      allow update, delete: if request.auth != null
-                            && resource.data.userId == request.auth.uid;
+      allow create: if signedIn() && validComment(request.resource.data);
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
     }
 
     match /comment_reports/{reportId} {
-      allow create: if request.auth != null
-                    && request.resource.data.userId == request.auth.uid;
+      allow create: if signedIn()
+                    && request.resource.data.keys().hasOnly([
+                         'commentId','reason','userId','createdAt','createdAtServer'
+                       ])
+                    && request.resource.data.commentId is string
+                    && request.resource.data.commentId.size() >= 1
+                    && request.resource.data.commentId.size() <= 180
+                    && request.resource.data.reason is string
+                    && request.resource.data.reason.size() >= 1
+                    && request.resource.data.reason.size() <= 300
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.createdAt is int
+                    && request.resource.data.createdAt > 0
+                    && request.resource.data.createdAtServer == request.time;
+
       allow read, update, delete: if false;
     }
   }

@@ -57,6 +57,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.resource.bitmap.DownsampleStrategy;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.ViewCompat;
+import androidx.webkit.WebViewAssetLoader;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -253,19 +254,45 @@ public class MainActivity extends Activity {
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
         s.setDatabaseEnabled(true);
-        s.setAllowFileAccess(true);
-        s.setAllowContentAccess(true);
+        s.setAllowFileAccess(false);
+        s.setAllowContentAccess(false);
         s.setBuiltInZoomControls(false);
         s.setDisplayZoomControls(false);
         s.setTextZoom(100);
         s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+        s.setJavaScriptCanOpenWindowsAutomatically(false);
+        s.setSupportMultipleWindows(false);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try { s.setSafeBrowsingEnabled(true); } catch (Throwable ignored) {}
+        }
+        WebView.setWebContentsDebuggingEnabled(BuildConfig.DEBUG);
+
+        final WebViewAssetLoader assetLoader = new WebViewAssetLoader.Builder()
+                .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
+                .build();
 
         webView.setWebViewClient(new WebViewClient() {
+            @Override public android.webkit.WebResourceResponse shouldInterceptRequest(
+                    WebView view, WebResourceRequest request) {
+                try {
+                    Uri uri = request.getUrl();
+                    if (uri != null
+                            && "https".equalsIgnoreCase(uri.getScheme())
+                            && "appassets.androidplatform.net".equalsIgnoreCase(uri.getHost())) {
+                        return assetLoader.shouldInterceptRequest(uri);
+                    }
+                } catch (Throwable ignored) {}
+                return null;
+            }
+
             @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
                 if (!request.isForMainFrame()) return false;
                 Uri uri = request.getUrl();
                 String url = uri.toString();
-                if (url.startsWith("file:///android_asset/")) return false;
+                if ("https".equalsIgnoreCase(uri.getScheme())
+                        && "appassets.androidplatform.net".equalsIgnoreCase(uri.getHost())
+                        && uri.getPath() != null
+                        && uri.getPath().startsWith("/assets/")) return false;
                 if ("https".equalsIgnoreCase(uri.getScheme()) || "http".equalsIgnoreCase(uri.getScheme())) {
                     try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); }
                     catch (Exception ignored) { Toast.makeText(MainActivity.this, "Bağlantı açılamadı", Toast.LENGTH_SHORT).show(); }
@@ -283,7 +310,7 @@ public class MainActivity extends Activity {
         // Akaryakit zam/fiyat takip modulu kaldirildi.
         try { FuelAlertScheduler.configure(MainActivity.this, false, "", ""); } catch (Throwable ignored) {}
         webView.addJavascriptInterface(new AndroidBridge(), "Android");
-        webView.loadUrl("file:///android_asset/index.html");
+        webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
     }
 
 
@@ -1525,12 +1552,32 @@ private void showLaunchSplash() {
         @JavascriptInterface public void openUri(String uriText, String mime) {
             runOnUiThread(() -> {
                 try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(uriText));
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    if (mime != null && !mime.isEmpty()) intent.setDataAndType(Uri.parse(uriText), mime);
-                    startActivity(Intent.createChooser(intent, "Belgeyi aç"));
+                    if (uriText == null || uriText.trim().isEmpty()) {
+                        throw new IllegalArgumentException("Boş URI");
+                    }
+                    Uri uri = Uri.parse(uriText.trim());
+                    String scheme = uri.getScheme() == null ? "" : uri.getScheme().toLowerCase(Locale.ROOT);
+
+                    if ("https".equals(scheme)) {
+                        startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                        return;
+                    }
+
+                    if ("content".equals(scheme)) {
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        if (mime != null && !mime.trim().isEmpty()) {
+                            intent.setDataAndType(uri, mime.trim());
+                        } else {
+                            intent.setData(uri);
+                        }
+                        startActivity(Intent.createChooser(intent, "Belgeyi aç"));
+                        return;
+                    }
+
+                    Toast.makeText(MainActivity.this, "Güvenlik nedeniyle bu bağlantı türü engellendi", Toast.LENGTH_SHORT).show();
                 } catch (Exception e) {
-                    Toast.makeText(MainActivity.this, "Belge açılamadı", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Belge veya bağlantı açılamadı", Toast.LENGTH_SHORT).show();
                 }
             });
         }
