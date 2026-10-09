@@ -180,6 +180,8 @@ public class MainActivity extends Activity {
     private String pendingPickerContext;
     private boolean pageReady = false;
     private boolean appWasBackgrounded = false;
+    private long lastSystemBackAt = 0L;
+    private boolean backEvaluationPending = false;
     private LocationManager locationManager;
     private LocationListener speedLocationListener;
     private LocationListener nearbyLocationListener;
@@ -3416,16 +3418,29 @@ private void showLaunchSplash() {
     }
 
     private void handleSystemBack() {
+        final long now = SystemClock.elapsedRealtime();
+        if (backEvaluationPending || (now - lastSystemBackAt) < 500L) {
+            return;
+        }
+        lastSystemBackAt = now;
+
         if (webView == null) {
             finish();
             return;
         }
 
+        if (!pageReady) {
+            return;
+        }
+
+        backEvaluationPending = true;
         try {
             webView.evaluateJavascript(
                     "(function(){try{return !!(window.appBack&&window.appBack());}catch(e){return false;}})()",
                     result -> {
-                        boolean handled = "true".equalsIgnoreCase(String.valueOf(result).replace("\"", ""));
+                        backEvaluationPending = false;
+                        String value = String.valueOf(result);
+                        boolean handled = "true".equalsIgnoreCase(value.replace("\"", "").trim());
                         if (handled) return;
 
                         try {
@@ -3439,6 +3454,7 @@ private void showLaunchSplash() {
                         }
                     });
         } catch (Throwable ignored) {
+            backEvaluationPending = false;
             try {
                 if (webView.canGoBack()) webView.goBack();
                 else finish();
