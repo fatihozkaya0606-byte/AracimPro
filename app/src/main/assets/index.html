@@ -1957,12 +1957,33 @@ body.r8MoreMode:not(.dark) .moreCatDetailTop p{color:#71869b}
 .apBackupNote{font-size:8px;color:var(--muted);line-height:1.5;margin-top:8px}
 </style>
 
+
+<style id="ap-ui-7117">
+body.r8HomeMode .apBrandSub{max-width:210px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+body.r8HomeMode .apLiveCorner{flex-wrap:nowrap;max-width:none}
+body.r8HomeMode .apLiveMini.clock{gap:3px;padding-left:6px;padding-right:6px}
+body.r8HomeMode .apLiveMini.clock em{font-style:normal;opacity:.45;margin:0 1px}
+.ref791-copy h1{font-size:19px!important;line-height:1.08!important;max-width:100%}
+.ref791-copy h1 span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ref791-copy h1 span+span{margin-top:4px;font-size:.92em;color:#e7f4ff}
+.ref791-marketRange{font-size:17px!important;line-height:1.18!important}
+.apSafetyQuick{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0 13px}
+.apSafetyQuick button{min-height:62px;border-radius:17px;padding:10px 12px;text-align:left;display:grid;grid-template-columns:34px 1fr;grid-template-rows:auto auto;column-gap:9px;align-items:center}
+.apSafetyQuick button>span{grid-row:1/3;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:19px}
+.apSafetyQuick button b{font-size:12px;color:#fff}.apSafetyQuick button small{font-size:8px;color:#9eb4ca;margin-top:2px}
+.apEmergency112{border:1px solid rgba(255,76,96,.50);background:linear-gradient(145deg,rgba(91,18,30,.92),rgba(36,12,23,.96))}
+.apEmergency112>span{background:rgba(255,72,91,.16)}
+.apCameraQuick{border:1px solid rgba(44,158,255,.42);background:linear-gradient(145deg,#09243b,#071725)}
+.apCameraQuick>span{background:rgba(44,158,255,.13)}
+.apCameraPreview{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#050b12}.apCameraPreview img{display:block;width:100%;max-height:360px;object-fit:contain}
+@media(max-width:390px){body.r8HomeMode .apBrandSub{max-width:155px;font-size:9.4px}body.r8HomeMode .apLiveMini.clock{font-size:6.3px}.ref791-copy h1{font-size:17px!important}.apSafetyQuick button{padding:9px;column-gap:7px}}
+</style>
 </head>
 <body>
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
 <script>
 const KEY='aracim_pro_v1';
-const V='7.11.6';
+const V='7.11.7';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.NumberFormat(apLocale(),{style:'currency',currency:apCurrency(),maximumFractionDigits:2}).format(Number(n)||0);const num=n=>(Number(n)||0).toLocaleString(apLocale());
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -2641,7 +2662,7 @@ function apHeaderStatusHtml(){
   }
 
   const val=currentValuation();
-  if(val>0)out.push({icon:'📈',title:'Piyasa Değeri',sub:money(val),click:'marketValueModal()'});
+  if(val>0)out.push({icon:'📈',title:'Piyasa Değeri',sub:apMarketEstimateRange(val),click:'marketValueModal()'});
 
   const a=smartAlertItems();
   out.push({
@@ -2710,7 +2731,7 @@ function apHeaderStatusHtml(){
   }
 
   const val=currentValuation();
-  if(val>0)out.push({icon:'📈',title:'Piyasa Değeri',sub:money(val),click:'marketValueModal()'});
+  if(val>0)out.push({icon:'📈',title:'Piyasa Değeri',sub:apMarketEstimateRange(val),click:'marketValueModal()'});
 
   const a=smartAlertItems();
   out.push({
@@ -2913,14 +2934,13 @@ function header(){
         <div class="apBrandMark" aria-label="Aracım Pro"></div>
         <div style="min-width:0">
           <div class="apBrandText">Aracım <b>Pro</b></div>
-          <div class="apBrandSub">Akıllı araç asistanın • araç, yol ve piyasa tek merkezde</div>
+          <div class="apBrandSub">Akıllı araç asistanın • her şey tek yerde</div>
         </div>
       </div>
       <div class="apRightStack">
         <div class="apLiveCorner">
           <span class="apLiveMini active"><b id="apActiveUsers">—</b> aktif</span>
-          <span class="apLiveMini clock">🕒 <b id="apClockNow">--:--:--</b></span>
-          <span class="apLiveMini timer">⏱ <b id="apSessionElapsed">00:00:00</b></span>
+          <span class="apLiveMini clock">🕒 <b id="apClockNow">--:--:--</b><em>•</em> ⏱ <b id="apSessionElapsed">00:00:00</b></span>
         </div>
         <div class="apHeaderActions">
           <button class="apAction ${a.length?'alerting':''}" onclick="smartAlertsModal()" title="Bildirimler">
@@ -3017,6 +3037,18 @@ function welcome(){return `<div class="welcome7104">
 </div>`}
 
 function vehicleDistance(){const v=activeVehicle();if(!v)return 0;const kms=[...(vf(state.fuel).map(x=>+x.km||0)),...(vf(state.services).map(x=>+x.km||0)),...(vf(state.trips).flatMap(x=>[+x.startKm||0,+x.endKm||0]))].filter(Boolean);if(!kms.length)return v.km||0;return Math.max(...kms)-Math.min(...kms)}
+function apMarketEstimateRange(val){
+  val=Number(val||0);
+  if(!val)return '';
+  const low=Math.round(val*0.96/1000)*1000;
+  const high=Math.round(val*1.04/1000)*1000;
+  const compact=n=>{
+    if(n>=1000000)return (n/1000000).toLocaleString('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2})+' Mn ₺';
+    if(n>=1000)return Math.round(n/1000).toLocaleString('tr-TR')+' Bin ₺';
+    return Math.round(n).toLocaleString('tr-TR')+' ₺';
+  };
+  return `Tahmini ${compact(low)} – ${compact(high)}`;
+}
 function currentValuation(){const v=activeVehicle();if(!v)return 0;const a=vf(state.valuations).sort((a,b)=>(+b.ts||0)-(+a.ts||0)||String(b.date).localeCompare(String(a.date)));return +(a[0]?.value||v.currentValue||0)}
 function costPerKm(){const d=vehicleDistance();return d>0?totalAll()/d:0}
 function fuelMiniCard(){return ''}
@@ -3136,7 +3168,7 @@ return `<div class="ref791">
 <section class="ref791-hero">
   ${hero}
   <div class="ref791-copy">
-    <h1>${esc((v.year||'')+' '+v.make)}<br>${esc(v.model+' '+(v.engine||''))}</h1>
+    <h1><span>${esc(((v.year||'')+' '+v.make+' '+v.model).trim())}</span><span>${esc((v.engine||'').trim())}</span></h1>
     ${v.plate?`<span class="ref791-plate">${esc(v.plate)}</span>`:''}
   </div>
   <div class="ref791-tags">
@@ -3178,8 +3210,8 @@ return `<div class="ref791">
 
   <button class="ref791-card" onclick="marketValueModal()">
     <div class="ref791-head"><span class="ref791-icon">📈</span><span><b>Piyasa Değeri</b><small>Güncel piyasa değeri</small></span></div>
-    <div class="ref791-big">${value?money(value):'Hesapla'}</div>
-    <div class="ref791-sub">${value?'Son kayıtlı değer':'Güncel değeri öğrenmek için dokun'}</div>
+    <div class="ref791-big ref791-marketRange">${value?apMarketEstimateRange(value):'Hesapla'}</div>
+    <div class="ref791-sub">${value?'Kayıtlı değerden hesaplanan yaklaşık aralık':'Güncel değeri öğrenmek için dokun'}</div>
     <div class="ref791-line"></div>
   </button>
 
@@ -3196,6 +3228,15 @@ return `<div class="ref791">
   <button class="ref791-card ref791-wide ref791-guide" onclick="faultGuideModal()">
     <img src="r8ui/maintenance.jpg" alt="Akıllı Arıza Rehberi">
     <div class="ref791-guidecopy"><b>Akıllı Arıza Rehberi</b><small>Belirtiyi yaz, olası nedenleri ve aciliyet seviyesini öğren.</small><span class="ref791-question">“Direksiyondan ses geliyor, neden olabilir?” ›</span></div>
+  </button>
+</div>
+
+<div class="apSafetyQuick">
+  <button class="apEmergency112" onclick="try{Android.dial('112')}catch(e){toast('Arama ekranı açılamadı')}">
+    <span>🆘</span><b>112 Acil</b><small>Arama ekranını aç</small>
+  </button>
+  <button class="apCameraQuick" onclick="quickCamera()">
+    <span>📷</span><b>Kamera</b><small>Hızlı fotoğraf çek</small>
   </button>
 </div>
 
@@ -4239,7 +4280,38 @@ window.onVehicleImageSearchResult=(payload,error)=>{let arr=[];try{arr=JSON.pars
 function chooseVehicleImage(i,auto=false){const r=(window._vehicleImageResults||[])[i];if(!r||!window._editingVehicle)return;window._pendingImageMeta={id:window._editingVehicle.id,source:r.page||'',license:r.license||'Wikimedia Commons',credit:r.artist||r.credit||'',title:r.title||''};const area=document.getElementById('imageSearchArea');if(area)area.innerHTML=`<div class="imageSearchBox"><b>Fotoğraf hazırlanıyor…</b></div>`;try{Android.cacheRemoteImage('edit:'+window._editingVehicle.id,r.fullUrl||r.url)}catch(e){if(area)area.innerHTML=`<div class="notice">Fotoğraf indirilemedi. Başka bir sonuç seçebilirsin.</div>`}}
 window.onRemoteVehicleImageCached=(ctx,data,error)=>{const meta=window._pendingImageMeta||{};if(!data){const area=document.getElementById('imageSearchArea');if(area)area.innerHTML=`<div class="notice">Fotoğraf kaydedilemedi${error?' • '+esc(error):''}.</div>`;return}if(String(ctx).startsWith('edit:')&&window._editingVehicle){window._editingVehicle.photo=data;window._editingVehicle.photoSource=meta.source||'';window._editingVehicle.photoLicense=meta.license||'Wikimedia Commons';window._editingVehicle.photoCredit=meta.credit||'';refreshVehiclePhotoPreview();const area=document.getElementById('imageSearchArea');if(area)area.innerHTML=`<div class="notice success">Gerçek araç fotoğrafı seçildi. Kaydet dediğinde araçla birlikte saklanacak.</div>`}else if(String(ctx).startsWith('saved:')){const id=String(ctx).split(':')[1],v=state.vehicles.find(x=>x.id===id);if(v){v.photo=data;v.photoSource=meta.source||'';v.photoLicense=meta.license||'Wikimedia Commons';v.photoCredit=meta.credit||'';save()}}}
 function pickVehiclePhoto(id){try{Android.pickImage('vehicle:'+id)}catch(e){alert('Fotoğraf seçici açılamadı')}}
-window.onNativeImagePicked=(ctx,data)=>{if(ctx.startsWith('vehicle:')){const id=ctx.split(':')[1];const v=state.vehicles.find(x=>x.id===id);if(v){v.photo=data;v.photoSource='';v.photoLicense='Kullanıcı fotoğrafı';save();openVehicle(id)}else if(window._editingVehicle?.id===id){window._editingVehicle.photo=data;window._editingVehicle.photoSource='';window._editingVehicle.photoLicense='Kullanıcı fotoğrafı';refreshVehiclePhotoPreview()}}};
+function quickCamera(){
+  try{Android.captureImage('quick-camera')}
+  catch(e){toast('Kamera açılamadı')}
+}
+function quickCameraPreview(data){
+  window._quickCameraPhoto=data||'';
+  modal('📷 Kamera',`
+    <div class="apCameraPreview"><img src="${esc(data||'')}" alt="Çekilen fotoğraf"></div>
+    <div class="hint">Fotoğraf yalnızca sen seçersen araç fotoğrafı olarak kaydedilir.</div>
+    <div class="proActionGrid" style="margin-top:10px">
+      <button onclick="saveQuickCameraAsVehicle()">🚗 Araç Fotoğrafı Yap</button>
+      <button onclick="closeModal();accidentAssistModal()">🆘 Kaza Moduna Geç</button>
+      <button onclick="quickCamera()">📷 Yeniden Çek</button>
+      <button onclick="closeModal()">Kapat</button>
+    </div>
+  `);
+}
+function saveQuickCameraAsVehicle(){
+  const v=activeVehicle(),data=window._quickCameraPhoto||'';
+  if(!v||!data)return toast('Aktif araç veya fotoğraf bulunamadı');
+  v.photo=data;v.photoSource='';v.photoLicense='Kullanıcı fotoğrafı';save();closeModal();toast('Araç fotoğrafı güncellendi');
+}
+
+window.onNativeImagePicked=(ctx,data)=>{
+  ctx=String(ctx||'');
+  if(ctx==='quick-camera'){quickCameraPreview(data);return}
+  if(ctx.startsWith('vehicle:')){
+    const id=ctx.split(':')[1];const v=state.vehicles.find(x=>x.id===id);
+    if(v){v.photo=data;v.photoSource='';v.photoLicense='Kullanıcı fotoğrafı';save();openVehicle(id)}
+    else if(window._editingVehicle?.id===id){window._editingVehicle.photo=data;window._editingVehicle.photoSource='';window._editingVehicle.photoLicense='Kullanıcı fotoğrafı';refreshVehiclePhotoPreview()}
+  }
+};
 function openPhotoSource(id){const v=state.vehicles.find(x=>x.id===id);if(!v?.photoSource)return;try{Android.openUri(v.photoSource,'')}catch(e){}}
 
 function quickKm(){const v=activeVehicle();if(!v)return;modal('Kilometreyi Güncelle',`<form class="form" onsubmit="saveKm(event)"><div class="field"><label>Güncel Kilometre</label><input autofocus name="km" type="number" min="${v.km||0}" required value="${v.km||0}"></div><button class="primary wide">Güncelle</button></form>`)}

@@ -38,6 +38,7 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.os.CancellationSignal;
 import android.provider.OpenableColumns;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.util.Base64;
 import android.text.Html;
@@ -154,6 +155,7 @@ public class MainActivity extends Activity {
     private static final int PICK_IMAGE_REQUEST = 7704;
     private static final int PICK_DOCUMENT_REQUEST = 7705;
     private static final int LOCATION_PERMISSION_REQUEST = 7706;
+    private static final int TAKE_PHOTO_REQUEST = 7707;
 
     private static final String PREMIUM_PRODUCT_ID = "aracim_pro_premium";
     private static final String PREMIUM_MONTHLY_BASE = "aylik";
@@ -1596,6 +1598,24 @@ private void showLaunchSplash() {
                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
                 intent.setType("image/*");
                 startActivityForResult(intent, PICK_IMAGE_REQUEST);
+            });
+        }
+
+        @JavascriptInterface public void captureImage(String contextId) {
+            runOnUiThread(() -> {
+                try {
+                    pendingPickerContext = contextId;
+                    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    if (intent.resolveActivity(getPackageManager()) == null) {
+                        pendingPickerContext = null;
+                        Toast.makeText(MainActivity.this, "Kamera uygulaması bulunamadı", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    startActivityForResult(intent, TAKE_PHOTO_REQUEST);
+                } catch (Exception e) {
+                    pendingPickerContext = null;
+                    Toast.makeText(MainActivity.this, "Kamera açılamadı", Toast.LENGTH_SHORT).show();
+                }
             });
         }
 
@@ -3517,6 +3537,29 @@ private void showLaunchSplash() {
                 String content = out.toString(StandardCharsets.UTF_8.name());
                 webView.evaluateJavascript("window.restoreBackupFromNative && window.restoreBackupFromNative(" + JSONObject.quote(content) + ")", null);
             } catch (Exception e) { Toast.makeText(this, "Yedek dosyası okunamadı", Toast.LENGTH_SHORT).show(); }
+        }
+
+        if (requestCode == TAKE_PHOTO_REQUEST) {
+            final String pickerContext = pendingPickerContext;
+            pendingPickerContext = null;
+            if (resultCode == RESULT_OK && data != null && data.getExtras() != null) {
+                try {
+                    Object photo = data.getExtras().get("data");
+                    if (!(photo instanceof Bitmap)) throw new IllegalStateException("Fotoğraf verisi yok");
+                    Bitmap src = (Bitmap) photo;
+                    ByteArrayOutputStream out = new ByteArrayOutputStream();
+                    src.compress(Bitmap.CompressFormat.JPEG, 82, out);
+                    final String dataUrl = "data:image/jpeg;base64," + Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
+                    if (webView != null) {
+                        webView.evaluateJavascript(
+                                "window.onNativeImagePicked && window.onNativeImagePicked(" +
+                                        JSONObject.quote(pickerContext == null ? "" : pickerContext) + "," +
+                                        JSONObject.quote(dataUrl) + ")", null);
+                    }
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Fotoğraf alınamadı", Toast.LENGTH_SHORT).show();
+                }
+            }
         }
 
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
