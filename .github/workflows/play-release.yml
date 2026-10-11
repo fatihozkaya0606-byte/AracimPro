@@ -2,6 +2,8 @@ name: Google Play Release AAB
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ aracimpro-quality84-20261011 ]
 
 jobs:
   build-release:
