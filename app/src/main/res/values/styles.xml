@@ -5,6 +5,8 @@
         <item name="android:colorAccent">#0B67F0</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowLightNavigationBar">true</item>
+        <!-- Keep display cutouts edge-to-edge without SHORT_EDGES. -->
+        <item name="android:windowLayoutInDisplayCutoutMode">always</item>
         <item name="android:windowNoTitle">true</item>
     </style>
 </resources>
