@@ -13,6 +13,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace 'com.aracimpro.app'
     compileSdk 36
+    ndkVersion '27.2.12479018'
 
     defaultConfig {
         applicationId 'com.aracimpro.app'
@@ -52,7 +53,7 @@ android {
             shrinkResources true
             debuggable false
             ndk {
-                debugSymbolLevel 'full'
+                debugSymbolLevel 'FULL'
             }
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
