@@ -3,7 +3,7 @@ name: Android Debug Build
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ main, aracimpro-ui81-20261011 ]
 
 jobs:
   build-debug:
