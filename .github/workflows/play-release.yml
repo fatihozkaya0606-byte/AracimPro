@@ -2,6 +2,8 @@ name: Google Play Release AAB
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ aracimpro-native-symbols-82 ]
 
 jobs:
   build-release:
@@ -16,8 +18,11 @@ jobs:
         with:
           gradle-version: '9.1.0'
       - uses: android-actions/setup-android@v4
-      - name: Install Android SDK 36
-        run: sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+      - name: Install Android SDK and NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" "ndk;27.2.12479018"
+          test -x "$ANDROID_HOME/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-objcopy"
       - name: Restore upload key
         env:
           PLAY_UPLOAD_KEYSTORE_B64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_B64 }}
@@ -53,10 +58,20 @@ jobs:
           MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
           LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
         run: gradle --no-daemon bundleRelease
-      - name: Verify signed bundle and mapping exist
+      - name: Verify signed bundle, mapping and native symbols exist
         run: |
           test -s app/build/outputs/bundle/release/app-release.aab
           test -s app/build/outputs/mapping/release/mapping.txt
+          unzip -Z1 app/build/outputs/bundle/release/app-release.aab | grep -q '^BUNDLE-METADATA/com.android.tools.build.debugsymbols/.*/.*\.so\.dbg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AracimPro-Play-AAB
+          path: |
+            app/build/outputs/bundle/release/app-release.aab
+            app/build/outputs/mapping/release/mapping.txt
+
+          echo 'Confirmed: AAB includes native debug symbols.'
+          unzip -Z1 app/build/outputs/bundle/release/app-release.aab | grep '^BUNDLE-METADATA/com.android.tools.build.debugsymbols/'
       - uses: actions/upload-artifact@v4
         with:
           name: AracimPro-Play-AAB
