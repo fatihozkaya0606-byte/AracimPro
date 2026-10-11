@@ -2,6 +2,8 @@ name: Google Play Release AAB
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ aracimpro-native-symbols-81 ]
 
 jobs:
   build-release:
@@ -16,8 +18,11 @@ jobs:
         with:
           gradle-version: '9.1.0'
       - uses: android-actions/setup-android@v4
-      - name: Install Android SDK 36
-        run: sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+      - name: Install Android SDK 36 and NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" "ndk;27.2.12479018"
+          test -x "$ANDROID_HOME/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-objcopy"
       - name: Restore upload key
         env:
           PLAY_UPLOAD_KEYSTORE_B64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_B64 }}
@@ -52,7 +57,18 @@ jobs:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
           LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
-        run: gradle --no-daemon bundleRelease
+        run: gradle --no-daemon --info bundleRelease > "${RUNNER_TEMP}/bundle-release.log" 2>&1 || { tail -n 140 "${RUNNER_TEMP}/bundle-release.log"; exit 1; }
+      - name: Analyze native debug symbol extraction
+        run: |
+          grep -iE 'unable to (strip|extract native debug)|extractReleaseNativeDebugMetadata|stripReleaseDebugSymbols' "${RUNNER_TEMP}/bundle-release.log" || true
+          echo "AAB native symbol metadata:"
+          unzip -Z1 app/build/outputs/bundle/release/app-release.aab | grep 'BUNDLE-METADATA/com.android.tools.build.debugsymbols/' || true
+          echo "Separate native symbol archives:"
+          find app/build/outputs -type f -name '*symbol*.zip' -print || true
+          mkdir -p native-debug-symbols-report
+          cp "${RUNNER_TEMP}/bundle-release.log" native-debug-symbols-report/bundle-release.log
+          unzip -Z1 app/build/outputs/bundle/release/app-release.aab > native-debug-symbols-report/aab-entries.txt
+          find app/build/outputs -type f -name '*symbol*.zip' -print > native-debug-symbols-report/symbol-archives.txt
       - name: Verify signed bundle and mapping exist
         run: |
           test -s app/build/outputs/bundle/release/app-release.aab
@@ -63,3 +79,5 @@ jobs:
           path: |
             app/build/outputs/bundle/release/app-release.aab
             app/build/outputs/mapping/release/mapping.txt
+            app/build/outputs/native-debug-symbols/release/native-debug-symbols.zip
+            native-debug-symbols-report/
