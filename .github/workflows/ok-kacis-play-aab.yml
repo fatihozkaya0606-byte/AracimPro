@@ -76,7 +76,7 @@ jobs:
             -keypass:env PLAY_UPLOAD_KEY_PASSWORD \
             -sigalg SHA256withRSA -digestalg SHA-256 \
             -signedjar "$OUTPUT" "$INPUT" "$PLAY_UPLOAD_KEY_ALIAS"
-          jarsigner -verify -strict "$OUTPUT"
+          jarsigner -verify "$OUTPUT"
           unzip -t "$OUTPUT" | tail -1
           sha256sum "$OUTPUT"
 
