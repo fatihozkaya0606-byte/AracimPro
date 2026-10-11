@@ -210,14 +210,34 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         installLocalCrashRecorder();
-        // Use the platform's edge-to-edge window handling without calling
-        // WindowCompat.enableEdgeToEdge(), whose legacy implementations can
-        // set deprecated system-bar colors and cutout flags.
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-        androidx.core.view.WindowInsetsControllerCompat barsController =
-                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-        barsController.setAppearanceLightStatusBars(true);
-        barsController.setAppearanceLightNavigationBars(true);
+        // Android 15/16 already enforce edge-to-edge for targetSdk 35+.
+        // On Android 11-14 opt in using platform APIs without touching
+        // deprecated setStatusBarColor / setNavigationBarColor / SHORT_EDGES.
+        if (Build.VERSION.SDK_INT >= 30 && Build.VERSION.SDK_INT < 35) {
+            getWindow().setDecorFitsSystemWindows(false);
+        }
+        if (Build.VERSION.SDK_INT >= 30) {
+            android.view.WindowInsetsController controller =
+                    getWindow().getDecorView().getWindowInsetsController();
+            if (controller != null) {
+                controller.setSystemBarsAppearance(
+                        android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS |
+                        android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
+                        android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS |
+                        android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS);
+            }
+        } else {
+            // Earlier Android versions require legacy decor flags for drawing
+            // behind system bars. This branch never runs on Android 15+.
+            int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                    View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            if (Build.VERSION.SDK_INT >= 26) {
+                flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            }
+            getWindow().getDecorView().setSystemUiVisibility(flags);
+        }
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
         root = new FrameLayout(this);
@@ -2103,6 +2123,7 @@ private void showLaunchSplash() {
                             .load(imageUrl)
                             .override(720, 720)
                             .downsample(DownsampleStrategy.AT_MOST)
+                            .format(com.bumptech.glide.load.DecodeFormat.PREFER_RGB_565)
                             .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
                             .submit();
 
@@ -3588,6 +3609,7 @@ private void showLaunchSplash() {
                             .load(uri)
                             .override(720, 720)
                             .downsample(DownsampleStrategy.AT_MOST)
+                            .format(com.bumptech.glide.load.DecodeFormat.PREFER_RGB_565)
                             .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
                             .submit();
 
