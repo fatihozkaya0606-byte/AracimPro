@@ -13,6 +13,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace 'com.aracimpro.app'
     compileSdk 36
+    ndkVersion '27.2.12479018'
 
     defaultConfig {
         applicationId 'com.aracimpro.app'
@@ -24,7 +25,7 @@ android {
         buildConfigField "String", "FIREBASE_APP_ID", "\"${System.getenv('FIREBASE_APP_ID') ?: ''}\""
         buildConfigField "String", "MARKET_API_URL", "\"${System.getenv('MARKET_API_URL') ?: ''}\""
         buildConfigField "String", "LIVE_DATA_API_URL", "\"${System.getenv('LIVE_DATA_API_URL') ?: ''}\""
-        versionCode 81
+        versionCode 82
         versionName '7.11.7'
     }
 
@@ -52,7 +53,7 @@ android {
             shrinkResources true
             debuggable false
             ndk {
-                debugSymbolLevel 'full'
+                debugSymbolLevel 'FULL'
             }
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
