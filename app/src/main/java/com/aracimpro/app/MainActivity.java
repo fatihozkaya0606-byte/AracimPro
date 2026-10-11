@@ -51,10 +51,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.request.FutureTarget;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.load.resource.bitmap.DownsampleStrategy;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.ViewCompat;
 import androidx.webkit.WebViewAssetLoader;
@@ -2115,18 +2111,9 @@ private void showLaunchSplash() {
             new Thread(() -> {
                 String dataUrl = "";
                 String error = "";
-                FutureTarget<Bitmap> target = null;
+                Bitmap src = null;
                 try {
-                    target = Glide.with(getApplicationContext())
-                            .asBitmap()
-                            .load(imageUrl)
-                            .override(720, 720)
-                            .downsample(DownsampleStrategy.AT_MOST)
-                            .format(com.bumptech.glide.load.DecodeFormat.PREFER_RGB_565)
-                            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-                            .submit();
-
-                    Bitmap src = target.get();
+                    src = VehicleImageLoader.loadRemote(getApplicationContext(), imageUrl);
                     if (src == null) throw new IllegalStateException("Görsel okunamadı");
 
                     ByteArrayOutputStream bout = new ByteArrayOutputStream();
@@ -2136,10 +2123,7 @@ private void showLaunchSplash() {
                 } catch (Exception e) {
                     error = e.getMessage() == null ? "Görsel kaydedilemedi" : e.getMessage();
                 } finally {
-                    if (target != null) {
-                        try { Glide.with(getApplicationContext()).clear(target); }
-                        catch (Throwable ignored) {}
-                    }
+                    if (src != null && !src.isRecycled()) src.recycle();
                 }
 
                 final String data = dataUrl;
@@ -3601,18 +3585,9 @@ private void showLaunchSplash() {
             } catch (Exception ignored) {}
 
             new Thread(() -> {
-                FutureTarget<Bitmap> target = null;
+                Bitmap src = null;
                 try {
-                    target = Glide.with(getApplicationContext())
-                            .asBitmap()
-                            .load(uri)
-                            .override(720, 720)
-                            .downsample(DownsampleStrategy.AT_MOST)
-                            .format(com.bumptech.glide.load.DecodeFormat.PREFER_RGB_565)
-                            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-                            .submit();
-
-                    Bitmap src = target.get();
+                    src = VehicleImageLoader.loadDocument(getApplicationContext(), uri);
                     if (src == null) throw new IllegalStateException("Fotoğraf okunamadı");
 
                     ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -3634,10 +3609,7 @@ private void showLaunchSplash() {
                     runOnUiThread(() ->
                             Toast.makeText(MainActivity.this, "Fotoğraf okunamadı", Toast.LENGTH_SHORT).show());
                 } finally {
-                    if (target != null) {
-                        try { Glide.with(getApplicationContext()).clear(target); }
-                        catch (Throwable ignored) {}
-                    }
+                    if (src != null && !src.isRecycled()) src.recycle();
                 }
             }).start();
         }
