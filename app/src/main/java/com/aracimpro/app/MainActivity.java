@@ -210,8 +210,15 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         installLocalCrashRecorder();
-        WindowCompat.enableEdgeToEdge(getWindow());
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING);
+        // Use the platform's edge-to-edge window handling without calling
+        // WindowCompat.enableEdgeToEdge(), whose legacy implementations can
+        // set deprecated system-bar colors and cutout flags.
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        androidx.core.view.WindowInsetsControllerCompat barsController =
+                WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        barsController.setAppearanceLightStatusBars(true);
+        barsController.setAppearanceLightNavigationBars(true);
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
         root = new FrameLayout(this);
         root.setBackgroundColor(0xFFF4F8FF);
@@ -242,11 +249,13 @@ public class MainActivity extends Activity {
                 androidx.core.graphics.Insets ime =
                         insets.getInsets(WindowInsetsCompat.Type.ime());
 
+                // Insets are authoritative after dispatch. Do not force
+                // legacy navigation-bar height on gesture-navigation phones.
                 applyWebMargins(
                         bars.left,
-                        Math.max(fallbackTop, bars.top),
+                        bars.top,
                         bars.right,
-                        Math.max(Math.max(fallbackBottom, bars.bottom), ime.bottom)
+                        Math.max(bars.bottom, ime.bottom)
                 );
             } catch (Throwable ignored) {
                 applyWebMargins(0, fallbackTop, 0, fallbackBottom);
@@ -2092,7 +2101,7 @@ private void showLaunchSplash() {
                     target = Glide.with(getApplicationContext())
                             .asBitmap()
                             .load(imageUrl)
-                            .override(960, 960)
+                            .override(720, 720)
                             .downsample(DownsampleStrategy.AT_MOST)
                             .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
                             .submit();
@@ -2101,7 +2110,7 @@ private void showLaunchSplash() {
                     if (src == null) throw new IllegalStateException("Görsel okunamadı");
 
                     ByteArrayOutputStream bout = new ByteArrayOutputStream();
-                    src.compress(Bitmap.CompressFormat.JPEG, 76, bout);
+                    src.compress(Bitmap.CompressFormat.JPEG, 72, bout);
                     dataUrl = "data:image/jpeg;base64," +
                             Base64.encodeToString(bout.toByteArray(), Base64.NO_WRAP);
                 } catch (Exception e) {
@@ -3577,7 +3586,7 @@ private void showLaunchSplash() {
                     target = Glide.with(getApplicationContext())
                             .asBitmap()
                             .load(uri)
-                            .override(960, 960)
+                            .override(720, 720)
                             .downsample(DownsampleStrategy.AT_MOST)
                             .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
                             .submit();
@@ -3586,7 +3595,7 @@ private void showLaunchSplash() {
                     if (src == null) throw new IllegalStateException("Fotoğraf okunamadı");
 
                     ByteArrayOutputStream out = new ByteArrayOutputStream();
-                    src.compress(Bitmap.CompressFormat.JPEG, 74, out);
+                    src.compress(Bitmap.CompressFormat.JPEG, 72, out);
 
                     final String dataUrl = "data:image/jpeg;base64," +
                             Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP);
