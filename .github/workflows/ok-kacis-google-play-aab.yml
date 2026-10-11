@@ -1,4 +1,4 @@
-name: Ok Kacis 4.2 Google Play AAB
+name: Ok Kacis 4.2.1 Android 16 Play AAB
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
       - name: Install compile SDK
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
       - name: Restore current 4.2 source (do not build outdated v1)
         run: |
           test -s OkKacis_4_2_KaynakKod.zip || { echo "::error::Upload OkKacis_4_2_KaynakKod.zip to the ok-kacis-game-v1 branch first"; exit 1; }
@@ -40,6 +40,25 @@ jobs:
           test -s release-src/OkKacis/app/build.gradle
           grep -q "applicationId 'com.okkacis.game'" release-src/OkKacis/app/build.gradle
           grep -q "versionCode 14" release-src/OkKacis/app/build.gradle
+      - name: Update only Ok Kacis target to Android API 36 and bump Play version
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("release-src/OkKacis/app/build.gradle")
+          s=p.read_text(encoding="utf-8")
+          for old,new in [
+              ("compileSdk 35","compileSdk 36"),
+              ("targetSdk 35","targetSdk 36"),
+              ("versionCode 14","versionCode 15"),
+              ("versionName '4.2.0'","versionName '4.2.1'")
+          ]:
+              assert s.count(old)==1, f"Unexpected old value for {old}"
+              s=s.replace(old,new,1)
+          for needed in ["compileSdk 36","targetSdk 36","versionCode 15","versionName '4.2.1'","applicationId 'com.okkacis.game'"]:
+              assert needed in s, needed
+          p.write_text(s,encoding="utf-8")
+          print("OK KACIS 4.2.1: targetSdk 36, compileSdk 36, versionCode 15")
+          PY
       - name: Check JavaScript syntax
         run: node --check release-src/OkKacis/app/src/main/assets/game.js
       - name: Restore existing Play upload signing key
@@ -90,6 +109,6 @@ jobs:
       - name: Upload only Ok Kacis AAB
         uses: actions/upload-artifact@v4
         with:
-          name: OkKacis-4.2-Google-Play-AAB
+          name: OkKacis-4.2.1-API36-Google-Play-AAB
           path: release-src/OkKacis/app/build/outputs/bundle/release/app-release.aab
           if-no-files-found: error
