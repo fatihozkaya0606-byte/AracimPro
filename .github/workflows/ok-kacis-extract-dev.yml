@@ -24,7 +24,7 @@ jobs:
           mkdir -p /tmp/game-source
           unzip -q OkKacis_4_2_KaynakKod.zip -d /tmp/game-source
           echo '--- asset files ---'
-          find /tmp/game-source -path '*/src/main/assets/*' -type f | head -40
+          find /tmp/game-source -path '*/src/main/assets/*' -type f | sed -n '1,40p'
           GAME_JS="$(find /tmp/game-source -path '*/src/main/assets/game.js' -type f -print -quit)"
           test -n "$GAME_JS"
           ASSETS_DIR="$(dirname "$GAME_JS")"
