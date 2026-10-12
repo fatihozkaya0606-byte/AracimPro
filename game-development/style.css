@@ -459,3 +459,12 @@
 @media(prefers-reduced-motion:reduce){
   #playing .power-burst{animation:none!important}
 }
+
+/* 4.3.2 opt-in reward affordance. No extra permanent bottom buttons. */
+#playing button.reward-lives-tap{font:inherit;color:inherit;cursor:pointer;position:relative;text-align:center}
+#playing button.reward-lives-tap:focus-visible{outline:3px solid #fff!important;outline-offset:2px}
+#playing button.reward-lives-tap[data-earnable="yes"]::after{
+  content:"▶ +5";position:absolute;right:4px;top:2px;padding:1px 4px;border-radius:7px;
+  font-size:9px;font-weight:1000;line-height:1.2;
+  background:linear-gradient(#ebffae,#46bb43);color:#165526;
+  box-shadow:0 1px 3px #17283955;pointer-events:none}
