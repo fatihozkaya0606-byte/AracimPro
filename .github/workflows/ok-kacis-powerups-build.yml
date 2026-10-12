@@ -4,6 +4,7 @@ on:
     branches: [ok-kacis-powerups-dev]
     paths:
       - 'game-development/game.js'
+      - 'game-development/game.integration.test.js'
       - 'game-development/boosters.js'
       - 'game-development/boosters.test.js'
       - '.github/workflows/ok-kacis-powerups-build.yml'
@@ -37,7 +38,7 @@ jobs:
           test -s game-development/game.js
           cp game-development/game.js preview-src/OkKacis/app/src/main/assets/game.js
           node --check preview-src/OkKacis/app/src/main/assets/game.js
-          node --test game-development/boosters.test.js
+          node --test game-development/*.test.js
           python3 - <<'PY'
           from pathlib import Path
           p = Path("preview-src/OkKacis/app/build.gradle")
