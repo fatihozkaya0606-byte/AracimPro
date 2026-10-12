@@ -1,0 +1,46 @@
+name: Extract OK Kacis source for safe powerup development
+on:
+  push:
+    branches: [ok-kacis-powerups-dev]
+    paths:
+      - '.github/workflows/ok-kacis-extract-dev.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ok-kacis-powerups-dev
+          persist-credentials: true
+      - name: Extract current version 4.2 sources for development
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/game-source
+          unzip -q OkKacis_4_2_KaynakKod.zip -d /tmp/game-source
+          echo '--- asset files ---'
+          find /tmp/game-source -path '*/src/main/assets/*' -type f | head -40
+          GAME_JS="$(find /tmp/game-source -path '*/src/main/assets/game.js' -type f -print -quit)"
+          test -n "$GAME_JS"
+          ASSETS_DIR="$(dirname "$GAME_JS")"
+          mkdir -p game-development
+          cp "$ASSETS_DIR/game.js" game-development/game.js
+          test ! -f "$ASSETS_DIR/index.html" || cp "$ASSETS_DIR/index.html" game-development/index.html
+          find "$ASSETS_DIR" -maxdepth 1 -type f -printf '%f\n' > game-development/asset-file-list.txt
+          echo '--- source size ---'
+          wc -lc game-development/game.js
+          node --check game-development/game.js
+      - name: Commit extracted editable game source only to dev branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add game-development/
+          if ! git diff --cached --quiet; then
+            git commit -m 'Expose current OK Kacis game scripts for isolated feature work'
+            git push origin HEAD:ok-kacis-powerups-dev
+          fi
