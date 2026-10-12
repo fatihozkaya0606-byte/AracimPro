@@ -1,4 +1,4 @@
-name: OK Kacis Polished Preview APK (isolated)
+name: OK Kacis Banner + Rewarded Preview APK (isolated)
 on:
   push:
     branches: [ok-kacis-powerups-dev]
@@ -6,6 +6,7 @@ on:
       - 'game-development/game.js'
       - 'game-development/index.html'
       - 'game-development/style.css'
+      - 'game-development/native/MainActivity.java'
       - 'game-development/game.integration.test.js'
       - 'game-development/boosters.js'
       - 'game-development/boosters.test.js'
@@ -44,6 +45,8 @@ jobs:
           grep -q 'goal-arrow' preview-src/OkKacis/app/src/main/assets/index.html
           grep -q '4.3.1 OK Kacis' preview-src/OkKacis/app/src/main/assets/style.css
           node --test game-development/*.test.js
+          test -s game-development/native/MainActivity.java
+          cp game-development/native/MainActivity.java preview-src/OkKacis/app/src/main/java/com/okkacis/game/MainActivity.java
           python3 - <<'PY'
           from pathlib import Path
           p = Path("preview-src/OkKacis/app/build.gradle")
@@ -52,7 +55,7 @@ jobs:
             ("compileSdk 35","compileSdk 36"),
             ("targetSdk 35","targetSdk 36"),
             ("versionCode 14","versionCode 16"),
-            ("versionName '4.2.0'","versionName '4.3.1'"),
+            ("versionName '4.2.0'","versionName '4.3.2'"),
           ]:
               if s.count(old) != 1: raise RuntimeError(f"Expected one: {old}")
               s=s.replace(old,new)
@@ -66,17 +69,23 @@ jobs:
             }
           }
           """
+          s += """
+          dependencies {
+            implementation 'com.google.android.gms:play-services-ads:25.5.0'
+          }
+          """
           p.write_text(s)
+          manifest = Path("preview-src/OkKacis/app/src/main/AndroidManifest.xml")
+          xml=manifest.read_text()
+          assert xml.count("<application ") == 1
+          assert xml.count("</application>") == 1
+          xml=xml.replace("<application ", """<uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+            <application """, 1)
+          xml=xml.replace("</application>", """  <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713" />
+            </application>""",1)
+          manifest.write_text(xml)
           PY
-      - name: Inspect Android WebView native entry for ads bridge
-        shell: bash
-        run: |
-          echo '=== APP BUILD GRADLE ==='
-          cat preview-src/OkKacis/app/build.gradle
-          echo '=== ANDROID MANIFEST ==='
-          cat preview-src/OkKacis/app/src/main/AndroidManifest.xml
-          echo '=== MAIN ACTIVITIES ==='
-          find preview-src/OkKacis/app/src/main -type f -name 'MainActivity.*' -print -exec sed -n '1,240p' '{}' ';'
       - name: Build test-only APK with separate application ID
         working-directory: preview-src/OkKacis
         run: gradle --no-daemon assembleDebug
@@ -84,6 +93,6 @@ jobs:
         run: test -s preview-src/OkKacis/app/build/outputs/apk/debug/app-debug.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: OK-Kacis-4.3.1-polished-DEV-preview-APK
+          name: OK-Kacis-4.3.2-Banner-Rewarded-TEST-APK
           path: preview-src/OkKacis/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
