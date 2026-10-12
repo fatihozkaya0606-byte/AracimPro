@@ -1,0 +1,67 @@
+name: AppLovin MAX Preview - Debug Only
+on:
+  push:
+    branches: [aracimpro-83-applovin-max-preview]
+  pull_request:
+    branches: [aracimpro-play-quality-83]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compile-max-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Install Android 16 SDK and NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" "ndk;27.2.12479018"
+      - name: Check migration is isolated and contains no AdMob SDK
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          build=Path("app/build.gradle").read_text()
+          main=Path("app/src/main/java/com/aracimpro/app/MainActivity.java").read_text()
+          manifest=Path("app/src/main/AndroidManifest.xml").read_text()
+          assert "applicationIdSuffix '.maxpreview'" in build
+          assert "com.applovin:applovin-sdk" in build
+          assert "com.google.android.gms:play-services-ads:" not in build
+          assert "com.google.android.ump:user-messaging-platform" not in build
+          assert "com.google.android.gms.ads.APPLICATION_ID" not in manifest
+          assert "MAX_SDK_KEY" in build
+          assert "MAX_BANNER_AD_UNIT_ID" in build
+          assert "MAX_PRIVACY_POLICY_URL" in build
+          assert "MAX banner loaded" in main
+          assert "showInterstitialOnce" not in main
+          assert "maxBannerLoaded && !premiumActive && apPremiumSplashHidden" in main
+          print("Verified: AppLovin-only preview, no forced full-screen ads, privacy/config guard, no empty banner space")
+          PY
+      - name: Compile debug APK (no store upload)
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
+          LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
+          APPLOVIN_MAX_SDK_KEY: ''
+          APPLOVIN_MAX_BANNER_AD_UNIT_ID: ''
+          APPLOVIN_MAX_PRIVACY_POLICY_URL: ''
+        run: gradle --no-daemon assembleDebug
+      - name: Verify compiled APK
+        run: test -s app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AracimPro-AppLovin-MAX-Preview-Not-Configured
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 7
