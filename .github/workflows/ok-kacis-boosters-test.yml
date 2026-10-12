@@ -1,0 +1,20 @@
+name: OK Kacis booster regression checks
+on:
+  push:
+    branches: [ok-kacis-powerups-dev]
+    paths:
+      - 'game-development/**'
+      - '.github/workflows/ok-kacis-boosters-test.yml'
+  pull_request:
+    branches: [ok-kacis-game-v1]
+permissions:
+  contents: read
+jobs:
+  node-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check booster engine syntax
+        run: node --check game-development/boosters.js
+      - name: Test difficulty curve and powerup behavior
+        run: node --test game-development/boosters.test.js
