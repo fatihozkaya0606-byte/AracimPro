@@ -80,17 +80,14 @@ import com.android.billingclient.api.QueryPurchasesParams;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.FullScreenContentCallback;
-import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.interstitial.InterstitialAd;
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.ump.ConsentInformation;
-import com.google.android.ump.ConsentRequestParameters;
-import com.google.android.ump.UserMessagingPlatform;
+import com.applovin.sdk.AppLovinSdk;
+import com.applovin.sdk.AppLovinSdkInitializationConfiguration;
+import com.applovin.sdk.AppLovinMediationProvider;
+import com.applovin.mediation.MaxAd;
+import com.applovin.mediation.MaxError;
+import com.applovin.mediation.ads.MaxAdView;
+import com.applovin.mediation.ads.MaxAdViewAdListener;
+
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -168,10 +165,9 @@ public class MainActivity extends Activity {
     private String premiumYearlyPrice = "499,99 TL";
 
     private WebView webView;
-    private AdView bannerAdView;
-    private InterstitialAd interstitialAd;
-    private boolean interstitialShownThisSession = false;
-    private boolean interstitialScheduled = false;
+    private MaxAdView maxBannerAdView;
+    private boolean maxBannerLoaded = false;
+    private boolean maxSdkStarted = false;
     private int bannerHeightPx = 0;
     private int lastInsetLeft = 0, lastInsetTop = 0, lastInsetRight = 0, lastInsetBottom = 0;
     private FrameLayout root;
@@ -235,7 +231,7 @@ public class MainActivity extends Activity {
             } catch (Throwable ignored) {}
         }
         showLaunchSplash();
-        initAdsWithConsent();
+        initializeMaxWhenConfigured();
         initPremiumBilling();
         final int fallbackTop = systemDimen("status_bar_height", dp(28));
         final int fallbackBottom = systemDimen("navigation_bar_height", dp(44));
@@ -332,8 +328,12 @@ public class MainActivity extends Activity {
     private void apSetAdViewsVisible(android.view.View view, boolean visible) {
         if (view == null) return;
         String cls = view.getClass().getName().toLowerCase(java.util.Locale.ROOT);
-        if (cls.contains("adview") || cls.contains("google.android.gms.ads") || cls.contains("admob")) {
-            view.setVisibility(visible ? android.view.View.VISIBLE : android.view.View.GONE);
+        if (view == maxBannerAdView) {
+            updateMaxBannerVisibility();
+            return;
+        }
+        if (cls.contains("maxadview") || cls.contains("com.applovin")) {
+            view.setVisibility(android.view.View.GONE);
             return;
         }
         if (view instanceof android.view.ViewGroup) {
@@ -785,7 +785,7 @@ private void showLaunchSplash() {
         int effectiveBottom=bottom+bannerHeightPx;
         FrameLayout.LayoutParams lp=(FrameLayout.LayoutParams) webView.getLayoutParams();
         if(lp.leftMargin!=left||lp.topMargin!=top||lp.rightMargin!=right||lp.bottomMargin!=effectiveBottom){lp.setMargins(left,top,right,effectiveBottom);webView.setLayoutParams(lp);}
-        if(bannerAdView!=null){FrameLayout.LayoutParams ap=(FrameLayout.LayoutParams)bannerAdView.getLayoutParams();if(ap!=null&&ap.bottomMargin!=bottom){ap.bottomMargin=bottom;bannerAdView.setLayoutParams(ap);}}
+        if(maxBannerAdView!=null){FrameLayout.LayoutParams ap=(FrameLayout.LayoutParams)maxBannerAdView.getLayoutParams();if(ap!=null&&ap.bottomMargin!=bottom){ap.bottomMargin=bottom;maxBannerAdView.setLayoutParams(ap);}}
     }
 
 
@@ -924,11 +924,12 @@ private void showLaunchSplash() {
     private void removePremiumAds() {
         runOnUiThread(() -> {
             try {
-                if (bannerAdView != null) {
-                    bannerAdView.destroy();
-                    root.removeView(bannerAdView);
-                    bannerAdView = null;
+                if (maxBannerAdView != null) {
+                    maxBannerAdView.destroy();
+                    root.removeView(maxBannerAdView);
+                    maxBannerAdView = null;
                 }
+                maxBannerLoaded = false;
             } catch (Throwable ignored) {}
             bannerHeightPx = 0;
             applyWebMargins(lastInsetLeft,lastInsetTop,lastInsetRight,lastInsetBottom);
@@ -1000,55 +1001,108 @@ private void showLaunchSplash() {
         billingClient.launchBillingFlow(this, flowParams);
     }
 
-    private void initAdsWithConsent() {
-        ConsentRequestParameters params=new ConsentRequestParameters.Builder().build();
-        ConsentInformation ci=UserMessagingPlatform.getConsentInformation(this);
-        ci.requestConsentInfoUpdate(this,params,() -> UserMessagingPlatform.loadAndShowConsentFormIfRequired(this, formError -> {if(ci.canRequestAds()) startMobileAdsAndBanner();}),requestError -> {if(ci.canRequestAds()) startMobileAdsAndBanner();});
-        if(ci.canRequestAds()) startMobileAdsAndBanner();
+    // AppLovin MAX preview: no ad SDK starts without configured account values.
+    private void logMaxDiagnostic(String stage, String detail) {
+        android.util.Log.i("AracimMax", stage + ": " + detail);
+        try {
+            getSharedPreferences("aracim_max_diagnostics", MODE_PRIVATE)
+                    .edit().putString("stage", stage).putString("detail", detail)
+                    .putLong("time", System.currentTimeMillis()).apply();
+        } catch (Exception ignored) {}
     }
 
-    private void startMobileAdsAndBanner() {
-        if(premiumActive) return;
-        if(bannerAdView!=null) return;
-        MobileAds.initialize(this,status -> {});
-        bannerAdView=new AdView(this); bannerAdView.setAdSize(AdSize.BANNER);
-        bannerAdView.setAdUnitId(BuildConfig.DEBUG ? "ca-app-pub-3940256099942544/6300978111" : "ca-app-pub-7205009121067400/9497290996");
-        bannerHeightPx=dp(50);
-        FrameLayout.LayoutParams ap=new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,bannerHeightPx);
-        ap.gravity=Gravity.BOTTOM; ap.bottomMargin=lastInsetBottom; root.addView(bannerAdView,ap);
-        applyWebMargins(lastInsetLeft,lastInsetTop,lastInsetRight,lastInsetBottom);
-        bannerAdView.loadAd(new AdRequest.Builder().build());
-        loadInterstitialAd();
-        if (!interstitialScheduled) {
-            interstitialScheduled = true;
-            mainHandler.postDelayed(this::showInterstitialOnce, 5000L);
+    private int maxBannerHeightPx() {
+        return dp(getResources().getConfiguration().smallestScreenWidthDp >= 600 ? 90 : 50);
+    }
+
+    private void updateMaxBannerVisibility() {
+        if (maxBannerAdView == null) return;
+        boolean show = maxBannerLoaded && !premiumActive && apPremiumSplashHidden;
+        maxBannerAdView.setVisibility(show ? View.VISIBLE : View.GONE);
+        int neededHeight = show ? maxBannerHeightPx() : 0;
+        if (bannerHeightPx != neededHeight) {
+            bannerHeightPx = neededHeight;
+            applyWebMargins(lastInsetLeft, lastInsetTop, lastInsetRight, lastInsetBottom);
         }
     }
 
-    private void loadInterstitialAd() {
-        if (premiumActive || interstitialShownThisSession) return;
-        String unitId = BuildConfig.DEBUG
-                ? "ca-app-pub-3940256099942544/1033173712"
-                : "ca-app-pub-7205009121067400/2790024214";
-        if (unitId.isEmpty()) return;
-        InterstitialAd.load(this, unitId, new AdRequest.Builder().build(),
-                new InterstitialAdLoadCallback() {
-                    @Override public void onAdLoaded(InterstitialAd ad) {
-                        interstitialAd = ad;
-                    }
-                    @Override public void onAdFailedToLoad(LoadAdError error) {
-                        interstitialAd = null;
-                    }
-                });
+    private void initializeMaxWhenConfigured() {
+        if (maxSdkStarted || premiumActive) return;
+        if (BuildConfig.MAX_SDK_KEY.trim().isEmpty()
+                || BuildConfig.MAX_BANNER_AD_UNIT_ID.trim().isEmpty()) {
+            logMaxDiagnostic("setup_required", "MAX SDK key and banner ID missing; ads disabled");
+            return;
+        }
+        // Must configure a reviewed privacy policy/consent flow before live rollout.
+        if (!BuildConfig.MAX_PRIVACY_POLICY_URL.startsWith("https://")) {
+            logMaxDiagnostic("privacy_required", "HTTPS privacy policy URL required; ads disabled");
+            return;
+        }
+        maxSdkStarted = true;
+        try {
+            AppLovinSdk sdk = AppLovinSdk.getInstance(this);
+            sdk.getSettings().getTermsAndPrivacyPolicyFlowSettings().setEnabled(true);
+            sdk.getSettings().getTermsAndPrivacyPolicyFlowSettings()
+                    .setPrivacyPolicyUri(Uri.parse(BuildConfig.MAX_PRIVACY_POLICY_URL));
+            AppLovinSdkInitializationConfiguration config =
+                    AppLovinSdkInitializationConfiguration.builder(BuildConfig.MAX_SDK_KEY)
+                            .setMediationProvider(AppLovinMediationProvider.MAX)
+                            .build();
+            sdk.initialize(config, configuration -> runOnUiThread(() -> {
+                logMaxDiagnostic("sdk_ready", "MAX SDK initialized");
+                createMaxBanner();
+            }));
+        } catch (Exception ex) {
+            logMaxDiagnostic("sdk_error", ex.getClass().getSimpleName());
+        }
     }
 
-    private void showInterstitialOnce() {
-        if (premiumActive || interstitialShownThisSession || interstitialAd == null) return;
-        interstitialShownThisSession = true;
-        InterstitialAd ad = interstitialAd;
-        interstitialAd = null;
-        ad.setFullScreenContentCallback(new FullScreenContentCallback() {});
-        ad.show(this);
+    private void createMaxBanner() {
+        if (premiumActive || maxBannerAdView != null) return;
+        try {
+            final MaxAdView view = new MaxAdView(BuildConfig.MAX_BANNER_AD_UNIT_ID, this);
+            maxBannerAdView = view;
+            maxBannerLoaded = false;
+            bannerHeightPx = 0;
+            view.setBackgroundColor(Color.WHITE);
+            view.setExtraParameter("adaptive_banner", "false");
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT, maxBannerHeightPx());
+            params.gravity = Gravity.BOTTOM;
+            params.bottomMargin = lastInsetBottom;
+            root.addView(view, params);
+            view.setVisibility(View.GONE);
+            applyWebMargins(lastInsetLeft, lastInsetTop, lastInsetRight, lastInsetBottom);
+            view.setListener(new MaxAdViewAdListener() {
+                @Override public void onAdLoaded(MaxAd ad) {
+                    if (maxBannerAdView != view || premiumActive) return;
+                    maxBannerLoaded = true;
+                    logMaxDiagnostic("banner_loaded", "MAX banner loaded");
+                    updateMaxBannerVisibility();
+                }
+                @Override public void onAdLoadFailed(String adUnitId, MaxError error) {
+                    if (maxBannerAdView != view) return;
+                    maxBannerLoaded = false;
+                    logMaxDiagnostic("banner_failed", "code=" + error.getCode()
+                            + " message=" + error.getMessage());
+                    updateMaxBannerVisibility();
+                }
+                @Override public void onAdDisplayFailed(MaxAd ad, MaxError error) {
+                    logMaxDiagnostic("display_failed", "code=" + error.getCode());
+                }
+                @Override public void onAdClicked(MaxAd ad) {}
+                @Override public void onAdExpanded(MaxAd ad) {}
+                @Override public void onAdCollapsed(MaxAd ad) {}
+                @Override public void onAdDisplayed(MaxAd ad) {}
+                @Override public void onAdHidden(MaxAd ad) {}
+            });
+            view.loadAd();
+            logMaxDiagnostic("banner_request", "loadAd called");
+        } catch (Exception ex) {
+            logMaxDiagnostic("banner_error", ex.getClass().getSimpleName());
+            maxBannerLoaded = false;
+            updateMaxBannerVisibility();
+        }
     }
 
     @Override protected void onPause() {
@@ -3516,7 +3570,7 @@ private void showLaunchSplash() {
             try { translator.close(); } catch (Throwable ignored) {}
         }
         uiTranslators.clear();
-        if(bannerAdView!=null){try{bannerAdView.destroy();}catch(Throwable ignored){} bannerAdView=null;}
+        if(maxBannerAdView!=null){try{maxBannerAdView.destroy();}catch(Throwable ignored){} maxBannerAdView=null;}
         stopSpeedTrackingNative();
         try { if (locationManager != null && nearbyLocationListener != null) locationManager.removeUpdates(nearbyLocationListener); } catch (Throwable ignored) {}
         nearbyLocationListener = null;
