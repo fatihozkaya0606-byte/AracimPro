@@ -1,9 +1,11 @@
-name: OK Kacis Booster Preview APK (isolated)
+name: OK Kacis Polished Preview APK (isolated)
 on:
   push:
     branches: [ok-kacis-powerups-dev]
     paths:
       - 'game-development/game.js'
+      - 'game-development/index.html'
+      - 'game-development/style.css'
       - 'game-development/game.integration.test.js'
       - 'game-development/boosters.js'
       - 'game-development/boosters.test.js'
@@ -28,16 +30,19 @@ jobs:
       - uses: android-actions/setup-android@v4
       - name: Install Android SDK for version 4.3 preview
         run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
-      - name: Extract current release 4.2 sources and overlay updated JS
+      - name: Extract current release 4.2 and overlay isolated gameplay + layout changes
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p preview-src
           unzip -q OkKacis_4_2_KaynakKod.zip -d preview-src
-          test -s preview-src/OkKacis/app/src/main/assets/game.js
-          test -s game-development/game.js
-          cp game-development/game.js preview-src/OkKacis/app/src/main/assets/game.js
+          for asset in game.js index.html style.css; do
+            test -s "game-development/$asset"
+            cp "game-development/$asset" "preview-src/OkKacis/app/src/main/assets/$asset"
+          done
           node --check preview-src/OkKacis/app/src/main/assets/game.js
+          grep -q 'goal-arrow' preview-src/OkKacis/app/src/main/assets/index.html
+          grep -q '4.3.1 OK Kacis' preview-src/OkKacis/app/src/main/assets/style.css
           node --test game-development/*.test.js
           python3 - <<'PY'
           from pathlib import Path
@@ -47,7 +52,7 @@ jobs:
             ("compileSdk 35","compileSdk 36"),
             ("targetSdk 35","targetSdk 36"),
             ("versionCode 14","versionCode 16"),
-            ("versionName '4.2.0'","versionName '4.3.0'"),
+            ("versionName '4.2.0'","versionName '4.3.1'"),
           ]:
               if s.count(old) != 1: raise RuntimeError(f"Expected one: {old}")
               s=s.replace(old,new)
@@ -70,6 +75,6 @@ jobs:
         run: test -s preview-src/OkKacis/app/build/outputs/apk/debug/app-debug.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: OK-Kacis-4.3-powerups-DEV-preview-APK
+          name: OK-Kacis-4.3.1-polished-DEV-preview-APK
           path: preview-src/OkKacis/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
