@@ -325,6 +325,17 @@
     }
     return result;
   }
+  function renderComboHud(){
+    const tip=$('gameTip');if(!tip)return;
+    let meter=$('comboHud');
+    if(!meter){
+      meter=document.createElement('div');meter.id='comboHud';
+      meter.style.cssText='margin:5px auto 7px;padding:6px 10px;max-width:280px;border-radius:12px;text-align:center;font-weight:800;font-size:12px;background:linear-gradient(110deg,#542a81,#923bce);color:#fff;text-shadow:0 1px 2px #0006;box-shadow:0 3px 7px #0004;';
+      tip.insertAdjacentElement('afterend',meter);
+    }
+    meter.hidden=currentLevel<=5;
+    if(currentLevel>5)meter.textContent='🔥 KOMBO '+(comboStreak%5)+'/5 · 5 ok = +30 altın';
+  }
   function specialStyle(){
     if($('okSpecialStyle'))return;
     const css=document.createElement('style');css.id='okSpecialStyle';
@@ -386,7 +397,7 @@
     $('progressTxt').textContent=`${removed}/${levelData.pieces.length}`;
     if($('difficultyLabel')){const closed=pieces.filter(p=>p.needsKey && pieces.some(q=>q.id===p.needsKey)).length; $('difficultyLabel').textContent=`${levelData.difficulty.name} · ${pieces.length} ok${closed?' · 🔒 '+closed:''}`;}
     $('movesTxt').textContent=String(movesLeft);
-    drawTimer();updateLifeUI();updatePowerButtons();
+    drawTimer();updateLifeUI();updatePowerButtons();renderComboHud();
     $('undoBadge').textContent=String(save.undos);$('hintBadge').textContent=String(save.hints);
     $('undoBtn').disabled=save.undos<=0;
     $('hintBtn').disabled=save.hints<=0;
@@ -415,7 +426,7 @@
     // Keep the counter in sync with the visible HUD and never go negative.
     if(busy || screen!=='playing' || movesLeft<=0 || !$('modal').hidden)return;
     if(currentLevel<=5){toast('İlk 5 bölümde rahatça dene; önce yolu açık oku seç!');return;}
-    comboStreak=0;
+    comboStreak=0;renderComboHud();
     movesLeft=Math.max(0,movesLeft-1);mistakesUsed++;
     $('movesTxt').textContent=String(movesLeft);
     updateLifeUI();
