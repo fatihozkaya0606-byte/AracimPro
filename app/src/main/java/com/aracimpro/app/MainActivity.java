@@ -86,7 +86,7 @@ import com.applovin.sdk.AppLovinMediationProvider;
 import com.applovin.mediation.MaxAd;
 import com.applovin.mediation.MaxError;
 import com.applovin.mediation.ads.MaxAdView;
-import com.applovin.mediation.ads.MaxAdViewAdListener;
+import com.applovin.mediation.MaxAdViewAdListener;
 
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
