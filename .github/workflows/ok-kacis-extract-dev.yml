@@ -44,5 +44,7 @@ jobs:
           git add game-development/
           if ! git diff --cached --quiet; then
             git commit -m 'Expose current OK Kacis game scripts for isolated feature work'
+            git fetch origin ok-kacis-powerups-dev
+            git rebase origin/ok-kacis-powerups-dev
             git push origin HEAD:ok-kacis-powerups-dev
           fi
