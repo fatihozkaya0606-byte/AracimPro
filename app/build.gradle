@@ -25,6 +25,10 @@ android {
         buildConfigField "String", "FIREBASE_APP_ID", "\"${System.getenv('FIREBASE_APP_ID') ?: ''}\""
         buildConfigField "String", "MARKET_API_URL", "\"${System.getenv('MARKET_API_URL') ?: ''}\""
         buildConfigField "String", "LIVE_DATA_API_URL", "\"${System.getenv('LIVE_DATA_API_URL') ?: ''}\""
+        // AppLovin account values are supplied at build time, not checked into GitHub.
+        buildConfigField "String", "MAX_SDK_KEY", "\"\${System.getenv('APPLOVIN_MAX_SDK_KEY') ?: ''}\""
+        buildConfigField "String", "MAX_BANNER_AD_UNIT_ID", "\"\${System.getenv('APPLOVIN_MAX_BANNER_AD_UNIT_ID') ?: ''}\""
+        buildConfigField "String", "MAX_PRIVACY_POLICY_URL", "\"\${System.getenv('APPLOVIN_MAX_PRIVACY_POLICY_URL') ?: ''}\""
         versionCode 83
         versionName '7.11.8'
     }
@@ -42,8 +46,8 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix '.fullv2'
-            versionNameSuffix '-fullv2'
+            applicationIdSuffix '.maxpreview'
+            versionNameSuffix '-maxpreview'
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
             }
@@ -87,6 +91,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-ai'
     implementation 'com.google.guava:guava:31.0.1-android'
     implementation 'org.reactivestreams:reactive-streams:1.0.4'
-    implementation 'com.google.android.gms:play-services-ads:25.5.0'
-    implementation 'com.google.android.ump:user-messaging-platform:4.0.0'
+    // MAX runs independently of AdMob. No AdMob adapter or Google demand is configured.
+    implementation 'com.applovin:applovin-sdk:+'
+    implementation 'com.google.android.gms:play-services-ads-identifier:18.2.0'
 }
