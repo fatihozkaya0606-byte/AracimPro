@@ -61,6 +61,7 @@
     if($('lostLives'))$('lostLives').textContent=`❤️ ${save.lives}/${MAX_LIVES}`;
     if($('lostRefill'))$('lostRefill').textContent=save.lives===MAX_LIVES?'Canların dolu':`Sonraki can: ${timeUntilHeart()}`;
     if($('retryLevel'))$('retryLevel').disabled=save.lives<=0;
+    if($('openRewardLives'))$('openRewardLives').dataset.earnable=save.lives<MAX_LIVES?'yes':'no';
     updateRewardButton();
     updateHome();
   }
@@ -95,7 +96,7 @@
     if(save.lives>=MAX_LIVES){toast('❤️ Canların zaten dolu!');return;}
     const bridge=nativeAds();
     if(!bridge || !rewardedReady || rewardedPending){toast('Reklam şu an hazır değil. Biraz sonra dene.');return;}
-    rewardedPending=true;rewardedGranted=false;rewardedReady=false;
+    rewardedPending=true;rewardedGranted=false;rewardedReady=false;timerLastAt=performance.now();
     updateRewardButton();
     try{bridge.showRewarded();}catch(_){rewardedPending=false;updateRewardButton();toast('Reklam açılamadı.');}
   }
@@ -116,7 +117,7 @@
   window.OkKacisAdCallbacks = Object.freeze({
     onReady: ready=>{rewardedReady=!!ready;updateRewardButton();adBannerForScreen(screen);},
     onRewardEarned: ()=>{rewardLivesGranted();},
-    onClosed: ()=>{if(rewardedPending&&!rewardedGranted)toast('Reklam ödülü kazanılmadı.');rewardedPending=false;updateRewardButton();},
+    onClosed: ()=>{if(rewardedPending&&!rewardedGranted)toast('Reklam ödülü kazanılmadı.');rewardedPending=false;timerLastAt=performance.now();updateRewardButton();},
     onFailed: ()=>{rewardedPending=false;rewardedReady=false;updateRewardButton();toast('Reklam açılamadı. Daha sonra tekrar dene.');}
   });
   function openRewardLives(){
@@ -146,7 +147,7 @@
     if(n<=249)return 245;
     return 270;
   }
-  function timerRunning(){return screen==='playing' && $('modal').hidden && !document.hidden && !lostThisRun && !levelTransitioning && !busy && !!levelData;}
+  function timerRunning(){return !rewardedPending && screen==='playing' && $('modal').hidden && !document.hidden && !lostThisRun && !levelTransitioning && !busy && !!levelData;}
   function clockString(milliseconds){const seconds=Math.max(0,Math.ceil(milliseconds/1000));return `${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;}
   function drawTimer(){
     if(!$('timerText'))return;
