@@ -74,6 +74,7 @@
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateLifeUI();});
   let screen = 'home', modalType = '', page = 0, shopReturn='home', selectedShopTab='skins';
   let currentLevel = 1, levelData = null, pieces = [], history = [], removed = 0, movesLeft = 0, hintsUsed = 0, mistakesUsed = 0, busy = false, hintId = -1, lostThisRun = false;
+  let specialTiles = [], comboStreak = 0;
   let timeRemainingMs=0, initialTimeMs=0, timerLastAt=0, lastTickSeconds=-1, lastBeepSecond=-1, revivesUsed=0;
   function secondsForLevel(n){
     // Increasing time allowance reflects increasing puzzle length/difficulty.
@@ -220,14 +221,14 @@
   // Difficulty curve: early stages teach the rules; stages 20+ introduce
   // more dependencies, fewer visible choices and a smaller mistake budget.
   function difficulty(n){
-    return {target:n<4?6+2*n:n<9?9+n:n<16?17+Math.floor((n-8)*.7):n<31?22+Math.floor((n-16)/2):Math.min(32,29+Math.floor((n-30)/25)),
-      rocks:n<13?0:n<35?1:n<75?2:n<120?3:n<220?4:5,
+    return {target:n<=5?6+n:n<11?10+n:n<16?17+Math.floor((n-8)*.7):n<31?22+Math.floor((n-16)/2):Math.min(32,29+Math.floor((n-30)/25)),
+      rocks:n<=5?0:n<13?1:n<35?2:n<75?3:n<120?4:5,
       maxLen:n>=120?3:2,
       longChance:n<5?.11:n<14?.27:n<40?.33:n<100?.38:.44,
-      allowances:n<5?8:n<10?5:n<20?4:n<35?3:n<75?2:n<160?1:1,
-      lockChance:n<10?0:n<15?.34:n<20?.51:n<30?.72:n<50?.79:n<85?.84:.90,
+      allowances:n<=5?10:n<=10?5:n<20?4:n<35?3:n<75?2:n<160?1:1,
+      lockChance:n<=5?0:n<=10?.19:n<15?.34:n<20?.51:n<30?.72:n<50?.79:n<85?.84:.90,
       visibleGoal:n<10?99:n<15?8:n<20?6:n<30?5:n<50?4:n<100?3:2,
-      name:n<5?'Başlangıç':n<10?'Isınma':n<20?'Orta':n<35?'Zorlu':n<75?'Usta':n<160?'Uzman':'Efsane'};
+      name:n<=5?'Başlangıç':n<=10?'Isınma':n<20?'Orta':n<35?'Zorlu':n<75?'Usta':n<160?'Uzman':'Efsane'};
   }
   function makeLevel(n){
     const rand=rngFor(n), diff=difficulty(n);
@@ -271,7 +272,7 @@
     // The reverse insertion order therefore remains a guaranteed solution.
     // Critically, the advanced game has only a handful of initially removable
     // arrows instead of 10-15 open arrows that make a level feel effortless.
-    if(n>=10 && best.length>=8){
+    if(n>=6 && best.length>=8){
       const all=best.length;
       for(let i=0;i<all-2;i++){
         if(rand()>=diff.lockChance)continue;
@@ -300,6 +301,68 @@
     }
     return {rocks:stones,pieces:best,level:n,difficulty:diff};
   }
+
+  // Candy-style collectible tokens occupy FREE cells only, so they cannot block an
+  // arrow exit or alter the level's guaranteed reverse-insertion solution.
+  function createSpecialTiles(n, lvl){
+    if(n<=5)return [];
+    const rand=rngFor(n+45319), occupied=occupancy(lvl.pieces,lvl.rocks);
+    const slots=[];
+    for(let y=0;y<SIZE;y++)for(let x=0;x<SIZE;x++){
+      if(occupied.has(key(x,y)))continue;
+      const adjacent=[[x-1,y],[x+1,y],[x,y-1],[x,y+1]].filter(([cx,cy])=>occupied.has(key(cx,cy))).length;
+      const rowArrows=lvl.pieces.filter(p=>cells(p).some(([cx,cy])=>cy===y)).length;
+      if(!adjacent || !rowArrows)continue;
+      slots.push({x,y,score:adjacent*8 + (3-Math.abs(3-x))*0.2 + rand()});
+    }
+    slots.sort((a,b)=>b.score-a.score);
+    const count=n<=10?1:n<=30?2:3, kinds=['bomb','lightning','spin','gift'];
+    const result=[];
+    for(const slot of slots){
+      if(result.length>=count)break;
+      if(result.some(p=>Math.abs(p.x-slot.x)+Math.abs(p.y-slot.y)<2))continue;
+      result.push({id:'gem-'+result.length,x:slot.x,y:slot.y,type:kinds[(n-6+result.length)%kinds.length]});
+    }
+    return result;
+  }
+  function specialStyle(){
+    if($('okSpecialStyle'))return;
+    const css=document.createElement('style');css.id='okSpecialStyle';
+    css.textContent="\n      .power-gem{position:absolute;z-index:18;display:grid;place-items:center;min-width:0;min-height:0;padding:0;border:2px solid rgba(255,255,255,.85);border-radius:20%;color:white;font-size:clamp(15px,5vw,27px);line-height:1;background:linear-gradient(145deg,#ffe99b,#ff992e 56%,#b64a14);box-shadow:inset 1px 2px 5px #fff8,inset -3px -4px 5px #59260088,0 4px 0 #79391d,0 6px 10px #0006;text-shadow:0 2px 3px #0008;transform:scale(.78);transition:filter .14s,transform .14s;}\n      .power-gem[data-kind=\"bomb\"]{background:linear-gradient(145deg,#f6b1ff,#9745e8 60%,#4d1da0);}\n      .power-gem[data-kind=\"lightning\"]{background:linear-gradient(145deg,#f9ff8a,#f5ae07 55%,#a75c05);}\n      .power-gem[data-kind=\"spin\"]{background:linear-gradient(145deg,#bcffff,#238de0 55%,#13417f);}\n      .power-gem[data-kind=\"gift\"]{background:linear-gradient(145deg,#ffd8eb,#fa4d8c 60%,#a41352);}\n      .power-gem:active{transform:scale(.71);filter:brightness(1.22);}\n      .power-gem:focus-visible{outline:3px solid #fff;outline-offset:3px;}\n      .power-burst{position:absolute;z-index:20;pointer-events:none;width:19%;height:19%;display:grid;place-items:center;font-size:30px;text-shadow:0 2px 8px #000;animation:okBurst .5s ease-out both;}\n      @keyframes okBurst {from{opacity:1;transform:scale(.6)}to{opacity:0;transform:scale(2.2)}}\n      @media(prefers-reduced-motion:reduce){.power-gem,.power-burst{animation:none;transition:none}}\n    ";
+    document.head.appendChild(css);
+  }
+  function snapshot(){return {pieces:pieces.map(p=>({...p})),removed,movesLeft,mistakesUsed,specialTiles:specialTiles.map(t=>({...t})),comboStreak,coins:save.coins};}
+  function useSpecialTile(id){
+    if(busy||screen!=='playing'||lostThisRun||!$('modal').hidden)return;
+    const gem=specialTiles.find(t=>t.id===id);if(!gem)return;
+    busy=true;history.push(snapshot());if(history.length>9)history.shift();
+    specialTiles=specialTiles.filter(t=>t.id!==id);
+    const crossed=(p)=>cells(p).some(([cx,cy])=>gem.type==='bomb'?Math.abs(cx-gem.x)<=1&&Math.abs(cy-gem.y)<=1:cy===gem.y);
+    let victims=[];
+    if(gem.type==='bomb'||gem.type==='lightning')victims=pieces.filter(crossed);
+    if(gem.type==='spin'){
+      const choices=pieces.filter(p=>!freeExit(p,pieces,levelData.rocks));
+      const pool=choices.length?choices:pieces;
+      if(pool.length)victims=[pool.reduce((best,p)=>Math.abs(p.x-gem.x)+Math.abs(p.y-gem.y)<Math.abs(best.x-gem.x)+Math.abs(best.y-gem.y)?p:best)];
+    }
+    if(victims.length){
+      const ids=new Set(victims.map(p=>p.id));
+      pieces=pieces.filter(p=>!ids.has(p.id));removed+=victims.length;
+    }
+    if(gem.type==='gift')save.coins+=45;
+    const labels={bomb:'💣 Bomba patladı!',lightning:'⚡ Yıldırım geçti!',spin:'🔄 Bir ok kurtarıldı!',gift:'🎁 +45 altın!'};
+    const targetX=gem.x,targetY=gem.y;
+    playSound('coin');vibrate([20,25,45]);persist();busy=false;
+    drawBoard();
+    const fx=document.createElement('div');fx.className='power-burst';fx.textContent={bomb:'💥',lightning:'⚡',spin:'🌀',gift:'✨'}[gem.type];
+    fx.style.left=(targetX/SIZE*100)+'%';fx.style.top=(targetY/SIZE*100)+'%';
+    $('gameBoard').appendChild(fx);setTimeout(()=>fx.remove(),520);
+    toast(labels[gem.type]);
+    if(!pieces.length){completeLevel();return;}
+    // These are rewards, not extra moves. They never remove rocks or
+    // introduce new obstacles and cannot invalidate a solvable stage.
+    $('progressTxt').textContent=`${removed}/${levelData.pieces.length}`;
+  }
   function availableCount(lvl){const pp=lvl.pieces;return pp.filter(p=>(!p.needsKey||!pp.some(x=>x.id===p.needsKey))&&freeExit(p,pp,lvl.rocks)).length;}
   function startLevel(n){
     if(n>TOTAL_LEVELS){show('levels');return;}
@@ -310,7 +373,7 @@
       $('noLivesBack').onclick=closeModal;
       updateLifeUI();return;
     }
-    currentLevel=n;levelData=makeLevel(n);pieces=levelData.pieces.map(p=>({...p}));removed=0;ensureDaily();
+    currentLevel=n;levelData=makeLevel(n);pieces=levelData.pieces.map(p=>({...p}));removed=0;specialTiles=createSpecialTiles(n,levelData);comboStreak=0;specialStyle();ensureDaily();
     movesLeft=pieces.length+levelData.difficulty.allowances;hintsUsed=0;mistakesUsed=0;hintId=-1;
     timeRemainingMs=initialTimeMs=secondsForLevel(n)*1000;timerLastAt=performance.now();lastTickSeconds=-1;lastBeepSecond=-1;revivesUsed=0;
     history=[];busy=false;lostThisRun=false;show('playing');$('gameTip').textContent=`${levelData.difficulty.name} • Önce birbirini engelleyen okları çöz!`;playSound();
@@ -330,12 +393,14 @@
     const html=[];
     for(let y=0;y<SIZE;y++)for(let x=0;x<SIZE;x++)html.push(renderRock(x,y));
     for(const k of levelData.rocks){const [x,y]=k.split(',').map(Number);html.push(`<div class="grid-rock fixed" style="left:${x/SIZE*100}%;top:${y/SIZE*100}%"><span style="background:linear-gradient(#8b8482,#58514d);border-color:#68625d"></span></div>`)}
+    for(const gem of specialTiles){const ico={bomb:'💣',lightning:'⚡',spin:'🔄',gift:'🎁'}[gem.type];html.push(`<button type="button" class="power-gem" data-gem="${gem.id}" data-kind="${gem.type}" style="left:${gem.x/SIZE*100}%;top:${gem.y/SIZE*100}%;width:${100/SIZE}%;height:${100/SIZE}%" aria-label="Özel güç ${gem.type}">${ico}</button>`);}
     for(const p of pieces){
       const horizontal=p.dir==='R'||p.dir==='L';
       html.push(`<button class="piece ${p.color} ${p.isKey?'key-piece':''} ${p.needsKey&&pieces.some(q=>q.id===p.needsKey)?'locked-piece':''} ${p.id===hintId?'hinted':''}" data-dir="${p.dir}" data-id="${p.id}" style="left:${p.x/SIZE*100}%;top:${p.y/SIZE*100}%;width:${(horizontal?p.length:1)/SIZE*100}%;height:${(horizontal?1:p.length)/SIZE*100}%;--tile-image:url('sprites/${p.color}-${p.length===1?'s':p.length===2?'l':'xl'}-${p.dir}.webp')" aria-label="${p.dir==='R'?'Sağa':p.dir==='L'?'Sola':p.dir==='U'?'Yukarı':'Aşağı'} giden ok"><span class="piece-inner">${p.isKey?'<span class="key-icon">🔑</span>':''}${p.needsKey&&pieces.some(q=>q.id===p.needsKey)?'<span class="lock-icon">🔒</span>':''}</span></button>`);
     }
     $('gameBoard').innerHTML=html.join('');
     $('gameBoard').querySelectorAll('.piece').forEach(el=>el.addEventListener('click',()=>tapPiece(Number(el.dataset.id),el)));
+    $('gameBoard').querySelectorAll('.power-gem').forEach(el=>el.addEventListener('click',()=>useSpecialTile(el.dataset.gem)));
   }
   // Also catch blank/stone tile taps. Clicks on arrow buttons do NOT bubble
   // into a second penalty, because their target is inside .piece.
@@ -349,6 +414,8 @@
     // Wrong taps cost one move at EVERY level, including levels 1–5.
     // Keep the counter in sync with the visible HUD and never go negative.
     if(busy || screen!=='playing' || movesLeft<=0 || !$('modal').hidden)return;
+    if(currentLevel<=5){toast('İlk 5 bölümde rahatça dene; önce yolu açık oku seç!');return;}
+    comboStreak=0;
     movesLeft=Math.max(0,movesLeft-1);mistakesUsed++;
     $('movesTxt').textContent=String(movesLeft);
     updateLifeUI();
@@ -368,18 +435,20 @@
       playSound('bad');vibrate(35);penalizeMistake('Önce bu okun önündeki engeli kaldır!');return;
     }
     if(movesLeft<1)return;busy=true;playSound();vibrate(12);
-    history.push({pieces:pieces.map(p=>({...p})),removed,movesLeft,mistakesUsed});
+    history.push(snapshot());
     if(history.length>9)history.shift();
     element.classList.add('escaping');
     setTimeout(()=>{
       pieces=pieces.filter(x=>x.id!==id);removed++;movesLeft=Math.max(0,movesLeft-1);hintId=-1;busy=false;
-      save.totalArrows++;ensureDaily();save.dailyQuests.arrows++;persist();
+      save.totalArrows++;ensureDaily();save.dailyQuests.arrows++;
+      if(currentLevel>=6){comboStreak++;if(comboStreak%5===0){save.coins+=30;toast('🔥 5X KOMBO! +30 altın');playSound('coin');vibrate([15,25,45]);}}
+      persist();
       if(pieces.length===0){completeLevel();return;}
       if(movesLeft===0){drawBoard();failLevel('Hamle hakkın bitti!');return;}
       $('gameTip').textContent='Harika! Yolu açık olan sonraki oku bul.';drawBoard();
     },275);
   }
-  function undo(){if(busy||save.undos<=0)return;if(!history.length){toast('Geri alınacak hamle yok!');return;}const state=history.pop();pieces=state.pieces;removed=state.removed;movesLeft=state.movesLeft;mistakesUsed=state.mistakesUsed;save.undos--;persist();hintId=-1;drawBoard();toast('Son hamle geri alındı.');playSound('coin')}
+  function undo(){if(busy||save.undos<=0)return;if(!history.length){toast('Geri alınacak hamle yok!');return;}const state=history.pop();pieces=state.pieces;removed=state.removed;movesLeft=state.movesLeft;mistakesUsed=state.mistakesUsed;if(state.specialTiles)specialTiles=state.specialTiles;if(Number.isFinite(state.comboStreak))comboStreak=state.comboStreak;if(Number.isFinite(state.coins))save.coins=state.coins;save.undos--;persist();hintId=-1;drawBoard();toast('Son hamle geri alındı.');playSound('coin')}
   function hint(){if(busy||save.hints<=0)return;const valid=pieces.filter(p=>(!p.needsKey||!pieces.some(q=>q.id===p.needsKey))&&freeExit(p,pieces,levelData.rocks));if(!valid.length){toast('Açık ok bulunamadı. Yeniden dene.');return;}hintId=valid[valid.length-1].id;save.hints--;hintsUsed++;persist();drawBoard();toast('Parlayan oka dokun!');playSound('coin');setTimeout(()=>{if(screen==='playing'){hintId=-1;drawBoard();}},2500)}
   function failLevel(reason='Bölümü tamamlayamadın!'){
     // Exactly one life is lost per failed attempt, whichever action reached 0.
