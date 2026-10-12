@@ -16,5 +16,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check booster engine syntax
         run: node --check game-development/boosters.js
-      - name: Test difficulty curve and powerup behavior
-        run: node --test game-development/boosters.test.js
+      - name: Check actual game syntax
+        run: node --check game-development/game.js
+      - name: Test level solvability and powerup behavior
+        run: node --test game-development/*.test.js
