@@ -1,0 +1,31 @@
+name: Inspect OK Kacis native app integration
+on:
+  push:
+    branches: [ok-kacis-powerups-dev]
+    paths: ['.github/workflows/ok-kacis-inspect-ads.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Print safe Android source structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/o
+          unzip -q OkKacis_4_2_KaynakKod.zip -d /tmp/o
+          echo "::group::Files"
+          find /tmp/o/OkKacis/app/src/main -maxdepth 9 -type f | grep -E '(java|kt|xml)$' | head -40
+          echo "::endgroup::"
+          echo "::group::Gradle"
+          cat /tmp/o/OkKacis/app/build.gradle
+          echo "::endgroup::"
+          echo "::group::Manifest"
+          cat /tmp/o/OkKacis/app/src/main/AndroidManifest.xml
+          echo "::endgroup::"
+          echo "::group::MainActivity candidates"
+          find /tmp/o/OkKacis/app/src/main -type f \( -name 'MainActivity.java' -o -name 'MainActivity.kt' \) -exec sh -c 'echo "--- $1 ---"; sed -n "1,240p" "$1"' sh {} \;
+          echo "::endgroup::"
