@@ -6,6 +6,8 @@ on:
       - 'app/src/main/java/com/aracimpro/app/MainActivity.java'
       - 'app/build.gradle'
       - '.github/workflows/aracimpro-ad-banner-preview.yml'
+  pull_request:
+    branches: [aracimpro-play-quality-83]
   workflow_dispatch:
 
 permissions:
