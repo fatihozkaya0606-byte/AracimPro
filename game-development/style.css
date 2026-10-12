@@ -349,3 +349,113 @@
 #playing .piece .lock-icon{bottom:-6px!important;right:-4px!important;top:auto!important}
 #playing .world-label{box-shadow:inset 0 2px #fff,0 6px 13px #1326296e!important}
 @media(max-height:740px){#playing .piece .key-icon,#playing .piece .lock-icon{width:clamp(22px,6.7vw,29px)!important;height:clamp(22px,6.7vw,29px)!important;font-size:clamp(15px,5vw,21px)!important}}
+
+
+/* ==== 4.3.1 OK Kacis: gentle HUD polish (isolated preview only) ==== */
+/* The glossy tiles and colorful backdrops are kept intentionally intact.
+   Only the PLAYING layout is compacted; all other screens remain unchanged. */
+#playing .game-top{
+  min-height:clamp(56px,8.2dvh,72px);
+  padding-top:calc(5px + env(safe-area-inset-top,0px));
+  margin:0 11px;
+}
+#playing .game-top .circle-btn{
+  width:clamp(38px,10vw,43px);
+  height:clamp(38px,10vw,43px);
+}
+#playing .game-top .small-title{
+  font-size:clamp(19px,5.3vw,26px);
+  padding:8px 14px;
+}
+#playing .objective-bar{padding:5px 3% 0;gap:8px}
+#playing .objective-card{
+  padding:4px 3px 3px!important;
+  border-radius:17px;
+  box-shadow:inset 0 2px #fff9,0 4px 0 #a46f4d99,0 7px 9px #54443044!important;
+}
+#playing .objective-label{font-size:clamp(11px,3vw,14px);line-height:1.05}
+#playing .objective-value{font-size:clamp(19px,5.5vw,26px);line-height:1.12}
+#playing .lives-card .objective-value{font-size:clamp(17px,5.1vw,24px)}
+#playing .life-timer{font-size:clamp(9px,2.35vw,10px);line-height:1.1;margin-top:1px}
+#playing .objective-value .goal-arrow{font-size:.95em;color:#f04b26;
+  text-shadow:1px 2px 0 #923817,0 0 4px #fff}
+#playing .timer-panel{margin:6px 4% 0;padding:4px 10px;gap:7px}
+#playing .timer-face strong{font-size:clamp(17px,4.4vw,20px)}
+#playing .timer-rail{height:10px}
+#playing .game-center{gap:6px;padding-top:3px}
+#playing .world-label{
+  padding:4px 12px!important;
+  gap:8px!important;
+  font-size:clamp(13px,3.6vw,16px)!important;
+  max-width:94%;
+  box-shadow:inset 0 2px #fff,0 4px 8px #13262955!important;
+}
+#playing .difficulty-label{font-size:clamp(11px,3vw,13px)!important;padding:3px 7px!important}
+#playing .board-frame{
+  width:min(91vw,430px,47dvh)!important;
+  height:min(91vw,430px,47dvh)!important;
+  border-width:9px!important;
+  box-shadow:inset 0 0 0 4px #ffdf96,0 7px 0 #6b461f,0 10px 15px #07112277!important;
+}
+/* Compact external badges instead of covering the center of arrows. */
+#playing .piece .key-icon,#playing .piece .lock-icon{
+  width:clamp(18px,6vw,26px)!important;
+  height:clamp(18px,6vw,26px)!important;
+  font-size:clamp(13px,4.1vw,18px)!important;
+  border-width:1.5px!important;
+  box-shadow:inset 0 2px #fff8c7,0 2px 3px #0009!important;
+}
+#playing .piece .key-icon{top:-4px!important;right:-2px!important}
+#playing .piece .lock-icon{bottom:-4px!important;right:-2px!important}
+#playing .game-tip{
+  font-size:clamp(11px,2.95vw,13px);
+  padding:5px 11px;
+  margin:0 6%;
+  line-height:1.15;
+  box-shadow:0 2px 0 #8f6b4c74,0 4px 7px #66543a30;
+}
+/* The power row and combo remain visible but stop competing with the board. */
+#playing #comboHud{
+  margin:2px auto 5px!important;
+  padding:4px 12px!important;
+  border-radius:16px!important;
+  max-width:270px!important;
+  font-size:clamp(10px,2.9vw,12px)!important;
+  line-height:1.25!important;
+  background:linear-gradient(135deg,#512c88,#8e3ec5)!important;
+  box-shadow:0 2px 5px #0003!important;
+}
+#playing .play-utilities{min-height:26px;gap:7px;margin-bottom:6px}
+#playing .play-utilities .powers-strip{min-height:29px;padding:4px 9px;font-size:clamp(10px,2.6vw,12px)}
+#playing .game-bottom{gap:9px;padding:0 4% calc(11px + env(safe-area-inset-bottom,0px))}
+#playing .btn.action{
+  min-height:clamp(63px,9dvh,78px)!important;
+  padding:5px 2px!important;
+  gap:0!important;
+  font-size:clamp(12px,3.5vw,15px)!important;
+  border-radius:18px;
+  box-shadow:inset 0 3px #ffffff9e,inset 0 -5px #13336b9c,0 4px 0 #875520,0 6px 7px #34241b66;
+}
+#playing .btn.action .action-icon{font-size:clamp(24px,7vw,32px)!important;line-height:1}
+#playing .game-bottom .bubble{width:26px;height:26px;font-size:13px;right:-4px;top:-9px;border-width:2px}
+@media(max-height:790px){
+  #playing .board-frame{width:min(89vw,410px,43dvh)!important;height:min(89vw,410px,43dvh)!important}
+  #playing .game-top{min-height:57px}
+  #playing .game-center{gap:3px}
+  #playing .btn.action{min-height:62px!important}
+}
+@media(max-height:720px){
+  #playing .board-frame{width:min(87vw,370px,40dvh)!important;height:min(87vw,370px,40dvh)!important}
+  #playing .game-tip{padding:4px 8px}
+  #playing .world-label{padding:3px 8px!important}
+  #playing .btn.action{min-height:57px!important}
+}
+@media(max-height:630px){
+  #playing .board-frame{width:min(84vw,340px,37dvh)!important;height:min(84vw,340px,37dvh)!important}
+  #playing .game-top{min-height:52px}
+  #playing .game-bottom{padding-bottom:calc(5px + env(safe-area-inset-bottom,0px))}
+  #playing .timer-panel{margin-top:3px;padding:2px 8px}
+}
+@media(prefers-reduced-motion:reduce){
+  #playing .power-burst{animation:none!important}
+}
