@@ -74,7 +74,7 @@
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateLifeUI();});
   let screen = 'home', modalType = '', page = 0, shopReturn='home', selectedShopTab='skins';
   let currentLevel = 1, levelData = null, pieces = [], history = [], removed = 0, movesLeft = 0, hintsUsed = 0, mistakesUsed = 0, busy = false, hintId = -1, lostThisRun = false;
-  let specialTiles = [], comboStreak = 0;
+  let specialTiles = [], comboStreak = 0, awardedCombos = new Set();
   let timeRemainingMs=0, initialTimeMs=0, timerLastAt=0, lastTickSeconds=-1, lastBeepSecond=-1, revivesUsed=0;
   function secondsForLevel(n){
     // Increasing time allowance reflects increasing puzzle length/difficulty.
@@ -331,11 +331,11 @@
     css.textContent="\n      .power-gem{position:absolute;z-index:18;display:grid;place-items:center;min-width:0;min-height:0;padding:0;border:2px solid rgba(255,255,255,.85);border-radius:20%;color:white;font-size:clamp(15px,5vw,27px);line-height:1;background:linear-gradient(145deg,#ffe99b,#ff992e 56%,#b64a14);box-shadow:inset 1px 2px 5px #fff8,inset -3px -4px 5px #59260088,0 4px 0 #79391d,0 6px 10px #0006;text-shadow:0 2px 3px #0008;transform:scale(.78);transition:filter .14s,transform .14s;}\n      .power-gem[data-kind=\"bomb\"]{background:linear-gradient(145deg,#f6b1ff,#9745e8 60%,#4d1da0);}\n      .power-gem[data-kind=\"lightning\"]{background:linear-gradient(145deg,#f9ff8a,#f5ae07 55%,#a75c05);}\n      .power-gem[data-kind=\"spin\"]{background:linear-gradient(145deg,#bcffff,#238de0 55%,#13417f);}\n      .power-gem[data-kind=\"gift\"]{background:linear-gradient(145deg,#ffd8eb,#fa4d8c 60%,#a41352);}\n      .power-gem:active{transform:scale(.71);filter:brightness(1.22);}\n      .power-gem:focus-visible{outline:3px solid #fff;outline-offset:3px;}\n      .power-burst{position:absolute;z-index:20;pointer-events:none;width:19%;height:19%;display:grid;place-items:center;font-size:30px;text-shadow:0 2px 8px #000;animation:okBurst .5s ease-out both;}\n      @keyframes okBurst {from{opacity:1;transform:scale(.6)}to{opacity:0;transform:scale(2.2)}}\n      @media(prefers-reduced-motion:reduce){.power-gem,.power-burst{animation:none;transition:none}}\n    ";
     document.head.appendChild(css);
   }
-  function snapshot(){return {pieces:pieces.map(p=>({...p})),removed,movesLeft,mistakesUsed,specialTiles:specialTiles.map(t=>({...t})),comboStreak,coins:save.coins};}
+  function snapshot(){return {pieces:pieces.map(p=>({...p})),removed,movesLeft,mistakesUsed,specialTiles:specialTiles.map(t=>({...t})),comboStreak};}
   function useSpecialTile(id){
     if(busy||screen!=='playing'||lostThisRun||!$('modal').hidden)return;
     const gem=specialTiles.find(t=>t.id===id);if(!gem)return;
-    busy=true;history.push(snapshot());if(history.length>9)history.shift();
+    busy=true;if(gem.type!=='gift'){history.push(snapshot());if(history.length>9)history.shift();}
     specialTiles=specialTiles.filter(t=>t.id!==id);
     const crossed=(p)=>cells(p).some(([cx,cy])=>gem.type==='bomb'?Math.abs(cx-gem.x)<=1&&Math.abs(cy-gem.y)<=1:cy===gem.y);
     let victims=[];
@@ -373,7 +373,7 @@
       $('noLivesBack').onclick=closeModal;
       updateLifeUI();return;
     }
-    currentLevel=n;levelData=makeLevel(n);pieces=levelData.pieces.map(p=>({...p}));removed=0;specialTiles=createSpecialTiles(n,levelData);comboStreak=0;specialStyle();ensureDaily();
+    currentLevel=n;levelData=makeLevel(n);pieces=levelData.pieces.map(p=>({...p}));removed=0;specialTiles=createSpecialTiles(n,levelData);comboStreak=0;awardedCombos.clear();specialStyle();ensureDaily();
     movesLeft=pieces.length+levelData.difficulty.allowances;hintsUsed=0;mistakesUsed=0;hintId=-1;
     timeRemainingMs=initialTimeMs=secondsForLevel(n)*1000;timerLastAt=performance.now();lastTickSeconds=-1;lastBeepSecond=-1;revivesUsed=0;
     history=[];busy=false;lostThisRun=false;show('playing');$('gameTip').textContent=`${levelData.difficulty.name} • Önce birbirini engelleyen okları çöz!`;playSound();
@@ -441,14 +441,14 @@
     setTimeout(()=>{
       pieces=pieces.filter(x=>x.id!==id);removed++;movesLeft=Math.max(0,movesLeft-1);hintId=-1;busy=false;
       save.totalArrows++;ensureDaily();save.dailyQuests.arrows++;
-      if(currentLevel>=6){comboStreak++;if(comboStreak%5===0){save.coins+=30;toast('🔥 5X KOMBO! +30 altın');playSound('coin');vibrate([15,25,45]);}}
+      if(currentLevel>=6){comboStreak++;if(comboStreak%5===0&&!awardedCombos.has(comboStreak)){awardedCombos.add(comboStreak);save.coins+=30;toast('🔥 5X KOMBO! +30 altın');playSound('coin');vibrate([15,25,45]);}}
       persist();
       if(pieces.length===0){completeLevel();return;}
       if(movesLeft===0){drawBoard();failLevel('Hamle hakkın bitti!');return;}
       $('gameTip').textContent='Harika! Yolu açık olan sonraki oku bul.';drawBoard();
     },275);
   }
-  function undo(){if(busy||save.undos<=0)return;if(!history.length){toast('Geri alınacak hamle yok!');return;}const state=history.pop();pieces=state.pieces;removed=state.removed;movesLeft=state.movesLeft;mistakesUsed=state.mistakesUsed;if(state.specialTiles)specialTiles=state.specialTiles;if(Number.isFinite(state.comboStreak))comboStreak=state.comboStreak;if(Number.isFinite(state.coins))save.coins=state.coins;save.undos--;persist();hintId=-1;drawBoard();toast('Son hamle geri alındı.');playSound('coin')}
+  function undo(){if(busy||save.undos<=0)return;if(!history.length){toast('Geri alınacak hamle yok!');return;}const state=history.pop();pieces=state.pieces;removed=state.removed;movesLeft=state.movesLeft;mistakesUsed=state.mistakesUsed;if(state.specialTiles)specialTiles=state.specialTiles;if(Number.isFinite(state.comboStreak))comboStreak=state.comboStreak;save.undos--;persist();hintId=-1;drawBoard();toast('Son hamle geri alındı.');playSound('coin')}
   function hint(){if(busy||save.hints<=0)return;const valid=pieces.filter(p=>(!p.needsKey||!pieces.some(q=>q.id===p.needsKey))&&freeExit(p,pieces,levelData.rocks));if(!valid.length){toast('Açık ok bulunamadı. Yeniden dene.');return;}hintId=valid[valid.length-1].id;save.hints--;hintsUsed++;persist();drawBoard();toast('Parlayan oka dokun!');playSound('coin');setTimeout(()=>{if(screen==='playing'){hintId=-1;drawBoard();}},2500)}
   function failLevel(reason='Bölümü tamamlayamadın!'){
     // Exactly one life is lost per failed attempt, whichever action reached 0.
