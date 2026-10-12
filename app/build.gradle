@@ -42,8 +42,8 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix '.fullv2'
-            versionNameSuffix '-fullv2'
+            applicationIdSuffix '.adfixpreview'
+            versionNameSuffix '-adfixpreview'
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
             }

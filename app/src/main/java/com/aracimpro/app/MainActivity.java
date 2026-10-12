@@ -169,6 +169,7 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     private AdView bannerAdView;
+    private boolean bannerLoaded = false;
     private InterstitialAd interstitialAd;
     private boolean interstitialShownThisSession = false;
     private boolean interstitialScheduled = false;
@@ -333,7 +334,12 @@ public class MainActivity extends Activity {
         if (view == null) return;
         String cls = view.getClass().getName().toLowerCase(java.util.Locale.ROOT);
         if (cls.contains("adview") || cls.contains("google.android.gms.ads") || cls.contains("admob")) {
-            view.setVisibility(visible ? android.view.View.VISIBLE : android.view.View.GONE);
+            // The splash must not turn an empty AdView into a visible white banner.
+            if (view == bannerAdView) {
+                updateBannerLayout();
+            } else {
+                view.setVisibility(visible ? android.view.View.VISIBLE : android.view.View.GONE);
+            }
             return;
         }
         if (view instanceof android.view.ViewGroup) {
@@ -930,6 +936,7 @@ private void showLaunchSplash() {
                     bannerAdView = null;
                 }
             } catch (Throwable ignored) {}
+            bannerLoaded = false;
             bannerHeightPx = 0;
             applyWebMargins(lastInsetLeft,lastInsetTop,lastInsetRight,lastInsetBottom);
         });
@@ -1000,24 +1007,99 @@ private void showLaunchSplash() {
         billingClient.launchBillingFlow(this, flowParams);
     }
 
+    // Log only SDK status/error codes, never user identifiers or ad requests.
+    private void recordAdsDiagnostic(String phase, String detail) {
+        android.util.Log.i("AracimAds", phase + ": " + detail);
+        try {
+            getSharedPreferences("aracim_ads_diagnostics", MODE_PRIVATE)
+                    .edit()
+                    .putString("phase", phase)
+                    .putString("detail", detail)
+                    .putLong("timestamp", System.currentTimeMillis())
+                    .apply();
+        } catch (Exception ignored) {}
+    }
+
+    // Reserve space only after the SDK confirms a banner has loaded.
+    // This also prevents the full-screen splash from revealing an empty AdView.
+    private void updateBannerLayout() {
+        if (bannerAdView == null || webView == null) return;
+        boolean show = bannerLoaded && !premiumActive && apPremiumSplashHidden;
+        bannerAdView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
+        int requiredHeight = show ? dp(50) : 0;
+        if (bannerHeightPx != requiredHeight) {
+            bannerHeightPx = requiredHeight;
+            applyWebMargins(lastInsetLeft, lastInsetTop, lastInsetRight, lastInsetBottom);
+        }
+    }
+
     private void initAdsWithConsent() {
-        ConsentRequestParameters params=new ConsentRequestParameters.Builder().build();
-        ConsentInformation ci=UserMessagingPlatform.getConsentInformation(this);
-        ci.requestConsentInfoUpdate(this,params,() -> UserMessagingPlatform.loadAndShowConsentFormIfRequired(this, formError -> {if(ci.canRequestAds()) startMobileAdsAndBanner();}),requestError -> {if(ci.canRequestAds()) startMobileAdsAndBanner();});
-        if(ci.canRequestAds()) startMobileAdsAndBanner();
+        ConsentRequestParameters params = new ConsentRequestParameters.Builder().build();
+        ConsentInformation ci = UserMessagingPlatform.getConsentInformation(this);
+        recordAdsDiagnostic("consent", "update requested");
+        ci.requestConsentInfoUpdate(this, params,
+                () -> UserMessagingPlatform.loadAndShowConsentFormIfRequired(this, formError -> {
+                    if (formError != null)
+                        recordAdsDiagnostic("consent_form_error", "code=" + formError.getErrorCode());
+                    if (ci.canRequestAds()) startMobileAdsAndBanner();
+                    else recordAdsDiagnostic("consent", "ads not allowed yet; status=" + ci.getConsentStatus());
+                }),
+                requestError -> {
+                    recordAdsDiagnostic("consent_update_error", "code=" + requestError.getErrorCode());
+                    if (ci.canRequestAds()) startMobileAdsAndBanner();
+                });
+        if (ci.canRequestAds()) startMobileAdsAndBanner();
     }
 
     private void startMobileAdsAndBanner() {
-        if(premiumActive) return;
-        if(bannerAdView!=null) return;
-        MobileAds.initialize(this,status -> {});
-        bannerAdView=new AdView(this); bannerAdView.setAdSize(AdSize.BANNER);
-        bannerAdView.setAdUnitId(BuildConfig.DEBUG ? "ca-app-pub-3940256099942544/6300978111" : "ca-app-pub-7205009121067400/9497290996");
-        bannerHeightPx=dp(50);
-        FrameLayout.LayoutParams ap=new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,bannerHeightPx);
-        ap.gravity=Gravity.BOTTOM; ap.bottomMargin=lastInsetBottom; root.addView(bannerAdView,ap);
-        applyWebMargins(lastInsetLeft,lastInsetTop,lastInsetRight,lastInsetBottom);
-        bannerAdView.loadAd(new AdRequest.Builder().build());
+        if (premiumActive) {
+            recordAdsDiagnostic("banner", "skipped; premium active");
+            return;
+        }
+        if (bannerAdView != null) return;
+        recordAdsDiagnostic("banner", "initializing SDK and requesting ad");
+        MobileAds.initialize(this, status -> {});
+        final AdView view = new AdView(this);
+        view.setAdSize(AdSize.BANNER);
+        view.setAdUnitId(BuildConfig.DEBUG
+                ? "ca-app-pub-3940256099942544/6300978111"
+                : "ca-app-pub-7205009121067400/9497290996");
+        bannerAdView = view;
+        bannerLoaded = false;
+        bannerHeightPx = 0;
+        FrameLayout.LayoutParams ap =
+                new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, dp(50));
+        ap.gravity = Gravity.BOTTOM;
+        ap.bottomMargin = lastInsetBottom;
+        root.addView(view, ap);
+        view.setVisibility(View.INVISIBLE);
+        applyWebMargins(lastInsetLeft, lastInsetTop, lastInsetRight, lastInsetBottom);
+        view.setAdListener(new com.google.android.gms.ads.AdListener() {
+            @Override public void onAdLoaded() {
+                if (bannerAdView != view || premiumActive) return;
+                recordAdsDiagnostic("banner_loaded", "SDK reported successful load");
+                bannerLoaded = true;
+                updateBannerLayout();
+            }
+
+            @Override public void onAdFailedToLoad(LoadAdError error) {
+                if (bannerAdView != view) return;
+                String detail = "domain=" + error.getDomain()
+                        + " code=" + error.getCode()
+                        + " message=" + error.getMessage();
+                recordAdsDiagnostic("banner_load_failed", detail);
+                bannerLoaded = false;
+                updateBannerLayout();
+            }
+        });
+        try {
+            view.loadAd(new AdRequest.Builder().build());
+            recordAdsDiagnostic("banner_request", "loadAd called");
+        } catch (Exception error) {
+            recordAdsDiagnostic("banner_request_error", error.getClass().getSimpleName());
+            bannerLoaded = false;
+            updateBannerLayout();
+        }
         loadInterstitialAd();
         if (!interstitialScheduled) {
             interstitialScheduled = true;

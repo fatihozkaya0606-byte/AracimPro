@@ -1,0 +1,63 @@
+name: Aracim Pro Banner Fix Preview (no Play publish)
+on:
+  push:
+    branches: [aracimpro-83-banner-diagnostics-preview]
+    paths:
+      - 'app/src/main/java/com/aracimpro/app/MainActivity.java'
+      - 'app/build.gradle'
+      - '.github/workflows/aracimpro-ad-banner-preview.yml'
+  pull_request:
+    branches: [aracimpro-play-quality-83]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  debug-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Install Android SDK 36 and NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" "ndk;27.2.12479018"
+      - name: Validate isolated ad preview and empty-banner guard
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          b=Path("app/build.gradle").read_text()
+          s=Path("app/src/main/java/com/aracimpro/app/MainActivity.java").read_text()
+          assert "applicationIdSuffix '.adfixpreview'" in b
+          assert "bannerHeightPx = 0;" in s
+          assert "bannerLoaded && !premiumActive && apPremiumSplashHidden" in s
+          assert "void onAdLoaded()" in s
+          assert "void onAdFailedToLoad(LoadAdError error)" in s
+          assert "banner_load_failed" in s and "consent_update_error" in s
+          assert 'BuildConfig.DEBUG' in s and 'ca-app-pub-3940256099942544/6300978111' in s
+          print("Confirmed: separate debug app, sample ad unit, loaded-only banner, saved diagnostics")
+          PY
+      - name: Build signed-by-Android-debug APK (not Play release)
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
+          LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
+        run: gradle --no-daemon assembleDebug
+      - name: Verify preview APK
+        run: test -s app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AracimPro-7.11.8-Banner-Fix-Preview-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
