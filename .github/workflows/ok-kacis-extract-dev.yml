@@ -5,6 +5,8 @@ on:
     paths:
       - '.github/workflows/ok-kacis-extract-dev.yml'
   workflow_dispatch:
+  pull_request:
+    branches: [ok-kacis-game-v1]
 permissions:
   contents: write
 jobs:
