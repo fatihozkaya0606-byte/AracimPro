@@ -68,6 +68,15 @@ jobs:
           """
           p.write_text(s)
           PY
+      - name: Inspect Android WebView native entry for ads bridge
+        shell: bash
+        run: |
+          echo '=== APP BUILD GRADLE ==='
+          cat preview-src/OkKacis/app/build.gradle
+          echo '=== ANDROID MANIFEST ==='
+          cat preview-src/OkKacis/app/src/main/AndroidManifest.xml
+          echo '=== MAIN ACTIVITIES ==='
+          find preview-src/OkKacis/app/src/main -type f \\( -name MainActivity.java -o -name MainActivity.kt \\) -print -exec sed -n '1,240p' {} \\;
       - name: Build test-only APK with separate application ID
         working-directory: preview-src/OkKacis
         run: gradle --no-daemon assembleDebug
