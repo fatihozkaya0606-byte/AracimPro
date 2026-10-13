@@ -20,3 +20,10 @@
 -keep class * implements androidx.startup.Initializer {
     public <init>();
 }
+
+# Start.io SDK - required when shrinking/obfuscating the release build.
+-keep class com.startapp.** { *; }
+-keep class com.truenet.** { *; }
+-keepattributes Exceptions,InnerClasses,Signature,Deprecated,SourceFile,LineNumberTable,*Annotation*,EnclosingMethod
+-dontwarn com.startapp.**
+-dontwarn org.jetbrains.annotations.**

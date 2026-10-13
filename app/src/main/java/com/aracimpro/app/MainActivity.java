@@ -80,17 +80,10 @@ import com.android.billingclient.api.QueryPurchasesParams;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.FullScreenContentCallback;
-import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.interstitial.InterstitialAd;
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.ump.ConsentInformation;
-import com.google.android.ump.ConsentRequestParameters;
-import com.google.android.ump.UserMessagingPlatform;
+import com.startapp.sdk.ads.banner.Banner;
+import com.startapp.sdk.ads.banner.BannerListener;
+import com.startapp.sdk.adsbase.StartAppSDK;
+
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -168,10 +161,9 @@ public class MainActivity extends Activity {
     private String premiumYearlyPrice = "499,99 TL";
 
     private WebView webView;
-    private AdView bannerAdView;
-    private InterstitialAd interstitialAd;
-    private boolean interstitialShownThisSession = false;
-    private boolean interstitialScheduled = false;
+    private Banner bannerAdView;
+    private boolean startBannerLoaded = false;
+    private boolean startSdkInitialized = false;
     private int bannerHeightPx = 0;
     private int lastInsetLeft = 0, lastInsetTop = 0, lastInsetRight = 0, lastInsetBottom = 0;
     private FrameLayout root;
@@ -235,7 +227,7 @@ public class MainActivity extends Activity {
             } catch (Throwable ignored) {}
         }
         showLaunchSplash();
-        initAdsWithConsent();
+        initStartIoBanner();
         initPremiumBilling();
         final int fallbackTop = systemDimen("status_bar_height", dp(28));
         final int fallbackBottom = systemDimen("navigation_bar_height", dp(44));
@@ -332,10 +324,12 @@ public class MainActivity extends Activity {
     private void apSetAdViewsVisible(android.view.View view, boolean visible) {
         if (view == null) return;
         String cls = view.getClass().getName().toLowerCase(java.util.Locale.ROOT);
-        if (cls.contains("adview") || cls.contains("google.android.gms.ads") || cls.contains("admob")) {
-            view.setVisibility(visible ? android.view.View.VISIBLE : android.view.View.GONE);
+        if (view == bannerAdView) {
+            updateStartBannerVisibility();
             return;
         }
+        // Do not change the visibility of arbitrary WebView contents during splash.
+        if (cls.contains("com.startapp.sdk.ads.banner")) return;
         if (view instanceof android.view.ViewGroup) {
             android.view.ViewGroup vg = (android.view.ViewGroup) view;
             for (int i = 0; i < vg.getChildCount(); i++) {
@@ -925,10 +919,11 @@ private void showLaunchSplash() {
         runOnUiThread(() -> {
             try {
                 if (bannerAdView != null) {
-                    bannerAdView.destroy();
+                    bannerAdView.hideBanner();
                     root.removeView(bannerAdView);
                     bannerAdView = null;
                 }
+                startBannerLoaded = false;
             } catch (Throwable ignored) {}
             bannerHeightPx = 0;
             applyWebMargins(lastInsetLeft,lastInsetTop,lastInsetRight,lastInsetBottom);
@@ -1000,55 +995,82 @@ private void showLaunchSplash() {
         billingClient.launchBillingFlow(this, flowParams);
     }
 
-    private void initAdsWithConsent() {
-        ConsentRequestParameters params=new ConsentRequestParameters.Builder().build();
-        ConsentInformation ci=UserMessagingPlatform.getConsentInformation(this);
-        ci.requestConsentInfoUpdate(this,params,() -> UserMessagingPlatform.loadAndShowConsentFormIfRequired(this, formError -> {if(ci.canRequestAds()) startMobileAdsAndBanner();}),requestError -> {if(ci.canRequestAds()) startMobileAdsAndBanner();});
-        if(ci.canRequestAds()) startMobileAdsAndBanner();
+    // Start.io direct SDK: bottom banner only, never an interstitial, return or splash ad.
+    // SDK controls its own privacy disclosure; review the Play Data safety form before release.
+    private void logStartIo(String step, String result) {
+        android.util.Log.i("AracimStartIo", step + ": " + result);
+        try {
+            getSharedPreferences("aracim_startio_diagnostics", MODE_PRIVATE).edit()
+                    .putString("step", step).putString("result", result)
+                    .putLong("timestamp", System.currentTimeMillis()).apply();
+        } catch (Exception ignored) {}
     }
 
-    private void startMobileAdsAndBanner() {
-        if(premiumActive) return;
-        if(bannerAdView!=null) return;
-        MobileAds.initialize(this,status -> {});
-        bannerAdView=new AdView(this); bannerAdView.setAdSize(AdSize.BANNER);
-        bannerAdView.setAdUnitId(BuildConfig.DEBUG ? "ca-app-pub-3940256099942544/6300978111" : "ca-app-pub-7205009121067400/9497290996");
-        bannerHeightPx=dp(50);
-        FrameLayout.LayoutParams ap=new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,bannerHeightPx);
-        ap.gravity=Gravity.BOTTOM; ap.bottomMargin=lastInsetBottom; root.addView(bannerAdView,ap);
-        applyWebMargins(lastInsetLeft,lastInsetTop,lastInsetRight,lastInsetBottom);
-        bannerAdView.loadAd(new AdRequest.Builder().build());
-        loadInterstitialAd();
-        if (!interstitialScheduled) {
-            interstitialScheduled = true;
-            mainHandler.postDelayed(this::showInterstitialOnce, 5000L);
+    private void updateStartBannerVisibility() {
+        if (bannerAdView == null || webView == null) return;
+        boolean visible = startBannerLoaded && !premiumActive && apPremiumSplashHidden;
+        bannerAdView.setVisibility(visible ? View.VISIBLE : View.GONE);
+        int requiredHeight = visible ? dp(50) : 0;
+        if (bannerHeightPx != requiredHeight) {
+            bannerHeightPx = requiredHeight;
+            applyWebMargins(lastInsetLeft, lastInsetTop, lastInsetRight, lastInsetBottom);
         }
     }
 
-    private void loadInterstitialAd() {
-        if (premiumActive || interstitialShownThisSession) return;
-        String unitId = BuildConfig.DEBUG
-                ? "ca-app-pub-3940256099942544/1033173712"
-                : "ca-app-pub-7205009121067400/2790024214";
-        if (unitId.isEmpty()) return;
-        InterstitialAd.load(this, unitId, new AdRequest.Builder().build(),
-                new InterstitialAdLoadCallback() {
-                    @Override public void onAdLoaded(InterstitialAd ad) {
-                        interstitialAd = ad;
-                    }
-                    @Override public void onAdFailedToLoad(LoadAdError error) {
-                        interstitialAd = null;
-                    }
-                });
+    private void initStartIoBanner() {
+        if (startSdkInitialized || premiumActive) return;
+        startSdkInitialized = true;
+        try {
+            if (BuildConfig.DEBUG) StartAppSDK.setTestAdsEnabled(true);
+            StartAppSDK.initParams(this, "209956112")
+                    .setReturnAdsEnabled(false)
+                    .setCallback(() -> runOnUiThread(() -> {
+                        logStartIo("sdk_ready", "Start.io SDK initialized");
+                        createStartBanner();
+                    }))
+                    .init();
+        } catch (Exception ex) {
+            logStartIo("sdk_error", ex.getClass().getSimpleName());
+        }
     }
 
-    private void showInterstitialOnce() {
-        if (premiumActive || interstitialShownThisSession || interstitialAd == null) return;
-        interstitialShownThisSession = true;
-        InterstitialAd ad = interstitialAd;
-        interstitialAd = null;
-        ad.setFullScreenContentCallback(new FullScreenContentCallback() {});
-        ad.show(this);
+    private void createStartBanner() {
+        if (premiumActive || bannerAdView != null) return;
+        try {
+            final Banner banner = new Banner(this, new BannerListener() {
+                @Override public void onReceiveAd(View view) {
+                    if (bannerAdView == null || premiumActive) return;
+                    startBannerLoaded = true;
+                    logStartIo("banner_loaded", "Start.io banner received");
+                    updateStartBannerVisibility();
+                }
+                @Override public void onFailedToReceiveAd(View view) {
+                    startBannerLoaded = false;
+                    logStartIo("banner_failed", "No fill or loading error; no empty space");
+                    updateStartBannerVisibility();
+                }
+                @Override public void onImpression(View view) {
+                    logStartIo("banner_impression", "Ad impression");
+                }
+                @Override public void onClick(View view) {}
+            });
+            bannerAdView = banner;
+            startBannerLoaded = false;
+            bannerHeightPx = 0;
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.WRAP_CONTENT,
+                    FrameLayout.LayoutParams.WRAP_CONTENT);
+            params.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+            params.bottomMargin = lastInsetBottom;
+            root.addView(banner, params);
+            banner.setVisibility(View.GONE);
+            applyWebMargins(lastInsetLeft, lastInsetTop, lastInsetRight, lastInsetBottom);
+            logStartIo("banner_request", "banner created; waiting for SDK callbacks");
+        } catch (Exception ex) {
+            logStartIo("banner_error", ex.getClass().getSimpleName());
+            startBannerLoaded = false;
+            updateStartBannerVisibility();
+        }
     }
 
     @Override protected void onPause() {
@@ -3516,7 +3538,7 @@ private void showLaunchSplash() {
             try { translator.close(); } catch (Throwable ignored) {}
         }
         uiTranslators.clear();
-        if(bannerAdView!=null){try{bannerAdView.destroy();}catch(Throwable ignored){} bannerAdView=null;}
+        if(bannerAdView!=null){try{bannerAdView.hideBanner();}catch(Throwable ignored){} bannerAdView=null;}
         stopSpeedTrackingNative();
         try { if (locationManager != null && nearbyLocationListener != null) locationManager.removeUpdates(nearbyLocationListener); } catch (Throwable ignored) {}
         nearbyLocationListener = null;
