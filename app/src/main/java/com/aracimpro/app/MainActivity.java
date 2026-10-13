@@ -1131,7 +1131,9 @@ private void showLaunchSplash() {
     private void updateStartBannerVisibility() {
         if (bannerAdView == null || webView == null) return;
         boolean visible = startBannerLoaded && !premiumActive && apPremiumSplashHidden;
-        bannerAdView.setVisibility(visible ? View.VISIBLE : View.GONE);
+        // Keep the SDK banner attached and laid out while loading. A GONE
+        // banner may never become eligible to load/display on some devices.
+        bannerAdView.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
         int requiredHeight = visible ? dp(50) : 0;
         if (bannerHeightPx != requiredHeight) {
             bannerHeightPx = requiredHeight;
@@ -1196,9 +1198,14 @@ private void showLaunchSplash() {
             params.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
             params.bottomMargin = lastInsetBottom;
             root.addView(banner, params);
-            banner.setVisibility(View.GONE);
+            // INVISIBLE (not GONE) preserves an attached/laid-out banner while
+            // preventing blank ad space or touch interception before load.
+            banner.setVisibility(View.INVISIBLE);
             applyWebMargins(lastInsetLeft, lastInsetTop, lastInsetRight, lastInsetBottom);
-            logStartIo("banner_request", "banner created; waiting for SDK callbacks");
+            logStartIo("banner_request", "banner attached; explicitly loading 320x50");
+            // Start.io's Android guide documents loadAd(widthDP, heightDP).
+            // Call once on setup; the SDK retries failures automatically.
+            banner.loadAd(320, 50);
         } catch (Exception ex) {
             logStartIo("banner_error", ex.getClass().getSimpleName());
             startBannerLoaded = false;
@@ -1438,6 +1445,26 @@ private void showLaunchSplash() {
 
         @JavascriptInterface public void openAdsPrivacySettings() {
             runOnUiThread(() -> openStartAdsPrivacySettings());
+        }
+
+        @JavascriptInterface public String startAdsDiagnostics() {
+            JSONObject out = new JSONObject();
+            try {
+                android.content.SharedPreferences log = getSharedPreferences("aracim_startio_diagnostics", MODE_PRIVATE);
+                out.put("version", BuildConfig.VERSION_NAME + " (" + BuildConfig.VERSION_CODE + ")");
+                out.put("premiumBillingReady", premiumBillingReady);
+                out.put("premiumActive", premiumActive);
+                out.put("consent", hasStartAdConsent());
+                out.put("sdkInitialized", startSdkInitialized);
+                out.put("bannerCreated", bannerAdView != null);
+                out.put("bannerLoaded", startBannerLoaded);
+                out.put("splashHidden", apPremiumSplashHidden);
+                out.put("bannerVisible", bannerAdView != null && bannerAdView.getVisibility() == View.VISIBLE);
+                out.put("lastEvent", log.getString("step", "Henüz olay yok"));
+                out.put("lastResult", log.getString("result", ""));
+                out.put("lastEventTime", log.getLong("timestamp", 0L));
+            } catch (Exception ignored) {}
+            return out.toString();
         }
 
         @JavascriptInterface public void buyPremium(String plan) {
