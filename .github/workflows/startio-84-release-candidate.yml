@@ -1,0 +1,90 @@
+name: AracimPro 84 Start.io Signed AAB - Candidate Only
+on:
+  push:
+    branches: [aracimpro-84-startio-release-candidate]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  signed-release-candidate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Install SDK / NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" "ndk;27.2.12479018"
+      - name: Verify ad privacy and production configuration
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          gradle = Path('app/build.gradle').read_text()
+          code = Path('app/src/main/java/com/aracimpro/app/MainActivity.java').read_text()
+          manifest = Path('app/src/main/AndroidManifest.xml').read_text()
+          privacy = Path('privacy-policy.html').read_text()
+          assert "versionCode 84" in gradle
+          assert "versionName '7.11.9'" in gradle
+          assert "implementation 'com.startapp:inapp-sdk:5.3.1'" in gradle
+          assert "com.google.android.gms:play-services-ads:25.5.0" not in gradle
+          assert "com.google.android.ump:user-messaging-platform" not in gradle
+          assert '209956112' in manifest and '209956112' in code
+          assert 'android:name="com.startapp.sdk.SPLASH_ENABLED"' in manifest
+          assert 'android:name="com.startapp.sdk.RETURN_ADS_ENABLED"' in manifest
+          assert 'android:value="false"' in manifest
+          assert "showInterstitialOnce" not in code
+          assert "StartAppSDK.setTestAdsEnabled(true);" in code
+          assert "if (BuildConfig.DEBUG) StartAppSDK.setTestAdsEnabled(true);" in code
+          assert "runOnUiThread(this::initStartIoBanner)" in code
+          assert "Start.io SDK'sının" in privacy
+          print('OK: no AdMob, Start.io-only banners, premium gating, debug-only test ads')
+          PY
+      - name: Restore Play upload signing key
+        env:
+          PLAY_UPLOAD_KEYSTORE_B64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_B64 }}
+        run: |
+          test -n "$PLAY_UPLOAD_KEYSTORE_B64" || (echo "Upload keystore secret missing" >&2; exit 1)
+          echo "$PLAY_UPLOAD_KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/upload-key.jks"
+      - name: Configure signing
+        env:
+          STORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+        run: |
+          test -n "$STORE_PASSWORD" && test -n "$KEY_ALIAS" && test -n "$KEY_PASSWORD"
+          cat > keystore.properties <<EOF
+          storeFile=$RUNNER_TEMP/upload-key.jks
+          storePassword=$STORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
+      - name: Build SIGNED AAB for manual review (never auto-publish)
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
+          LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
+        run: gradle --no-daemon bundleRelease
+      - name: Check release outputs
+        run: |
+          test -s app/build/outputs/bundle/release/app-release.aab
+          test -s app/build/outputs/mapping/release/mapping.txt
+          unzip -Z1 app/build/outputs/bundle/release/app-release.aab | grep -F -q 'BUNDLE-METADATA/com.android.tools.build.debugsymbols/'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AracimPro-Startio-v84-SIGNED-AAB-NOT-UPLOADED
+          path: |
+            app/build/outputs/bundle/release/app-release.aab
+            app/build/outputs/mapping/release/mapping.txt
+          retention-days: 14
