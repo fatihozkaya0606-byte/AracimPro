@@ -227,7 +227,8 @@ public class MainActivity extends Activity {
             } catch (Throwable ignored) {}
         }
         showLaunchSplash();
-        initStartIoBanner();
+        // Check the Google Play Premium entitlement before initializing any ad SDK.
+        // A failed billing query leaves ads off rather than showing ads to a subscriber.
         initPremiumBilling();
         final int fallbackTop = systemDimen("status_bar_height", dp(28));
         final int fallbackBottom = systemDimen("navigation_bar_height", dp(44));
@@ -911,7 +912,12 @@ private void showLaunchSplash() {
         }
 
         premiumActive = active;
-        if (premiumActive) removePremiumAds();
+        if (premiumActive) {
+            removePremiumAds();
+        } else {
+            // Never request an ad until Google Play confirms no active Premium purchase.
+            runOnUiThread(this::initStartIoBanner);
+        }
         notifyPremiumJs("");
     }
 
