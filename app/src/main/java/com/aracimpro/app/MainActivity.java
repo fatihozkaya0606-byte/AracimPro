@@ -164,6 +164,12 @@ public class MainActivity extends Activity {
     private Banner bannerAdView;
     private boolean startBannerLoaded = false;
     private boolean startSdkInitialized = false;
+    // Do not initialize the advertising SDK until a user has explicitly opted in.
+    // The choice is stored separately from application preferences so it survives UI resets.
+    private static final String START_PRIVACY_PREFS = "aracim_startio_privacy_v1";
+    private static final String START_CONSENT_KEY = "ad_data_consent";
+    private static final String START_CONSENT_TIME = "consent_timestamp";
+    private boolean startPrivacyDialogShowing = false;
     private int bannerHeightPx = 0;
     private int lastInsetLeft = 0, lastInsetTop = 0, lastInsetRight = 0, lastInsetBottom = 0;
     private FrameLayout root;
@@ -916,7 +922,7 @@ private void showLaunchSplash() {
             removePremiumAds();
         } else {
             // Never request an ad until Google Play confirms no active Premium purchase.
-            runOnUiThread(this::initStartIoBanner);
+            runOnUiThread(this::requestStartAdConsentIfNeeded);
         }
         notifyPremiumJs("");
     }
@@ -1001,8 +1007,118 @@ private void showLaunchSplash() {
         billingClient.launchBillingFlow(this, flowParams);
     }
 
-    // Start.io direct SDK: bottom banner only, never an interstitial, return or splash ad.
-    // SDK controls its own privacy disclosure; review the Play Data safety form before release.
+    // Start.io direct SDK: bottom banner only. Always gate initialization on opt-in.
+    // For all regions, refusing ad data processing means no SDK initialization/ads.
+    // This conservative global gate avoids guessing a user's legal jurisdiction
+    // from language/SIM settings, and keeps paid subscribers ad-SDK-free.
+    private android.content.SharedPreferences startPrivacyPrefs() {
+        return getSharedPreferences(START_PRIVACY_PREFS, MODE_PRIVATE);
+    }
+
+    private boolean hasStartAdConsent() {
+        return startPrivacyPrefs().getBoolean(START_CONSENT_KEY, false);
+    }
+
+    private void openStartPrivacyPolicy() {
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW,
+                Uri.parse("https://fatihozkaya0606-byte.github.io/AracimPro/privacy-policy.html")));
+        } catch (Exception ignored) {
+            Toast.makeText(this, "Gizlilik sayfası açılamadı", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void requestStartAdConsentIfNeeded() {
+        if (premiumActive || isFinishing() || isDestroyed()) return;
+        if (startPrivacyPrefs().contains(START_CONSENT_KEY)) {
+            if (hasStartAdConsent()) initStartIoBanner();
+            return;
+        }
+        showStartAdConsentDialog();
+    }
+
+    private void setStartAdPrivacyChoice(boolean accepted) {
+        long chosenAt = System.currentTimeMillis();
+        startPrivacyPrefs().edit()
+            .putBoolean(START_CONSENT_KEY, accepted)
+            .putLong(START_CONSENT_TIME, chosenAt)
+            .apply();
+        if (!accepted) {
+            // Stop new ads immediately. If the SDK was initialized earlier in
+            // this process, communicate withdrawal and hide any existing banner.
+            if (startSdkInitialized) {
+                try { StartAppSDK.setUserConsent(this, "pas", chosenAt, false); }
+                catch (Throwable t) { logStartIo("consent_revoke_error", t.getClass().getSimpleName()); }
+            }
+            removePremiumAds();
+            return;
+        }
+        // If already initialized, synchronize changed consent before new ads.
+        if (startSdkInitialized) {
+            try { StartAppSDK.setUserConsent(this, "pas", chosenAt, true); }
+            catch (Throwable t) { logStartIo("consent_update_error", t.getClass().getSimpleName()); }
+            if (bannerAdView == null && !premiumActive) createStartBanner();
+        } else if (!premiumActive && premiumBillingReady) {
+            // Only initialize after entitlement verification AND opt-in.
+            initStartIoBanner();
+        }
+    }
+
+    private void showStartAdConsentDialog() {
+        if (startPrivacyDialogShowing || isFinishing() || isDestroyed()) return;
+        startPrivacyDialogShowing = true;
+        new android.app.AlertDialog.Builder(this)
+            .setTitle("Reklam ve gizlilik tercihi")
+            .setMessage("Aracım Pro'nun ücretsiz sürümündeki banner reklamları Start.io sağlar. " +
+                "Onay verirsen reklam göstermek için yaklaşık/tam konum (izin varsa), " +
+                "IP adresi, reklam kimliği, SDK kullanım ve teşhis bilgileri " +
+                "işlenebilir. İstersen reddedebilirsin; uygulama çalışmaya " +
+                "devam eder ancak Start.io reklamları açılmaz. " +
+                "Tercihini daha sonra Ayarlar > Reklam Gizliliği'nden değiştirebilirsin.")
+            .setPositiveButton("Kabul et", (d, which) -> {
+                startPrivacyDialogShowing = false;
+                setStartAdPrivacyChoice(true);
+            })
+            .setNegativeButton("Reddet", (d, which) -> {
+                startPrivacyDialogShowing = false;
+                setStartAdPrivacyChoice(false);
+            })
+            .setNeutralButton("Gizlilik politikası", (d, which) -> {
+                startPrivacyDialogShowing = false;
+                openStartPrivacyPolicy();
+                // Opening a web page is NOT consent: ask again when the app resumes.
+                mainHandler.postDelayed(() -> {
+                    if (!startPrivacyPrefs().contains(START_CONSENT_KEY)) showStartAdConsentDialog();
+                }, 750);
+            })
+            .setCancelable(false)
+            .show();
+    }
+
+    private void openStartAdsPrivacySettings() {
+        if (premiumActive) {
+            new android.app.AlertDialog.Builder(this)
+                .setTitle("Premium")
+                .setMessage("Premium aboneliğinde Start.io reklamları kullanılmaz.")
+                .setPositiveButton("Tamam", (d, which) -> {})
+                .show();
+            return;
+        }
+        new android.app.AlertDialog.Builder(this)
+            .setTitle("Reklam gizliliği")
+            .setMessage("Start.io için reklam verilerinin işlenmesine izin vermek istiyor musun? " +
+                "Reddedersen banner reklamları gösterilmez. " +
+                "Tercih değiştirildiğinde SDK'nın tamamen durması için " +
+                "uygulamayı yeniden başlatman gerekebilir.")
+            .setPositiveButton("Kabul et", (d, which) -> setStartAdPrivacyChoice(true))
+            .setNegativeButton("Reddet", (d, which) -> {
+                setStartAdPrivacyChoice(false);
+                Toast.makeText(this, "Reklamlar kapatıldı. Uygulamayı yeniden başlat.", Toast.LENGTH_LONG).show();
+            })
+            .setNeutralButton("Gizlilik politikası", (d, which) -> openStartPrivacyPolicy())
+            .show();
+    }
+
     private void logStartIo(String step, String result) {
         android.util.Log.i("AracimStartIo", step + ": " + result);
         try {
@@ -1024,14 +1140,25 @@ private void showLaunchSplash() {
     }
 
     private void initStartIoBanner() {
-        if (startSdkInitialized || premiumActive) return;
+        if (startSdkInitialized || premiumActive || !premiumBillingReady || !hasStartAdConsent()) return;
         startSdkInitialized = true;
         try {
             if (BuildConfig.DEBUG) StartAppSDK.setTestAdsEnabled(true);
             StartAppSDK.initParams(this, "209956112")
                     .setReturnAdsEnabled(false)
                     .setCallback(() -> runOnUiThread(() -> {
-                        logStartIo("sdk_ready", "Start.io SDK initialized");
+                        // Start.io requires the "pas" flag for European ad consent.
+                        // Pass the timestamp of the actual user choice, not ad request time.
+                        if (!hasStartAdConsent() || premiumActive) return;
+                        try {
+                            StartAppSDK.setUserConsent(MainActivity.this, "pas",
+                                startPrivacyPrefs().getLong(START_CONSENT_TIME, System.currentTimeMillis()), true);
+                        } catch (Throwable t) {
+                            // Fail closed: never show ads without successfully sending consent.
+                            logStartIo("consent_error", t.getClass().getSimpleName());
+                            return;
+                        }
+                        logStartIo("sdk_ready", "Start.io SDK initialized after opt-in");
                         createStartBanner();
                     }))
                     .init();
@@ -1041,7 +1168,7 @@ private void showLaunchSplash() {
     }
 
     private void createStartBanner() {
-        if (premiumActive || bannerAdView != null) return;
+        if (premiumActive || !hasStartAdConsent() || bannerAdView != null) return;
         try {
             final Banner banner = new Banner(this, new BannerListener() {
                 @Override public void onReceiveAd(View view) {
@@ -1307,6 +1434,10 @@ private void showLaunchSplash() {
 
         @JavascriptInterface public String premiumStatus() {
             return premiumStatusJson().toString();
+        }
+
+        @JavascriptInterface public void openAdsPrivacySettings() {
+            runOnUiThread(() -> openStartAdsPrivacySettings());
         }
 
         @JavascriptInterface public void buyPremium(String plan) {
