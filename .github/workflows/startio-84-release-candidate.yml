@@ -2,6 +2,8 @@ name: AracimPro 84 Start.io Signed AAB - Candidate Only
 on:
   push:
     branches: [aracimpro-84-startio-release-candidate]
+  pull_request:
+    branches: [aracimpro-play-quality-83]
   workflow_dispatch:
 
 permissions:
