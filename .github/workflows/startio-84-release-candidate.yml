@@ -39,7 +39,10 @@ jobs:
           assert "implementation 'com.startapp:inapp-sdk:5.3.1'" in gradle
           assert "com.google.android.gms:play-services-ads:25.5.0" not in gradle
           assert "com.google.android.ump:user-messaging-platform" not in gradle
-          assert '209956112' in manifest and '209956112' in code
+          assert '209956112' not in manifest and '209956112' in code
+          assert 'com.startapp.sdk.APPLICATION_ID' not in manifest
+          assert 'com.startapp.sdk.adsbase.StartAppInitProvider' in manifest
+          assert 'tools:node="remove"' in manifest
           assert 'android:name="com.startapp.sdk.SPLASH_ENABLED"' in manifest
           assert 'android:name="com.startapp.sdk.RETURN_ADS_ENABLED"' in manifest
           assert 'android:value="false"' in manifest
