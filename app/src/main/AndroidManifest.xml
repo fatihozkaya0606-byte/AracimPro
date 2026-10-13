@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- Android 11+ kamera intent görünürlüğü: CAMERA izni gerekmez -->
     <queries>
         <intent>
@@ -7,6 +8,7 @@
         </intent>
     </queries>
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -55,8 +57,19 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/aracim_widget_info" />
         </receiver>
+        <!-- Disable Start.io's manifest/provider auto-initialization.
+             The SDK is initialized manually *after* explicit user opt-in
+             and a successful Premium entitlement check. -->
+        <provider
+            android:name="com.startapp.sdk.adsbase.StartAppInitProvider"
+            android:authorities="${applicationId}.startappinitprovider"
+            tools:node="remove" />
+        <!-- Only bottom banners requested: block SDK splash and return ads. -->
         <meta-data
-            android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-7205009121067400~4069879501" />
+            android:name="com.startapp.sdk.SPLASH_ENABLED"
+            android:value="false" />
+        <meta-data
+            android:name="com.startapp.sdk.RETURN_ADS_ENABLED"
+            android:value="false" />
     </application>
 </manifest>
