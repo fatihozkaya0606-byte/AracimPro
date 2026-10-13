@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- Android 11+ kamera intent görünürlüğü: CAMERA izni gerekmez -->
     <queries>
         <intent>
@@ -56,10 +57,13 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/aracim_widget_info" />
         </receiver>
-        <!-- Start.io publisher App ID; same app URL as Google Play listing. -->
-        <meta-data
-            android:name="com.startapp.sdk.APPLICATION_ID"
-            android:value="209956112" />
+        <!-- Disable Start.io's manifest/provider auto-initialization.
+             The SDK is initialized manually *after* explicit user opt-in
+             and a successful Premium entitlement check. -->
+        <provider
+            android:name="com.startapp.sdk.adsbase.StartAppInitProvider"
+            android:authorities="${applicationId}.startappinitprovider"
+            tools:node="remove" />
         <!-- Only bottom banners requested: block SDK splash and return ads. -->
         <meta-data
             android:name="com.startapp.sdk.SPLASH_ENABLED"
