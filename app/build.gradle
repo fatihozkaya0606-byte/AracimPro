@@ -42,8 +42,8 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix '.fullv2'
-            versionNameSuffix '-fullv2'
+            applicationIdSuffix '.startiopreview'
+            versionNameSuffix '-startiopreview'
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
             }
@@ -87,6 +87,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-ai'
     implementation 'com.google.guava:guava:31.0.1-android'
     implementation 'org.reactivestreams:reactive-streams:1.0.4'
-    implementation 'com.google.android.gms:play-services-ads:25.5.0'
-    implementation 'com.google.android.ump:user-messaging-platform:4.0.0'
+    // Use Start.io directly; AdMob / UMP are intentionally excluded.
+    implementation 'com.startapp:inapp-sdk:5.+'
+    // Keep advertising identifier dependency explicit for SDK compatibility.
+    implementation 'com.google.android.gms:play-services-ads-identifier:18.2.0'
 }
