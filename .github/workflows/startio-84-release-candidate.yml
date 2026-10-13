@@ -46,7 +46,12 @@ jobs:
           assert "showInterstitialOnce" not in code
           assert "StartAppSDK.setTestAdsEnabled(true);" in code
           assert "if (BuildConfig.DEBUG) StartAppSDK.setTestAdsEnabled(true);" in code
-          assert "runOnUiThread(this::initStartIoBanner)" in code
+          assert "runOnUiThread(this::requestStartAdConsentIfNeeded)" in code
+          assert "startPrivacyPrefs().contains(START_CONSENT_KEY)" in code
+          assert "StartAppSDK.setUserConsent(MainActivity.this, \"pas\"" in code
+          assert 'if (startSdkInitialized || premiumActive || !premiumBillingReady || !hasStartAdConsent()) return;' in code
+          assert 'openAdsPrivacySettings()' in code
+          assert 'Reklam Gizliliği Tercihlerim' in Path('app/src/main/assets/index.html').read_text()
           assert "Start.io SDK'sının" in privacy
           print('OK: no AdMob, Start.io-only banners, premium gating, debug-only test ads')
           PY
