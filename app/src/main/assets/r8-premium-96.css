@@ -1,0 +1,267 @@
+/* Aracim Pro v96 – R8 Premium. Scoped only to the home screen.
+   Preserve existing R8 workflows, navigation and native AdMob sizes. */
+body.r8HomeMode:not(.dark){
+  --bg:#eef5fc;--card:#fff;--ink:#10233d;--muted:#637a92;--line:#d4e4f1;
+  background:linear-gradient(155deg,#f9fcff 0%,#eef5fd 65%,#eaf4fe 100%)!important;
+  color:#10233d!important;
+}
+body.r8HomeMode:not(.dark) main{
+  background:transparent!important;
+  padding:0 12px 25px!important;
+}
+body.r8HomeMode:not(.dark) .ref791{
+  background:transparent!important;
+  color:#10233d!important;
+  margin:0 -12px!important;
+  padding:13px 12px 35px!important;
+}
+body.r8HomeMode .ref791{overflow-x:clip}
+body.r8HomeMode .ref791-hero{margin:0!important;padding:0!important;}
+/* A properly constrained two-column header; no horizontal clipping. */
+body.r8HomeMode .header.apHeader{
+  position:relative!important;
+  z-index:19!important;
+  padding:12px 13px 11px!important;
+  overflow:hidden;
+}
+body.r8HomeMode:not(.dark) .header.apHeader{
+  background:linear-gradient(160deg,rgba(250,253,255,.98),rgba(241,248,255,.97))!important;
+  border-bottom:0!important;box-shadow:none!important;
+}
+body.r8HomeMode .apTopRow{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) max-content!important;
+  grid-template-rows:24px 42px!important;
+  align-items:center!important;
+  gap:5px 5px!important;
+}
+body.r8HomeMode .apBrandWrap{
+  grid-area:1/1/3/2!important;min-width:0!important;align-self:center!important;
+}
+body.r8HomeMode .apRightStack{display:contents!important}
+body.r8HomeMode .apLiveCorner{
+  grid-area:1/2/2/3!important;max-width:none!important;
+  flex-wrap:nowrap!important;justify-content:flex-end!important;overflow:hidden;
+}
+body.r8HomeMode .apHeaderActions{
+  grid-area:2/2/3/3!important;justify-content:flex-end!important;
+  gap:4px!important;min-width:0!important;
+}
+body.r8HomeMode .apBrandMark{display:none!important}
+body.r8HomeMode .apBrandText{
+  font-size:clamp(20px,5.7vw,27px)!important;
+  font-weight:950!important;letter-spacing:-.85px!important;
+  white-space:nowrap;line-height:1.05!important;
+}
+body.r8HomeMode:not(.dark) .apBrandText{color:#0b2648!important}
+body.r8HomeMode .apBrandText b{color:#147cfa!important;text-shadow:none!important}
+body.r8HomeMode .apBrandSub{
+  font-size:9px!important;font-weight:600!important;
+  white-space:normal!important;line-height:1.3!important;
+  max-width:165px;overflow:hidden!important;display:-webkit-box;
+  -webkit-line-clamp:2;-webkit-box-orient:vertical;
+}
+body.r8HomeMode:not(.dark) .apBrandSub{color:#73869a!important}
+body.r8HomeMode .apAction{
+  width:34px!important;height:35px!important;min-width:34px!important;
+  border-radius:12px!important;flex:0 0 auto!important;
+}
+body.r8HomeMode .apProAction{
+  width:auto!important;min-width:45px!important;
+  padding:0 8px!important;font-size:10px!important;
+}
+body.r8HomeMode:not(.dark) .apAction{
+  background:#fff!important;color:#173653!important;
+  border:1px solid #d7e4ef!important;
+  box-shadow:0 4px 10px rgba(25,61,97,.09)!important;
+}
+body.r8HomeMode .apAction .svgi{width:18px;height:18px}
+body.r8HomeMode:not(.dark) .apProAction{color:#0e2c49!important}
+body.r8HomeMode .apLiveMini{
+  height:22px!important;padding:0 7px!important;
+  font-size:8px!important;border-radius:99px!important;
+}
+body.r8HomeMode .apLiveMini.clock em{display:none!important}
+body.r8HomeMode #apSessionElapsed{display:none!important}
+body.r8HomeMode:not(.dark) .apLiveMini{
+  color:#455c73!important;background:#fff!important;
+  border-color:#dfebf4!important;
+}
+body.r8HomeMode .apUtilityRow{display:none!important}
+/* Market ticker remains a true live scrolling ticker, but compact. */
+body.r8HomeMode .apMarketStrip7103{
+  height:48px!important;padding:3px 0 3px 6px!important;
+  margin:10px 0 0!important;border-radius:16px!important;gap:3px!important;
+}
+body.r8HomeMode:not(.dark) .apMarketStrip7103{
+  background:#fff!important;border:1px solid #d5e6f3!important;
+  box-shadow:0 5px 15px rgba(31,94,148,.08)!important;
+}
+body.r8HomeMode .apMarketStrip7103 .apMarketLive{
+  height:40px!important;flex-basis:52px!important;font-size:10px!important;
+}
+body.r8HomeMode .apTickerViewport,body.r8HomeMode .apTickerTrack,
+body.r8HomeMode .apTickerSet,body.r8HomeMode .apTickerUnit{
+  height:40px!important;
+}
+body.r8HomeMode .apTickerUnit{padding:0 8px!important;gap:5px!important}
+body.r8HomeMode .apTickerIcon{font-size:15px!important}
+body.r8HomeMode .apTickerPrice{font-size:12px!important}
+body.r8HomeMode .apTickerChange{font-size:8px!important}
+/* Priority cards: exactly three fit; other statuses stay scrollable. */
+body.r8HomeMode .apStatusScroll{
+  display:grid!important;grid-auto-flow:column!important;
+  grid-auto-columns:calc((100% - 16px)/3)!important;
+  gap:8px!important;margin-top:9px!important;
+  padding:0 0 3px!important;scroll-snap-type:x proximity;
+  overflow-x:auto!important;overflow-y:hidden!important;
+}
+body.r8HomeMode .apStatusChip{
+  width:100%!important;min-width:0!important;max-width:none!important;
+  min-height:62px!important;padding:10px 8px!important;
+  border-radius:15px!important;scroll-snap-align:start!important;
+  background:linear-gradient(145deg,#0b3e67,#071d38)!important;
+  border:1px solid #2c709d!important;
+  box-shadow:0 5px 11px rgba(13,56,100,.12)!important;
+}
+body.r8HomeMode .apStatusChip b{
+  display:flex!important;align-items:center!important;gap:4px!important;
+  color:#fff!important;font-size:10px!important;line-height:1.25!important;
+}
+body.r8HomeMode .apStatusChip i{
+  font-size:17px!important;margin-right:0!important;flex:0 0 auto!important;
+}
+body.r8HomeMode .apStatusChip small{
+  color:#adc6df!important;font-size:8px!important;line-height:1.35!important;
+}
+body.r8HomeMode .liveRibbon{display:none!important}
+/* R8 Plus hero: crisp, original selected photo and contained subtle movement. */
+body.r8HomeMode .ap95Hero{
+  border:1.5px solid #369de5!important;border-radius:23px!important;
+  box-shadow:0 9px 23px rgba(12,58,108,.20),0 0 0 1px #99dfff44!important;
+  background:#071b34!important;
+  will-change:auto!important;
+}
+body.r8HomeMode .ap95PhotoStage{
+  height:190px!important;overflow:hidden!important;
+  background:radial-gradient(ellipse at 65% 95%,#1e568380,transparent 60%),
+    linear-gradient(145deg,#0e375d,#051a31)!important;
+}
+body.r8HomeMode .ap95HeroPhoto{
+  max-width:100%!important;width:100%!important;height:100%!important;
+  object-fit:contain!important;object-position:center!important;
+  image-rendering:auto!important;filter:none!important;
+}
+body.r8HomeMode .ap95HeroPhoto:active{transform:scale(1.018)}
+body.r8HomeMode .ap95PhotoBadge{
+  top:12px!important;left:12px!important;padding:6px 10px!important;
+  letter-spacing:.1px!important;background:#072846d9!important;
+  border-color:#4ab2f7a8!important;
+}
+body.r8HomeMode .ap96PhotoChange{
+  z-index:5;position:absolute;right:10px;bottom:10px;
+  border:1px solid #ffffff7a;border-radius:999px;
+  background:#082340da;color:#eef9ff;backdrop-filter:blur(4px);
+  padding:7px 10px;font-size:10px;font-weight:800;
+}
+body.r8HomeMode .ap96PhotoChange:active{transform:scale(.97)}
+body.r8HomeMode .ap95HeroInfo{
+  padding:13px 14px 13px!important;
+  background:linear-gradient(150deg,#09345b,#041a35)!important;
+}
+body.r8HomeMode .ap95HeroInfo h1{
+  font-size:clamp(18px,5vw,21px)!important;
+  line-height:1.25!important;font-weight:900!important;
+}
+body.r8HomeMode .ap95HeroSpec{font-size:11px!important;color:#b8d5eb!important}
+body.r8HomeMode .ap95HeroBottom{margin-top:10px!important;padding-top:10px!important}
+body.r8HomeMode .ap95HeroBottom button{
+  border-radius:13px!important;border:1px solid #43b3ff!important;
+  color:#fff!important;background:#094c81!important;
+  padding:10px 12px!important;font-size:11px!important;
+}
+/* Actions follow hero immediately, with compact 2-column tiles. */
+body.r8HomeMode .ap95ActionHeading{margin:14px 2px 8px!important}
+body.r8HomeMode .ap95ActionHeading b{
+  font-size:16px!important;color:#143151!important;font-weight:900!important;
+}
+body.r8HomeMode .ap95ActionHeading span{color:#5c9bcc!important;font-size:10px!important}
+body.r8HomeMode.dark .ap95ActionHeading b{color:#e8f5ff!important}
+body.r8HomeMode .ap95Actions{gap:8px!important}
+body.r8HomeMode .ap95Actions button{
+  min-height:67px!important;padding:9px 11px!important;
+  gap:8px!important;border-radius:16px!important;
+  background:linear-gradient(135deg,#073758,#074e7a)!important;
+  border:1px solid #308ac1!important;
+  color:#fff!important;font-size:12px!important;line-height:1.25!important;
+  box-shadow:0 4px 10px #0a477125!important;
+}
+body.r8HomeMode .ap95Actions i{
+  flex:0 0 36px!important;height:36px!important;
+  background:#12608e!important;border-radius:11px!important;font-size:20px!important;
+}
+body.r8HomeMode .ap95ActionNote{display:none!important}
+body.r8HomeMode .ap95Reminder{
+  margin-top:11px!important;padding:13px 14px!important;
+  border-radius:17px!important;border-color:#368cbe!important;
+  background:linear-gradient(140deg,#062b4d,#07375b)!important;
+  box-shadow:0 4px 12px #07325918!important;
+}
+body.r8HomeMode .ap95Reminder h2{font-size:14px!important;margin:0 0 8px!important}
+body.r8HomeMode .ap95Reminder button{font-size:11px!important}
+body.r8HomeMode .ap96Stats{
+  margin-top:9px;border:1px solid #bfd6e9;
+  border-radius:13px;background:#f6fbff;color:#335c7e;
+  padding:0 12px;overflow:hidden;
+}
+body.r8HomeMode.dark .ap96Stats{background:#081e34;color:#dbefff;border-color:#28567e}
+body.r8HomeMode .ap96Stats summary{
+  cursor:pointer;font-size:11px;font-weight:850;
+  list-style:none;padding:11px 0;
+}
+body.r8HomeMode .ap96Stats summary::-webkit-details-marker{display:none}
+body.r8HomeMode .ap96Stats summary:after{content:'⌄';float:right;color:#4199d3}
+body.r8HomeMode .ap96Stats[open] summary:after{content:'⌃'}
+body.r8HomeMode .ap96Stats .ap95Metrics{margin:0 0 12px!important}
+/* Remove redundant original dashboard cards; all pages and actions remain. */
+body.r8HomeMode .ref791-grid{display:none!important}
+/* Native AdMob MREC keeps its required 300x250 footprint and safe viewport rules. */
+body.r8HomeMode .apMrecCard{
+  margin:13px 0!important;padding:11px 10px 12px!important;
+  border-radius:18px!important;transform:none!important;
+  position:relative!important;z-index:0!important;
+}
+body.r8HomeMode .apMrecSlot{
+  width:300px!important;height:250px!important;max-width:100%!important;
+  margin:0 auto!important;border-radius:12px!important;
+}
+body.r8HomeMode .apMrecTitle strong{font-size:12px!important}
+body.r8HomeMode .apMrecTitle small{font-size:9px!important}
+/* Bottom navigation stays anchored and always has readable, usable targets. */
+body.r8HomeMode .nav{
+  height:76px!important;min-height:76px!important;
+  padding:8px 3px 7px!important;z-index:30!important;
+}
+body.r8HomeMode:not(.dark) .nav{
+  background:rgba(255,255,255,.99)!important;
+  border-top:1px solid #dce9f3!important;
+  box-shadow:0 -5px 20px rgba(30,71,111,.08)!important;
+}
+body.r8HomeMode .nav button{min-height:54px!important;font-size:9px!important}
+body.r8HomeMode .nav button i{font-size:21px!important;line-height:26px!important}
+/* Narrow phones retain two actions per row, 3 scrollable statuses and proper tap targets. */
+@media(max-width:370px){
+  body.r8HomeMode .header.apHeader{padding:10px 8px!important}
+  body.r8HomeMode .apBrandText{font-size:20px!important}
+  body.r8HomeMode .apBrandSub{max-width:125px;font-size:8px!important}
+  body.r8HomeMode .apAction{width:31px!important;min-width:31px!important;height:34px!important}
+  body.r8HomeMode .apProAction{min-width:40px!important;padding:0 5px!important}
+  body.r8HomeMode .apHeaderActions{gap:3px!important}
+  body.r8HomeMode .ap95PhotoStage{height:165px!important}
+  body.r8HomeMode .ap95Actions button{font-size:11px!important;padding:8px!important}
+  body.r8HomeMode .ap95Actions i{flex-basis:30px!important;height:30px!important}
+}
+@media(prefers-reduced-motion:reduce){
+  body.r8HomeMode .ap95Hero,body.r8HomeMode .ap95HeroPhoto,
+  body.r8HomeMode .ap95Hero:after{animation:none!important;transition:none!important}
+}
