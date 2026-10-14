@@ -172,6 +172,9 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     private AdView bannerAdView;
+    private AdView mrecAdView;
+    private boolean mrecAdLoaded = false;
+    private boolean mrecSlotVisible = false;
     private boolean admobBannerLoaded = false;
     private boolean admobSdkInitialized = false;
     private boolean admobConsentRequested = false;
@@ -347,6 +350,10 @@ public class MainActivity extends Activity {
         String cls = view.getClass().getName().toLowerCase(java.util.Locale.ROOT);
         if (view == bannerAdView) {
             updateAdMobBannerVisibility();
+            return;
+        }
+        if (view == mrecAdView) {
+            updateMrecVisibility();
             return;
         }
         // Do not change the visibility of arbitrary WebView contents during splash.
@@ -950,6 +957,13 @@ private void showLaunchSplash() {
                     bannerAdView = null;
                 }
                 admobBannerLoaded = false;
+                if (mrecAdView != null) {
+                    mrecAdView.destroy();
+                    root.removeView(mrecAdView);
+                    mrecAdView = null;
+                }
+                mrecAdLoaded = false;
+                mrecSlotVisible = false;
                 oneInterstitialAd = null;
                 oneInterstitialReady = false;
             } catch (Throwable ignored) {}
@@ -1103,6 +1117,7 @@ private void showLaunchSplash() {
                 if (canRequestAdMobAds()) {
                     createAdMobBanner();
                     loadSingleInterstitial();
+                    createMrecAd();
                 }
             }));
         } catch (Throwable t) {
@@ -1157,6 +1172,78 @@ private void showLaunchSplash() {
             bannerHeightPx = 0;
             applyWebMargins(lastInsetLeft, lastInsetTop, lastInsetRight, lastInsetBottom);
         }
+    }
+
+    // Native 300×250 AdMob medium rectangle anchored to a dedicated WebView
+    // placeholder. This is a real AdView, not a fake web ad or an overlay
+    // obstructing interface controls. Premium and UMP rules also apply.
+    private void createMrecAd() {
+        if (!canRequestAdMobAds() || mrecAdView != null || root == null) return;
+        try {
+            final AdView ad = new AdView(this);
+            ad.setAdSize(AdSize.MEDIUM_RECTANGLE);
+            ad.setAdUnitId((BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
+                ? "ca-app-pub-3940256099942544/6300978111"
+                : "ca-app-pub-7205009121067400/3129664519");
+            ad.setAdListener(new AdListener() {
+                @Override public void onAdLoaded() {
+                    if (ad != mrecAdView || !canRequestAdMobAds()) return;
+                    mrecAdLoaded = true;
+                    logAdMob("mrec_loaded", "300x250 AdMob ad loaded");
+                    updateMrecVisibility();
+                }
+                @Override public void onAdFailedToLoad(LoadAdError error) {
+                    mrecAdLoaded = false;
+                    logAdMob("mrec_failed", error == null ? "No fill" : error.toString());
+                    updateMrecVisibility();
+                }
+                @Override public void onAdImpression() {
+                    logAdMob("mrec_impression", "300x250 medium rectangle impression");
+                }
+            });
+            FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                    (int) dp(300), (int) dp(250), Gravity.TOP | Gravity.LEFT);
+            ad.setVisibility(View.INVISIBLE);
+            mrecAdView = ad;
+            root.addView(ad, lp);
+            mrecAdLoaded = false;
+            logAdMob("mrec_request", (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
+                    ? "Google test medium rectangle" : "Live medium rectangle");
+            ad.loadAd(new AdRequest.Builder().build());
+        } catch (Throwable t) {
+            logAdMob("mrec_error", t.getClass().getSimpleName());
+            try {
+                if (mrecAdView != null) { mrecAdView.destroy(); root.removeView(mrecAdView); }
+            } catch (Throwable ignored) {}
+            mrecAdView = null;
+            mrecAdLoaded = false;
+        }
+    }
+
+    private void updateMrecVisibility() {
+        if (mrecAdView == null) return;
+        boolean show = mrecSlotVisible && mrecAdLoaded && canRequestAdMobAds()
+                && apPremiumSplashHidden && !isFinishing() && !isDestroyed();
+        mrecAdView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
+    }
+
+    private void updateMrecSlotNative(double leftCss, double topCss,
+                                      double widthCss, double heightCss, boolean visible) {
+        if (webView == null || root == null) return;
+        // A hidden or scrolled-away slot must never leave an ad floating over UI.
+        double viewportCss = webView.getHeight() / getResources().getDisplayMetrics().density;
+        boolean valid = visible && Double.isFinite(leftCss) && Double.isFinite(topCss)
+                && Double.isFinite(widthCss) && Double.isFinite(heightCss)
+                && widthCss >= 299 && heightCss >= 249
+                && leftCss >= -1 && topCss >= 0 && topCss + heightCss <= viewportCss + 1;
+        mrecSlotVisible = valid;
+        if (valid && mrecAdView != null) {
+            FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams)mrecAdView.getLayoutParams();
+            lp.leftMargin = webView.getLeft() + Math.round(dp((float)(leftCss + (widthCss - 300) / 2)));
+            lp.topMargin = webView.getTop() + Math.round(dp((float)(topCss + (heightCss - 250) / 2)));
+            mrecAdView.setLayoutParams(lp);
+        }
+        updateMrecVisibility();
     }
 
     private void loadSingleInterstitial() {
@@ -1472,6 +1559,11 @@ private void showLaunchSplash() {
             runOnUiThread(() -> openAdMobPrivacySettings());
         }
 
+        @JavascriptInterface public void updateMrecSlot(double left, double top,
+                                                         double width, double height, boolean visible) {
+            runOnUiThread(() -> updateMrecSlotNative(left, top, width, height, visible));
+        }
+
         @JavascriptInterface public boolean showOneInterstitialBeforeNavigation(String target) {
             return requestOneInterstitialForNavigation(target);
         }
@@ -1490,6 +1582,9 @@ private void showLaunchSplash() {
                 out.put("bannerLoaded", admobBannerLoaded);
                 out.put("splashHidden", apPremiumSplashHidden);
                 out.put("bannerVisible", bannerAdView != null && bannerAdView.getVisibility() == View.VISIBLE);
+                out.put("mrecCreated", mrecAdView != null);
+                out.put("mrecLoaded", mrecAdLoaded);
+                out.put("mrecVisible", mrecAdView != null && mrecAdView.getVisibility() == View.VISIBLE);
                 out.put("interstitialLoaded", oneInterstitialReady);
                 out.put("interstitialClaimed", oneInterstitialClaimed.get());
                 out.put("lastEvent", log.getString("step", "Henüz olay yok"));
@@ -3735,6 +3830,7 @@ private void showLaunchSplash() {
         }
         uiTranslators.clear();
         if(bannerAdView!=null){try{bannerAdView.destroy();}catch(Throwable ignored){} bannerAdView=null;}
+        if(mrecAdView!=null){try{mrecAdView.destroy();}catch(Throwable ignored){} mrecAdView=null;}
         stopSpeedTrackingNative();
         try { if (locationManager != null && nearbyLocationListener != null) locationManager.removeUpdates(nearbyLocationListener); } catch (Throwable ignored) {}
         nearbyLocationListener = null;
