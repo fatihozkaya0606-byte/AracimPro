@@ -1241,15 +1241,17 @@ private void showLaunchSplash() {
                 (available ? "true" : "false") + ")", null);
     }
 
-    private final Runnable mrecAfterScroll = () -> {
-        if (webView == null || isFinishing() || isDestroyed()) return;
-        if (android.os.SystemClock.elapsedRealtime() < mrecScrollHoldUntil) {
-            webView.postDelayed(mrecAfterScroll, 180L);
-            return;
+    private final Runnable mrecAfterScroll = new Runnable() {
+        @Override public void run() {
+            if (webView == null || isFinishing() || isDestroyed()) return;
+            if (android.os.SystemClock.elapsedRealtime() < mrecScrollHoldUntil) {
+                webView.postDelayed(this, 180L);
+                return;
+            }
+            // Ask WebView to remeasure after native scroll has fully settled.
+            webView.evaluateJavascript(
+                    "window.apMrecQueueSync && window.apMrecQueueSync()", null);
         }
-        // Ask the page to remeasure the actual visible slot before revealing.
-        webView.evaluateJavascript(
-                "window.apMrecQueueSync && window.apMrecQueueSync()", null);
     };
 
     private void updateMrecVisibility() {
