@@ -1,0 +1,65 @@
+/* Aracim Pro 94: compact, readable navigation (tested layout targets 360-430 dp phones) */
+body.r8HomeMode .header.ap93Header{position:sticky!important;top:0;z-index:20;padding:7px 12px!important;background:#05182d!important}
+body.r8HomeMode .header.ap93Header .ap93Head{min-height:39px}
+body.r8HomeMode .ap93{padding-top:11px}
+body.r8HomeMode .ap93Hero{min-height:166px}
+body.r8HomeMode .ap93Hero:not(:has(.ap93HeroPhoto)){min-height:138px}
+body.r8HomeMode .ap93HeroText{padding:13px 14px 12px}
+body.r8HomeMode .ap93Hero:not(:has(.ap93HeroPhoto)) .ap93HeroText{width:100%}
+body.r8HomeMode .ap93Hero h1{font-size:21px;margin:7px 0}
+body.r8HomeMode .ap93Hero .ap93Specs{margin-top:4px}
+body.r8HomeMode .ap93Hero .ap93Ghost{padding-top:2px}
+body.r8HomeMode .ap93Hero .ap93HeroAction{margin-top:7px}
+body.r8HomeMode .ap93Health{padding:12px 15px;min-height:108px}
+body.r8HomeMode .ap93Health h2{font-size:18px}
+body.r8HomeMode .ap93HealthRing{height:78px;flex-basis:78px}
+body.r8HomeMode .ap93Small{min-height:82px;padding:8px 7px}
+body.r8HomeMode .ap93Route{min-height:87px;padding:11px 15px}
+body.r8HomeMode .ap93Route strong{font-size:20px}
+body.r8HomeMode .ap93Route .arrow{height:40px;flex-basis:40px;font-size:21px}
+body.r8HomeMode .nav{height:68px!important}
+body.r8HomeMode .app{padding-bottom:80px!important}
+body.apNavMode .apNavScreen{height:100dvh!important;overflow:hidden;background:#061a2e}
+body.apNavMode .app{height:100dvh!important}
+body.apNavMode .apNavMap{position:absolute!important;inset:0!important;border-radius:0!important;background:#d6e9ed!important;z-index:0}
+body.apNavMode .apNavMap .leaflet-tile-pane{filter:saturate(.85) contrast(1.08) brightness(.98)!important}
+body.apNavMode .apNavMap .leaflet-tile-container{filter:none!important;image-rendering:auto!important}
+body.apNavMode .apNavHeader{top:6px;left:9px;right:9px;gap:7px}
+body.apNavMode .apNavBack,body.apNavMode .apNavLocate{width:40px;height:40px;flex-basis:40px;border-radius:12px;font-size:23px;background:#081b30f0}
+body.apNavMode .apNavTitle{min-height:43px;padding:5px 10px;border-radius:12px;box-shadow:0 4px 10px #0002}
+body.apNavMode .apNavTitle b{font-size:13px}
+body.apNavMode .apNavTitle span{font-size:9px}
+body.apNavMode .apNavSearchWrap{top:57px;left:9px;right:9px}
+body.apNavMode .apNavSearchBar{min-height:43px;padding:2px 3px 2px 8px;border:1px solid #238bd8;border-radius:13px}
+body.apNavMode .apNavSearchBar input{font-size:14px!important}
+body.apNavMode .apNavSearchBar>button{min-height:35px;padding:7px 12px;border-radius:10px}
+body.apNavMode .apNavSearchIcon{font-size:24px}
+body.apNavMode .apNavResults{max-height:min(40dvh,280px);margin-top:4px;border:1px solid #52baf4}
+body.apNavMode .apNavResults button{min-height:53px;padding:9px 12px}
+body.apNavMode .ap93NavChoices{top:107px;left:9px;right:57px;gap:6px;z-index:1055}
+body.apNavMode .ap93NavChoices button{min-width:95px;max-width:128px;padding:6px 7px;font-size:10px;line-height:1.25;border-radius:11px;box-shadow:0 3px 9px #0003}
+body.apNavMode .ap93NavChoices small{font-size:9px;margin-top:2px}
+body.apNavMode .apNavControls{top:169px;right:8px;gap:6px}
+body.apNavMode .apNavControls button{width:39px;height:39px;min-height:39px;min-width:39px;border-radius:12px;padding:3px;font-size:22px}
+body.apNavMode .apNavBottom{position:absolute;bottom:5px;left:8px;right:8px;max-height:45dvh;overflow:auto;background:#071e34f4;border:1px solid #3489c0;border-radius:18px;padding:9px 11px;box-shadow:0 -3px 16px #04132288;backdrop-filter:none;overscroll-behavior:contain}
+body.apNavMode .apNavTopline{gap:7px}
+body.apNavMode .apNavTopline b{font-size:14px;line-height:1.25;max-height:36px}
+body.apNavMode .apNavTopline span{font-size:10px;padding:5px 7px;white-space:nowrap}
+body.apNavMode .apNavMetrics{margin-top:6px;gap:5px}
+body.apNavMode .apNavMetrics>div{border-radius:10px;padding:6px 3px}
+body.apNavMode .apNavMetrics strong{font-size:14px}
+body.apNavMode .apNavMetrics small{font-size:9px}
+body.apNavMode .apNavBottomButtons{margin-top:6px;grid-template-columns:minmax(0,1fr) 70px;gap:7px}
+body.apNavMode .apNavBottomButtons button{min-height:38px;font-size:11px;border-radius:11px}
+body.apNavMode .apNavInfo{font-size:10px;min-height:0;max-height:17px;line-height:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0;margin:6px 0 0}
+body.apNavMode .ap93TrafficNotice,body.apNavMode .apNavDisclaimer{display:none}
+body.apNavMode .ap93NavDetailButton{padding:6px;margin:5px 0 0;font-size:10px;background:#0e3555;border-radius:10px}
+body.apNavMode .ap93NavDetails{max-height:115px;margin-top:5px}
+body.apNavMode .apNavScreen.ap94Expanded .apNavBottom{max-height:57dvh}
+body.apNavMode .apNavScreen.ap94Expanded .apNavInfo{white-space:normal;max-height:none}
+body.apNavMode .apNavScreen.ap94Expanded .ap93TrafficNotice{display:block;margin:6px 0}
+body.apNavMode .apNavScreen.ap94Expanded .apNavDisclaimer{display:block;margin:6px 0 0;line-height:1.35}
+body.apNavMode .apNavScreen.ap94Expanded .ap93NavDetails{max-height:20dvh}
+body.apNavMode .apNavScreen .leaflet-bottom.leaflet-right{bottom:6px!important}
+body.apNavMode .apNavMap .leaflet-control-attribution{font-size:8px!important;max-width:60vw;white-space:normal!important}
+@media(max-height:630px){body.apNavMode .apNavBottom{max-height:44dvh;padding:6px 8px}body.apNavMode .apNavBottomButtons button{min-height:34px}body.apNavMode .apNavControls{top:141px}}
