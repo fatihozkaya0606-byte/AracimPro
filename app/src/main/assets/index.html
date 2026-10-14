@@ -1983,7 +1983,7 @@ body.r8HomeMode .apLiveMini.clock em{font-style:normal;opacity:.45;margin:0 1px}
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
 <script>
 const KEY='aracim_pro_v1';
-const V='7.11.14';
+const V='7.11.15';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.NumberFormat(apLocale(),{style:'currency',currency:apCurrency(),maximumFractionDigits:2}).format(Number(n)||0);const num=n=>(Number(n)||0).toLocaleString(apLocale());
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -2971,9 +2971,21 @@ function header(){
   </header>`;
 }
 const navItems=[['home','home','Ana Sayfa'],['garage','garage','Araçlarım'],['records','records','Kayıtlar'],['plan','wrench','Bakım'],['reports','chart','Rapor'],['more','menu','Daha Fazla']];
-function nav(){return `<nav class="nav">${navItems.map(([k,i,l])=>`<button class="${current===k?'active':''}" onclick="go('${k}')"><i>${ico(i)}</i>${l}</button>`).join('')}</nav>`}
-function go(k){
+function nav(){return `<nav class="nav">${navItems.map(([k,i,l])=>`<button class="${current===k?'active':''}" onclick="go('${k}',true)"><i>${ico(i)}</i>${l}</button>`).join('')}</nav>`}
+let bottomNavTransitions = 0;
+// Trigger only at a deliberate bottom-tab transition after several actions.
+window.finishOneInterstitialNavigation = function(target) { go(target,false); };
+function go(k,fromBottomNav=false){
   if(!k||k===current){closeModal();return}
+  if(fromBottomNav) {
+    bottomNavTransitions++;
+    if(bottomNavTransitions >= 2) {
+      try {
+        if(typeof Android !== 'undefined' &&
+           Android.showOneInterstitialBeforeNavigation(k)) return;
+      } catch(e) {}
+    }
+  }
   if(current){
     if(navHistory[navHistory.length-1]!==current)navHistory.push(current);
     if(navHistory.length>30)navHistory.shift();
@@ -4723,6 +4735,8 @@ function admobAdsDiagnosticsModal(){
   line('Banner oluşturuldu',yes(d.bannerCreated))+
   line('Banner yüklendi',yes(d.bannerLoaded))+
   line('Banner görünür',yes(d.bannerVisible))+
+  line('Tam ekran hazır',yes(d.interstitialLoaded))+
+  line('Oturumda tam ekran kullanıldı',yes(d.interstitialClaimed))+
   line('Açılış tamamlandı',yes(d.splashHidden))+
   line('Son işlem',d.lastEvent||'-')+
   line('Sonuç',d.lastResult||'-')+
