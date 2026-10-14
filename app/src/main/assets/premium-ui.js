@@ -33,7 +33,7 @@ function ap93Header(){
       '<div class="ap93Brand"><span class="ap93Logo">'+ico('car')+'</span>Aracım <b>Pro</b></div>'+
       '<button type="button" class="ap93Icon" aria-label="Bildirimler" onclick="smartAlertsModal()">'+ico('bell')+(alerts.length?'<i class="ap93Bubble"></i>':'')+'</button>'+
       '<button type="button" class="ap93Icon" aria-label="Ayarlar" onclick="openSettings()">'+ico('settings')+'</button>'+
-    '</div><div class="ap93Ticker">'+marketTickerStripHtml()+'</div></header>';
+    '</div></header>';
 }
 function ap93Nav(){
  const items=[['home','home','Ana Sayfa'],['garage','car','Araçlarım'],['plan','wrench','Bakım'],['reports','chart','Raporlar'],['more','menu','Daha Fazla']];
