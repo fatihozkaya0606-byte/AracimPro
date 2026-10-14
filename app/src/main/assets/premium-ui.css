@@ -1,0 +1,88 @@
+
+/* v93 Premium automotive dashboard. Real photos are not enlarged through filters. */
+body.r8HomeMode{--bg:#041426;--card:#0c2340;--ink:#f3f8ff;--muted:#a9c7e6;--line:#28537e;background:#041426;color:#f3f8ff}
+body.r8HomeMode .app{background:#041426}
+body.r8HomeMode main{padding:0 0 10px!important;margin:0!important;background:#041426!important;max-width:none!important}
+body.r8HomeMode .header{background:#05172b!important;border-bottom:1px solid #194369!important;color:#f5faff;padding:9px 13px 6px!important}
+.ap93Head{display:flex;align-items:center;gap:9px}
+.ap93Brand{display:flex;align-items:center;gap:8px;color:#fff;font-size:20px;font-weight:900;letter-spacing:-.4px;flex:1}
+.ap93Brand b{color:#26a5ff}
+.ap93Logo{width:37px;height:37px;border:1px solid #3b99e0;border-radius:12px;background:linear-gradient(145deg,#0d497d,#05172f);color:#5acbff;display:grid;place-items:center}
+.ap93Logo svg{width:25px;height:25px}
+.ap93Icon{height:37px;width:37px;border:1px solid #2a5174;border-radius:12px;background:#0c263f;color:#d4eaff;display:grid;place-items:center;position:relative}
+.ap93Icon svg{height:19px;width:19px}.ap93Bubble{position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;background:#ff5c71}
+body.r8HomeMode .ap93Ticker{margin-top:8px;max-height:35px;overflow:hidden}
+body.r8HomeMode .ap93Ticker .apTickerStrip,body.r8HomeMode .ap93Ticker .apMarketTicker{margin:0}
+.ap93{padding:11px 12px 24px;display:flex;flex-direction:column;gap:11px;background:radial-gradient(circle at 48% 5%,#102a50,#041427 53%);color:#eff8ff}
+.ap93 button{color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.ap93Hero{border:1px solid #295c8b;border-radius:22px;overflow:hidden;min-height:202px;position:relative;background:linear-gradient(140deg,#071d35,#123d68 70%,#071a2c);box-shadow:0 8px 26px #0005}
+.ap93Hero:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#061429 0%,#071a2bbd 42%,transparent 100%);z-index:1;pointer-events:none}
+.ap93HeroPhoto{position:absolute;top:0;right:0;width:75%;height:100%;object-fit:cover;object-position:center;filter:none!important;image-rendering:auto}
+.ap93HeroText{position:relative;z-index:2;width:69%;padding:19px 10px 17px 15px}
+.ap93Kicker{color:#a8cdf0;font-size:12px;font-weight:650}
+.ap93Hero h1{font-size:22px;line-height:1.17;margin:8px 0 9px;font-weight:850;text-shadow:0 2px 10px #0012;overflow-wrap:anywhere}
+.ap93Plate{border:1px solid #4078b1;background:#051b36e8;color:white;display:inline-block;border-radius:9px;padding:6px 9px;font-size:11px;font-weight:750;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.ap93Specs{font-size:11px;line-height:1.5;color:#c1daf3;margin-top:12px}
+.ap93Ghost{font-size:11px;color:#acd4ef;padding-top:12px}
+.ap93HeroAction{border:1px solid #529cdd;background:#0a3460c9;color:#fff;border-radius:10px;padding:7px 10px;margin-top:10px;font-weight:700;font-size:11px}
+.ap93Tile{display:block;text-align:left;border:1px solid #275985;border-radius:21px;background:linear-gradient(135deg,#0d2b4a,#071b34);box-shadow:0 6px 22px #0002}
+.ap93Health{padding:17px;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:124px}
+.ap93Health h2{font-size:21px;line-height:1.15;margin:0 0 8px;font-weight:820}
+.ap93Health p{font-size:11px;color:#aed2f0;margin:0;line-height:1.4}
+.ap93HealthRing{flex:0 0 93px;height:93px;border-radius:50%;background:conic-gradient(#07e3be var(--p),#284867 0);padding:8px;box-shadow:0 0 18px #00edda22}
+.ap93HealthRing>div{width:100%;height:100%;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#082541}
+.ap93HealthRing b{font-size:26px;line-height:1}.ap93HealthRing small{font-size:11px;color:#b8d7ec}
+.ap93Quick3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.ap93Small{padding:10px 7px 11px;min-height:98px;display:flex;flex-direction:column;justify-content:space-between}
+.ap93Small .ic{color:#50ccff;font-size:20px;line-height:1.1}
+.ap93Small small{display:block;font-size:10px;color:#b3d0e8;line-height:1.3}
+.ap93Small strong{font-size:15px;font-variant-numeric:tabular-nums;line-height:1.2;overflow-wrap:anywhere}
+.ap93Route{width:100%;min-height:110px;background:linear-gradient(90deg,#03172fe8 0%,#033b73a6 100%),url('r8ui/drive.jpg') center 50%/cover;border:1.5px solid #1eaaff;border-radius:22px;text-align:left;padding:16px;display:flex;align-items:center;gap:13px;box-shadow:inset 0 0 22px #0089eb35}
+.ap93Route .pin{letter-spacing:0;font-size:31px;filter:none}
+.ap93Route strong{display:block;font-size:23px;text-shadow:0 1px 6px #001b}
+.ap93Route small{display:block;font-size:12px;color:#c9e5f9;margin-top:4px}
+.ap93Route .arrow{margin-left:auto;border:1px solid #77ceff;flex:0 0 45px;height:45px;border-radius:50%;display:grid;place-items:center;font-size:24px;background:linear-gradient(135deg,#087bff,#00baff)}
+.ap93Panel{background:linear-gradient(125deg,#082140,#05152a);border:1px solid #24557e;border-radius:21px;padding:15px 12px}
+.ap93SectionHead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:11px}
+.ap93SectionHead strong{font-size:17px}.ap93SectionHead button{background:none;border:0;color:#48c2ff;font-size:11px;padding:4px}
+.ap93Reminder{width:100%;display:flex;align-items:center;gap:10px;text-align:left;background:#0b2b4b;border:1px solid #255778;padding:11px;border-radius:15px;margin-top:6px}
+.ap93Reminder i{font-style:normal;font-size:21px;flex:0 0 31px}
+.ap93Reminder b{font-size:14px}.ap93Reminder small{color:#b5d3eb;font-size:11px;display:block;margin-top:2px}.ap93Reminder .arr{margin-left:auto;color:#72baff}
+.ap93Empty{font-size:12px;color:#c1d6e9;line-height:1.5}
+.ap93Costs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.ap93Costs div{min-width:0;border:1px solid #224c75;background:#0b2c4c;border-radius:15px;padding:11px 7px}
+.ap93Costs small{display:block;color:#add1ee;font-size:11px}.ap93Costs b{display:block;font-size:14px;margin-top:7px;overflow-wrap:anywhere}
+.ap93Tools{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.ap93Tools button{padding:11px 5px;border:1px solid #24557e;background:#0d2945;border-radius:13px;font-size:11px;font-weight:700}
+.ap93 .apMrecCard{margin:1px auto 8px;width:100%}
+body.r8HomeMode .fab{display:none!important}
+body.r8HomeMode .nav{height:76px;background:#07172b!important;border-top:1px solid #265985!important;grid-template-columns:repeat(5,1fr);z-index:32}
+body.r8HomeMode .nav button{color:#91b2d0;font-size:10px}body.r8HomeMode .nav button.active{color:#35cbff}
+body.r8HomeMode .nav .svgi{width:20px!important;height:20px!important}
+@media(max-width:365px){.ap93Health h2{font-size:18px}.ap93Hero h1{font-size:19px}.ap93Small strong{font-size:13px}.ap93Route strong{font-size:20px}}
+/* Preserve full-resolution map pixels: no blur applied. */
+body.apNavMode .apNavMap .leaflet-tile-pane{filter:grayscale(.28) invert(.91) hue-rotate(180deg) brightness(.70) contrast(1.20)}
+body.apNavMode .apNavMap .leaflet-control-attribution{background:#071a2aee!important;color:#c8dcf0!important}
+body.apNavMode .apNavMap .leaflet-control-attribution a{color:#60c2ff!important}
+body.apNavMode .apNavMap .leaflet-tile-container{filter:none!important}
+body.apNavMode .apNavScreen{background:#061629}
+body.apNavMode .apNavMap{inset:172px 0 0 0}
+body.apNavMode .apNavHeader{top:7px}
+body.apNavMode .apNavSearchWrap{top:58px}
+body.apNavMode .apNavSearchBar{background:#0b2743;border-color:#269fe8}
+body.apNavMode .apNavSearchBar input{background:#0b2743!important;color:white!important}
+body.apNavMode .apNavSearchBar input::placeholder{color:#bddaf1}
+body.apNavMode .apNavControls{top:37%;right:8px}
+.ap93NavChoices{position:absolute;z-index:1080;top:118px;left:9px;right:9px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.ap93NavChoices button{flex-shrink:0;min-width:100px;max-width:135px;border:1px solid #3a83b8;background:#092844f0;color:#d0e7f9;border-radius:13px;padding:7px;font-weight:750;font-size:11px;text-align:center}
+.ap93NavChoices button.selected{background:#044f94;border-color:#14c9ff;color:#fff;box-shadow:0 0 9px #14bbff55}
+.ap93NavChoices small{font-size:10px;color:#bcd6ef;display:block;margin-top:2px}
+body.apNavMode .apNavBottom{bottom:8px;border-color:#269bef;border-radius:24px;max-height:47dvh}
+body.apNavMode .apNavTopline{padding-bottom:4px}body.apNavMode .apNavTopline b{font-size:18px}
+.ap93NavRow{display:flex;justify-content:space-between;gap:8px;align-items:center;color:#a8cfe9;font-size:10px}
+.ap93NavDetails{max-height:110px;overflow:auto;border-top:1px solid #295071;margin-top:5px;padding-top:5px}
+.ap93NavDetails[hidden]{display:none}
+.ap93NavDetails>div{padding:5px 0;color:#cde5f6;font-size:11px;border-bottom:1px solid #1c3d57}
+.ap93NavDetailButton{width:100%;text-align:center;border:1px solid #316993;background:#143c63;color:#e6f8ff;padding:7px;border-radius:11px;font-weight:650;font-size:10px;margin:4px 0}
+.ap93MapCredit{font-size:9px;color:#91b7d7;text-align:left;padding:2px 0}
+.ap93TrafficNotice{color:#ffd58b;font-size:10px;margin-top:7px}
