@@ -1996,34 +1996,115 @@ private void showLaunchSplash() {
             runOnUiThread(() -> stopNavLocationNative(true));
         }
 
-        @JavascriptInterface public void navSearchPlaces(String query) {
+
+        // Photon provides place / road / city suggestions while typing.
+        // The public instance is for light testing only; no guaranteed uptime.
+        @JavascriptInterface public void navSearchPlaces(String query, int requestId) {
             final String q = query == null ? "" : query.trim();
-            if (q.isEmpty() || q.length() > 110) return;
+            if (q.length() < 2 || q.length() > 110) return;
             new Thread(() -> {
                 JSONArray results = new JSONArray();
+                String err = "";
                 try {
-                    Geocoder geo = new Geocoder(MainActivity.this, new Locale("tr", "TR"));
-                    List<Address> found = geo.getFromLocationName(q, 5);
-                    if (found != null) {
-                        for (Address address : found) {
-                            if (!address.hasLatitude() || !address.hasLongitude()) continue;
-                            JSONObject a = new JSONObject();
-                            String label = address.getAddressLine(0);
-                            if (label == null || label.trim().isEmpty()) label = q;
-                            a.put("name", label);
-                            a.put("lat", address.getLatitude());
-                            a.put("lon", address.getLongitude());
-                            results.put(a);
-                        }
+                    String endpoint = "https://photon.komoot.io/api/?q=" +
+                            URLEncoder.encode(q, "UTF-8") + "&lang=tr&limit=8";
+                    Location bias = bestLastLocation();
+                    if (bias != null) {
+                        endpoint += "&lat=" + String.format(Locale.US, "%.5f", bias.getLatitude()) +
+                                "&lon=" + String.format(Locale.US, "%.5f", bias.getLongitude());
                     }
-                } catch (Throwable t) { android.util.Log.w("AracimNav", "Geocoder unavailable", t); }
-                String serialized = results.toString();
+                    HttpURLConnection conn = (HttpURLConnection) new URL(endpoint).openConnection();
+                    try {
+                        conn.setConnectTimeout(5500);
+                        conn.setReadTimeout(6500);
+                        conn.setRequestProperty("User-Agent",
+                            "AracimPro-Navigation-Test/93 (https://github.com/fatihozkaya0606-byte/AracimPro)");
+                        conn.setRequestProperty("Accept", "application/json");
+                        if (conn.getResponseCode() == 200) {
+                            try (InputStream in = conn.getInputStream();
+                                 ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+                                byte[] buffer = new byte[8192]; int n;
+                                while ((n = in.read(buffer)) != -1 && out.size() < 380000)
+                                    out.write(buffer, 0, n);
+                                JSONObject root = new JSONObject(out.toString("UTF-8"));
+                                JSONArray features = root.optJSONArray("features");
+                                Set<String> used = new HashSet<>();
+                                if (features != null) for (int i = 0; i < features.length() && results.length() < 8; i++) {
+                                    JSONObject feature = features.optJSONObject(i);
+                                    if (feature == null) continue;
+                                    JSONObject geo = feature.optJSONObject("geometry");
+                                    JSONObject props = feature.optJSONObject("properties");
+                                    JSONArray coords = geo == null ? null : geo.optJSONArray("coordinates");
+                                    if (coords == null || coords.length() < 2 || props == null) continue;
+                                    double lon = coords.optDouble(0, Double.NaN);
+                                    double lat = coords.optDouble(1, Double.NaN);
+                                    if (Double.isNaN(lat) || Double.isNaN(lon)) continue;
+                                    String title = props.optString("name", "").trim();
+                                    if (title.isEmpty()) title = props.optString("street", "").trim();
+                                    if (title.isEmpty()) continue;
+                                    String kind = props.optString("type", props.optString("osm_value", "Yer"));
+                                    String[] parts = {
+                                        props.optString("street", ""), props.optString("district", ""),
+                                        props.optString("city", ""), props.optString("county", ""),
+                                        props.optString("state", ""), props.optString("country", "")
+                                    };
+                                    StringBuilder address = new StringBuilder();
+                                    Set<String> seenParts = new HashSet<>();
+                                    seenParts.add(title.toLowerCase(Locale.ROOT));
+                                    for (String part: parts) {
+                                        part = part.trim();
+                                        if (part.isEmpty() || !seenParts.add(part.toLowerCase(Locale.ROOT))) continue;
+                                        if (address.length() > 0) address.append(", ");
+                                        address.append(part);
+                                    }
+                                    String key = title.toLowerCase(Locale.ROOT) + "|" +
+                                            address.toString().toLowerCase(Locale.ROOT);
+                                    if (!used.add(key)) continue;
+                                    JSONObject item = new JSONObject();
+                                    item.put("name", title);
+                                    item.put("description", address.toString());
+                                    item.put("kind", kind);
+                                    item.put("lat", lat);
+                                    item.put("lon", lon);
+                                    results.put(item);
+                                }
+                            }
+                        } else err = "Yer arama servisi şu anda yanıt vermiyor.";
+                    } finally { conn.disconnect(); }
+                } catch (Exception e) {
+                    err = "Çevrimiçi arama başarısız; cihaz adres araması deneniyor.";
+                    android.util.Log.w("AracimNav", "Photon search", e);
+                }
+                if (results.length() == 0) {
+                    try {
+                        Geocoder geo = new Geocoder(MainActivity.this, new Locale("tr", "TR"));
+                        List<Address> found = geo.getFromLocationName(q, 6);
+                        if (found != null) for (Address address : found) {
+                            if (!address.hasLatitude() || !address.hasLongitude()) continue;
+                            JSONObject item = new JSONObject();
+                            String label = address.getFeatureName();
+                            if (label == null || label.isEmpty()) label = q;
+                            item.put("name", label);
+                            item.put("description", address.getAddressLine(0));
+                            item.put("kind", "Adres");
+                            item.put("lat", address.getLatitude());
+                            item.put("lon", address.getLongitude());
+                            results.put(item);
+                        }
+                    } catch (Exception e) {
+                        android.util.Log.w("AracimNav", "Geocoder fallback", e);
+                    }
+                }
+                final String payload = results.toString();
+                final String message = results.length() > 0 ? "" : (err.isEmpty() ?
+                        "Sonuç bulunamadı. Daha ayrıntılı yer adı dene." : err);
                 runOnUiThread(() -> {
                     if (webView != null && !isFinishing()) webView.evaluateJavascript(
                         "window.apNavSearchResults && window.apNavSearchResults(" +
-                            JSONObject.quote(serialized) + ")", null);
+                        requestId + "," + JSONObject.quote(q) + "," +
+                        JSONObject.quote(payload) + "," + JSONObject.quote(message) + ")", null);
                 });
-            }, "AracimNavGeocoder").start();
+            }, "AracimNavPhotonSearch").start();
         }
 
         @JavascriptInterface public void navSpeak(String message) {
