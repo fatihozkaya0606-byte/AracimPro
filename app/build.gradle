@@ -43,7 +43,7 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix '.admobpreview'
+            applicationIdSuffix '.v94preview'
             versionNameSuffix '-admobpreview'
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
