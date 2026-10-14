@@ -26,6 +26,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.speech.tts.TextToSpeech;
 import android.hardware.biometrics.BiometricPrompt;
 import android.media.AudioAttributes;
 import android.media.AudioFormat;
@@ -198,6 +199,11 @@ public class MainActivity extends Activity {
     private boolean backEvaluationPending = false;
     private LocationManager locationManager;
     private LocationListener speedLocationListener;
+    private LocationListener navLocationListener;
+    private boolean navTrackingWanted = false;
+    private TextToSpeech navTts;
+    private boolean navTtsReady = false;
+    private String navSpeechPending = "";
     private LocationListener nearbyLocationListener;
     private LocationListener weatherLocationListener;
     private LocationListener fuelPriceLocationListener;
@@ -1239,12 +1245,14 @@ private void showLaunchSplash() {
     }
 
     @Override protected void onPause() {
+        stopNavLocationNative(false); // Test navigation operates only while foreground is open.
         super.onPause();
         appWasBackgrounded = true;
     }
 
     @Override protected void onResume() {
         super.onResume();
+        if (navTrackingWanted && hasLocationPermission()) startNavLocationNative();
         if (appWasBackgrounded && pageReady && webView != null) {
             webView.postDelayed(() -> webView.evaluateJavascript("window.appShouldLock && window.appShouldLock()", null), 250);
         }
@@ -1976,6 +1984,78 @@ private void showLaunchSplash() {
             fetchRoadStatusNative(city, district);
         }
 
+        @JavascriptInterface public void navStartTracking() {
+            runOnUiThread(() -> {
+                navTrackingWanted = true;
+                if (!hasLocationPermission()) { ensureLocationPermission("nav"); return; }
+                startNavLocationNative();
+            });
+        }
+
+        @JavascriptInterface public void navStopTracking() {
+            runOnUiThread(() -> stopNavLocationNative(true));
+        }
+
+        @JavascriptInterface public void navSearchPlaces(String query) {
+            final String q = query == null ? "" : query.trim();
+            if (q.isEmpty() || q.length() > 110) return;
+            new Thread(() -> {
+                JSONArray results = new JSONArray();
+                try {
+                    Geocoder geo = new Geocoder(MainActivity.this, new Locale("tr", "TR"));
+                    List<Address> found = geo.getFromLocationName(q, 5);
+                    if (found != null) {
+                        for (Address address : found) {
+                            if (!address.hasLatitude() || !address.hasLongitude()) continue;
+                            JSONObject a = new JSONObject();
+                            String label = address.getAddressLine(0);
+                            if (label == null || label.trim().isEmpty()) label = q;
+                            a.put("name", label);
+                            a.put("lat", address.getLatitude());
+                            a.put("lon", address.getLongitude());
+                            results.put(a);
+                        }
+                    }
+                } catch (Throwable t) { android.util.Log.w("AracimNav", "Geocoder unavailable", t); }
+                String serialized = results.toString();
+                runOnUiThread(() -> {
+                    if (webView != null && !isFinishing()) webView.evaluateJavascript(
+                        "window.apNavSearchResults && window.apNavSearchResults(" +
+                            JSONObject.quote(serialized) + ")", null);
+                });
+            }, "AracimNavGeocoder").start();
+        }
+
+        @JavascriptInterface public void navSpeak(String message) {
+            final String msg = message == null ? "" : message.trim();
+            if (msg.isEmpty()) return;
+            runOnUiThread(() -> {
+                if (navTts == null) {
+                    navSpeechPending = msg;
+                    navTtsReady = false;
+                    navTts = new TextToSpeech(MainActivity.this, status -> {
+                        if (status != TextToSpeech.SUCCESS || navTts == null) return;
+                        int lang = navTts.setLanguage(new Locale("tr", "TR"));
+                        navTtsReady = lang != TextToSpeech.LANG_MISSING_DATA &&
+                                     lang != TextToSpeech.LANG_NOT_SUPPORTED;
+                        if (navTtsReady && !navSpeechPending.isEmpty())
+                            navTts.speak(navSpeechPending, TextToSpeech.QUEUE_FLUSH,
+                                    null, "aracim-nav");
+                        navSpeechPending = "";
+                    });
+                } else if (navTtsReady) {
+                    navTts.speak(msg, TextToSpeech.QUEUE_FLUSH, null, "aracim-nav");
+                } else { navSpeechPending = msg; }
+            });
+        }
+
+        @JavascriptInterface public void navStopSpeech() {
+            runOnUiThread(() -> {
+                navSpeechPending = "";
+                if (navTts != null) navTts.stop();
+            });
+        }
+
         @JavascriptInterface public void startSpeedTracking() {
             runOnUiThread(() -> {
                 if (!hasLocationPermission()) { ensureLocationPermission("speed"); return; }
@@ -2593,6 +2673,10 @@ private void showLaunchSplash() {
             startSpeedTrackingNative();
             return;
         }
+        if ("nav".equals(action)) {
+            startNavLocationNative();
+            return;
+        }
         if ("weather".equals(action)) {
             requestWeatherNative();
             return;
@@ -2620,6 +2704,59 @@ private void showLaunchSplash() {
             if (net == null) return gps;
             return gps.getTime() >= net.getTime() ? gps : net;
         } catch (Throwable ignored) { return null; }
+    }
+
+    private void emitNavPosition(Location loc) {
+        if (!navTrackingWanted || loc == null || webView == null) return;
+        JSONObject out = new JSONObject();
+        try {
+            out.put("lat", loc.getLatitude());
+            out.put("lon", loc.getLongitude());
+            out.put("accuracy", loc.hasAccuracy() ? loc.getAccuracy() : -1);
+            out.put("speed", loc.hasSpeed() ? loc.getSpeed() * 3.6 : 0);
+            out.put("bearing", loc.hasBearing() ? loc.getBearing() : 0);
+            out.put("time", loc.getTime());
+            String payload = out.toString();
+            webView.evaluateJavascript("window.apNavGps && window.apNavGps(" +
+                    JSONObject.quote(payload) + ")", null);
+        } catch (Throwable ignored) {}
+    }
+
+    @SuppressWarnings("MissingPermission")
+    private void startNavLocationNative() {
+        if (!hasLocationPermission()) { ensureLocationPermission("nav"); return; }
+        if (!isLocationServiceEnabled()) {
+            notifyLocationStatus("GPS kapalı. Konum ayarlarını aç.");
+            openLocationSettingsNative(); return;
+        }
+        if (locationManager == null) locationManager = (LocationManager)getSystemService(LOCATION_SERVICE);
+        if (locationManager == null) return;
+        stopNavLocationNative(false);
+        navTrackingWanted = true;
+        navLocationListener = new LocationListener() {
+            @Override public void onLocationChanged(Location location) { emitNavPosition(location); }
+        };
+        try {
+            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER,
+                    900L, 1.5f, navLocationListener, Looper.getMainLooper());
+        } catch (Throwable ignored) {}
+        try {
+            if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER,
+                    2200L, 4f, navLocationListener, Looper.getMainLooper());
+        } catch (Throwable ignored) {}
+        Location last = bestLastLocation();
+        if (last != null) emitNavPosition(last);
+    }
+
+    private void stopNavLocationNative(boolean forget) {
+        try {
+            if (locationManager != null && navLocationListener != null)
+                locationManager.removeUpdates(navLocationListener);
+        } catch (Throwable ignored) {}
+        navLocationListener = null;
+        if (forget) navTrackingWanted = false;
     }
 
     @SuppressWarnings("MissingPermission")
@@ -3736,6 +3873,8 @@ private void showLaunchSplash() {
         uiTranslators.clear();
         if(bannerAdView!=null){try{bannerAdView.destroy();}catch(Throwable ignored){} bannerAdView=null;}
         stopSpeedTrackingNative();
+        stopNavLocationNative(true);
+        try { if (navTts != null) { navTts.stop(); navTts.shutdown(); navTts = null; } } catch (Throwable ignored) {}
         try { if (locationManager != null && nearbyLocationListener != null) locationManager.removeUpdates(nearbyLocationListener); } catch (Throwable ignored) {}
         nearbyLocationListener = null;
         mainHandler.removeCallbacksAndMessages(null);
