@@ -60,15 +60,25 @@ function apNavAfterRender(){
     apNav.map=L.map(element,{zoomControl:false,preferCanvas:true,attributionControl:true});
     apNav.mapEl=element;
     apNav.map.setView([40.15,32.70],9);
-    apNav.tile=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
-      minZoom:3,maxZoom:19,maxNativeZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    // Sharp vector-style raster street map. Retina @2x prevents fuzzy labels on high-DPI phones.
+    apNav.tile=L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+      subdomains:'abcd',r:window.devicePixelRatio>=1.5?'@2x':'',tileSize:256,
+      minZoom:3,maxZoom:19,maxNativeZoom:19,
+      attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors · © <a href="https://carto.com/attributions">CARTO</a>'
     }).addTo(apNav.map);
-    // Make a network/tile failure visible instead of leaving an unexplained blank map.
-    var tileFailures=0;
+    // Fallback to OSM if CARTO tiles cannot load. Never leave a blank navigation map.
+    var tileFailures=0,switchedToOsm=false;
     apNav.tile.on('tileerror',function(){
       tileFailures++;
-      if(tileFailures===3){
-        apNavInfo('Harita kareleri indirilemedi. İnternet/DNS bağlantını kontrol et; hedef arama ve GPS ayrı çalışabilir.');
+      if(tileFailures>=4 && !switchedToOsm){
+        switchedToOsm=true;
+        try{apNav.map.removeLayer(apNav.tile);}catch(e){}
+        apNav.tile=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+          minZoom:3,maxZoom:19,maxNativeZoom:19,
+          attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(apNav.map);
+        apNavInfo('Alternatif harita kaynağına geçildi. GPS ve rota kullanılabilir.');
+        apNav.tile.on('tileerror',function(){apNavInfo('Harita bağlantısı zayıf. İnternetini kontrol et.');});
       }
     });
     apNav.tile.on('tileload',function(){tileFailures=0;});
