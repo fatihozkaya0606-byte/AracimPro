@@ -1983,7 +1983,7 @@ body.r8HomeMode .apLiveMini.clock em{font-style:normal;opacity:.45;margin:0 1px}
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
 <script>
 const KEY='aracim_pro_v1';
-const V='7.11.10';
+const V='7.11.11';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.NumberFormat(apLocale(),{style:'currency',currency:apCurrency(),maximumFractionDigits:2}).format(Number(n)||0);const num=n=>(Number(n)||0).toLocaleString(apLocale());
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -4709,16 +4709,17 @@ function restore(){try{Android.openBackupFile()}catch(e){}}window.restoreBackupF
 };
 function startAdsDiagnosticsModal(){
   let d={};
-  try{d=JSON.parse(Android.startAdsDiagnostics()||'{}')}catch(e){toast('Reklam tanılaması açılamadı');return}
+  try{d=JSON.parse(Android.admobAdsDiagnostics()||'{}')}catch(e){toast('Reklam tanılaması açılamadı');return}
   const yes=x=>x?'Evet':'Hayır';
   const time=d.lastEventTime?new Date(d.lastEventTime).toLocaleString(apLocale()):'Henüz yok';
   const line=(key,value)=>'<div style="padding:7px 0;border-bottom:1px solid rgba(127,127,127,.15)"><b>'+esc(key)+':</b> '+esc(String(value))+'</div>';
-  modal('Start.io Reklam Kontrolü',`<div class="form"><div class="notice">Bu bölüm gerçek reklam yerine durum ve hata kaydını gösterir. Reklam sağlayıcısı o anda banner vermeyebilir.</div><div class="card">`+
+  modal('Google AdMob Reklam Kontrolü',`<div class="form"><div class="notice">Bu bölüm gerçek reklam yerine durum ve hata kaydını gösterir. Reklam sağlayıcısı o anda banner vermeyebilir.</div><div class="card">`+
   line('Uygulama sürümü',d.version||'?')+
   line('Reklam izni',yes(d.consent))+
   line('Premium doğrulaması',yes(d.premiumBillingReady))+
   line('Premium aktif',yes(d.premiumActive))+
-  line('Start.io başlatıldı',yes(d.sdkInitialized))+
+  line('AdMob başlatıldı',yes(d.sdkInitialized))+
+  line('UMP izin durumu',d.consentStatus||'-')+
   line('Banner oluşturuldu',yes(d.bannerCreated))+
   line('Banner yüklendi',yes(d.bannerLoaded))+
   line('Banner görünür',yes(d.bannerVisible))+
