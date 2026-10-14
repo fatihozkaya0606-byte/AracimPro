@@ -1999,7 +1999,7 @@ body.r8HomeMode:not(.dark) .apMrecSlot{background:#e7f0f8;border-color:#c4d9e9}
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
 <script>
 const KEY='aracim_pro_v1';
-const V='7.11.18';
+const V='7.11.19';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.NumberFormat(apLocale(),{style:'currency',currency:apCurrency(),maximumFractionDigits:2}).format(Number(n)||0);const num=n=>(Number(n)||0).toLocaleString(apLocale());
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -3040,7 +3040,7 @@ window.appBack=function(){
   }
   return false;
 }
-function render(){document.body.classList.toggle('apNavMode',current==='navigation');document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(apSyncMrecSlot,70);if(current==='navigation')setTimeout(()=>window.apNavAfterRender&&window.apNavAfterRender(),90);setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);setTimeout(startTickerMotion7105,420);setTimeout(showWhatsNewOnce,850);if(current==='home'){setTimeout(loadHomeWeather,350)}}
+function render(){try{Android.setNavigationMode(current==='navigation')}catch(e){}document.body.classList.toggle('apNavMode',current==='navigation');document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(apSyncMrecSlot,70);if(current==='navigation')setTimeout(()=>window.apNavAfterRender&&window.apNavAfterRender(),90);setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);setTimeout(startTickerMotion7105,420);setTimeout(showWhatsNewOnce,850);if(current==='home'){setTimeout(loadHomeWeather,350)}}
 function view(){if(current==='navigation')return window.apNavView?window.apNavView():'<div>Harita hazırlanıyor…</div>';if(!activeVehicle()&&current!=='garage'&&current!=='more')return welcome();return ({home:homeView,garage:garageView,records:recordsView,plan:planView,reports:reportsView,more:moreView}[current]||homeView)()}
 
 function apMrecCardHtml(){
@@ -4848,5 +4848,7 @@ syncCommunityStatus();try{state.prefs.fuelAlertsEnabled=false;Android.configureF
 </script>
 <script src="navigation.js"></script>
 <script src="premium-ui.js"></script>
+<link rel="stylesheet" href="v94-ui-fix.css" />
+<script src="v94-ui-fix.js"></script>
 </body>
 </html>
