@@ -1978,12 +1978,23 @@ body.r8HomeMode .apLiveMini.clock em{font-style:normal;opacity:.45;margin:0 1px}
 .apCameraPreview{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#050b12}.apCameraPreview img{display:block;width:100%;max-height:360px;object-fit:contain}
 @media(max-width:390px){body.r8HomeMode .apBrandSub{max-width:155px;font-size:9.4px}body.r8HomeMode .apLiveMini.clock{font-size:6.3px}.ref791-copy h1{font-size:17px!important}.apSafetyQuick button{padding:9px;column-gap:7px}}
 </style>
+<style id="ap-mrec-card-71116">
+.apMrecCard{grid-column:1/-1;display:flex;flex-direction:column;gap:9px;margin:12px 0;padding:13px 10px 14px;border:1px solid rgba(42,142,233,.35);border-radius:20px;background:linear-gradient(155deg,#071e35,#0b2a47);box-shadow:0 8px 25px rgba(0,40,100,.16)}
+.apMrecTitle{display:flex;align-items:center;justify-content:space-between;padding:0 5px;color:#e2f4ff;gap:8px}
+.apMrecTitle strong{font-size:12px;letter-spacing:.2px}.apMrecTitle small{font-size:9px;color:#a8c6de;border:1px solid #426780;border-radius:999px;padding:3px 8px}
+.apMrecSlot{width:300px;height:250px;max-width:100%;margin:0 auto;display:grid;place-items:center;overflow:hidden;background:#0a2239;border:1px solid #1a4b71;border-radius:9px;position:relative}
+.apMrecSlot>span{font-size:11px;color:#6a91ac}
+body.r8HomeMode:not(.dark) .apMrecCard{background:linear-gradient(140deg,#f3f9ff,#e5f2ff);border-color:#a6cdea}
+body.r8HomeMode:not(.dark) .apMrecTitle{color:#173650}
+body.r8HomeMode:not(.dark) .apMrecTitle small{color:#4f7898}
+body.r8HomeMode:not(.dark) .apMrecSlot{background:#e7f0f8;border-color:#c4d9e9}
+</style>
 </head>
 <body>
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
 <script>
 const KEY='aracim_pro_v1';
-const V='7.11.15';
+const V='7.11.16';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.NumberFormat(apLocale(),{style:'currency',currency:apCurrency(),maximumFractionDigits:2}).format(Number(n)||0);const num=n=>(Number(n)||0).toLocaleString(apLocale());
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -3023,9 +3034,36 @@ window.appBack=function(){
   }
   return false;
 }
-function render(){document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);setTimeout(startTickerMotion7105,420);setTimeout(showWhatsNewOnce,850);if(current==='home'){setTimeout(loadHomeWeather,350)}}
+function render(){document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(apSyncMrecSlot,70);setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);setTimeout(startTickerMotion7105,420);setTimeout(showWhatsNewOnce,850);if(current==='home'){setTimeout(loadHomeWeather,350)}}
 function view(){if(!activeVehicle()&&current!=='garage'&&current!=='more')return welcome();return ({home:homeView,garage:garageView,records:recordsView,plan:planView,reports:reportsView,more:moreView}[current]||homeView)()}
 
+function apMrecCardHtml(){
+  try{if(isPremium())return '';}catch(e){}
+  return `<section class="apMrecCard" aria-label="Sponsorlu reklam">
+    <div class="apMrecTitle"><strong>Öne Çıkan Reklam</strong><small>Sponsorlu</small></div>
+    <div id="apMrecSlot" class="apMrecSlot"><span>Reklam yükleniyor…</span></div>
+  </section>`;
+}
+let apMrecFrameQueued=false;
+function apSyncMrecSlot(){
+  apMrecFrameQueued=false;
+  try {
+    if(typeof Android==='undefined'||!Android.updateMrecSlot)return;
+    const slot=current==='home'?document.getElementById('apMrecSlot'):null;
+    if(!slot){Android.updateMrecSlot(0,0,0,0,false);return;}
+    const r=slot.getBoundingClientRect();
+    const visible=r.width>=299&&r.height>=249&&r.top>=0&&r.bottom<=window.innerHeight;
+    Android.updateMrecSlot(r.left,r.top,r.width,r.height,visible);
+  }catch(e){}
+}
+function apMrecQueueSync(){
+  if(apMrecFrameQueued)return;
+  apMrecFrameQueued=true;
+  requestAnimationFrame(apSyncMrecSlot);
+}
+window.addEventListener('scroll',apMrecQueueSync,{passive:true,capture:true});
+window.addEventListener('resize',apMrecQueueSync);
+document.addEventListener('visibilitychange',apMrecQueueSync);
 function dailyQuickHtml(){
   return `<div class="dailyQuickTitle"><b>📍 Günlük Kısayollar</b><small>Yakınındaki temel yerler</small></div>
   <div class="dailyQuickGrid">
@@ -3045,6 +3083,7 @@ function welcome(){return `<div class="welcome7104">
     <p class="muted">Aracını eklediğinde bakım, kayıt, rapor ve araç özellikleri açılır.</p>
     <button class="primary" onclick="openVehicle()">Aracımı Ekle</button>
   </div>
+  ${apMrecCardHtml()}
   ${dailyQuickHtml()}
 </div>`}
 
@@ -3212,6 +3251,8 @@ return `<div class="ref791">
       <div class="ref791-maintrow"><span class="mi">🧰</span><span><b>${esc(d2?.name||d2?.title||'Hava Filtresi')}</b><small>${d2?(d2.km<999999?Math.max(0,Math.round(d2.km))+' km kaldı':Math.max(0,Math.round(d2.days))+' gün kaldı'):'Bakım planına ekle'}</small></span></div>
     </div>
   </button>
+
+  ${apMrecCardHtml()}
 
   <button class="ref791-card" onclick="go('records');recordsTab='fuel';render()">
     <div class="ref791-head"><span class="ref791-icon">⛽</span><span><b>Yakıt Takibi</b><small>Bu ay</small></span></div>
