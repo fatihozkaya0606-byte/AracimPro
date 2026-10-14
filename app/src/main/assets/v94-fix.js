@@ -23,7 +23,8 @@ window.apNavSearchResults=function(payload){
  if(box){box.hidden=false;box.textContent='Alternatif adres kaynağı aranıyor…'}
  /* Photon is queried only after user presses ARA and Android Geocoder has no result.
     No fabricated suggestions; on network failure show explicit error. */
- const reqId=++(window.ap94SearchReq||0);
+ window.ap94SearchReq=(window.ap94SearchReq||0)+1;
+ const reqId=window.ap94SearchReq;
  const controller=new AbortController();
  const timeout=setTimeout(()=>controller.abort(),8500);
  fetch('https://photon.komoot.io/api/?q='+encodeURIComponent(q+', Türkiye')+'&limit=6&lang=tr',{signal:controller.signal})
