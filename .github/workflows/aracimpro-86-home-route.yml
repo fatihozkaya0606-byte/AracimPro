@@ -3,7 +3,7 @@ on:
   push:
     branches: [aracimpro-86-home-route]
   pull_request:
-    branches: [aracimpro-play-quality-83]
+    branches: [aracimpro-85-startio-banner-diagnostics]
   workflow_dispatch:
 
 permissions:
