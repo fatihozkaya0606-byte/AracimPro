@@ -1979,7 +1979,8 @@ body.r8HomeMode .apLiveMini.clock em{font-style:normal;opacity:.45;margin:0 1px}
 @media(max-width:390px){body.r8HomeMode .apBrandSub{max-width:155px;font-size:9.4px}body.r8HomeMode .apLiveMini.clock{font-size:6.3px}.ref791-copy h1{font-size:17px!important}.apSafetyQuick button{padding:9px;column-gap:7px}}
 </style>
 <style id="ap-mrec-card-71116">
-.apMrecCard{grid-column:1/-1;display:flex;flex-direction:column;gap:9px;margin:12px 0;padding:13px 10px 14px;border:1px solid rgba(42,142,233,.35);border-radius:20px;background:linear-gradient(155deg,#071e35,#0b2a47);box-shadow:0 8px 25px rgba(0,40,100,.16)}
+.apMrecCard{grid-column:1/-1;display:none;flex-direction:column;gap:9px;margin:12px 0;padding:13px 10px 14px;border:1px solid rgba(42,142,233,.35);border-radius:20px;background:linear-gradient(155deg,#071e35,#0b2a47);box-shadow:0 8px 25px rgba(0,40,100,.16)}
+.apMrecReady .apMrecCard{display:flex}
 .apMrecTitle{display:flex;align-items:center;justify-content:space-between;padding:0 5px;color:#e2f4ff;gap:8px}
 .apMrecTitle strong{font-size:12px;letter-spacing:.2px}.apMrecTitle small{font-size:9px;color:#a8c6de;border:1px solid #426780;border-radius:999px;padding:3px 8px}
 .apMrecSlot{width:300px;height:250px;max-width:100%;margin:0 auto;display:grid;place-items:center;overflow:hidden;background:#0a2239;border:1px solid #1a4b71;border-radius:9px;position:relative}
@@ -3044,6 +3045,10 @@ function apMrecCardHtml(){
     <div id="apMrecSlot" class="apMrecSlot"><span>Reklam yükleniyor…</span></div>
   </section>`;
 }
+window.apMrecAvailability=function(ready){
+  document.body.classList.toggle('apMrecReady',!!ready);
+  requestAnimationFrame(apMrecQueueSync);
+};
 let apMrecFrameQueued=false;
 function apSyncMrecSlot(){
   apMrecFrameQueued=false;
@@ -3052,7 +3057,9 @@ function apSyncMrecSlot(){
     const slot=current==='home'?document.getElementById('apMrecSlot'):null;
     if(!slot){Android.updateMrecSlot(0,0,0,0,false);return;}
     const r=slot.getBoundingClientRect();
-    const visible=r.width>=299&&r.height>=249&&r.top>=0&&r.bottom<=window.innerHeight;
+    const visible=document.body.classList.contains('apMrecReady')&&
+      !document.hidden&&r.width>=299&&r.height>=249&&
+      r.top>=0&&r.bottom<=window.innerHeight-76;
     Android.updateMrecSlot(r.left,r.top,r.width,r.height,visible);
   }catch(e){}
 }
