@@ -26,8 +26,8 @@ android {
         buildConfigField "String", "MARKET_API_URL", "\"${System.getenv('MARKET_API_URL') ?: ''}\""
         buildConfigField "String", "LIVE_DATA_API_URL", "\"${System.getenv('LIVE_DATA_API_URL') ?: ''}\""
         buildConfigField 'boolean', 'ADMOB_TEST_MODE', 'false'
-        versionCode 90
-        versionName '7.11.15'
+        versionCode 91
+        versionName '7.12.0'
     }
 
     signingConfigs {
@@ -43,13 +43,15 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix '.admobpreview'
-            versionNameSuffix '-admobpreview'
+            applicationIdSuffix '.navtest'
+            versionNameSuffix '-navtest'
+            manifestPlaceholders = [appLabel: 'Aracım Pro Navi TEST']
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
             }
         }
         release {
+            manifestPlaceholders = [appLabel: 'Aracım Pro']
             minifyEnabled true
             shrinkResources true
             debuggable false
