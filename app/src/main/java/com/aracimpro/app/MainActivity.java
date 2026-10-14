@@ -333,6 +333,7 @@ public class MainActivity extends Activity {
                 super.onPageFinished(view, url);
                 pageReady = true;
                 hideLaunchSplashWhenReady();
+                if (mrecAdLoaded) notifyMrecJs(true);
             }
         });
         webView.setWebChromeClient(new WebChromeClient());
@@ -964,6 +965,7 @@ private void showLaunchSplash() {
                 }
                 mrecAdLoaded = false;
                 mrecSlotVisible = false;
+                notifyMrecJs(false);
                 oneInterstitialAd = null;
                 oneInterstitialReady = false;
             } catch (Throwable ignored) {}
@@ -1190,11 +1192,13 @@ private void showLaunchSplash() {
                     if (ad != mrecAdView || !canRequestAdMobAds()) return;
                     mrecAdLoaded = true;
                     logAdMob("mrec_loaded", "300x250 AdMob ad loaded");
+                    notifyMrecJs(true);
                     updateMrecVisibility();
                 }
                 @Override public void onAdFailedToLoad(LoadAdError error) {
                     mrecAdLoaded = false;
                     logAdMob("mrec_failed", error == null ? "No fill" : error.toString());
+                    notifyMrecJs(false);
                     updateMrecVisibility();
                 }
                 @Override public void onAdImpression() {
@@ -1218,6 +1222,12 @@ private void showLaunchSplash() {
             mrecAdView = null;
             mrecAdLoaded = false;
         }
+    }
+
+    private void notifyMrecJs(boolean available) {
+        if (webView == null || isDestroyed()) return;
+        webView.evaluateJavascript("window.apMrecAvailability && window.apMrecAvailability(" +
+                (available ? "true" : "false") + ")", null);
     }
 
     private void updateMrecVisibility() {
