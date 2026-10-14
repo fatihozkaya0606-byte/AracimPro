@@ -1995,7 +1995,7 @@ body.r8HomeMode:not(.dark) .apMrecSlot{background:#e7f0f8;border-color:#c4d9e9}
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
 <script>
 const KEY='aracim_pro_v1';
-const V='7.11.16';
+const V='7.11.17';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.NumberFormat(apLocale(),{style:'currency',currency:apCurrency(),maximumFractionDigits:2}).format(Number(n)||0);const num=n=>(Number(n)||0).toLocaleString(apLocale());
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -3049,21 +3049,35 @@ window.apMrecAvailability=function(ready){
   document.body.classList.toggle('apMrecReady',!!ready);
   requestAnimationFrame(apMrecQueueSync);
 };
+// A native AdMob MREC is drawn above WebView. Never allow a stale overlay
+// to cover the header or dashboard while a swipe/scroll is in progress.
 let apMrecFrameQueued=false;
+let apMrecScrollBlockedUntil=0;
+let apMrecScrollTimer=null;
+let apMrecLastHideAt=0;
 function apSyncMrecSlot(){
   apMrecFrameQueued=false;
-  try {
+  try{
     if(typeof Android==='undefined'||!Android.updateMrecSlot)return;
     const slot=current==='home'?document.getElementById('apMrecSlot'):null;
-    if(!slot){Android.updateMrecSlot(0,0,0,0,false);return;}
+    const vw=window.innerWidth;
+    if(!slot || document.hidden || Date.now()<apMrecScrollBlockedUntil){
+      Android.updateMrecSlot(0,0,0,0,vw,false);
+      return;
+    }
     const r=slot.getBoundingClientRect();
     const overlayOpen=['modalRoot','lockRoot'].some(id=>{
-      const e=document.getElementById(id);return !!(e&&e.innerHTML.trim());
+      const e=document.getElementById(id);
+      return !!(e&&e.innerHTML.trim());
     });
-    const visible=document.body.classList.contains('apMrecReady')&&
-      !document.hidden&&!overlayOpen&&r.width>=299&&r.height>=249&&
-      r.top>=0&&r.bottom<=window.innerHeight-76;
-    Android.updateMrecSlot(r.left,r.top,r.width,r.height,visible);
+    const bottomNav=document.querySelector('nav.nav, .nav');
+    const bottomLimit=bottomNav?bottomNav.getBoundingClientRect().top:window.innerHeight-86;
+    // A larger top inset prevents the advertisement from covering ticker/header.
+    const visible=document.body.classList.contains('apMrecReady') &&
+      !overlayOpen && r.width>=299 && r.height>=249 &&
+      r.left>=0 && r.right<=vw+2 && r.top>=170 &&
+      r.bottom<=Math.min(window.innerHeight-86,bottomLimit-12);
+    Android.updateMrecSlot(r.left,r.top,r.width,r.height,vw,visible);
   }catch(e){}
 }
 function apMrecQueueSync(){
@@ -3071,8 +3085,19 @@ function apMrecQueueSync(){
   apMrecFrameQueued=true;
   requestAnimationFrame(apSyncMrecSlot);
 }
-window.addEventListener('scroll',apMrecQueueSync,{passive:true,capture:true});
-window.addEventListener('resize',apMrecQueueSync);
+function apMrecMarkScrolling(){
+  apMrecScrollBlockedUntil=Date.now()+520;
+  if(Date.now()-apMrecLastHideAt>100){
+    apMrecLastHideAt=Date.now();
+    try{if(typeof Android!=='undefined'&&Android.updateMrecSlot)
+      Android.updateMrecSlot(0,0,0,0,window.innerWidth,false)}catch(e){}
+  }
+  if(apMrecScrollTimer)clearTimeout(apMrecScrollTimer);
+  apMrecScrollTimer=setTimeout(apMrecQueueSync,570);
+}
+window.addEventListener('scroll',apMrecMarkScrolling,{passive:true,capture:true});
+window.addEventListener('touchmove',apMrecMarkScrolling,{passive:true,capture:true});
+window.addEventListener('resize',apMrecMarkScrolling);
 document.addEventListener('visibilitychange',apMrecQueueSync);
 setTimeout(()=>{
   for(const id of ['modalRoot','lockRoot']){
