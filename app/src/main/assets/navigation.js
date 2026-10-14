@@ -50,8 +50,11 @@ function apNavAfterRender(){
     apNavInfo('Harita yükleniyor; internet bağlantısı gerekiyor.');
     element.innerHTML='<div class="apNavMapLoading">Harita altyapısı yükleniyor…</div>';
     apNav.loaderRetry=(apNav.loaderRetry||0)+1;
-    if(apNav.loaderRetry<25)setTimeout(function(){if(current==='navigation')apNavAfterRender();},600);
-    else apNavInfo('Harita yüklenemedi. İnternetini kontrol edip sayfadan çıkıp tekrar gir.');
+    if(apNav.loaderRetry<10)setTimeout(function(){if(current==='navigation')apNavAfterRender();},400);
+    else {
+      apNavInfo('Harita motoru başlatılamadı. Uygulamanın yeni test sürümünü kurmalısın.');
+      element.innerHTML='<div class="apNavMapLoading">Harita motoru yüklenemedi. Uygulamayı güncelle.</div>';
+    }
     return;
   }
   apNav.loaderRetry=0;
