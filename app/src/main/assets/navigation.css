@@ -1,0 +1,47 @@
+
+/* Aracım Pro Navi TEST — self-contained responsive navigation shell */
+body.apNavMode,body.apNavMode .app{background:#091423!important;}
+body.apNavMode .header,body.apNavMode .nav,body.apNavMode .fab{display:none!important}
+body.apNavMode main{margin:0!important;padding:0!important;max-width:none!important;width:100%!important;min-height:0!important;overflow:hidden!important}
+body.apNavMode .app{overflow:hidden!important;margin:0!important;min-height:0!important;height:100dvh!important;max-width:none!important}
+.apNavScreen{height:100dvh;max-height:100dvh;position:relative;background:#071525;color:#f5fbff;overflow:hidden;font-family:system-ui,-apple-system,Roboto,sans-serif}
+.apNavMap{position:absolute;inset:0;z-index:0;background:linear-gradient(145deg,#0b2035,#18344b);overflow:hidden}
+.apNavMapLoading{position:absolute;top:43%;left:8%;right:8%;text-align:center;color:#bed8ed;padding:16px;border:1px solid #2a5378;border-radius:16px;background:#0c2134}
+.apNavScreen .leaflet-control-attribution{font-size:9px!important;padding:1px 4px!important;opacity:.96;white-space:nowrap}
+.apNavScreen .leaflet-bottom.leaflet-right{bottom:260px}
+.apNavHeader{position:absolute;z-index:1100;top:12px;left:12px;right:12px;display:flex;align-items:center;gap:10px;pointer-events:auto}
+.apNavBack,.apNavLocate{width:44px;height:44px;flex:0 0 44px;border:1px solid #355879;border-radius:14px;background:linear-gradient(140deg,#0c2843,#071723);color:white;box-shadow:0 8px 19px rgba(0,0,0,.23);font-size:30px;display:grid;place-items:center}
+.apNavLocate{font-size:26px;color:#47d5ff}
+.apNavTitle{flex:1;min-width:0;padding:8px 12px;border:1px solid rgba(74,136,178,.5);border-radius:16px;background:rgba(5,20,35,.92);backdrop-filter:blur(10px);box-shadow:0 8px 20px rgba(0,0,0,.2)}
+.apNavTitle b{font-size:15px;letter-spacing:.7px;color:#fff;display:block}.apNavTitle em{font-style:normal;color:#32bbff}
+.apNavTitle span{display:block;font-size:9px;color:#9ebbd1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.apNavSearchWrap{position:absolute;z-index:1200;top:69px;left:12px;right:12px}
+.apNavSearchBar{display:flex;align-items:center;gap:6px;border-radius:17px;background:#fff;border:2px solid #d0edff;min-height:52px;box-shadow:0 9px 30px rgba(0,0,0,.25);padding:4px 5px 4px 12px}
+.apNavSearchIcon{font-size:27px;color:#1f76df;line-height:1}
+.apNavSearchBar input{min-width:0;flex:1;border:0!important;outline:0!important;background:#fff!important;color:#162a3e!important;font-size:14px!important;box-shadow:none!important;padding:4px!important;margin:0!important;line-height:1.3!important}
+.apNavSearchBar>button{border:0;border-radius:11px;background:linear-gradient(120deg,#1567df,#1496fa);color:white;font-weight:850;font-size:12px;padding:12px 14px;min-height:40px}
+.apNavResults{margin-top:5px;border-radius:16px;overflow-y:auto;max-height:190px;background:#fbfdff;box-shadow:0 10px 25px rgba(0,0,0,.3);color:#092238}
+.apNavResults[hidden]{display:none}
+.apNavResults button{width:100%;display:block;border:0;border-bottom:1px solid #d7e6f3;background:transparent;color:#17334c;text-align:left;padding:10px 14px;font-size:12px}
+.apNavResults button b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}.apNavResults button small{display:block;color:#668097;margin-top:3px;font-size:10px}
+.apNavControls{position:absolute;z-index:950;top:150px;right:12px;display:grid;gap:9px}
+.apNavControls button{min-height:43px;min-width:45px;padding:6px;background:rgba(5,22,38,.96);color:white;border:1px solid rgba(70,149,202,.7);border-radius:13px;box-shadow:0 4px 14px #05101b45;font-size:22px;font-weight:750;display:grid;place-items:center}
+.apNavControls button:first-child{font-size:21px;color:#4cdbff}.apNavControls button span{font-size:8px;font-weight:650}
+.apNavBottom{position:absolute;z-index:1050;left:10px;right:10px;bottom:8px;background:linear-gradient(160deg,rgba(7,30,52,.98),rgba(4,15,29,.98));border:1px solid rgba(62,142,209,.62);box-shadow:0 -6px 30px #06121e77;border-radius:23px;padding:12px 13px 11px;max-height:47dvh;overflow:auto;overscroll-behavior:contain}
+.apNavTopline{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.apNavTopline b{font-size:16px;color:#e9f8ff;line-height:1.25;min-width:0;max-height:41px;overflow:hidden}.apNavTopline span{flex:0 0 auto;border:1px solid #2c708f;background:#11374b;border-radius:14px;padding:7px 9px;font-size:11px;color:#5fe7ff;font-weight:750}
+.apNavMetrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:10px}
+.apNavMetrics>div{border:1px solid #244e6e;background:rgba(21,59,84,.55);padding:9px 5px;border-radius:14px;text-align:center}
+.apNavMetrics strong{display:block;font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap;color:#fff}.apNavMetrics small{font-size:9px;color:#9ec4db}
+.apNavInfo{font-size:10px;line-height:1.45;color:#b4d1e0;padding:9px 1px 7px;min-height:38px}
+.apNavBottomButtons{display:grid;grid-template-columns:minmax(0,1fr) 87px;gap:9px}
+.apNavBottomButtons button{min-height:47px;border-radius:15px;font-weight:900;font-size:12px;letter-spacing:.1px;border:1px solid #3b6691}
+.apNavStart{color:#fff;background:linear-gradient(115deg,#126ef5,#21a9fa);box-shadow:0 5px 15px rgba(32,127,226,.28)}
+.apNavStart:disabled{opacity:.45;box-shadow:none;background:#235070}
+.apNavStop{color:#e4f6ff;background:#17344e}
+.apNavDisclaimer{font-size:8px;color:#7ca9c0;line-height:1.35;margin-top:9px}
+.apNavPin{display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:22px;text-shadow:0 1px 3px #174061;box-shadow:0 0 0 5px #ffffff88,0 6px 12px #0005}
+.apNavPin.start{background:#0868fa;color:white;transform:rotate(-45deg);border:3px solid white}
+.apNavPin.end{background:#f33f55;color:white;border:3px solid white}
+@media (min-height:780px){.apNavScreen .leaflet-bottom.leaflet-right{bottom:290px}}
+@media (max-height:640px){.apNavHeader{top:5px}.apNavSearchWrap{top:58px}.apNavBottom{max-height:53dvh}.apNavControls{top:125px}.apNavDisclaimer{display:none}}
