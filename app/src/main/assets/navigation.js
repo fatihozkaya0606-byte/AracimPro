@@ -47,9 +47,14 @@ function apNavAfterRender(){
   if(!element)return;
   if(apNav.map && apNav.mapEl !== element){apNav.map.remove();apNav.map=null;apNav.meMarker=null;apNav.endMarker=null;apNav.line=null;}
   if(typeof L==='undefined'){
-    apNavInfo('Harita kütüphanesi yüklenemedi. İnternetini kontrol et; tekrar denemek için sayfadan çıkıp gir.');
-    element.innerHTML='<div class="apNavMapLoading">Harita bağlantısı kurulamadı. İnternet gerekli.</div>';return;
+    apNavInfo('Harita yükleniyor; internet bağlantısı gerekiyor.');
+    element.innerHTML='<div class="apNavMapLoading">Harita altyapısı yükleniyor…</div>';
+    apNav.loaderRetry=(apNav.loaderRetry||0)+1;
+    if(apNav.loaderRetry<25)setTimeout(function(){if(current==='navigation')apNavAfterRender();},600);
+    else apNavInfo('Harita yüklenemedi. İnternetini kontrol edip sayfadan çıkıp tekrar gir.');
+    return;
   }
+  apNav.loaderRetry=0;
   if(!apNav.map){
     element.innerHTML='';
     apNav.map=L.map(element,{zoomControl:false,preferCanvas:true,attributionControl:true});
@@ -259,7 +264,7 @@ window.apNavGps=function(payload){
     if(d<210&&idx!==apNav.lastSpoken){apNav.lastSpoken=idx;apNavSpeak((d>70?Math.round(d/10)*10+' metre sonra ':'')+apNavStepText(s));}
   }
   if(apNav.dest&&apNavHaversine(apNav.pos,apNav.dest)<38){
-    apNav.active=false;apNavSpeak('Hedefine ulaştın');apNavText('apNavInstruction','HEDEFE ULAŞTIN');apNavInfo('Güvenli şekilde park ederek navigasyonu sonlandırabilirsin.');
+    apNavSpeak('Hedefine ulaştın');apNav.active=false;apNavText('apNavInstruction','HEDEFE ULAŞTIN');apNavInfo('Güvenli şekilde park ederek navigasyonu sonlandırabilirsin.');
   }else if(Date.now()-apNav.lastReroute>90000&&apNavOffRoute()){
     apNav.lastReroute=Date.now();apNavLoadRoute(true);
   }
