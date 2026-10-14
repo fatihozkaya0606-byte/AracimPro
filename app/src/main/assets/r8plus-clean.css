@@ -5,7 +5,7 @@ body.r8HomeMode .ref791-hero{min-height:0!important;overflow:visible!important;b
 body.r8HomeMode .ref791-hero:before{display:none!important}
 .ap95Hero{border-radius:23px;border:1px solid #257bb8;background:linear-gradient(140deg,#061427,#10395c 73%,#03111e);overflow:hidden;position:relative;box-shadow:0 12px 29px #0007,0 0 20px #118ef42b;isolation:isolate;transform:perspective(1100px) rotateX(var(--aprx,0deg)) rotateY(var(--apry,0deg));transition:transform .35s ease,box-shadow .35s ease;animation:ap95Enter .6s both;will-change:transform}
 .ap95Hero:after{content:"";position:absolute;top:0;left:-75%;height:100%;width:50%;background:linear-gradient(95deg,transparent,#b6e7ff19,transparent);pointer-events:none;animation:ap95Shine 13s ease-in-out 1;z-index:4}
-@keyframes ap95Enter{from{opacity:.4;transform:translateY(9px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes ap95Enter{from{opacity:.4;translate:0 9px}to{opacity:1;translate:0 0}}
 @keyframes ap95Shine{0%,87%{left:-75%}100%{left:145%}}
 .ap95PhotoStage{width:100%;height:210px;position:relative;display:grid;place-items:center;background:radial-gradient(ellipse at 65% 75%,#14518280 0%,transparent 50%),linear-gradient(180deg,#0e2f52,#071c32)}
 .ap95PhotoStage:before{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#041121aa,transparent 52%);z-index:1;pointer-events:none}
