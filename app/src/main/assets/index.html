@@ -1978,12 +1978,32 @@ body.r8HomeMode .apLiveMini.clock em{font-style:normal;opacity:.45;margin:0 1px}
 .apCameraPreview{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#050b12}.apCameraPreview img{display:block;width:100%;max-height:360px;object-fit:contain}
 @media(max-width:390px){body.r8HomeMode .apBrandSub{max-width:155px;font-size:9.4px}body.r8HomeMode .apLiveMini.clock{font-size:6.3px}.ref791-copy h1{font-size:17px!important}.apSafetyQuick button{padding:9px;column-gap:7px}}
 </style>
+<style id="ap-home-route">
+/* First-class route entry on the home screen: no extra map API or location access. */
+body.r8HomeMode .apHomeRoute{box-sizing:border-box;margin:3px 2px 13px;padding:13px 14px 12px;border-radius:18px;background:linear-gradient(120deg,#0b263b,#071421);border:1px solid rgba(53,169,255,.40);box-shadow:0 6px 24px rgba(1,13,28,.16)}
+body.r8HomeMode .apHomeRoute *{box-sizing:border-box}
+body.r8HomeMode .apHomeRouteTitle{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+body.r8HomeMode .apHomeRouteTitle strong{font-size:16px;color:#f4faff}
+body.r8HomeMode .apHomeRouteTitle span{font-size:11px;color:#a9c2d6}
+body.r8HomeMode .apHomeRouteForm{display:flex;gap:8px;width:100%}
+body.r8HomeMode .apHomeRouteForm input{flex:1;min-width:0;height:44px;padding:0 12px;border-radius:12px;border:1px solid #264d69;background:#0b192b;color:#fff;font-size:14px;outline:none}
+body.r8HomeMode .apHomeRouteForm input::placeholder{color:#93a9ba;opacity:1}
+body.r8HomeMode .apHomeRouteForm input:focus{border-color:#4eb8ff;box-shadow:0 0 0 2px rgba(78,184,255,.18)}
+body.r8HomeMode .apHomeRouteForm button{flex:0 0 auto;min-width:102px;min-height:44px;border:0;border-radius:12px;background:#1684f7;color:#fff;font-size:13px;font-weight:800}
+body.r8HomeMode .apHomeRouteNote{display:block;margin-top:8px;color:#93a9bd;font-size:10px;line-height:1.4}
+body.r8HomeMode:not(.dark) .apHomeRoute{background:#e6f3ff;border-color:#96c9f3;box-shadow:0 4px 16px rgba(52,105,160,.10)}
+body.r8HomeMode:not(.dark) .apHomeRouteTitle strong{color:#123454}
+body.r8HomeMode:not(.dark) .apHomeRouteTitle span,body.r8HomeMode:not(.dark) .apHomeRouteNote{color:#456984}
+body.r8HomeMode:not(.dark) .apHomeRouteForm input{background:#fff;border-color:#9ec6ea;color:#102438}
+body.r8HomeMode:not(.dark) .apHomeRouteForm input::placeholder{color:#54718c}
+@media(max-width:360px){body.r8HomeMode .apHomeRouteForm button{min-width:84px;font-size:12px}body.r8HomeMode .apHomeRoute{padding:11px}}
+</style>
 </head>
 <body>
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
 <script>
 const KEY='aracim_pro_v1';
-const V='7.11.10';
+const V='7.11.11';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.NumberFormat(apLocale(),{style:'currency',currency:apCurrency(),maximumFractionDigits:2}).format(Number(n)||0);const num=n=>(Number(n)||0).toLocaleString(apLocale());
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -3011,7 +3031,28 @@ window.appBack=function(){
   }
   return false;
 }
-function render(){document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);setTimeout(startTickerMotion7105,420);setTimeout(showWhatsNewOnce,850);if(current==='home'){setTimeout(loadHomeWeather,350)}}
+function homeRouteEntryHtml(){
+  return `<section class="apHomeRoute" aria-label="Rota planlama">
+    <div class="apHomeRouteTitle"><strong>🧭 Rota</strong><span>Şu anki konumundan yol tarifi al</span></div>
+    <form class="apHomeRouteForm" onsubmit="startHomeRoute(event)">
+      <input name="destination" type="search" autocomplete="off" maxlength="160" required
+        aria-label="Varış noktası" placeholder="Nereye gideceksin?">
+      <button type="submit">Rota çiz →</button>
+    </form>
+    <span class="apHomeRouteNote">Google Haritalar'da açılır • Ücretsiz, ek API anahtarı gerekmez</span>
+  </section>`;
+}
+function startHomeRoute(e){
+  e.preventDefault();
+  const dest=String(new FormData(e.target).get('destination')||'').trim();
+  if(dest.length<2){toast('Lütfen gideceğin yeri yaz');return}
+  // Maps URLs are an external handoff, not an in-app navigation engine.
+  // Without an explicit origin, Google Maps uses the user's current location.
+  const url='https://www.google.com/maps/dir/?api=1&destination='+
+    encodeURIComponent(dest)+'&travelmode=driving&dir_action=navigate';
+  openOfficialUrl(url);
+}
+function render(){document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${current==='home'?homeRouteEntryHtml():''}${view()}</main>`+nav()+fab();setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);setTimeout(startTickerMotion7105,420);setTimeout(showWhatsNewOnce,850);if(current==='home'){setTimeout(loadHomeWeather,350)}}
 function view(){if(!activeVehicle()&&current!=='garage'&&current!=='more')return welcome();return ({home:homeView,garage:garageView,records:recordsView,plan:planView,reports:reportsView,more:moreView}[current]||homeView)()}
 
 function dailyQuickHtml(){
