@@ -175,6 +175,7 @@ public class MainActivity extends Activity {
     private AdView mrecAdView;
     private boolean mrecAdLoaded = false;
     private boolean mrecSlotVisible = false;
+    private long mrecScrollHoldUntil = 0L;
     private boolean admobBannerLoaded = false;
     private boolean admobSdkInitialized = false;
     private boolean admobConsentRequested = false;
@@ -239,6 +240,16 @@ public class MainActivity extends Activity {
         root.setBackgroundColor(0xFFF4F8FF);
         webView = new WebView(this);
         webView.setBackgroundColor(0xFFF4F8FF);
+        // A native AdView sits above WebView. Hide it synchronously while the
+        // document scrolls so an outdated rectangle never covers dashboard UI.
+        webView.setOnScrollChangeListener((v, sx, sy, oldX, oldY) -> {
+            if (sy == oldY && sx == oldX) return;
+            mrecScrollHoldUntil = android.os.SystemClock.elapsedRealtime() + 550L;
+            mrecSlotVisible = false;
+            updateMrecVisibility();
+            webView.removeCallbacks(mrecAfterScroll);
+            webView.postDelayed(mrecAfterScroll, 620L);
+        });
         root.addView(webView, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         setContentView(root);
@@ -1230,28 +1241,65 @@ private void showLaunchSplash() {
                 (available ? "true" : "false") + ")", null);
     }
 
+    private final Runnable mrecAfterScroll = () -> {
+        if (webView == null || isFinishing() || isDestroyed()) return;
+        if (android.os.SystemClock.elapsedRealtime() < mrecScrollHoldUntil) {
+            webView.postDelayed(mrecAfterScroll, 180L);
+            return;
+        }
+        // Ask the page to remeasure the actual visible slot before revealing.
+        webView.evaluateJavascript(
+                "window.apMrecQueueSync && window.apMrecQueueSync()", null);
+    };
+
     private void updateMrecVisibility() {
         if (mrecAdView == null) return;
         boolean show = mrecSlotVisible && mrecAdLoaded && canRequestAdMobAds()
+                && android.os.SystemClock.elapsedRealtime() >= mrecScrollHoldUntil
                 && apPremiumSplashHidden && !isFinishing() && !isDestroyed();
         mrecAdView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
     }
 
     private void updateMrecSlotNative(double leftCss, double topCss,
-                                      double widthCss, double heightCss, boolean visible) {
-        if (webView == null || root == null) return;
-        // A hidden or scrolled-away slot must never leave an ad floating over UI.
-        double viewportCss = webView.getHeight() / getResources().getDisplayMetrics().density;
+                                      double widthCss, double heightCss,
+                                      double viewportCssWidth, boolean visible) {
+        if (webView == null || root == null || webView.getWidth() <= 0) return;
+        // CSS viewport coordinates -> actual native view coordinates.
+        // Density alone isn't reliable if WebView/text zoom or display scaling changes.
+        double pxPerCss = webView.getWidth() / viewportCssWidth;
+        double viewportHeightCss = webView.getHeight() / pxPerCss;
+        int navGuardPx = (int) dp(86);
         boolean valid = visible && Double.isFinite(leftCss) && Double.isFinite(topCss)
                 && Double.isFinite(widthCss) && Double.isFinite(heightCss)
+                && Double.isFinite(viewportCssWidth)
+                && viewportCssWidth >= 320 && pxPerCss > 0
                 && widthCss >= 299 && heightCss >= 249
-                && leftCss >= -1 && topCss >= 0 && topCss + heightCss <= viewportCss + 1;
+                && leftCss >= 0 && leftCss + widthCss <= viewportCssWidth + 2
+                // Prevent covering the header, sticky tabs, dialogs or bottom nav.
+                && topCss >= 170 && topCss + heightCss < viewportHeightCss - 86
+                && android.os.SystemClock.elapsedRealtime() >= mrecScrollHoldUntil;
         mrecSlotVisible = valid;
         if (valid && mrecAdView != null) {
-            FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams)mrecAdView.getLayoutParams();
-            lp.leftMargin = webView.getLeft() + Math.round(dp((float)(leftCss + (widthCss - 300) / 2)));
-            lp.topMargin = webView.getTop() + Math.round(dp((float)(topCss + (heightCss - 250) / 2)));
-            mrecAdView.setLayoutParams(lp);
+            int nativeWidth = (int) dp(300), nativeHeight = (int) dp(250);
+            int nativeLeft = webView.getLeft() + (int) Math.round(
+                    (leftCss + (widthCss - 300) / 2) * pxPerCss);
+            int nativeTop = webView.getTop() + (int) Math.round(
+                    (topCss + (heightCss - 250) / 2) * pxPerCss);
+            if (nativeLeft < webView.getLeft() ||
+                nativeLeft + nativeWidth > webView.getRight() + 2 ||
+                nativeTop < webView.getTop() ||
+                nativeTop + nativeHeight > webView.getBottom() - navGuardPx) {
+                mrecSlotVisible = false;
+            } else {
+                FrameLayout.LayoutParams lp =
+                        (FrameLayout.LayoutParams) mrecAdView.getLayoutParams();
+                if (lp != null &&
+                        (lp.leftMargin != nativeLeft || lp.topMargin != nativeTop)) {
+                    lp.leftMargin = nativeLeft;
+                    lp.topMargin = nativeTop;
+                    mrecAdView.setLayoutParams(lp);
+                }
+            }
         }
         updateMrecVisibility();
     }
@@ -1336,6 +1384,8 @@ private void showLaunchSplash() {
     }
 
     @Override protected void onPause() {
+        mrecSlotVisible = false;
+        updateMrecVisibility();
         super.onPause();
         appWasBackgrounded = true;
     }
@@ -1349,6 +1399,11 @@ private void showLaunchSplash() {
             mainHandler.postDelayed(this::resumePendingLocationAction, 300L);
         }
         if (premiumBillingReady) refreshPremiumPurchases();
+        if (webView != null) {
+            mrecSlotVisible = false;
+            webView.postDelayed(() -> webView.evaluateJavascript(
+                "window.apMrecQueueSync && window.apMrecQueueSync()", null), 500);
+        }
         appWasBackgrounded = false;
     }
 
@@ -1570,8 +1625,10 @@ private void showLaunchSplash() {
         }
 
         @JavascriptInterface public void updateMrecSlot(double left, double top,
-                                                         double width, double height, boolean visible) {
-            runOnUiThread(() -> updateMrecSlotNative(left, top, width, height, visible));
+                                                         double width, double height,
+                                                         double viewportWidth, boolean visible) {
+            runOnUiThread(() -> updateMrecSlotNative(
+                    left, top, width, height, viewportWidth, visible));
         }
 
         @JavascriptInterface public boolean showOneInterstitialBeforeNavigation(String target) {
@@ -3840,6 +3897,7 @@ private void showLaunchSplash() {
         }
         uiTranslators.clear();
         if(bannerAdView!=null){try{bannerAdView.destroy();}catch(Throwable ignored){} bannerAdView=null;}
+        if (webView != null) webView.removeCallbacks(mrecAfterScroll);
         if(mrecAdView!=null){try{mrecAdView.destroy();}catch(Throwable ignored){} mrecAdView=null;}
         stopSpeedTrackingNative();
         try { if (locationManager != null && nearbyLocationListener != null) locationManager.removeUpdates(nearbyLocationListener); } catch (Throwable ignored) {}
