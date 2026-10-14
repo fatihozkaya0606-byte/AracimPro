@@ -77,14 +77,20 @@
     }
     return [...new Set([q.trim(),...out])].slice(0,7);
   }
+  window.ap94Suggestions=[];
+  window.ap94ChooseSuggestion=function(i){
+    const selected=window.ap94Suggestions?.[i];
+    if(selected)ap94FindAddress(selected);
+  };
   window.ap94Suggest=function(q){
     const box=apNavEl('apNavResults');if(!box)return;
     if(!q || q.trim().length<2){box.hidden=true;return;}
     const options=buildSuggestions(q);
     if(!options.length){box.hidden=true;return;}
+    window.ap94Suggestions=options;
     box.hidden=false;
     box.innerHTML='<div class="ap94ResultsLabel">Yer önerileri — seçince gerçek haritada aranır</div>'+
-      options.map(a=>'<button type="button" onclick="ap94FindAddress(\''+apNavEsc(a).replaceAll('&#39;','\\&#39;')+'\')"><b>⌕ '+apNavEsc(a)+'</b></button>').join('');
+      options.map((a,i)=>'<button type="button" onclick="ap94ChooseSuggestion('+i+')"><b>⌕ '+apNavEsc(a)+'</b></button>').join('');
   };
   window.ap94FindAddress=function(q){
     const el=apNavEl('apNavSearch');if(!el)return;
@@ -119,8 +125,9 @@
       const q=apNavEl('apNavSearch')?.value||'';
       const options=buildSuggestions(q).filter(v=>norm(v)!==norm(q));
       box.hidden=false;
+      window.ap94Suggestions=options;
       box.innerHTML='<div class="ap94ResultsLabel">Adres bulunamadı. Daha ayrıntılı bir yer seç:</div>'+
-        options.map(v=>'<button type="button" onclick="ap94FindAddress(\''+apNavEsc(v).replaceAll('&#39;','\\&#39;')+'\')"><b>⌕ '+apNavEsc(v)+'</b></button>').join('')+
+        options.map((v,i)=>'<button type="button" onclick="ap94ChooseSuggestion('+i+')"><b>⌕ '+apNavEsc(v)+'</b></button>').join('')+
         '<div class="ap94ResultsLabel">Alternatif: haritada hedefin üzerine dokun.</div>';
     }else{
       box.hidden=false;
