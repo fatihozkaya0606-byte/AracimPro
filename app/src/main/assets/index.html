@@ -1978,12 +1978,15 @@ body.r8HomeMode .apLiveMini.clock em{font-style:normal;opacity:.45;margin:0 1px}
 .apCameraPreview{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#050b12}.apCameraPreview img{display:block;width:100%;max-height:360px;object-fit:contain}
 @media(max-width:390px){body.r8HomeMode .apBrandSub{max-width:155px;font-size:9.4px}body.r8HomeMode .apLiveMini.clock{font-size:6.3px}.ref791-copy h1{font-size:17px!important}.apSafetyQuick button{padding:9px;column-gap:7px}}
 </style>
+<link rel="stylesheet" href="nav-leaflet.css" />
+<link rel="stylesheet" href="navigation.css" />
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 </head>
 <body>
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
 <script>
 const KEY='aracim_pro_v1';
-const V='7.11.15';
+const V='7.12.0 NAV TEST';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.NumberFormat(apLocale(),{style:'currency',currency:apCurrency(),maximumFractionDigits:2}).format(Number(n)||0);const num=n=>(Number(n)||0).toLocaleString(apLocale());
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -2957,6 +2960,7 @@ function header(){
     ${marketTickerStripHtml()}
 
     <div class="apUtilityRow">
+      <button class="apUtilityPill" onclick="go('navigation')">🧭 <span>Navigasyon</span></button>
       <button class="apUtilityPill" onclick="languageModal()">${country}<span>${countryName()}</span></button>
       <button class="apUtilityPill vehicle" onclick="${v?"go('garage')":"openVehicle()"}">
         ${ico('car')}<span>${esc(vehicleName)}</span>
@@ -2977,6 +2981,7 @@ let bottomNavTransitions = 0;
 window.finishOneInterstitialNavigation = function(target) { go(target,false); };
 function go(k,fromBottomNav=false){
   if(!k||k===current){closeModal();return}
+  if(current==='navigation'&&k!=='navigation'&&window.apNavOnExit)window.apNavOnExit();
   if(fromBottomNav) {
     bottomNavTransitions++;
     if(bottomNavTransitions >= 2) {
@@ -3023,8 +3028,8 @@ window.appBack=function(){
   }
   return false;
 }
-function render(){document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);setTimeout(startTickerMotion7105,420);setTimeout(showWhatsNewOnce,850);if(current==='home'){setTimeout(loadHomeWeather,350)}}
-function view(){if(!activeVehicle()&&current!=='garage'&&current!=='more')return welcome();return ({home:homeView,garage:garageView,records:recordsView,plan:planView,reports:reportsView,more:moreView}[current]||homeView)()}
+function render(){document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');document.body.classList.toggle('apNavMode',current==='navigation');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();if(current==='navigation')setTimeout(()=>{if(window.apNavAfterRender)window.apNavAfterRender()},90);setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);setTimeout(startTickerMotion7105,420);setTimeout(showWhatsNewOnce,850);if(current==='home'){setTimeout(loadHomeWeather,350)}}
+function view(){if(current==='navigation')return window.apNavView?window.apNavView():'<div>Navigasyon hazırlanıyor…</div>';if(!activeVehicle()&&current!=='garage'&&current!=='more')return welcome();return ({home:homeView,garage:garageView,records:recordsView,plan:planView,reports:reportsView,more:moreView}[current]||homeView)()}
 
 function dailyQuickHtml(){
   return `<div class="dailyQuickTitle"><b>📍 Günlük Kısayollar</b><small>Yakınındaki temel yerler</small></div>
@@ -3045,6 +3050,7 @@ function welcome(){return `<div class="welcome7104">
     <p class="muted">Aracını eklediğinde bakım, kayıt, rapor ve araç özellikleri açılır.</p>
     <button class="primary" onclick="openVehicle()">Aracımı Ekle</button>
   </div>
+  <button onclick="go('navigation')" class="apNavHeroLaunch"><span>🧭</span><span><b>NAVİGASYON PRO</b><small>Rota oluştur • GPS • Sesli yönlendirme</small></span><strong>BAŞLA →</strong></button>
   ${dailyQuickHtml()}
 </div>`}
 
@@ -3176,7 +3182,7 @@ if(fuels.length>1){const dist=(+fuels.at(-1).km||0)-(+fuels[0].km||0),lit=fuels.
 const fuelSpent=sum(fuels),tireCount=vf(state.tires||[]).length,d1=due[0],d2=due[1];
 const hero=v.photo?`<img class="ref791-car" src="${v.photo}" alt="${esc(v.make+' '+v.model)}">`:`<div class="ref791-noimg">🚗 Araç fotoğrafı hazırlanıyor…</div>`;
 return `<div class="ref791">
-
+<button onclick="go('navigation')" class="apNavHeroLaunch"><span>🧭</span><span><b>NAVİGASYON PRO</b><small>Uygulama içinde harita, rota ve sesli yol tarifi</small></span><strong>BAŞLA →</strong></button>
 <section class="ref791-hero">
   ${hero}
   <div class="ref791-copy">
@@ -4755,9 +4761,10 @@ function showLock(){if(!state.prefs.lockEnabled)return;document.getElementById('
 function biometric(){try{Android.authenticateBiometric()}catch(e){toast('Biyometri kullanılamıyor')}}window.onBiometricResult=(ok,msg)=>{if(ok)document.getElementById('lockRoot').innerHTML='';else if(msg&&msg!=='PIN')toast(msg)};window.appShouldLock=()=>showLock();
 function updateWidget(){const v=activeVehicle(),u=upcoming()[0];if(!v)return;try{Android.updateWidget(`${v.year||''} ${v.make} ${v.model}`.trim(),`${num(v.km)} km • ${v.plate||'Plakasız'}`,u?`${u.name}${u.dueKm?' • '+num(Math.max(0,u.km))+' km':''}${u.dueDate?' • '+Math.max(0,u.days)+' gün':''}`:'Yaklaşan işlem yok')}catch(e){}}
 function toast(t){try{Android.toast(t)}catch(e){console.log(t)}}function resetApp(){if(confirm('Tüm kayıtlar kalıcı olarak silinsin mi?')){state=structuredClone(initial);localStorage.removeItem(KEY);closeModal();save()}}
-window.appBack=()=>{if(document.getElementById('lockRoot').innerHTML)return;if(document.getElementById('modalRoot').innerHTML){closeModal();return}if(current!=='home'){go('home');return}try{Android.toast('Çıkmak için ana ekran tuşunu kullan')}catch(e){}}
+window.appBack=()=>{if(document.getElementById('lockRoot').innerHTML)return;if(current==='navigation'){go('home');return;}if(document.getElementById('modalRoot').innerHTML){closeModal();return}if(current!=='home'){go('home');return}try{Android.toast('Çıkmak için ana ekran tuşunu kullan')}catch(e){}}
 document.addEventListener('focusin',e=>{if(!e.target.matches('input,select,textarea'))return;setTimeout(()=>{try{e.target.scrollIntoView({block:'center',behavior:'smooth'})}catch(_){}},350)});
 syncCommunityStatus();try{state.prefs.fuelAlertsEnabled=false;Android.configureFuelAlerts(false,'','')}catch(e){}applyTheme();render();setTimeout(()=>{runKmAlerts();updateWidget();const age=Date.now()-(+state.fuelMarket?.updatedAt||0);/* Otomatik akaryakit zam kontrolu kapatildi - kullanici istegiyle acilir */if(!state.prefs.photoFixV11){state.prefs.photoFixV11=true;localStorage.setItem(KEY,JSON.stringify(state));const v=activeVehicle();if(v&&v.make&&v.model&&v.photoLicense!=='Kullanıcı fotoğrafı'){window._imageSearchMode='auto:'+v.id;try{Android.searchVehicleImagesExact(v.make,v.model,+v.year||0,v.engine||'')}catch(e){}}}if(!state.prefs.specQuotaFixV153){state.prefs.specQuotaFixV153=true;localStorage.setItem(KEY,JSON.stringify(state))}const _av=activeVehicle();if(_av&&needsSpecRefresh(_av)&&!_av.specError)setTimeout(()=>queueSpecVehicle(_av,false,false),800);if(state.prefs.lockEnabled)showLock()},250);
 </script>
+<script src="navigation.js"></script>
 </body>
 </html>
