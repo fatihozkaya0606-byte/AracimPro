@@ -173,6 +173,7 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     private AdView bannerAdView;
+    private boolean navigationMode = false;
     private AdView mrecAdView;
     private boolean mrecAdLoaded = false;
     private boolean mrecSlotVisible = false;
@@ -1119,7 +1120,7 @@ private void showLaunchSplash() {
 
     private void updateAdMobBannerVisibility() {
         if (bannerAdView == null || webView == null) return;
-        boolean visible = admobBannerLoaded && canRequestAdMobAds() && apPremiumSplashHidden;
+        boolean visible = admobBannerLoaded && canRequestAdMobAds() && apPremiumSplashHidden && !navigationMode;
         bannerAdView.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
         int height = visible ? dp(50) : 0;
         if (bannerHeightPx != height) {
@@ -2148,6 +2149,14 @@ private void showLaunchSplash() {
 
         @JavascriptInterface public void fetchRoadStatus(String city, String district) {
             fetchRoadStatusNative(city, district);
+        }
+
+        @JavascriptInterface public void setNavigationMode(boolean enabled) {
+            runOnUiThread(() -> {
+                if (navigationMode == enabled) return;
+                navigationMode = enabled;
+                updateAdMobBannerVisibility();
+            });
         }
 
         @JavascriptInterface public void navStartTracking() {
