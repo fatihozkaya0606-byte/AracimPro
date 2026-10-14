@@ -1,0 +1,84 @@
+
+/* v94: no top financial ticker, no overlap, no blurry pixel filters. */
+body.r8HomeMode .ap94HomeHeader{position:relative!important;top:auto!important;padding:9px 14px!important;border-bottom:1px solid #15456b;background:#05172b!important;box-shadow:none!important}
+body.r8HomeMode .ap94HomeHeader .ap93Head{min-height:47px}
+body.r8HomeMode .ap94HomeHeader + main{padding-top:0!important}
+body.r8HomeMode .ap93{padding-top:12px!important}
+body.r8HomeMode .ap94HeroEmpty{min-height:153px!important}
+body.r8HomeMode .ap94HeroEmpty .ap93HeroText{padding-top:13px!important;padding-bottom:10px!important;width:100%!important}
+body.r8HomeMode .ap94HeroEmpty .ap93HeroText h1{font-size:19px!important}
+body.r8HomeMode .ap94HeroEmpty .ap93Ghost{padding-top:3px!important}
+body.r8HomeMode .ap93Hero:not(.ap94HeroEmpty){min-height:188px!important}
+body.r8HomeMode .ap93HeroPhoto{object-fit:cover!important;filter:none!important;image-rendering:auto!important}
+body.r8HomeMode .ap93Health{min-height:108px!important}
+body.r8HomeMode .ap93Route{min-height:96px!important}
+body.r8HomeMode .app{padding-bottom:78px!important}
+/* Screen uses full available WebView; native bottom banner is suppressed only on this page. */
+body.apNavMode{background:#061320!important;color:#edf9ff!important}
+body.apNavMode .app{padding:0!important;margin:0!important;height:100dvh!important;min-height:100dvh!important;overflow:hidden!important}
+body.apNavMode main{padding:0!important;margin:0!important;max-width:100%!important;height:100dvh!important;min-height:100dvh!important;overflow:hidden!important}
+body.apNavMode .header,body.apNavMode .nav,body.apNavMode .fab{display:none!important}
+body.apNavMode .ap94NavScreen{position:relative!important;height:100dvh!important;width:100%!important;max-width:100%!important;overflow:hidden!important;background:#082037!important;color:#f1faff;font-family:system-ui,Roboto,Arial,sans-serif}
+body.apNavMode .apNavMap{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;z-index:0!important;filter:none!important;transform:none!important;background:#0d2435!important}
+body.apNavMode .apNavMap .leaflet-tile-pane,body.apNavMode .apNavMap .leaflet-tile-container,body.apNavMode .apNavMap .leaflet-tile{filter:none!important;image-rendering:auto!important;opacity:1!important}
+body.apNavMode .apNavMap .leaflet-control-attribution{background:#081b2bd8!important;font-size:8px!important;color:#d2ecff!important}
+body.apNavMode .apNavMap .leaflet-control-attribution a{color:#71bfff!important}
+body.apNavMode .leaflet-bottom.leaflet-right{bottom:160px!important}
+body.apNavMode .leaflet-top.leaflet-left{top:115px!important}
+.ap94OverlayHeader{position:absolute;top:8px;left:10px;right:10px;z-index:1100;display:flex;align-items:center;gap:8px;height:42px;pointer-events:auto}
+.ap94Back,.ap94TopLocate{flex:0 0 42px;display:grid;place-items:center;border-radius:13px;height:42px;border:1px solid #297caf;background:#071e34ed;color:#f2fcff;box-shadow:0 3px 12px #0006}
+.ap94Back{font-size:29px;line-height:1}.ap94TopLocate{font-size:29px}
+.ap94Brand{flex:1;display:flex;align-items:center;gap:4px;font-size:18px;font-weight:850;background:#061c31ed;border:1px solid #3474a3;border-radius:14px;height:42px;padding:0 11px;text-shadow:0 1px 4px #001}
+.ap94Brand b{color:#3fc5ff}
+body.apNavMode .ap94SearchWrap{position:absolute!important;top:56px!important;left:10px!important;right:10px!important;z-index:1300!important;max-width:none!important}
+body.apNavMode .ap94SearchWrap .apNavSearchBar{height:49px;min-height:49px!important;border-radius:16px!important;background:#071e35f2!important;border:1px solid #249ded!important;padding:3px 4px 3px 10px!important;box-shadow:0 3px 12px #0018!important;gap:5px}
+body.apNavMode .ap94SearchWrap .apNavSearchIcon{font-size:24px!important;color:#5acaff!important}
+body.apNavMode .ap94SearchWrap input{height:40px!important;min-width:0;flex:1;background:transparent!important;color:#fff!important;border:0!important;font-size:15px!important;padding:3px!important}
+body.apNavMode .ap94SearchWrap input::placeholder{color:#bad3ea!important}
+body.apNavMode .ap94SearchWrap .apNavSearchBar>button{font-size:12px!important;background:#047bdd!important;border:1px solid #2dd1ff!important;border-radius:11px!important;min-width:61px!important;min-height:39px!important;padding:5px 10px!important}
+body.apNavMode .ap94SearchWrap .apNavSearchBar>button:disabled{opacity:.55}
+body.apNavMode .ap94SearchResults{max-height:min(43dvh,310px)!important;border-radius:14px!important;background:#0c2944f7!important;color:#ebf8ff!important;border:1px solid #2993d7!important;overflow:auto!important;box-shadow:0 12px 20px #0009!important}
+body.apNavMode .ap94SearchResults[hidden]{display:none!important}
+body.apNavMode .ap94SearchResults button{display:block!important;width:100%!important;border:0!important;border-bottom:1px solid #244c6e!important;color:#edf8ff!important;background:transparent!important;text-align:left!important;padding:11px 12px!important}
+body.apNavMode .ap94SearchResults button b{font-size:13px!important;white-space:normal!important}
+body.apNavMode .ap94SearchResults button small{display:block;font-size:10px!important;color:#b5d2e8!important}
+.ap94ResultsLabel,.ap94Loading{padding:9px 12px;color:#acd1eb;font-size:11px;line-height:1.4}
+body.apNavMode .ap94Routes{position:absolute!important;top:113px!important;left:9px!important;right:9px!important;z-index:1050!important;display:none!important;gap:6px!important;overflow-x:auto!important;padding:0 1px 5px!important}
+body.apNavMode .ap94Routes.visible{display:flex!important}
+body.apNavMode .ap94Routes button{max-width:160px!important;min-width:110px!important;border:1px solid #298fcb!important;box-shadow:0 4px 10px #0008!important;padding:7px 9px!important;line-height:1.4!important;font-size:12px!important;background:#08263ff5!important}
+body.apNavMode .ap94Routes button.selected{background:#0565bbf5!important;color:white!important;border-color:#03b8ff!important}
+body.apNavMode .ap94MapControls{position:absolute!important;z-index:950!important;top:auto!important;right:10px!important;bottom:245px!important;gap:7px!important}
+body.apNavMode .ap94MapControls button{border:1px solid #2f82bb!important;border-radius:13px!important;background:#081d34ea!important;color:#fff!important;min-width:42px!important;min-height:43px!important;height:43px!important;box-shadow:0 2px 14px #0005!important}
+body.apNavMode .ap94Voice{position:absolute;z-index:975;left:12px;bottom:245px;border:1px solid #4aabe6;border-radius:50%;width:43px;height:43px;background:#092542e7;color:white;font-size:19px;display:grid;place-items:center;box-shadow:0 3px 13px #0005}
+body.apNavMode .ap94Sheet{position:absolute;z-index:1200;bottom:7px;left:8px;right:8px;padding:5px 12px 11px;background:linear-gradient(145deg,#071d34f9,#041526fa);border:1px solid #378ac1;border-radius:21px;box-shadow:0 -5px 20px #0009;max-height:calc(100dvh - 145px);overflow:hidden;display:flex;flex-direction:column;gap:5px;backdrop-filter:none}
+.ap94Grab{height:10px;flex:0 0 10px;display:flex;align-items:center;justify-content:center;cursor:pointer;touch-action:manipulation}
+.ap94Grab span{height:3px;width:34px;border-radius:5px;background:#5386ad}
+.ap94Summary{display:flex;align-items:center;gap:9px;min-height:40px}
+.ap94TurnIcon{flex:0 0 36px;height:36px;display:grid;place-items:center;background:linear-gradient(135deg,#0c64b7,#03aeef);border:1px solid #51cbff;border-radius:12px;font-size:21px;transform:rotate(-20deg)}
+.ap94Direction{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ap94Direction strong{font-size:15px;line-height:1.18;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ap94Direction small{font-size:11px;line-height:1.32;color:#a9cbdf;max-height:28px;overflow:hidden}
+.ap94Speed{flex:0 0 auto;padding:7px 8px;border:1px solid #2e8bb9;background:#0e3a55;border-radius:14px;color:#65ddff;font-size:10px;font-weight:750}
+.ap94TripMetrics{display:none;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:6px;color:#b5d2e9;font-size:10px;border-top:1px solid #1c4265;padding-top:6px;overflow:hidden}
+.ap94TripMetrics b{font-size:11px;color:#fff;font-weight:900}
+.ap94Sheet.ready .ap94TripMetrics{display:flex}
+.ap94Actions{display:flex;align-items:center;gap:8px;margin-top:2px}
+.ap94Actions .apNavStart{flex:1;min-height:40px;font-size:12px!important;font-weight:850!important;border-radius:12px!important;border:1px solid #38a6eb!important;color:#fff!important;background:linear-gradient(100deg,#086fd4,#08a8ef)!important;box-shadow:none!important}
+.ap94Actions .apNavStart:disabled{background:#1b3e5b!important;border-color:#386287!important;color:#b1ccdf!important}
+.ap94DetailsButton{flex:0 0 auto;border:1px solid #32668b;color:#e1f3ff;background:#143751;border-radius:12px;padding:0 12px;height:40px;font-size:11px;font-weight:800}
+.ap94DetailsButton span{color:#6ad9ff}
+.ap94Expanded{display:block;overflow:auto;max-height:min(37dvh,310px);margin-top:3px;border-top:1px solid #28516d}
+.ap94Expanded[hidden]{display:none!important}
+.ap94Caution{font-size:10px;line-height:1.45;color:#fadca1;padding:7px 0}
+.ap94Expanded .ap93NavDetails{max-height:none!important;overflow:visible!important;border:0!important;padding:0!important;margin:0!important}
+.ap94Expanded .ap93NavDetails>div{font-size:12px;padding:7px 0!important}
+.ap94Clear{padding:9px;margin:9px 0 3px;background:#1e374e;border:1px solid #497a9b;border-radius:10px;color:#fff;font-size:11px}
+.ap94Credit{font-size:9px;color:#a6c8e3;line-height:1.35;margin:6px 0}
+body.apNavMode .apNavScreen .leaflet-container{font-family:system-ui,Roboto,Arial,sans-serif!important}
+@media(max-height:610px){
+ .ap94TripMetrics{display:none!important}
+ body.apNavMode .ap94MapControls{bottom:185px!important}
+ body.apNavMode .ap94Voice{bottom:185px!important}
+ body.apNavMode .ap94Sheet{padding-bottom:7px!important}
+ .ap94Expanded{max-height:22dvh!important}
+}
