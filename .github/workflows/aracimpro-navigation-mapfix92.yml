@@ -1,0 +1,105 @@
+name: AracimPro Navigation Professional MAP FIX TEST APK 92
+on:
+  push:
+    branches: [aracimpro-navi-mapfix-92]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-navi-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Install SDK and NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" "ndk;27.2.12479018"
+      - name: Validate navigation and isolated test package
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          gradle=Path('app/build.gradle').read_text()
+          html=Path('app/src/main/assets/index.html').read_text()
+          java=Path('app/src/main/java/com/aracimpro/app/MainActivity.java').read_text()
+          nav=Path('app/src/main/assets/navigation.js').read_text()
+          assert "versionCode 92" in gradle
+          assert "versionName '7.12.1'" in gradle
+          assert "applicationIdSuffix '.navtest'" in gradle
+          assert "Aracım Pro Navi TEST" in gradle
+          assert 'navigation.js' in html and 'navigation.css' in html
+          assert "go('navigation')" in html
+          assert 'apNavGps' in nav and 'navSearchPlaces' in nav
+          assert 'router.project-osrm.org' in nav
+          assert 'window.apNavAfterRender' in html
+          assert 'startNavLocationNative' in java
+          assert 'TextToSpeech' in java
+          assert 'navStopTracking' in java
+          assert "ADMOB_TEST_MODE', 'false'" in gradle
+          assert 'nav-leaflet.css' in html
+          assert '<script src="nav-leaflet.js"></script>' in html
+          assert 'cdnjs.cloudflare.com/ajax/libs/leaflet' not in html
+          print('PASS: isolated Navigation TEST + GPS + Turkish TTS + route search')
+          PY
+      - name: Restore debug signing key
+        env:
+          PLAY_UPLOAD_KEYSTORE_B64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_B64 }}
+          STORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+        run: |
+          test -n "$PLAY_UPLOAD_KEYSTORE_B64" || (echo "Missing keystore" >&2; exit 1)
+          echo "$PLAY_UPLOAD_KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/upload-key.jks"
+          cat > keystore.properties <<EOF
+          storeFile=$RUNNER_TEMP/upload-key.jks
+          storePassword=$STORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
+      - name: Download Leaflet 1.9.4 into APK assets (no runtime CDN dependency)
+        run: |
+          set -euo pipefail
+          mkdir -p app/src/main/assets
+          curl --fail --location --silent --show-error --retry 3 --connect-timeout 15 --max-time 90 \
+            "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js" \
+            -o app/src/main/assets/nav-leaflet.js || \
+          curl --fail --location --silent --show-error --retry 3 --connect-timeout 15 --max-time 90 \
+            "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" \
+            -o app/src/main/assets/nav-leaflet.js
+          python3 - <<'PY'
+          from pathlib import Path
+          js=Path('app/src/main/assets/nav-leaflet.js').read_text()
+          assert len(js)>100_000, f"invalid library payload {len(js)} bytes"
+          assert 'Leaflet' in js[:3000], "Unexpected map library"
+          print('PASS: Leaflet bundled locally',len(js),'bytes')
+          PY
+      - name: Build installable navigation test APK
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
+          LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
+        run: gradle --no-daemon assembleDebug
+      - name: Validate APK output
+        run: |
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          "${ANDROID_HOME}/build-tools/36.0.0/aapt" dump badging app/build/outputs/apk/debug/app-debug.apk | grep -F 'com.aracimpro.app.navtest'
+          "${ANDROID_HOME}/build-tools/36.0.0/aapt" dump badging app/build/outputs/apk/debug/app-debug.apk | grep -F 'Aracım Pro Navi TEST'
+          unzip -Z1 app/build/outputs/apk/debug/app-debug.apk | grep -Fx 'assets/nav-leaflet.js'
+          test "$(unzip -p app/build/outputs/apk/debug/app-debug.apk assets/nav-leaflet.js | wc -c)" -gt 100000
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AracimPro-NAVI-MAPFIX-v92-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
