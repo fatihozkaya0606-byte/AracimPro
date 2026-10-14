@@ -42,6 +42,7 @@ function ap95Hero(v){
       (photo?'<img class="ap95HeroPhoto" src="'+esc(photo)+'" alt="'+esc(name)+'" loading="eager" decoding="async">':
        '<div class="ap95PhotoEmpty">🚙<small>Aracının orijinal fotoğrafını ekle</small><button onclick="openVehicle(\''+esc(v.id)+'\')">Fotoğraf Seç</button></div>')+
       '<span class="ap95PhotoBadge">ARACIM PRO • R8 PLUS</span>'+
+      (photo?'<button class="ap96PhotoChange" onclick="openVehicle(\''+esc(v.id)+'\')">📷 Fotoğrafı Değiştir</button>':'')+
      '</div>'+
      '<div class="ap95HeroInfo">'+
        '<div class="ap95HeroTop"><span class="ap95HeroStatus">● Aktif Araç</span>'+(v.plate?'<span class="ap95HeroPlate">'+esc(v.plate)+'</span>':'')+'</div>'+
@@ -82,7 +83,7 @@ homeView=function(){
  const v=activeVehicle();if(!v)return baseHome();
  const raw=baseHome();
  if(!raw.includes('<section class="ref791-hero">'))return raw;
- return raw.replace(/<section class="ref791-hero">[\s\S]*?<\/section>/,ap95Hero(v)+ap95Metrics()+ap95Shortcuts()+ap95ReminderHtml());
+ return raw.replace(/<section class="ref791-hero">[\s\S]*?<\/section>/,ap95Hero(v)+ap95Shortcuts()+ap95ReminderHtml()+'<details class="ap96Stats"><summary>📊 Araç Özeti • Sağlık, tüketim ve masraflar</summary>'+ap95Metrics()+'</details>');
 };
 window.ap95Tilt=function(ev){
   if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
