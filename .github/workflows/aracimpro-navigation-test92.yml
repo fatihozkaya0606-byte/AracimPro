@@ -50,7 +50,7 @@ jobs:
           assert 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/' not in html
           leaflet=Path('app/src/main/assets/nav-leaflet.js').read_text()
           assert len(leaflet)>100000
-          assert 'Leaflet 1.9.4' in leaflet
+          assert 'version="1.9.4"' in leaflet
 
           print('PASS: v92 isolated Navi TEST with local Leaflet, GPS, speech, routing')
           PY
