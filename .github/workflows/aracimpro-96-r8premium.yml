@@ -1,0 +1,147 @@
+name: AracimPro 96 R8 Premium UI - APK and Signed AAB
+on:
+  push:
+    branches: [aracimpro-96-r8-premium-ui]
+  pull_request:
+    branches: [aracimpro-96-r8-premium-ui]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  signed-release-candidate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Install SDK / NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" "ndk;27.2.12479018"
+      - name: Verify LIVE AdMob and privacy configuration
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          gradle = Path('app/build.gradle').read_text()
+          code = Path('app/src/main/java/com/aracimpro/app/MainActivity.java').read_text()
+          manifest = Path('app/src/main/AndroidManifest.xml').read_text()
+          privacy = Path('privacy-policy.html').read_text()
+          assert "versionCode 96" in gradle
+          assert "versionName '7.11.21'" in gradle
+          assert "implementation 'com.google.android.gms:play-services-ads:25.5.0'" in gradle
+          assert "implementation 'com.google.android.ump:user-messaging-platform:4.0.0'" in gradle
+          assert "com.startapp:inapp-sdk" not in gradle
+          assert "buildConfigField 'boolean', 'ADMOB_TEST_MODE', 'false'" in gradle
+          assert 'com.google.android.gms.ads.APPLICATION_ID' in manifest
+          assert 'ca-app-pub-7205009121067400~4069879501' in manifest
+          assert '209956112' not in code
+          assert 'com.startapp' not in manifest
+          assert 'com.startapp' not in code
+          assert 'requestAdMobConsentIfNeeded' in code
+          assert 'premiumBillingReady' in code
+          assert 'canRequestAdMobAds' in code
+          assert 'admobConsentInfo.canRequestAds()' in code
+          assert 'ca-app-pub-7205009121067400/9497290996' in code
+          assert 'ca-app-pub-3940256099942544/6300978111' in code
+          assert 'ca-app-pub-7205009121067400/2790024214' in code
+          assert 'ca-app-pub-7205009121067400/3129664519' in code
+          assert 'AdSize.MEDIUM_RECTANGLE' in code
+          assert 'mrecAdView.destroy()' in code
+          assert 'updateMrecSlotNative' in code
+          assert 'mrecAdLoaded && canRequestAdMobAds()' in code
+          assert 'apSyncMrecSlot' in Path('app/src/main/assets/index.html').read_text()
+          assert 'apMrecMarkScrolling' in Path('app/src/main/assets/index.html').read_text()
+          assert 'apMrecScrollBlockedUntil' in Path('app/src/main/assets/index.html').read_text()
+          assert 'viewportCssWidth' in code
+          assert 'setOnScrollChangeListener' in code
+          assert 'mrecScrollHoldUntil' in code
+          assert 'getBoundingClientRect' in Path('app/src/main/assets/index.html').read_text()
+
+          assert 'id="apMrecSlot"' in Path('app/src/main/assets/index.html').read_text()
+          assert '300×250' in privacy
+          assert 'ca-app-pub-3940256099942544/1033173712' in code
+          assert 'oneInterstitialClaimed.compareAndSet(false, true)' in code
+          assert 'requestOneInterstitialForNavigation' in code
+          assert 'interstitialLoaded' in code
+          assert "Android.showOneInterstitialBeforeNavigation(k)" in Path('app/src/main/assets/index.html').read_text()
+          assert "onclick=\"go('${k}',true)\"" in Path('app/src/main/assets/index.html').read_text()
+          assert 'oturum başına en fazla bir kez tam ekran' in privacy
+
+          assert 'Bu sürüm canlı AdMob banner birimini kullanır' in Path('app/src/main/assets/index.html').read_text()
+          assert "Bu sürümde Start.io SDK'sı bulunmaz" in privacy
+          assert '<h2>Reklam ve analiz</h2>' in Path('docs/privacy.html').read_text()
+          assert 'Android.admobAdsDiagnostics()' in Path('app/src/main/assets/index.html').read_text()
+          assert "const V='7.11.21'" in Path('app/src/main/assets/index.html').read_text()
+          assert "Google AdMob" in privacy
+          assert 'r8plus-clean.css' in Path('app/src/main/assets/index.html').read_text()
+          assert 'r8plus-clean.js' in Path('app/src/main/assets/index.html').read_text()
+          premium_css = Path('app/src/main/assets/r8-premium-96.css').read_text()
+          premium_js = Path('app/src/main/assets/r8plus-clean.js').read_text()
+          assert 'r8-premium-96.css' in Path('app/src/main/assets/index.html').read_text()
+          assert 'body.r8HomeMode .apTopRow' in premium_css
+          assert 'grid-auto-columns:calc((100% - 16px)/3)' in premium_css
+          assert 'height:250px!important' in premium_css
+          assert 'ap96PhotoChange' in premium_js
+          assert 'ap96Stats' in premium_js
+          assert 'ap95Shortcuts()+ap95ReminderHtml()' in premium_js
+          assert 'ap95HeroPhoto' in Path('app/src/main/assets/r8plus-clean.css').read_text()
+          assert 'ap95ShareVehicleCard' in Path('app/src/main/assets/r8plus-clean.js').read_text()
+          assert 'sharePngImage' in code and 'savePngImage' in code
+          assert 'androidx.core.content.FileProvider' in manifest
+          assert Path('app/src/main/res/xml/r8plus_share_paths.xml').exists()
+          print('PASS: R8 Premium UI, 3 fit statuses, editable photo, safe AdMob, Premium and share')
+          PY
+      - name: Check R8 Plus JavaScript
+        run: |
+          node --check app/src/main/assets/r8plus-clean.js
+      - name: Build side-by-side R8 Plus test APK
+        run: gradle --no-daemon assembleDebug
+      - name: Restore Play upload signing key
+        env:
+          PLAY_UPLOAD_KEYSTORE_B64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_B64 }}
+        run: |
+          test -n "$PLAY_UPLOAD_KEYSTORE_B64" || (echo "Upload keystore secret missing" >&2; exit 1)
+          echo "$PLAY_UPLOAD_KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/upload-key.jks"
+      - name: Configure signing
+        env:
+          STORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+        run: |
+          test -n "$STORE_PASSWORD" && test -n "$KEY_ALIAS" && test -n "$KEY_PASSWORD"
+          cat > keystore.properties <<EOF
+          storeFile=$RUNNER_TEMP/upload-key.jks
+          storePassword=$STORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
+      - name: Build SIGNED AAB for manual review (never auto-publish)
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
+          LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
+        run: gradle --no-daemon bundleRelease
+      - name: Check release outputs
+        run: |
+          test -s app/build/outputs/bundle/release/app-release.aab
+          test -s app/build/outputs/mapping/release/mapping.txt
+          unzip -Z1 app/build/outputs/bundle/release/app-release.aab | grep -F -q 'BUNDLE-METADATA/com.android.tools.build.debugsymbols/'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AracimPro-v96-R8-PREMIUM-TEST-APK-AND-AAB
+          path: |
+            app/build/outputs/bundle/release/app-release.aab
+            app/build/outputs/apk/debug/app-debug.apk
+            app/build/outputs/mapping/release/mapping.txt
+          retention-days: 14
