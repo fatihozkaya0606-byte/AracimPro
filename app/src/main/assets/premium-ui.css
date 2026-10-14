@@ -86,3 +86,11 @@ body.apNavMode .apNavTopline{padding-bottom:4px}body.apNavMode .apNavTopline b{f
 .ap93NavDetailButton{width:100%;text-align:center;border:1px solid #316993;background:#143c63;color:#e6f8ff;padding:7px;border-radius:11px;font-weight:650;font-size:10px;margin:4px 0}
 .ap93MapCredit{font-size:9px;color:#91b7d7;text-align:left;padding:2px 0}
 .ap93TrafficNotice{color:#ffd58b;font-size:10px;margin-top:7px}
+
+/* Privacy-conscious route consent. */
+.ap93RouteConsent{position:absolute;inset:0;z-index:3000;background:#03101ede;display:flex;align-items:center;justify-content:center;padding:20px}
+.ap93RouteConsentCard{background:linear-gradient(145deg,#0d3152,#061c34);border:1px solid #39b6f5;border-radius:22px;padding:22px;max-width:370px;color:#fff;box-shadow:0 20px 55px #0009}
+.ap93RouteConsentCard strong{display:block;font-size:20px}
+.ap93RouteConsentCard p{font-size:13px;color:#cee3f5;line-height:1.6;margin:13px 0 17px}
+.ap93RouteConsentCard button{display:block;width:100%;border-radius:12px;border:1px solid #347bab;padding:13px 12px;margin-top:9px;font-size:13px;font-weight:850;color:#fff;background:#164268}
+.ap93RouteConsentCard .ap93ConsentYes{background:linear-gradient(110deg,#0c6eec,#06a6ee);border-color:#1bceff}
