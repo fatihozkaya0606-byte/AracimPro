@@ -1983,7 +1983,7 @@ body.r8HomeMode .apLiveMini.clock em{font-style:normal;opacity:.45;margin:0 1px}
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
 <script>
 const KEY='aracim_pro_v1';
-const V='7.11.10';
+const V='7.11.12';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.NumberFormat(apLocale(),{style:'currency',currency:apCurrency(),maximumFractionDigits:2}).format(Number(n)||0);const num=n=>(Number(n)||0).toLocaleString(apLocale());
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -4707,18 +4707,19 @@ function restore(){try{Android.openBackupFile()}catch(e){}}window.restoreBackupF
     restoreStateObject(o);
   }catch(e){alert('Geçersiz yedek')}
 };
-function startAdsDiagnosticsModal(){
+function admobAdsDiagnosticsModal(){
   let d={};
-  try{d=JSON.parse(Android.startAdsDiagnostics()||'{}')}catch(e){toast('Reklam tanılaması açılamadı');return}
+  try{d=JSON.parse(Android.admobAdsDiagnostics()||'{}')}catch(e){toast('Reklam tanılaması açılamadı');return}
   const yes=x=>x?'Evet':'Hayır';
   const time=d.lastEventTime?new Date(d.lastEventTime).toLocaleString(apLocale()):'Henüz yok';
   const line=(key,value)=>'<div style="padding:7px 0;border-bottom:1px solid rgba(127,127,127,.15)"><b>'+esc(key)+':</b> '+esc(String(value))+'</div>';
-  modal('Start.io Reklam Kontrolü',`<div class="form"><div class="notice">Bu bölüm gerçek reklam yerine durum ve hata kaydını gösterir. Reklam sağlayıcısı o anda banner vermeyebilir.</div><div class="card">`+
+  modal('AdMob Reklam Kontrolü',`<div class="form"><div class="notice">Önce Google test banner reklamı kullanılır. Gerçek reklam için ayrı sürüm ve AdMob onayı gerekir.</div><div class="card">`+
   line('Uygulama sürümü',d.version||'?')+
   line('Reklam izni',yes(d.consent))+
   line('Premium doğrulaması',yes(d.premiumBillingReady))+
   line('Premium aktif',yes(d.premiumActive))+
-  line('Start.io başlatıldı',yes(d.sdkInitialized))+
+  line('AdMob başlatıldı',yes(d.sdkInitialized))+
+  line('Test modu',yes(d.testMode))+
   line('Banner oluşturuldu',yes(d.bannerCreated))+
   line('Banner yüklendi',yes(d.bannerLoaded))+
   line('Banner görünür',yes(d.bannerVisible))+
@@ -4726,13 +4727,13 @@ function startAdsDiagnosticsModal(){
   line('Son işlem',d.lastEvent||'-')+
   line('Sonuç',d.lastResult||'-')+
   line('İşlem zamanı',time)+
-  `</div><button class="secondary wide" onclick="startAdsDiagnosticsModal()">Durumu Yenile</button></div>`);
+  `</div><button class="secondary wide" onclick="admobAdsDiagnosticsModal()">Durumu Yenile</button></div>`);
 }
 function openSettings(){modal('Ayarlar',`<div class="form"><div class="card" style="margin:0"><b>Aracım Pro ${V} • Güncel sürüm</b><p class="muted small">Araçla ilgili her şeyi tek yerde: ayrıntılı motor/versiyon kataloğu, doğru kasa fotoğrafı, otomatik piyasa değeri, teknik rehber, bakım ve sürüş araçları.</p></div>
 <label class="toggle"><span>🌙 Karanlık Tema</span><input type="checkbox" ${state.prefs.dark?'checked':''} onchange="state.prefs.dark=this.checked;save();openSettings()"></label><label class="toggle"><span>🔐 PIN Kilidi</span><input type="checkbox" ${state.prefs.lockEnabled?'checked':''} onchange="togglePin(this.checked)"></label><label class="toggle"><span>👆 Biyometrik Açılış</span><input type="checkbox" ${state.prefs.biometric?'checked':''} onchange="state.prefs.biometric=this.checked;save()"></label>
 <div class="sectionHead"><h2>Teknik Veri / OtoAPI</h2></div><div class="card"><b>Kesin varyant + önbellek aktif</b><div class="muted small">V15.5, seçilen OtoAPI carId kaydını araçta saklar; aynı araç için tekrar marka/model araması yapmaz. Free planda günlük 50 istek olduğu için kayıtlı tüm araçlar açılışta otomatik sorgulanmaz.</div><button type="button" class="secondary wide" style="margin-top:8px" onclick="showOtoUsage()">API Kotamı Göster</button><div id="otoUsageStatus" class="hint">Kota bilgisini görmek için düğmeye bas.</div></div><div class="sectionHead"><h2>Piyasa Değeri</h2></div><label class="toggle"><span><b>Araç kaydında otomatik değerleme</b><div class="muted small">Araç kaydedildiğinde otomatik sorgula / referans uygula</div></span><input type="checkbox" ${state.prefs.autoMarketOnSave!==false?'checked':''} onchange="state.prefs.autoMarketOnSave=this.checked;save()"></label><div class="field"><label>Canlı Değerleme Sunucu Uç Noktası</label><input value="${esc(state.prefs.marketApiUrl||'')}" placeholder="https://.../vehicle-value" onchange="state.prefs.marketApiUrl=this.value.trim();save()"></div><div class="hint">Gerçek piyasa verisi teknik OtoAPI.net'ten gelmez. V15.5, lisanslı Türkiye değerleme sağlayıcısını güvenli Worker üzerinden destekler. MARKET_API_URL ayrı girilebilir; LIVE_DATA_API_URL bağlıysa /market yolu otomatik kullanılır. Sağlayıcı tokenı/endpoint'i kurulmadan fiyat uydurulmaz ve alan boş kalır.</div>
 <div class="sectionHead"><h2>Hesaplama</h2></div><div class="formrow"><div class="field"><label>Varsayılan Yakıt/Enerji Birim Fiyatı</label><input type="number" step="0.01" value="${state.prefs.fuelPrice||''}" onchange="state.prefs.fuelPrice=+this.value;save()"></div><div class="field"><label>Yıllık Tahmini KM</label><input type="number" value="${state.prefs.annualKm||12000}" onchange="state.prefs.annualKm=+this.value;save()"></div></div>
-<div class="sectionHead"><h2>Veri & Güvenlik</h2></div><button class="secondary wide" onclick="try{Android.openAdsPrivacySettings()}catch(e){toast('Reklam gizliliği ayarları açılamadı')}">📣 Reklam Gizliliği Tercihlerim</button><button class="secondary wide" onclick="startAdsDiagnosticsModal()">📊 Reklam Yükleme Durumu</button><button class="secondary wide" onclick="encryptedBackup()">🔐 Şifreli Yerel Yedek</button><button class="secondary wide" onclick="backup()">Yedek Al</button><button class="secondary wide" onclick="backupCloud()">Google Drive / Buluta Yedekle</button><button class="secondary wide" onclick="restore()">Yedekten Geri Yükle</button><button class="secondary wide" onclick="try{Android.requestNotificationPermission();toast('Bildirim izni kontrol edildi')}catch(e){}">Bildirim İznini Kontrol Et</button><button class="secondary wide" onclick="feedbackModal()">💬 Hata Bildir / Öneri Gönder</button><button class="secondary wide" onclick="diagnosticsModal()">🧰 Hata Günlüğü</button><button class="secondary wide" onclick="whatsNewModal()">✨ Yenilikler</button><button class="danger wide" onclick="resetApp()">Tüm Verileri Sil</button><div class="hint">Belge kasasındaki dosya bağlantıları telefondaki dosyalara işaret eder. Telefon değişiminde belgeleri ayrıca taşıman gerekebilir.</div></div>`)}
+<div class="sectionHead"><h2>Veri & Güvenlik</h2></div><button class="secondary wide" onclick="try{Android.openAdsPrivacySettings()}catch(e){toast('Reklam gizliliği ayarları açılamadı')}">📣 Reklam Gizliliği Tercihlerim</button><button class="secondary wide" onclick="admobAdsDiagnosticsModal()">📊 Reklam Yükleme Durumu</button><button class="secondary wide" onclick="encryptedBackup()">🔐 Şifreli Yerel Yedek</button><button class="secondary wide" onclick="backup()">Yedek Al</button><button class="secondary wide" onclick="backupCloud()">Google Drive / Buluta Yedekle</button><button class="secondary wide" onclick="restore()">Yedekten Geri Yükle</button><button class="secondary wide" onclick="try{Android.requestNotificationPermission();toast('Bildirim izni kontrol edildi')}catch(e){}">Bildirim İznini Kontrol Et</button><button class="secondary wide" onclick="feedbackModal()">💬 Hata Bildir / Öneri Gönder</button><button class="secondary wide" onclick="diagnosticsModal()">🧰 Hata Günlüğü</button><button class="secondary wide" onclick="whatsNewModal()">✨ Yenilikler</button><button class="danger wide" onclick="resetApp()">Tüm Verileri Sil</button><div class="hint">Belge kasasındaki dosya bağlantıları telefondaki dosyalara işaret eder. Telefon değişiminde belgeleri ayrıca taşıman gerekebilir.</div></div>`)}
 function pinHash(p){let h=2166136261;for(const c of p){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return (h>>>0).toString(16)}
 function togglePin(on){if(on){modal('PIN Belirle',`<form class="form" onsubmit="savePin(event)"><div class="field"><label>4-8 haneli PIN</label><input autofocus class="pin" inputmode="numeric" pattern="[0-9]{4,8}" name="pin" required></div><button class="primary wide">PIN'i Kaydet</button></form>`)}else{state.prefs.lockEnabled=false;state.prefs.pinHash='';save();openSettings()}}
 function savePin(e){e.preventDefault();const p=new FormData(e.target).get('pin');state.prefs.pinHash=pinHash(p);state.prefs.lockEnabled=true;closeModal();save();toast('PIN kilidi açıldı')}

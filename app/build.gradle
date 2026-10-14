@@ -25,8 +25,9 @@ android {
         buildConfigField "String", "FIREBASE_APP_ID", "\"${System.getenv('FIREBASE_APP_ID') ?: ''}\""
         buildConfigField "String", "MARKET_API_URL", "\"${System.getenv('MARKET_API_URL') ?: ''}\""
         buildConfigField "String", "LIVE_DATA_API_URL", "\"${System.getenv('LIVE_DATA_API_URL') ?: ''}\""
-        versionCode 85
-        versionName '7.11.10'
+        buildConfigField 'boolean', 'ADMOB_TEST_MODE', 'true'
+        versionCode 87
+        versionName '7.11.12'
     }
 
     signingConfigs {
@@ -42,8 +43,8 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix '.startiopreview'
-            versionNameSuffix '-startiopreview'
+            applicationIdSuffix '.admobpreview'
+            versionNameSuffix '-admobpreview'
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
             }
@@ -87,8 +88,9 @@ dependencies {
     implementation 'com.google.firebase:firebase-ai'
     implementation 'com.google.guava:guava:31.0.1-android'
     implementation 'org.reactivestreams:reactive-streams:1.0.4'
-    // Use Start.io directly; AdMob / UMP are intentionally excluded.
-    implementation 'com.startapp:inapp-sdk:5.3.1'
+    // AdMob only; internal-test candidate uses Google's sample banner ID.
+    implementation 'com.google.android.gms:play-services-ads:25.5.0'
+    implementation 'com.google.android.ump:user-messaging-platform:4.0.0'
     // Keep advertising identifier dependency explicit for SDK compatibility.
     implementation 'com.google.android.gms:play-services-ads-identifier:18.2.0'
 }
