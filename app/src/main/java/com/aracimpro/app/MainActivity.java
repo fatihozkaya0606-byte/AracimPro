@@ -298,6 +298,8 @@ public class MainActivity extends Activity {
         ViewCompat.requestApplyInsets(root);
 
         WebSettings s = webView.getSettings();
+        // Identify Aracim Pro to OSM tile servers (no cache bypass or bulk prefetch).
+        s.setUserAgentString(s.getUserAgentString() + " AracimPro/7.11.18 (+https://play.google.com/store/apps/details?id=com.aracimpro.app)");
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
         s.setDatabaseEnabled(true);
