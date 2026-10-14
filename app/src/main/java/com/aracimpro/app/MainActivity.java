@@ -39,6 +39,9 @@ import android.os.SystemClock;
 import android.os.CancellationSignal;
 import android.provider.OpenableColumns;
 import android.provider.MediaStore;
+import androidx.core.content.FileProvider;
+import java.io.File;
+import java.io.FileOutputStream;
 import android.provider.Settings;
 import android.util.Base64;
 import android.text.Html;
@@ -1959,6 +1962,51 @@ private void showLaunchSplash() {
 
         @JavascriptInterface public void saveFile(String filename, String mime, String content) {
             runOnUiThread(() -> launchCreateDocument(filename, mime, content, null));
+        }
+
+        // R8 Plus Clean: explicit user-initiated image export / share, never uploaded.
+        private byte[] decodeR8PlusPng(String imageData) {
+            if (imageData == null || !imageData.startsWith("data:image/png;base64,") ||
+                imageData.length() > 16000000) throw new IllegalArgumentException("Invalid or oversized PNG");
+            byte[] data = Base64.decode(imageData.substring("data:image/png;base64,".length()), Base64.DEFAULT);
+            if (data.length < 8 || data.length > 12000000 || data[0] != (byte)0x89 ||
+                data[1] != 0x50 || data[2] != 0x4e || data[3] != 0x47)
+                throw new IllegalArgumentException("Not PNG");
+            return data;
+        }
+
+        @JavascriptInterface public void savePngImage(String filename, String imageData) {
+            try {
+                byte[] data = decodeR8PlusPng(imageData);
+                runOnUiThread(() -> launchCreateDocument("AracimPro_AracKarti.png", "image/png", null, data));
+            } catch (Throwable t) {
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Paylaşım görseli kaydedilemedi", Toast.LENGTH_SHORT).show());
+            }
+        }
+
+        @JavascriptInterface public void sharePngImage(String imageData) {
+            try {
+                byte[] data = decodeR8PlusPng(imageData);
+                runOnUiThread(() -> {
+                    try {
+                        File folder = new File(getCacheDir(), "share");
+                        if (!folder.exists() && !folder.mkdirs()) throw new Exception("Cache unavailable");
+                        File out = new File(folder, "AracimPro_AracKarti.png");
+                        try (FileOutputStream stream = new FileOutputStream(out)) { stream.write(data); }
+                        Uri uri = FileProvider.getUriForFile(MainActivity.this,
+                            getPackageName() + ".r8plusfiles", out);
+                        Intent send = new Intent(Intent.ACTION_SEND);
+                        send.setType("image/png");
+                        send.putExtra(Intent.EXTRA_STREAM, uri);
+                        send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        startActivity(Intent.createChooser(send, "Aracım Pro • Araç Kartımı Paylaş"));
+                    } catch (Throwable t) {
+                        Toast.makeText(MainActivity.this, "Paylaşım açılamadı", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } catch (Throwable t) {
+                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Görsel hazırlanamadı", Toast.LENGTH_SHORT).show());
+            }
         }
 
         @JavascriptInterface public void savePdf(String filename, String title, String content) {
