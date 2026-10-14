@@ -86,6 +86,10 @@ import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.AdError;
+import com.google.android.gms.ads.FullScreenContentCallback;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.android.ump.ConsentInformation;
 import com.google.android.ump.ConsentRequestParameters;
 import com.google.android.ump.UserMessagingPlatform;
@@ -172,6 +176,14 @@ public class MainActivity extends Activity {
     private boolean admobSdkInitialized = false;
     private boolean admobConsentRequested = false;
     private ConsentInformation admobConsentInfo;
+    // Single full-screen ad at an eligible, user-initiated page transition.
+    // No ad on startup, back/exit, form clicks, or while using Premium.
+    private volatile InterstitialAd oneInterstitialAd;
+    private volatile boolean oneInterstitialReady = false;
+    private final java.util.concurrent.atomic.AtomicBoolean oneInterstitialClaimed =
+            new java.util.concurrent.atomic.AtomicBoolean(false);
+    private volatile long oneInterstitialLoadedAt = 0L;
+    private final long sessionStartedAt = android.os.SystemClock.elapsedRealtime();
     private int bannerHeightPx = 0;
     private int lastInsetLeft = 0, lastInsetTop = 0, lastInsetRight = 0, lastInsetBottom = 0;
     private FrameLayout root;
@@ -938,6 +950,8 @@ private void showLaunchSplash() {
                     bannerAdView = null;
                 }
                 admobBannerLoaded = false;
+                oneInterstitialAd = null;
+                oneInterstitialReady = false;
             } catch (Throwable ignored) {}
             bannerHeightPx = 0;
             applyWebMargins(lastInsetLeft,lastInsetTop,lastInsetRight,lastInsetBottom);
@@ -1086,7 +1100,10 @@ private void showLaunchSplash() {
         try {
             MobileAds.initialize(this, status -> runOnUiThread(() -> {
                 logAdMob("sdk_ready", "Google Mobile Ads initialized");
-                if (canRequestAdMobAds()) createAdMobBanner();
+                if (canRequestAdMobAds()) {
+                    createAdMobBanner();
+                    loadSingleInterstitial();
+                }
             }));
         } catch (Throwable t) {
             admobSdkInitialized = false;
@@ -1140,6 +1157,85 @@ private void showLaunchSplash() {
             bannerHeightPx = 0;
             applyWebMargins(lastInsetLeft, lastInsetTop, lastInsetRight, lastInsetBottom);
         }
+    }
+
+    private void loadSingleInterstitial() {
+        if (!canRequestAdMobAds() || !apPremiumSplashHidden ||
+                oneInterstitialClaimed.get() || oneInterstitialAd != null) {
+            // Splash may still be visible when SDK initializes; allow preload then.
+            if (!canRequestAdMobAds() || oneInterstitialClaimed.get() || oneInterstitialAd != null) return;
+        }
+        final String unitId = (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
+                ? "ca-app-pub-3940256099942544/1033173712"
+                : "ca-app-pub-7205009121067400/2790024214";
+        InterstitialAd.load(this, unitId, new AdRequest.Builder().build(),
+                new InterstitialAdLoadCallback() {
+                    @Override public void onAdLoaded(InterstitialAd ad) {
+                        if (!canRequestAdMobAds() || oneInterstitialClaimed.get()) return;
+                        oneInterstitialAd = ad;
+                        oneInterstitialLoadedAt = android.os.SystemClock.elapsedRealtime();
+                        oneInterstitialReady = true;
+                        logAdMob("interstitial_loaded", "Full-screen ad preloaded");
+                    }
+
+                    @Override public void onAdFailedToLoad(LoadAdError error) {
+                        oneInterstitialAd = null;
+                        oneInterstitialReady = false;
+                        logAdMob("interstitial_failed", error == null ? "No fill" : error.toString());
+                    }
+                });
+    }
+
+    private void finishOneInterstitialNavigation(String target) {
+        if (webView == null || isFinishing() || isDestroyed()) return;
+        webView.evaluateJavascript(
+                "window.finishOneInterstitialNavigation && window.finishOneInterstitialNavigation(" +
+                        JSONObject.quote(target) + ")", null);
+    }
+
+    // Called by a bottom-navigation click before changing screens, not by random taps.
+    // Return true only when a loaded ad will take over that navigation.
+    private boolean requestOneInterstitialForNavigation(String target) {
+        if (!("home".equals(target) || "garage".equals(target) ||
+              "records".equals(target) || "plan".equals(target) ||
+              "reports".equals(target) || "more".equals(target))) return false;
+        if (!oneInterstitialReady || oneInterstitialAd == null ||
+                android.os.SystemClock.elapsedRealtime() - sessionStartedAt < 15000L ||
+                android.os.SystemClock.elapsedRealtime() - oneInterstitialLoadedAt > 45 * 60 * 1000L ||
+                !canRequestAdMobAds() || !apPremiumSplashHidden ||
+                isFinishing() || isDestroyed()) return false;
+        if (!oneInterstitialClaimed.compareAndSet(false, true)) return false;
+        // WebView JS interfaces are invoked off the Android UI thread.
+        runOnUiThread(() -> {
+            final InterstitialAd ad = oneInterstitialAd;
+            oneInterstitialAd = null;
+            oneInterstitialReady = false;
+            if (ad == null || !canRequestAdMobAds() || !apPremiumSplashHidden ||
+                    isFinishing() || isDestroyed()) {
+                finishOneInterstitialNavigation(target);
+                return;
+            }
+            ad.setFullScreenContentCallback(new FullScreenContentCallback() {
+                @Override public void onAdShowedFullScreenContent() {
+                    logAdMob("interstitial_shown", "One full-screen ad shown in session");
+                }
+                @Override public void onAdDismissedFullScreenContent() {
+                    logAdMob("interstitial_dismissed", "Navigation continued");
+                    finishOneInterstitialNavigation(target);
+                }
+                @Override public void onAdFailedToShowFullScreenContent(AdError error) {
+                    logAdMob("interstitial_show_failed", error == null ? "Unknown" : error.toString());
+                    finishOneInterstitialNavigation(target);
+                }
+            });
+            try {
+                ad.show(this);
+            } catch (Throwable t) {
+                logAdMob("interstitial_exception", t.getClass().getSimpleName());
+                finishOneInterstitialNavigation(target);
+            }
+        });
+        return true;
     }
 
     @Override protected void onPause() {
@@ -1376,6 +1472,10 @@ private void showLaunchSplash() {
             runOnUiThread(() -> openAdMobPrivacySettings());
         }
 
+        @JavascriptInterface public boolean showOneInterstitialBeforeNavigation(String target) {
+            return requestOneInterstitialForNavigation(target);
+        }
+
         @JavascriptInterface public String admobAdsDiagnostics() {
             JSONObject out = new JSONObject();
             try {
@@ -1390,6 +1490,8 @@ private void showLaunchSplash() {
                 out.put("bannerLoaded", admobBannerLoaded);
                 out.put("splashHidden", apPremiumSplashHidden);
                 out.put("bannerVisible", bannerAdView != null && bannerAdView.getVisibility() == View.VISIBLE);
+                out.put("interstitialLoaded", oneInterstitialReady);
+                out.put("interstitialClaimed", oneInterstitialClaimed.get());
                 out.put("lastEvent", log.getString("step", "Henüz olay yok"));
                 out.put("lastResult", log.getString("result", ""));
                 out.put("lastEventTime", log.getLong("timestamp", 0L));
