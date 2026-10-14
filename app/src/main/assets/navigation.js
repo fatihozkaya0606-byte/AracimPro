@@ -63,6 +63,15 @@ function apNavAfterRender(){
     apNav.tile=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
       minZoom:3,maxZoom:19,maxNativeZoom:19,attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(apNav.map);
+    // Make a network/tile failure visible instead of leaving an unexplained blank map.
+    var tileFailures=0;
+    apNav.tile.on('tileerror',function(){
+      tileFailures++;
+      if(tileFailures===3){
+        apNavInfo('Harita kareleri indirilemedi. İnternet/DNS bağlantını kontrol et; hedef arama ve GPS ayrı çalışabilir.');
+      }
+    });
+    apNav.tile.on('tileload',function(){tileFailures=0;});
     apNav.map.on('click',function(e){apNavSelectDestination(e.latlng.lat,e.latlng.lng,'Haritada seçilen nokta');});
     apNav.map.on('dragstart',function(){apNav.following=false;});
     if(apNav.pos)apNavPaintGps();
