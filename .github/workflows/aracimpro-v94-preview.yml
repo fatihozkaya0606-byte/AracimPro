@@ -1,0 +1,64 @@
+name: AracimPro V94 Fixed Navigation Preview APK
+on:
+  push:
+    branches: [aracimpro-94-navigation-layout-fix]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preview-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Install SDK and NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" "ndk;27.2.12479018"
+      - name: Verify V94 code and retained ads
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          gradle=Path('app/build.gradle').read_text()
+          java=Path('app/src/main/java/com/aracimpro/app/MainActivity.java').read_text()
+          html=Path('app/src/main/assets/index.html').read_text()
+          js=Path('app/src/main/assets/v94-ui-fix.js').read_text()
+          css=Path('app/src/main/assets/v94-ui-fix.css').read_text()
+          nav=Path('app/src/main/assets/navigation.js').read_text()
+          assert "versionCode 94" in gradle and "versionName '7.11.19'" in gradle
+          assert "applicationIdSuffix '.v94preview'" in gradle
+          assert "const V='7.11.19'" in html
+          assert 'v94-ui-fix.js' in html and 'v94-ui-fix.css' in html
+          assert 'setNavigationMode' in java and '!navigationMode' in java
+          assert 'admobConsentInfo.canRequestAds()' in java
+          assert 'oneInterstitialClaimed.compareAndSet(false, true)' in java
+          assert 'AdSize.MEDIUM_RECTANGLE' in java
+          assert 'ap94NavScreen' in js and 'ap94ToggleDetails' in js
+          assert 'ap94SearchResults' in js and 'ap94Suggest' in js
+          assert 'basemaps.cartocdn.com/dark_all' in nav
+          assert 'body.apNavMode .apNavMap{position:absolute' in css
+          assert "© <a href=" in nav
+          print('OK: V94 compact full-screen nav + untouched real AdMob in production source')
+          PY
+          node --check app/src/main/assets/v94-ui-fix.js
+          node --check app/src/main/assets/premium-ui.js
+          node --check app/src/main/assets/navigation.js
+          node --check app/src/main/assets/nav-leaflet.js
+      - name: Build DEBUG APK using Google test ads
+        run: gradle --no-daemon assembleDebug
+      - name: Check build output
+        run: test -s app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AracimPro-V94-Navigasyon-Duzeltme-Test-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
