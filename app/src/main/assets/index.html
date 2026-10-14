@@ -3057,8 +3057,11 @@ function apSyncMrecSlot(){
     const slot=current==='home'?document.getElementById('apMrecSlot'):null;
     if(!slot){Android.updateMrecSlot(0,0,0,0,false);return;}
     const r=slot.getBoundingClientRect();
+    const overlayOpen=['modalRoot','lockRoot'].some(id=>{
+      const e=document.getElementById(id);return !!(e&&e.innerHTML.trim());
+    });
     const visible=document.body.classList.contains('apMrecReady')&&
-      !document.hidden&&r.width>=299&&r.height>=249&&
+      !document.hidden&&!overlayOpen&&r.width>=299&&r.height>=249&&
       r.top>=0&&r.bottom<=window.innerHeight-76;
     Android.updateMrecSlot(r.left,r.top,r.width,r.height,visible);
   }catch(e){}
@@ -3071,6 +3074,12 @@ function apMrecQueueSync(){
 window.addEventListener('scroll',apMrecQueueSync,{passive:true,capture:true});
 window.addEventListener('resize',apMrecQueueSync);
 document.addEventListener('visibilitychange',apMrecQueueSync);
+setTimeout(()=>{
+  for(const id of ['modalRoot','lockRoot']){
+    const node=document.getElementById(id);
+    if(node)new MutationObserver(apMrecQueueSync).observe(node,{childList:true,subtree:true});
+  }
+},0);
 function dailyQuickHtml(){
   return `<div class="dailyQuickTitle"><b>📍 Günlük Kısayollar</b><small>Yakınındaki temel yerler</small></div>
   <div class="dailyQuickGrid">
