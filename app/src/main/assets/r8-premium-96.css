@@ -224,7 +224,10 @@ body.r8HomeMode .ap96Stats summary:after{content:'⌄';float:right;color:#4199d3
 body.r8HomeMode .ap96Stats[open] summary:after{content:'⌃'}
 body.r8HomeMode .ap96Stats .ap95Metrics{margin:0 0 12px!important}
 /* Remove redundant original dashboard cards; all pages and actions remain. */
-body.r8HomeMode .ref791-grid{display:none!important}
+body.r8HomeMode .ref791-grid{
+  display:block!important;margin-top:3px!important;
+}
+body.r8HomeMode .ref791-grid > .ref791-card{display:none!important}
 /* Native AdMob MREC keeps its required 300x250 footprint and safe viewport rules. */
 body.r8HomeMode .apMrecCard{
   margin:13px 0!important;padding:11px 10px 12px!important;
