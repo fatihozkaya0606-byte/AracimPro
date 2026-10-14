@@ -1980,13 +1980,13 @@ body.r8HomeMode .apLiveMini.clock em{font-style:normal;opacity:.45;margin:0 1px}
 </style>
 <link rel="stylesheet" href="nav-leaflet.css" />
 <link rel="stylesheet" href="navigation.css" />
-<script async src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="nav-leaflet.js"></script>
 </head>
 <body>
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
 <script>
 const KEY='aracim_pro_v1';
-const V='7.12.0 NAV TEST';
+const V='7.12.1 NAV TEST';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.NumberFormat(apLocale(),{style:'currency',currency:apCurrency(),maximumFractionDigits:2}).format(Number(n)||0);const num=n=>(Number(n)||0).toLocaleString(apLocale());
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
