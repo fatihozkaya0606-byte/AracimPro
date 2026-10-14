@@ -101,6 +101,28 @@ apNavView=function(){
     '</div>'+
  '</section>';
 };
+/* Ask consent before precise GPS/start and destination coordinates leave the phone. */
+const ap93RouteEndpointConsentKey='ap93_route_external_service_consent_v1';
+const originalRouteLoad=apNavLoadRoute;
+apNavLoadRoute=function(isReroute){
+  if(localStorage.getItem(ap93RouteEndpointConsentKey)==='yes')return originalRouteLoad(isReroute);
+  const screen=document.querySelector('.apNavScreen');if(!screen)return;
+  if(screen.querySelector('.ap93RouteConsent'))return;
+  const modal=document.createElement('div');
+  modal.className='ap93RouteConsent';
+  modal.innerHTML='<div class="ap93RouteConsentCard" role="dialog" aria-modal="true" aria-label="Rota veri izni">'+
+   '<strong>📍 Rota için konum paylaşımı</strong>'+
+   '<p>Rota hesaplamak için bulunduğun konumun ve seçtiğin hedefin koordinatları harici OSRM deneme sunucusuna gönderilir. Bu veriler olmadan rota oluşturulamaz. Canlı trafik verisi sağlanmaz.</p>'+
+   '<button type="button" class="ap93ConsentYes">Kabul et ve rotayı hesapla</button>'+
+   '<button type="button" class="ap93ConsentNo">Vazgeç</button></div>';
+  modal.querySelector('.ap93ConsentYes').addEventListener('click',()=>{
+    localStorage.setItem(ap93RouteEndpointConsentKey,'yes');modal.remove();originalRouteLoad(isReroute);
+  });
+  modal.querySelector('.ap93ConsentNo').addEventListener('click',()=>{
+    modal.remove();apNavInfo('Rota hesaplanmadı. İstersen sadece haritayı kullanabilirsin.');
+  });
+  screen.appendChild(modal);
+};
 const origPaint=apNavPaintRoute,origUpdate=apNavUpdateBottom,origClear=apNavClearRoute;
 apNav.selected=0;
 function ap93SetRoute(idx){
