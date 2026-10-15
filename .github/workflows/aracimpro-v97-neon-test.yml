@@ -37,7 +37,7 @@ jobs:
           manifest=Path('app/src/main/AndroidManifest.xml').read_text()
           assert 'versionCode 97' in gradle
           assert "versionName '7.11.22'" in gradle
-          assert 'applicationIdSuffix' in gradle and '.admobpreview' in gradle
+          assert 'applicationIdSuffix' in gradle and '.neonpreview' in gradle
           assert 'neon-dashboard-97.js' in html and 'neon-dashboard-97.css' in html
           assert html.index('r8plus-clean.js') < html.index('neon-dashboard-97.js')
           assert 'apMrecCardHtml()' in js
