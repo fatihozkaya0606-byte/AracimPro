@@ -26,3 +26,9 @@ Build: `gradle :app:assembleDebug` from this folder, requires Android SDK 35 and
 - Dedicated match recap with detailed score and review of all ten answers; local match history in profile.
 - Less exploitable skip joker, user-local performance statistics, improved result UI.
 - Multiplayer is NOT connected: opponent is a simulated bot, global ranking remains a demonstration screen.
+
+## v0.6
+- Question timer 20, 25, 30 seconds; new default 25 seconds (separate preference key).
+- Entry and exit animations, animated transition interstitial before every question, staggered answer choices and last-5-seconds pulse.
+- Celebration confetti for winning the offline practice match; new personal best marker.
+- Four local achievements saved with player statistics.
