@@ -13,3 +13,10 @@ Build: `gradle :app:assembleDebug` from this folder, requires Android SDK 35 and
 - 3.5-second animated splash with original local synthesised fanfare and persisted sound toggle
 - Slower question transitions (1.65s results + 0.3s fade) and smooth page animations
 - No online matchmaking: bot remains explicitly labelled.
+
+## v0.4
+- Category picker (8 topics + mixed) and Easy/Medium/Hard difficulty controls
+- Answer timer setting: 15/20/30 seconds
+- Curated 80 medium + 80 challenging questions, and balanced mixed-category selection (no capitals in mixed mode)
+- Four answer choices guaranteed, quiz area compacted for small screens
+- No online matchmaking yet; the demo opponent remains an offline bot.
