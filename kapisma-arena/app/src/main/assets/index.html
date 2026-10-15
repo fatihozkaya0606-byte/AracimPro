@@ -201,6 +201,7 @@ body{background:radial-gradient(ellipse at 45% -19%,#173b89 0,transparent 47%),r
 .history-row{padding:10px 2px;display:flex;align-items:center;justify-content:space-between;gap:9px;border-bottom:1px solid #ffffff14}
 .history-row:last-child{border:0}.history-row strong{font-size:12px}.history-row small{font-size:10px;color:#aac1e5}.history-row b{color:#ffce72;font-size:13px}
 @media(max-width:360px){.result-stat-grid{gap:4px}.result-stat{padding:8px 1px}.result-stat b{font-size:16px}.round-progress-head{font-size:10px}}
+.results-mode .bar{display:none!important}.results-mode #app{padding-bottom:20px}.results-mode .page{padding-bottom:28px}
 </style></head>
 <body>
 <div class="intro" id="arenaIntro" role="status" aria-label="Kapışma Arena açılıyor">
@@ -424,7 +425,7 @@ function renderMatchHistory(){
   row.append(info,score);wrap.appendChild(row);
  }
 }
-function showPage(p){if(!document.getElementById(p))p='home';clearInterval(clock);page=p;document.body.classList.toggle('battle-mode',p==='battle');document.querySelectorAll('.page').forEach(e=>e.classList.toggle('active',e.id===p));document.querySelectorAll('.navbtn').forEach(e=>e.classList.toggle('active',e.dataset.nav===p));window.scrollTo(0,0);refreshStats();if(p==='profile')renderMatchHistory()}
+function showPage(p){if(!document.getElementById(p))p='home';clearInterval(clock);page=p;document.body.classList.toggle('battle-mode',p==='battle');document.body.classList.toggle('results-mode',p==='results');document.querySelectorAll('.page').forEach(e=>e.classList.toggle('active',e.id===p));document.querySelectorAll('.navbtn').forEach(e=>e.classList.toggle('active',e.dataset.nav===p));window.scrollTo(0,0);refreshStats();if(p==='profile')renderMatchHistory()}
 function modal(title,msg,icon,action,label){document.getElementById('modalicon').textContent=icon||'🏆';document.getElementById('modaltitle').textContent=title;document.getElementById('modaltext').textContent=msg;const b=document.getElementById('modalaction');b.textContent=label||'Tamam';b.onclick=action||hideModal;document.getElementById('modal').classList.add('show')}
 function hideModal(){document.getElementById('modal').classList.remove('show');if(page==='battle'&&roundPausedAt&&!locked){questionStart+=Date.now()-roundPausedAt;roundPausedAt=0;startRoundClock()}}
 function notice(t,m){modal(t,m,'🔔')}
