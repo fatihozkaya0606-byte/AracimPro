@@ -20,3 +20,9 @@ Build: `gradle :app:assembleDebug` from this folder, requires Android SDK 35 and
 - Curated 80 medium + 80 challenging questions, and balanced mixed-category selection (no capitals in mixed mode)
 - Four answer choices guaranteed, quiz area compacted for small screens
 - No online matchmaking yet; the demo opponent remains an offline bot.
+
+## v0.5 — professional local gameplay
+- New progress/score streak HUD, correct and incorrect answer explanations (correct-answer text), and timed question transitions.
+- Dedicated match recap with detailed score and review of all ten answers; local match history in profile.
+- Less exploitable skip joker, user-local performance statistics, improved result UI.
+- Multiplayer is NOT connected: opponent is a simulated bot, global ranking remains a demonstration screen.

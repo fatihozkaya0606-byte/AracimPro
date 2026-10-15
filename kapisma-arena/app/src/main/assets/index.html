@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><meta name="theme-color" content="#030b1f"><title>Kapışma Arena v0.4</title>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><meta name="theme-color" content="#030b1f"><title>Kapışma Arena v0.5</title>
 <style>
 :root{--bg:#020917;--panel:#0a1836;--panel2:#0c234b;--blue:#1e9eff;--cyan:#31eaff;--gold:#ffb82e;--purple:#aa4dff;--muted:#9aabd2;--border:rgba(72,130,245,.27)}
 *{box-sizing:border-box}html,body{margin:0;padding:0;background:#020916;color:#fff;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-tap-highlight-color:transparent}body{min-height:100vh;background:radial-gradient(ellipse at 60% -12%,#182a72 0,transparent 52%),radial-gradient(circle at 90% 43%,#1c124b 0,transparent 45%),#020916}
@@ -160,6 +160,47 @@ body{background:radial-gradient(ellipse at 45% -19%,#173b89 0,transparent 47%),r
 .battle-mode .timebubble{height:60px;width:60px;font-size:25px}
 .battle-mode .powerups{margin-top:13px}
 .battle-config{background:linear-gradient(130deg,#152e64,#081833);border:1px solid #345c9b;border-radius:10px;padding:7px 10px}
+
+/* Kapışma Arena v0.5 — production-style feedback, progress, match recap */
+.round-progress{padding:0 2px 3px;margin:2px 0 6px}
+.round-progress-head{display:flex;justify-content:space-between;gap:8px;align-items:center;color:#bfd2f9;font-weight:800;font-size:11px;margin-bottom:8px}
+#roundStatus{color:#ffcc70;white-space:nowrap}
+.round-track{height:7px;border:1px solid #3964acaa;background:#071431;border-radius:30px;overflow:hidden;box-shadow:inset 0 1px 4px #0009}
+.round-fill{height:100%;border-radius:30px;width:0;background:linear-gradient(90deg,#1e83ff,#2ed1e9,#f4c348);transition:width .5s ease;box-shadow:0 0 15px #2ed5f9aa}
+.answer-feedback{display:none;margin-top:13px;padding:12px;border-radius:12px;background:#173a66;border:1px solid #4587db;line-height:1.5;font-size:12px;font-weight:700;color:#e8f5ff;animation:feedbackPop .24s ease}
+.answer-feedback.visible{display:block}
+.answer-feedback.ok{background:#073e35;border-color:#19bb85;color:#c7ffe9}
+.answer-feedback.no{background:#482139;border-color:#ef7190;color:#ffdee8}
+@keyframes feedbackPop{from{opacity:.3;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.qpanel .answer.correct{border-color:#65efb9;box-shadow:inset 0 0 16px #00ec9748,0 0 14px #00ea9540}
+.qpanel .answer.wrong{border-color:#ff6886;box-shadow:inset 0 0 14px #fa246847,0 0 12px #f23c6160}
+.result-head{text-align:center;background:radial-gradient(ellipse at 50% 35%,#203b91ba 0,transparent 67%);padding:15px 0 15px}
+.result-badge{font-size:67px;filter:drop-shadow(0 0 23px #ffc33aa1);animation:resultBounce .7s ease both}
+@keyframes resultBounce{from{opacity:0;transform:translateY(-14px) scale(.73)}to{opacity:1;transform:translateY(0) scale(1)}}
+.result-title{font-size:27px;font-weight:1000;color:#fff;letter-spacing:.4px;margin:8px 0}
+.result-caption{font-size:12px;color:#beccef}
+.result-main{background:linear-gradient(155deg,#102856,#081633);border:1px solid #447addb0;border-radius:21px;padding:15px;box-shadow:0 7px 25px #050c2799}
+.result-versus{display:flex;justify-content:space-around;align-items:center;margin-bottom:14px;text-align:center}
+.result-versus>div{flex:1}.result-versus small{display:block;color:#9fbceb;font-size:10px;letter-spacing:1.2px;font-weight:900}
+.result-versus strong{display:block;font-size:33px;color:#65cfff;font-weight:950}.result-versus>div:last-child strong{color:#fc819d}
+.result-versus .result-divider{font-size:17px;color:#ffb74b;font-weight:1000;flex:0 0 44px}
+.result-stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.result-stat{background:#0b2049;border:1px solid #2d559b;border-radius:12px;padding:9px 3px;text-align:center}
+.result-stat span{display:block;font-size:20px}.result-stat b{font-size:18px;display:block;margin:3px 0}.result-stat small{font-size:10px;color:#b2c5e9}
+.result-note{font-size:10px;line-height:1.5;color:#9fb5df;text-align:center;margin-top:14px}
+.result-section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:21px 2px 10px;font-size:14px}
+.result-section-head span{color:#8eacd6;font-size:11px}
+.result-review{display:flex;flex-direction:column;gap:8px}
+.review-row{display:flex;align-items:flex-start;gap:10px;border:1px solid #284780;border-radius:13px;background:linear-gradient(135deg,#0c2248,#0a1733);padding:12px}
+.review-mark{flex:0 0 28px;font-size:22px;line-height:1.1}
+.review-content{flex:1;min-width:0}.review-content strong{display:block;font-size:12px;line-height:1.5;margin-bottom:5px}.review-content small{display:block;font-size:11px;line-height:1.5;color:#bad0f4;overflow-wrap:anywhere}
+.review-content .given{color:#ff9fb0}.review-content .correct-answer{color:#7ef0be}
+.result-actions{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+.result-secondary{border-radius:14px;border:1px solid #466eae;background:#101f46;padding:14px 10px;font-size:14px;font-weight:900;color:#c7d8ff}
+.history-card{display:flex;flex-direction:column;gap:0}
+.history-row{padding:10px 2px;display:flex;align-items:center;justify-content:space-between;gap:9px;border-bottom:1px solid #ffffff14}
+.history-row:last-child{border:0}.history-row strong{font-size:12px}.history-row small{font-size:10px;color:#aac1e5}.history-row b{color:#ffce72;font-size:13px}
+@media(max-width:360px){.result-stat-grid{gap:4px}.result-stat{padding:8px 1px}.result-stat b{font-size:16px}.round-progress-head{font-size:10px}}
 </style></head>
 <body>
 <div class="intro" id="arenaIntro" role="status" aria-label="Kapışma Arena açılıyor">
@@ -216,8 +257,10 @@ body{background:radial-gradient(ellipse at 45% -19%,#173b89 0,transparent 47%),r
 <section id="battle" class="page">
  <div class="pagetop"><button class="back" onclick="confirmExit()">‹</button><div class="pagetitle"><span class="live-dot"></span> Arena Antrenman</div><button class="battle-config" onclick="confirmExit()">⚙️</button></div>
  <div class="vsbox"><div class="player"><div class="face">🧑🏻</div><strong>Sen</strong><small>Bronz Lig</small><div id="myscore" class="score">0</div></div><div class="vs">VS</div><div class="player opponent"><div class="face">🤖</div><strong>Arena Bot</strong><small>Demo Rakip</small><div id="botscore" class="score">0</div></div></div>
+ <div class="round-progress" aria-label="Maç ilerlemesi"><div class="round-progress-head"><span id="progressText">1 / 10 soru</span><span id="roundStatus">🎯 0 doğru • 🔥 0 seri</span></div><div class="round-track"><div id="roundFill" class="round-fill" style="width:0%"></div></div></div>
  <div class="timerbox"><div class="progressline"></div><div class="timebubble"><span id="seconds">15</span><small>sn</small></div><div class="progressline right"></div></div>
- <div class="qpanel"><div class="qmeta"><strong id="qnum">Soru 1/10</strong><span id="qcategory">🧠 Genel Kültür</span></div><div id="qdiff" class="q-difficulty">⚡ Orta seviye</div><div class="qtext" id="qtext"></div><div id="answers"><button class="answer" onclick="answer(0)"><span>A</span><b></b></button><button class="answer" onclick="answer(1)"><span>B</span><b></b></button><button class="answer" onclick="answer(2)"><span>C</span><b></b></button><button class="answer" onclick="answer(3)"><span>D</span><b></b></button></div></div>
+ <div class="qpanel"><div class="qmeta"><strong id="qnum">Soru 1/10</strong><span id="qcategory">🧠 Genel Kültür</span></div><div id="qdiff" class="q-difficulty">⚡ Orta seviye</div><div class="qtext" id="qtext"></div><div id="answers"><button class="answer" onclick="answer(0)"><span>A</span><b></b></button><button class="answer" onclick="answer(1)"><span>B</span><b></b></button><button class="answer" onclick="answer(2)"><span>C</span><b></b></button><button class="answer" onclick="answer(3)"><span>D</span><b></b></button></div>
+ <div id="answerFeedback" class="answer-feedback" role="status" aria-live="polite"></div></div>
  <div class="powerups"><div class="powerup"><button id="fifty" onclick="useFifty()">🔮</button>%50 Jokeri</div><div class="powerup"><button id="skip" onclick="skipQuestion()">🔁</button>Soru Değiştir</div><div class="powerup"><button id="extra" onclick="extraTime()">⏱️</button>Ek Süre (+10 sn)</div></div>
 </section>
 <section id="ranking" class="page">
@@ -232,7 +275,28 @@ body{background:radial-gradient(ellipse at 45% -19%,#173b89 0,transparent 47%),r
 <section id="league" class="page"><div class="pagetitle" style="margin:14px 0 22px">🛡️ Ligler</div><div class="panel golden" style="text-align:center"><div style="font-size:57px">🥉</div><div class="big">Bronz Lig</div><div style="margin-top:6px" class="label">Kendi skorunu yükselt, yeni lige geç!</div></div><div class="panel"><div class="rankrow">🥉 <span class="n">Bronz Lig</span>0–499 puan</div><div class="rankrow">🥈 <span class="n">Gümüş Lig</span>500–999 puan</div><div class="rankrow">🥇 <span class="n">Altın Lig</span>1000–1999 puan</div><div class="rankrow">💎 <span class="n">Platin Lig</span>2000+ puan</div></div><button class="fullbtn" onclick="startPractice()">Antrenmanla Puan Kazan</button></section>
 <section id="tournament" class="page"><div class="pagetitle" style="margin:14px 0 22px">🏆 Turnuvalar</div><div class="panel golden"><div class="big">👑 Günlük Arena</div><p>10 soruda en yüksek skoru yap.</p><div class="label">Test sürümünde cihaz içi günlük mücadele.</div><div class="space"></div><button class="fullbtn" onclick="startPractice()">Turnuvaya Katıl</button></div><div class="panel"><b>⚡ Haftalık Şampiyona</b><p class="label">Gerçek oyunculu turnuvalar online sunucu bağlanınca açılacak.</p></div></section>
 <section id="friends" class="page"><div class="pagetitle" style="margin:14px 0 22px">👥 Arkadaşını Davet Et</div><div class="panel" style="text-align:center"><div style="font-size:60px">🤝</div><div class="big">Arkadaş Kapışması</div><p class="label">Gerçek odalar ve davet kodları için online sunucu bağlantısı gereklidir. Test sürümünde henüz etkin değildir.</p><button class="fullbtn" onclick="startPractice()">Şimdilik Antrenman Yap</button></div></section>
-<section id="profile" class="page"><div class="pagetitle" style="margin:14px 0 22px">👤 Profilim</div><div class="panel" style="text-align:center"><div class="avatar" style="margin:auto;width:77px;height:77px;font-size:38px">🧑🏻</div><h2>Arena Oyuncusu</h2><div class="label">Seviye <span class="level">1</span> • Toplam 🪙 <span class="coins">250</span></div></div><div class="stats"><div class="stat">🎮<strong class="matches">0</strong><small>Maç</small></div><div class="stat">🏆<strong class="wins">0</strong><small>Zafer</small></div><div class="stat">🎯<strong class="ratio">0%</strong><small>Oran</small></div><div class="stat">🔥<strong class="streak">0</strong><small>Seri</small></div></div><div class="panel"><b>Test sürümü 0.4</b><p class="label">Online eşleşme için sunucu henüz bağlı değildir. İstatistikler telefonunda saklanır.</p><button class="sound-setting" id="profileSoundBtn" onclick="toggleIntroSound()">🔊 Açılış Müziği: Açık</button></div></section>
+
+<section id="results" class="page" aria-label="Maç sonuçları">
+ <div class="result-head">
+  <div id="resultBadge" class="result-badge">🏆</div>
+  <div id="resultTitle" class="result-title">Maç Tamamlandı</div>
+  <div id="resultCaption" class="result-caption">10 soruluk antrenman sonuçların</div>
+ </div>
+ <div class="result-main">
+  <div class="result-versus"><div><small>SEN</small><strong id="resultMine">0</strong></div><div class="result-divider">VS</div><div><small>ARENA BOT</small><strong id="resultBot">0</strong></div></div>
+  <div class="result-stat-grid">
+   <div class="result-stat"><span>🎯</span><b id="resultCorrect">0/10</b><small>Doğru</small></div>
+   <div class="result-stat"><span>📈</span><b id="resultAccuracy">%0</b><small>Başarı</small></div>
+   <div class="result-stat"><span>🔥</span><b id="resultStreak">0</b><small>En uzun seri</small></div>
+   <div class="result-stat"><span>🪙</span><b id="resultCoins">+0</b><small>Ödül</small></div>
+  </div>
+  <div class="result-note">Bu maç Arena Bot'a karşı oynandı. Canlı oyuncu sonucu değildir.</div>
+ </div>
+ <div class="result-section-head"><strong>📋 Cevap İncelemesi</strong><span>10 soru</span></div>
+ <div id="resultReview" class="result-review"></div>
+ <div class="result-actions"><button class="fullbtn" onclick="startPractice()">⚔️ Tekrar Kapış</button><button class="result-secondary" onclick="showPage('home')">Ana Sayfaya Dön</button></div>
+</section>
+<section id="profile" class="page"><div class="pagetitle" style="margin:14px 0 22px">👤 Profilim</div><div class="panel" style="text-align:center"><div class="avatar" style="margin:auto;width:77px;height:77px;font-size:38px">🧑🏻</div><h2>Arena Oyuncusu</h2><div class="label">Seviye <span class="level">1</span> • Toplam 🪙 <span class="coins">250</span></div></div><div class="stats"><div class="stat">🎮<strong class="matches">0</strong><small>Maç</small></div><div class="stat">🏆<strong class="wins">0</strong><small>Zafer</small></div><div class="stat">🎯<strong class="ratio">0%</strong><small>Oran</small></div><div class="stat">🔥<strong class="streak">0</strong><small>Seri</small></div></div><div class="panel"><b>Test sürümü 0.5</b><p class="label">Online eşleşme için sunucu henüz bağlı değildir. İstatistikler telefonunda saklanır.</p><button class="sound-setting" id="profileSoundBtn" onclick="toggleIntroSound()">🔊 Açılış Müziği: Açık</button></div><div class="sectiontitle">🏅 Son Maçlarım</div><div id="matchHistory" class="panel history-card"><span class="label">Henüz maç oynamadın.</span></div></section>
 </div>
 <nav class="bar"><button class="navbtn active" data-nav="home" onclick="showPage('home')"><span>🏠</span>Ana Sayfa</button><button class="navbtn" data-nav="tournament" onclick="showPage('tournament')"><span>🏆</span>Turnuva</button><button class="navbtn" data-nav="battle" onclick="startPractice()"><span>⚔️</span>Kapışma</button><button class="navbtn" data-nav="league" onclick="showPage('league')"><span>🛡️</span>Ligler</button><button class="navbtn" data-nav="profile" onclick="showPage('profile')"><span>👤</span>Profil</button></nav>
 <div id="modal" class="modal"><div class="modalbody"><div id="modalicon" style="font-size:58px">🏆</div><h2 id="modaltitle">Sonuç</h2><p id="modaltext" class="label"></p><button class="fullbtn" id="modalaction" onclick="hideModal()">Tamam</button><div class="space"></div><button style="border:0;background:transparent;color:#a6c9ff;padding:11px" onclick="hideModal()">Kapat</button></div></div>
@@ -332,12 +396,35 @@ function drawQuestionsV4(count){
 }
 updateOptionsUi();
 
-let page='home', bank=[],idx=0,left=15,my=0,bot=0,clock=null,locked=false,used={};
-const defaultState={coins:250,matches:0,wins:0,streak:0,lastGift:''};
+let page='home', bank=[],idx=0,left=15,my=0,bot=0,clock=null,locked=false,used={},correctCount=0,roundStreak=0,bestRoundStreak=0,answersLog=[],pendingTimer=null,questionStart=0,roundSerial=0;
+const defaultState={coins:250,matches:0,wins:0,streak:0,lastGift:'',questionsAnswered:0,correctAnswers:0,history:[]};
 let stats=defaultState;try{stats=Object.assign({},defaultState,JSON.parse(localStorage.getItem('arenaStats')||'{}'))}catch(e){}
 function persist(){try{localStorage.setItem('arenaStats',JSON.stringify(stats))}catch(e){}}
-function refreshStats(){document.querySelectorAll('.coins').forEach(x=>x.textContent=stats.coins);document.querySelectorAll('.matches').forEach(x=>x.textContent=stats.matches);document.querySelectorAll('.wins').forEach(x=>x.textContent=stats.wins);document.querySelectorAll('.streak').forEach(x=>x.textContent=stats.streak);document.querySelectorAll('.ratio').forEach(x=>x.textContent=(stats.matches?Math.round(stats.wins/stats.matches*100):0)+'%');document.querySelectorAll('.level').forEach(x=>x.textContent=Math.max(1,Math.floor(stats.coins/250)))}
-function showPage(p){if(!document.getElementById(p))p='home';clearInterval(clock);page=p;document.body.classList.toggle('battle-mode',p==='battle');document.querySelectorAll('.page').forEach(e=>e.classList.toggle('active',e.id===p));document.querySelectorAll('.navbtn').forEach(e=>e.classList.toggle('active',e.dataset.nav===p));window.scrollTo(0,0);refreshStats()}
+
+function refreshStats(){
+ document.querySelectorAll('.coins').forEach(x=>x.textContent=stats.coins);
+ document.querySelectorAll('.matches').forEach(x=>x.textContent=stats.matches);
+ document.querySelectorAll('.wins').forEach(x=>x.textContent=stats.wins);
+ document.querySelectorAll('.streak').forEach(x=>x.textContent=stats.streak);
+ document.querySelectorAll('.ratio').forEach(x=>x.textContent=(stats.matches?Math.round(stats.wins/stats.matches*100):0)+'%');
+ document.querySelectorAll('.level').forEach(x=>x.textContent=Math.max(1,Math.floor(stats.coins/250)));
+}
+function renderMatchHistory(){
+ const wrap=document.getElementById('matchHistory');if(!wrap)return;
+ wrap.replaceChildren();
+ const entries=Array.isArray(stats.history)?stats.history.slice(0,6):[];
+ if(!entries.length){const empty=document.createElement('span');empty.className='label';empty.textContent='İlk maçını oyna, sonuçların burada saklansın.';wrap.appendChild(empty);return}
+ for(const entry of entries){
+  const row=document.createElement('div');row.className='history-row';
+  const info=document.createElement('div');
+  const title=document.createElement('strong');title.textContent=(entry.win?'🏆 Galibiyet':entry.draw?'🤝 Beraberlik':'⚔️ Mağlubiyet')+' · '+(entry.cat||'Karışık');
+  const meta=document.createElement('small');meta.textContent=(entry.date||'')+' · '+(entry.diff||'Orta')+' · '+(entry.correct||0)+'/10 doğru';
+  info.append(title,meta);
+  const score=document.createElement('b');score.textContent=(entry.mine||0)+' / '+(entry.bot||0);
+  row.append(info,score);wrap.appendChild(row);
+ }
+}
+function showPage(p){if(!document.getElementById(p))p='home';clearInterval(clock);page=p;document.body.classList.toggle('battle-mode',p==='battle');document.querySelectorAll('.page').forEach(e=>e.classList.toggle('active',e.id===p));document.querySelectorAll('.navbtn').forEach(e=>e.classList.toggle('active',e.dataset.nav===p));window.scrollTo(0,0);refreshStats();if(p==='profile')renderMatchHistory()}
 function modal(title,msg,icon,action,label){document.getElementById('modalicon').textContent=icon||'🏆';document.getElementById('modaltitle').textContent=title;document.getElementById('modaltext').textContent=msg;const b=document.getElementById('modalaction');b.textContent=label||'Tamam';b.onclick=action||hideModal;document.getElementById('modal').classList.add('show')}
 function hideModal(){document.getElementById('modal').classList.remove('show')}
 function notice(t,m){modal(t,m,'🔔')}
@@ -370,14 +457,138 @@ function drawQuestions(count){
   return [row[0],list.map(x=>x.ans),list.findIndex(x=>x.valid),row[3]||'Genel Kültür'];
  });
 }
-function startPractice(){hideModal();bank=drawQuestionsV4(10);idx=0;my=0;bot=0;used={};document.querySelectorAll('.powerup button').forEach(e=>{e.disabled=false;e.style.opacity=1});showPage('battle');renderQ()}
-function renderQ(){if(idx>=bank.length){endMatch();return}locked=false;left=chosenSeconds;document.getElementById('seconds').textContent=left;document.getElementById('myscore').textContent=my;document.getElementById('botscore').textContent=bot;document.getElementById('qnum').textContent='Soru '+(idx+1)+'/10';document.getElementById('qtext').textContent=bank[idx][0];document.getElementById('qcategory').textContent='✦ '+bank[idx][3];document.getElementById('qdiff').textContent=(chosenDifficulty==='Zor'?'🔥 ':chosenDifficulty==='Orta'?'⚡ ':'🌱 ')+chosenDifficulty+' seviye';document.querySelectorAll('#answers .answer').forEach((e,i)=>{e.className='answer';e.disabled=false;e.style.visibility='visible';e.querySelector('b').textContent=bank[idx][1][i]});clearInterval(clock);clock=setInterval(()=>{left-=1;document.getElementById('seconds').textContent=left;if(left<=0)answer(-1)},1000)}
-function answer(i){if(locked)return;locked=true;clearInterval(clock);const correct=bank[idx][2];document.querySelectorAll('#answers .answer').forEach((e,n)=>{e.disabled=true;if(n===correct)e.classList.add('correct');else if(n===i)e.classList.add('wrong')});if(i===correct)my+=100+left*5;if(Math.random()>.28)bot+=100+Math.floor(Math.random()*50);document.getElementById('myscore').textContent=my;document.getElementById('botscore').textContent=bot;setTimeout(()=>{const panel=document.querySelector('.qpanel');panel.classList.add('q-leave');setTimeout(()=>{if(page!=='battle')return;idx++;renderQ();panel.classList.remove('q-leave');panel.classList.add('q-enter');setTimeout(()=>panel.classList.remove('q-enter'),425)},300)},1650)}
-function useFifty(){if(used.fifty||locked)return;used.fifty=true;document.getElementById('fifty').disabled=true;document.getElementById('fifty').style.opacity=.35;let hidden=0;document.querySelectorAll('#answers .answer').forEach((e,i)=>{if(i!==bank[idx][2]&&hidden<2){e.style.visibility='hidden';hidden++}})}
-function skipQuestion(){if(used.skip||locked)return;used.skip=true;document.getElementById('skip').disabled=true;document.getElementById('skip').style.opacity=.35;clearInterval(clock);idx++;renderQ()}
-function extraTime(){if(used.extra||locked)return;used.extra=true;document.getElementById('extra').disabled=true;document.getElementById('extra').style.opacity=.35;left+=10;document.getElementById('seconds').textContent=left}
-function endMatch(){clearInterval(clock);stats.matches++;const win=my>bot;if(win){stats.wins++;stats.streak++;stats.coins+=100}else{stats.streak=0;stats.coins+=15}persist();refreshStats();modal(win?'Kazandın!':'Kapışma Bitti', 'Skorun: '+my+' • Arena Bot: '+bot+' • '+(win?'100':'15')+' altın kazandın. Bu test, gerçek online eşleşme değildir.',win?'🏆':'⚔️',()=>{hideModal();showPage('home')},'Ana Sayfaya Dön')}
-function confirmExit(){clearInterval(clock);modal('Maçtan Çıkılsın mı?','İlerlemen bu maç için kaydedilmeyecek.','⚠️',()=>{hideModal();showPage('home')},'Evet, Çık')}
+
+function clearRoundTimers(){
+ clearInterval(clock);clock=null;
+ if(pendingTimer!==null){clearTimeout(pendingTimer);pendingTimer=null}
+}
+function updateRoundStatus(){
+ document.getElementById('progressText').textContent=(Math.min(idx+1,10))+' / 10 soru';
+ document.getElementById('roundFill').style.width=(idx/10*100)+'%';
+ document.getElementById('roundStatus').textContent='🎯 '+correctCount+' doğru • 🔥 '+roundStreak+' seri';
+}
+function startPractice(){
+ hideModal();clearRoundTimers();roundSerial++;
+ bank=drawQuestionsV4(10);idx=0;my=0;bot=0;correctCount=0;roundStreak=0;bestRoundStreak=0;answersLog=[];used={};locked=false;
+ document.querySelectorAll('.powerup button').forEach(e=>{e.disabled=false;e.style.opacity=1});
+ showPage('battle');renderQ();
+}
+function renderQ(){
+ clearRoundTimers();if(page!=='battle')return;
+ if(idx>=bank.length){endMatch();return}
+ locked=false;left=chosenSeconds;questionStart=Date.now();
+ document.getElementById('seconds').textContent=left;
+ document.getElementById('myscore').textContent=my;document.getElementById('botscore').textContent=bot;
+ document.getElementById('qnum').textContent='Soru '+(idx+1)+'/10';
+ document.getElementById('qtext').textContent=bank[idx][0];
+ document.getElementById('qcategory').textContent='✦ '+bank[idx][3];
+ document.getElementById('qdiff').textContent=(chosenDifficulty==='Zor'?'🔥 ':chosenDifficulty==='Orta'?'⚡ ':'🌱 ')+chosenDifficulty+' seviye';
+ const feedback=document.getElementById('answerFeedback');
+ feedback.className='answer-feedback';feedback.textContent='';
+ const buttons=document.querySelectorAll('#answers .answer');
+ buttons.forEach((e,i)=>{
+  e.className='answer';e.disabled=false;e.style.visibility='visible';
+  e.querySelector('b').textContent=bank[idx][1][i];
+  e.setAttribute('aria-label',String.fromCharCode(65+i)+' seçeneği: '+bank[idx][1][i]);
+ });
+ updateRoundStatus();
+ clock=setInterval(()=>{
+  left=Math.max(0,chosenSeconds-Math.floor((Date.now()-questionStart)/1000));
+  document.getElementById('seconds').textContent=left;
+  if(left<=0)answer(-1);
+ },200);
+}
+function answer(choice){
+ if(locked||page!=='battle'||idx>=bank.length)return;
+ locked=true;clearInterval(clock);clock=null;
+ const row=bank[idx],correct=row[2],success=choice===correct;
+ const correctText=row[1][correct],picked=choice>=0?row[1][choice]:null;
+ const buttons=document.querySelectorAll('#answers .answer');
+ buttons.forEach((e,n)=>{e.disabled=true;if(n===correct)e.classList.add('correct');else if(n===choice)e.classList.add('wrong')});
+ let earned=0;
+ if(success){
+  correctCount++;roundStreak++;bestRoundStreak=Math.max(bestRoundStreak,roundStreak);
+  earned=100+Math.max(0,left)*5+Math.min(5,roundStreak-1)*15;my+=earned;
+ }else roundStreak=0;
+ // Bot is simulated; do not imply real multiplayer or verified competitive scores.
+ if(Math.random()>(chosenDifficulty==='Zor'?.16:chosenDifficulty==='Orta'?.25:.37))bot+=100+Math.floor(Math.random()*70);
+ answersLog.push({question:row[0],picked,correct:correctText,success,skipped:choice===-2,timedOut:choice===-1,earned});
+ document.getElementById('myscore').textContent=my;
+ document.getElementById('botscore').textContent=bot;
+ updateRoundStatus();
+ const feedback=document.getElementById('answerFeedback');
+ feedback.className='answer-feedback visible '+(success?'ok':'no');
+ feedback.textContent=success?('✓ Doğru! +'+earned+' puan'+(roundStreak>=2?' · '+roundStreak+' doğru seri!':'')):(choice===-1?'⌛ Süre doldu. ':choice===-2?'↪ Soru geçildi. ':'✕ Yanlış cevap. ')+'Doğru cevap: '+correctText;
+ const serial=roundSerial;
+ pendingTimer=setTimeout(()=>{
+  pendingTimer=null;if(page!=='battle'||serial!==roundSerial)return;
+  const panel=document.querySelector('.qpanel');
+  panel.classList.add('q-leave');
+  pendingTimer=setTimeout(()=>{
+   pendingTimer=null;if(page!=='battle'||serial!==roundSerial)return;
+   idx++;panel.classList.remove('q-leave');
+   renderQ();panel.classList.add('q-enter');
+   pendingTimer=setTimeout(()=>{pendingTimer=null;panel.classList.remove('q-enter')},420);
+  },285);
+ },1750);
+}
+function useFifty(){
+ if(used.fifty||locked||page!=='battle')return;
+ used.fifty=true;
+ const b=document.getElementById('fifty');b.disabled=true;b.style.opacity=.35;
+ let hidden=0;
+ document.querySelectorAll('#answers .answer').forEach((e,i)=>{
+  if(i!==bank[idx][2]&&hidden<2){e.style.visibility='hidden';hidden++}
+ });
+}
+function skipQuestion(){
+ if(used.skip||locked||page!=='battle')return;
+ used.skip=true;const b=document.getElementById('skip');b.disabled=true;b.style.opacity=.35;
+ answer(-2);
+}
+function extraTime(){
+ if(used.extra||locked||page!=='battle')return;
+ used.extra=true;const b=document.getElementById('extra');b.disabled=true;b.style.opacity=.35;
+ chosenSeconds+=10;document.getElementById('seconds').textContent=left+10;
+ // Extend only this question, restoring chosenSeconds on the next question.
+ questionStart+=10000;
+}
+function endMatch(){
+ clearRoundTimers();roundSerial++;
+ const win=my>bot,draw=my===bot,reward=win?100:draw?45:15;
+ stats.matches=(stats.matches||0)+1;
+ if(win){stats.wins=(stats.wins||0)+1;stats.streak=(stats.streak||0)+1}else stats.streak=0;
+ stats.coins=(stats.coins||0)+reward;
+ stats.questionsAnswered=(stats.questionsAnswered||0)+answersLog.length;
+ stats.correctAnswers=(stats.correctAnswers||0)+correctCount;
+ if(!Array.isArray(stats.history))stats.history=[];
+ stats.history.unshift({date:new Date().toLocaleDateString('tr-TR'),cat:chosenCategory,diff:chosenDifficulty,mine:my,bot,correct:correctCount,win,draw});
+ stats.history=stats.history.slice(0,25);
+ persist();refreshStats();
+ document.getElementById('roundFill').style.width='100%';
+ document.getElementById('resultBadge').textContent=win?'🏆':draw?'🤝':'⚔️';
+ document.getElementById('resultTitle').textContent=win?'ARENA GALİBİ!':draw?'BERABERE!':'KAPIŞMA TAMAMLANDI';
+ document.getElementById('resultCaption').textContent=chosenCategory+' · '+chosenDifficulty+' · 10 soru';
+ document.getElementById('resultMine').textContent=my;
+ document.getElementById('resultBot').textContent=bot;
+ document.getElementById('resultCorrect').textContent=correctCount+'/10';
+ document.getElementById('resultAccuracy').textContent='%'+(correctCount*10);
+ document.getElementById('resultStreak').textContent=bestRoundStreak;
+ document.getElementById('resultCoins').textContent='+'+reward;
+ const review=document.getElementById('resultReview');review.replaceChildren();
+ answersLog.forEach((entry,i)=>{
+  const row=document.createElement('div');row.className='review-row';
+  const mark=document.createElement('div');mark.className='review-mark';mark.textContent=entry.success?'✅':'❌';
+  const content=document.createElement('div');content.className='review-content';
+  const title=document.createElement('strong');title.textContent=(i+1)+'. '+entry.question;
+  const answer=document.createElement('small');answer.className='correct-answer';answer.textContent='Doğru cevap: '+entry.correct;
+  content.append(title,answer);
+  if(!entry.success){const given=document.createElement('small');given.className='given';given.textContent='Senin cevabın: '+(entry.picked|| (entry.timedOut?'Süre doldu':'Pas geçildi'));content.appendChild(given)}
+  row.append(mark,content);review.appendChild(row);
+ });
+ showPage('results');
+}
+function confirmExit(){clearRoundTimers();modal('Maçtan Çıkılsın mı?','Bu antrenman tamamlanmadı. Çıkarsan maç puanın kaydedilmeyecek.','⚠️',()=>{hideModal();roundSerial++;showPage('home')},'Evet, Çık')}
 function pickTab(el){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');}
 window.goBack=function(){if(document.getElementById('modal').classList.contains('show'))hideModal();else if(page==='battle')confirmExit();else showPage('home')};refreshStats();
 
