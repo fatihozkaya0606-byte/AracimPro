@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><meta name="theme-color" content="#030b1f"><title>Kapışma Arena v0.2</title>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><meta name="theme-color" content="#030b1f"><title>Kapışma Arena v0.3</title>
 <style>
 :root{--bg:#020917;--panel:#0a1836;--panel2:#0c234b;--blue:#1e9eff;--cyan:#31eaff;--gold:#ffb82e;--purple:#aa4dff;--muted:#9aabd2;--border:rgba(72,130,245,.27)}
 *{box-sizing:border-box}html,body{margin:0;padding:0;background:#020916;color:#fff;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-tap-highlight-color:transparent}body{min-height:100vh;background:radial-gradient(ellipse at 60% -12%,#182a72 0,transparent 52%),radial-gradient(circle at 90% 43%,#1c124b 0,transparent 45%),#020916}
@@ -70,8 +70,82 @@ body{background:radial-gradient(ellipse at 45% -19%,#173b89 0,transparent 47%),r
 @media(prefers-reduced-motion:reduce){.crown,.spark,.start:before{animation:none}}
 
 .battle-mode .bar{display:none!important}.battle-mode #app{padding-bottom:18px}.battle-mode .page{padding-bottom:25px}
+
+/* v0.3 — compact cards and deliberate, premium transitions */
+.page{animation:pageGlide .36s cubic-bezier(.2,.65,.22,1)}
+@keyframes pageGlide{from{opacity:.12;transform:translateY(11px) scale(.993)}to{opacity:1;transform:translateY(0) scale(1)}}
+.hero{height:207px;border-radius:21px}
+.hero .logo1{font-size:43px}
+.hero .logo2{font-size:49px}
+.hero .crown{font-size:33px}
+.hero-status{top:10px;font-size:8px;padding:4px 9px}
+.hero-bottom{bottom:11px;font-size:8px;padding:4px 8px}
+.hero .tagline{font-size:8.5px;margin-top:11px}
+.halo.one{width:310px;height:170px}.halo.two{width:220px;height:125px}
+.start{min-height:72px;padding:10px 14px;margin:12px 0 13px;border-radius:16px;gap:10px}
+.start strong{font-size:17px}.start .symbol{font-size:29px}.start span.small{font-size:10px}
+.roundarr{height:33px;width:33px}
+.tiles{gap:9px}
+.tile{min-height:106px;padding:8px 7px;gap:3px;border-radius:14px}
+.tile .ico{font-size:24px;width:45px;height:37px;filter:drop-shadow(0 0 8px #608eff)}
+.tile b{font-size:13.2px;line-height:1.22}
+.tile small{font-size:10px;line-height:1.23}
+.gift{min-height:78px;margin-top:12px;padding:9px 12px;gap:9px;border-radius:14px}
+.gifticon{font-size:32px}.gift b{font-size:12px}.gift small{font-size:10px}
+.gift button{padding:5px 15px;margin-top:4px;font-size:12px}
+#home>.fullbtn{margin-top:11px!important;padding:11px 10px;font-size:13px}
+.qpanel{transition:opacity .30s ease,transform .30s ease,box-shadow .3s ease}
+.qpanel.q-leave{opacity:0;transform:translateX(-15px) scale(.985)}
+.qpanel.q-enter{animation:questionIn .4s cubic-bezier(.18,.78,.27,1)}
+@keyframes questionIn{from{opacity:.15;transform:translateX(16px) scale(.986)}to{opacity:1;transform:translateX(0) scale(1)}}
+.answer{transition:background .22s ease,border-color .22s ease,box-shadow .22s ease,transform .18s ease}
+.answer.correct{box-shadow:0 0 24px #19d78588,inset 0 0 12px #ffffff13}
+.answer.wrong{box-shadow:0 0 18px #ff386782}
+.sound-setting{margin-top:15px;width:100%;padding:13px;color:#d5e8ff;background:#122d58;border:1px solid #4775b4;border-radius:13px;font-size:13px;font-weight:800}
+/* Native-audio splash: held for exactly 3.5 seconds */
+.intro{position:fixed;inset:0;z-index:100;overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff;background:radial-gradient(ellipse at 50% 42%,#263b9d 0,#0a1b51 33%,#060c2b 70%,#020516 100%);opacity:1;transition:opacity .45s ease,visibility .45s ease}
+.intro.intro-off{opacity:0;visibility:hidden;pointer-events:none}
+.intro:before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(115deg,transparent 0 38px,#ffffff07 40px 41px);mask-image:linear-gradient(transparent,#000 60%,transparent);transform:scale(1.1);animation:introScan 3.5s linear both}
+.intro:after{content:'';position:absolute;width:125%;height:140px;border:2px solid #637bff6b;bottom:9%;border-radius:50%;transform:perspective(170px) rotateX(65deg);box-shadow:0 0 34px #8469ffc0,0 0 100px #e98a2460}
+.intro-glow{position:absolute;bottom:9%;width:80%;height:35%;border-radius:50%;filter:blur(68px);background:#d8675552;opacity:.6;animation:introGlow 3.5s ease infinite}
+.intro-inner{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;width:92%;max-width:400px;transform:translateY(-6vh)}
+.intro-topline{color:#b3c8f6;font-size:10px;font-weight:800;letter-spacing:2px;white-space:nowrap;animation:introFade 1.1s .1s both}
+.intro-crown{font-size:69px;filter:drop-shadow(0 0 24px #ffad23);margin:23px 0 2px;animation:introCrown 3.5s ease-in-out both}
+.intro-logo{display:flex;flex-direction:column;align-items:center;line-height:.91;filter:drop-shadow(0 8px 2px #01071d);animation:introLogo 3.5s cubic-bezier(.17,.65,.22,1) both}
+.intro-logo span{font-size:clamp(47px,12vw,68px);font-weight:1000;letter-spacing:-2.3px;background:linear-gradient(#fff,#eff5ff 40%,#929dcb 82%,#fcffff);color:transparent;background-clip:text;-webkit-background-clip:text;text-shadow:0 2px 2px #2b4c7145}
+.intro-logo b{font-size:clamp(58px,15vw,86px);font-weight:1000;letter-spacing:1px;color:transparent;background:linear-gradient(#fff2a3,#ffb82b 56%,#bc4c06);background-clip:text;-webkit-background-clip:text}
+.intro-vs{font-size:70px;color:#ffa721;margin-top:30px;filter:drop-shadow(0 0 18px #fc7c16);animation:introVs 1.5s 1.1s both}
+.intro-subtitle{font-weight:950;font-size:12px;letter-spacing:3.4px;margin:5px 0 24px;color:#b7d4ff;text-shadow:0 0 10px #6ca5ff}
+.intro-loading{width:75%;max-width:290px;height:6px;background:#14244b;border:1px solid #5e86e48c;border-radius:15px;overflow:hidden;box-shadow:0 0 12px #557af663}
+.intro-fill{width:0;height:100%;border-radius:12px;background:linear-gradient(90deg,#1976f3,#54cbff,#ffcf57);animation:fillIntro 3.5s linear both}
+.intro-bottom{margin-top:11px;letter-spacing:1.3px;color:#90afe8;font-size:9px;font-weight:750}
+.intro-sound{position:absolute;z-index:3;right:17px;bottom:max(27px,env(safe-area-inset-bottom));border:1px solid #5575bf9a;color:#c4daff;background:#0a1743b0;padding:10px 14px;border-radius:22px;font-size:12px;font-weight:850}
+.intro-particles i{position:absolute;z-index:1;width:5px;height:5px;background:#ffd473;box-shadow:0 0 13px #ffd473;border-radius:50%;animation:particleMove 3.5s ease-in-out infinite alternate}
+.intro-particles i:nth-child(1){left:15%;top:21%;animation-delay:.2s}.intro-particles i:nth-child(2){left:79%;top:26%;animation-delay:.8s}.intro-particles i:nth-child(3){left:13%;top:68%;animation-delay:1.2s}.intro-particles i:nth-child(4){left:85%;top:70%;animation-delay:.5s}.intro-particles i:nth-child(5){left:51%;top:15%;animation-delay:1.6s}
+@keyframes fillIntro{to{width:100%}}@keyframes introGlow{50%{opacity:1;transform:scale(1.18)}}@keyframes introScan{to{transform:translateX(-6%) scale(1.1)}}@keyframes introFade{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes introCrown{0%{opacity:0;transform:translateY(-43px) scale(.7)}24%{opacity:1;transform:translateY(0) scale(1.1)}37%{transform:scale(1)}100%{transform:scale(1.025)}}
+@keyframes introLogo{0%{opacity:0;transform:scale(.65)}30%{opacity:1;transform:scale(1.08)}45%,100%{transform:scale(1)}}
+@keyframes introVs{from{opacity:0;transform:translateY(20px) scale(.7)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes particleMove{from{opacity:.22;transform:translateY(16px) scale(.5)}to{opacity:.95;transform:translateY(-19px) scale(1.6)}}
+@media(max-width:360px){.hero{height:185px}.hero .logo1{font-size:39px}.hero .logo2{font-size:43px}.tile{min-height:96px}.tile small{font-size:9px}.intro-topline{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.intro-crown,.intro-logo,.intro-vs,.intro-particles i,.intro-glow,.intro:before{animation:none}.intro-fill{animation:fillIntro 3.5s linear both}}
 </style></head>
-<body><div id="app">
+<body>
+<div class="intro" id="arenaIntro" role="status" aria-label="Kapışma Arena açılıyor">
+  <div class="intro-glow"></div>
+  <div class="intro-particles"><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="intro-inner">
+    <div class="intro-topline">✦ BİLGİYLE KAPIŞ, ZİRVEYE ÇIK! ✦</div>
+    <div class="intro-crown">👑</div>
+    <div class="intro-logo"><span>KAPIŞMA</span><b>ARENA</b></div>
+    <div class="intro-vs">⚔</div>
+    <div class="intro-subtitle">ARENA SENİ BEKLİYOR</div>
+    <div class="intro-loading"><div class="intro-fill"></div></div>
+    <div class="intro-bottom">RAKİBİNİ BUL • ZİRVEYE OYNA</div>
+  </div>
+  <button id="introSoundBtn" class="intro-sound" onclick="toggleIntroSound()" aria-label="Açılış sesini kapat">🔊 Ses Açık</button>
+</div>
+<div id="app">
 <section id="home" class="page active">
  <div class="topline"><div class="userbit"><div class="avatar">🧑🏻</div><div><div class="name">Arena Oyuncusu</div><div class="sub">✦ Seviye <span class="level">1</span></div></div></div><div class="pill">🪙 <span class="coins">250</span></div><div class="dotalert" onclick="notice('Bildirimler','Turnuvalar açıldığında burada görünecek.')">🔔</div></div>
  <div class="hero"><div class="halo one"></div><div class="halo two"></div><div class="arena-light left"></div><div class="arena-light right"></div><div class="arena-floor"></div><div class="spark s1">✧</div><div class="spark s2">✦</div><div class="spark s3">✧</div><div class="spark s4">✦</div><div class="hero-status">✦ KAPIŞMA ARENA • SEZON 1 ✦</div><div class="crown">👑</div><div class="logo"><div class="logo1">KAPIŞMA</div><div class="logo2">ARENA</div></div><div class="tagline">BİLGİYLE KAPIŞ, ZİRVEYE ÇIK!</div><div class="hero-bottom">⚡ HIZLI KAPIŞMA <span>•</span> 🏆 ŞAMPİYONLUK</div></div>
@@ -99,7 +173,7 @@ body{background:radial-gradient(ellipse at 45% -19%,#173b89 0,transparent 47%),r
 <section id="league" class="page"><div class="pagetitle" style="margin:14px 0 22px">🛡️ Ligler</div><div class="panel golden" style="text-align:center"><div style="font-size:57px">🥉</div><div class="big">Bronz Lig</div><div style="margin-top:6px" class="label">Kendi skorunu yükselt, yeni lige geç!</div></div><div class="panel"><div class="rankrow">🥉 <span class="n">Bronz Lig</span>0–499 puan</div><div class="rankrow">🥈 <span class="n">Gümüş Lig</span>500–999 puan</div><div class="rankrow">🥇 <span class="n">Altın Lig</span>1000–1999 puan</div><div class="rankrow">💎 <span class="n">Platin Lig</span>2000+ puan</div></div><button class="fullbtn" onclick="startPractice()">Antrenmanla Puan Kazan</button></section>
 <section id="tournament" class="page"><div class="pagetitle" style="margin:14px 0 22px">🏆 Turnuvalar</div><div class="panel golden"><div class="big">👑 Günlük Arena</div><p>10 soruda en yüksek skoru yap.</p><div class="label">Test sürümünde cihaz içi günlük mücadele.</div><div class="space"></div><button class="fullbtn" onclick="startPractice()">Turnuvaya Katıl</button></div><div class="panel"><b>⚡ Haftalık Şampiyona</b><p class="label">Gerçek oyunculu turnuvalar online sunucu bağlanınca açılacak.</p></div></section>
 <section id="friends" class="page"><div class="pagetitle" style="margin:14px 0 22px">👥 Arkadaşını Davet Et</div><div class="panel" style="text-align:center"><div style="font-size:60px">🤝</div><div class="big">Arkadaş Kapışması</div><p class="label">Gerçek odalar ve davet kodları için online sunucu bağlantısı gereklidir. Test sürümünde henüz etkin değildir.</p><button class="fullbtn" onclick="startPractice()">Şimdilik Antrenman Yap</button></div></section>
-<section id="profile" class="page"><div class="pagetitle" style="margin:14px 0 22px">👤 Profilim</div><div class="panel" style="text-align:center"><div class="avatar" style="margin:auto;width:77px;height:77px;font-size:38px">🧑🏻</div><h2>Arena Oyuncusu</h2><div class="label">Seviye <span class="level">1</span> • Toplam 🪙 <span class="coins">250</span></div></div><div class="stats"><div class="stat">🎮<strong class="matches">0</strong><small>Maç</small></div><div class="stat">🏆<strong class="wins">0</strong><small>Zafer</small></div><div class="stat">🎯<strong class="ratio">0%</strong><small>Oran</small></div><div class="stat">🔥<strong class="streak">0</strong><small>Seri</small></div></div><div class="panel"><b>Test sürümü 0.1</b><p class="label">Online eşleşme için sunucu henüz bağlı değildir. İstatistikler telefonunda saklanır.</p></div></section>
+<section id="profile" class="page"><div class="pagetitle" style="margin:14px 0 22px">👤 Profilim</div><div class="panel" style="text-align:center"><div class="avatar" style="margin:auto;width:77px;height:77px;font-size:38px">🧑🏻</div><h2>Arena Oyuncusu</h2><div class="label">Seviye <span class="level">1</span> • Toplam 🪙 <span class="coins">250</span></div></div><div class="stats"><div class="stat">🎮<strong class="matches">0</strong><small>Maç</small></div><div class="stat">🏆<strong class="wins">0</strong><small>Zafer</small></div><div class="stat">🎯<strong class="ratio">0%</strong><small>Oran</small></div><div class="stat">🔥<strong class="streak">0</strong><small>Seri</small></div></div><div class="panel"><b>Test sürümü 0.3</b><p class="label">Online eşleşme için sunucu henüz bağlı değildir. İstatistikler telefonunda saklanır.</p><button class="sound-setting" id="profileSoundBtn" onclick="toggleIntroSound()">🔊 Açılış Müziği: Açık</button></div></section>
 </div>
 <nav class="bar"><button class="navbtn active" data-nav="home" onclick="showPage('home')"><span>🏠</span>Ana Sayfa</button><button class="navbtn" data-nav="tournament" onclick="showPage('tournament')"><span>🏆</span>Turnuva</button><button class="navbtn" data-nav="battle" onclick="startPractice()"><span>⚔️</span>Kapışma</button><button class="navbtn" data-nav="league" onclick="showPage('league')"><span>🛡️</span>Ligler</button><button class="navbtn" data-nav="profile" onclick="showPage('profile')"><span>👤</span>Profil</button></nav>
 <div id="modal" class="modal"><div class="modalbody"><div id="modalicon" style="font-size:58px">🏆</div><h2 id="modaltitle">Sonuç</h2><p id="modaltext" class="label"></p><button class="fullbtn" id="modalaction" onclick="hideModal()">Tamam</button><div class="space"></div><button style="border:0;background:transparent;color:#a6c9ff;padding:11px" onclick="hideModal()">Kapat</button></div></div>
@@ -172,7 +246,7 @@ function drawQuestions(count){
 }
 function startPractice(){hideModal();bank=drawQuestions(10);idx=0;my=0;bot=0;used={};document.querySelectorAll('.powerup button').forEach(e=>{e.disabled=false;e.style.opacity=1});showPage('battle');renderQ()}
 function renderQ(){if(idx>=bank.length){endMatch();return}locked=false;left=15;document.getElementById('seconds').textContent=left;document.getElementById('myscore').textContent=my;document.getElementById('botscore').textContent=bot;document.getElementById('qnum').textContent='Soru '+(idx+1)+'/10';document.getElementById('qtext').textContent=bank[idx][0];document.getElementById('qcategory').textContent='✦ '+bank[idx][3];document.querySelectorAll('#answers .answer').forEach((e,i)=>{e.className='answer';e.disabled=false;e.style.visibility='visible';e.querySelector('b').textContent=bank[idx][1][i]});clearInterval(clock);clock=setInterval(()=>{left-=1;document.getElementById('seconds').textContent=left;if(left<=0)answer(-1)},1000)}
-function answer(i){if(locked)return;locked=true;clearInterval(clock);const correct=bank[idx][2];document.querySelectorAll('#answers .answer').forEach((e,n)=>{e.disabled=true;if(n===correct)e.classList.add('correct');else if(n===i)e.classList.add('wrong')});if(i===correct)my+=100+left*5;if(Math.random()>.28)bot+=100+Math.floor(Math.random()*50);document.getElementById('myscore').textContent=my;document.getElementById('botscore').textContent=bot;setTimeout(()=>{idx++;renderQ()},950)}
+function answer(i){if(locked)return;locked=true;clearInterval(clock);const correct=bank[idx][2];document.querySelectorAll('#answers .answer').forEach((e,n)=>{e.disabled=true;if(n===correct)e.classList.add('correct');else if(n===i)e.classList.add('wrong')});if(i===correct)my+=100+left*5;if(Math.random()>.28)bot+=100+Math.floor(Math.random()*50);document.getElementById('myscore').textContent=my;document.getElementById('botscore').textContent=bot;setTimeout(()=>{const panel=document.querySelector('.qpanel');panel.classList.add('q-leave');setTimeout(()=>{if(page!=='battle')return;idx++;renderQ();panel.classList.remove('q-leave');panel.classList.add('q-enter');setTimeout(()=>panel.classList.remove('q-enter'),425)},300)},1650)}
 function useFifty(){if(used.fifty||locked)return;used.fifty=true;document.getElementById('fifty').disabled=true;document.getElementById('fifty').style.opacity=.35;let hidden=0;document.querySelectorAll('#answers .answer').forEach((e,i)=>{if(i!==bank[idx][2]&&hidden<2){e.style.visibility='hidden';hidden++}})}
 function skipQuestion(){if(used.skip||locked)return;used.skip=true;document.getElementById('skip').disabled=true;document.getElementById('skip').style.opacity=.35;clearInterval(clock);idx++;renderQ()}
 function extraTime(){if(used.extra||locked)return;used.extra=true;document.getElementById('extra').disabled=true;document.getElementById('extra').style.opacity=.35;left+=10;document.getElementById('seconds').textContent=left}
@@ -180,4 +254,26 @@ function endMatch(){clearInterval(clock);stats.matches++;const win=my>bot;if(win
 function confirmExit(){clearInterval(clock);modal('Maçtan Çıkılsın mı?','İlerlemen bu maç için kaydedilmeyecek.','⚠️',()=>{hideModal();showPage('home')},'Evet, Çık')}
 function pickTab(el){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');}
 window.goBack=function(){if(document.getElementById('modal').classList.contains('show'))hideModal();else if(page==='battle')confirmExit();else showPage('home')};refreshStats();
+
+/* v0.3 audio preferences + native launch fanfare */
+let introSoundEnabled=true;
+try{introSoundEnabled=localStorage.getItem('arena-intro-sound')!=='off'}catch(e){}
+function setIntroLabels(){
+ const a=document.getElementById('introSoundBtn');
+ const b=document.getElementById('profileSoundBtn');
+ if(a){a.textContent=introSoundEnabled?'🔊 Ses Açık':'🔇 Sessiz';a.setAttribute('aria-label',introSoundEnabled?'Açılış sesini kapat':'Açılış sesini aç')}
+ if(b)b.textContent='🎵 Açılış Müziği: '+(introSoundEnabled?'Açık':'Kapalı');
+}
+function toggleIntroSound(){
+ introSoundEnabled=!introSoundEnabled;
+ try{localStorage.setItem('arena-intro-sound',introSoundEnabled?'on':'off')}catch(e){}
+ setIntroLabels();
+ if(window.NativeAudio){if(introSoundEnabled&&!document.getElementById('arenaIntro').classList.contains('intro-off'))NativeAudio.playIntro();else NativeAudio.stopIntro()}
+}
+function launchIntro(){
+ setIntroLabels();
+ if(window.NativeAudio&&introSoundEnabled)NativeAudio.playIntro();
+ setTimeout(()=>{document.getElementById('arenaIntro').classList.add('intro-off');if(window.NativeAudio)NativeAudio.stopIntro()},3500);
+}
+launchIntro();
 </script></body></html>
