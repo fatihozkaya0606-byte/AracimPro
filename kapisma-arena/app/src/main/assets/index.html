@@ -624,7 +624,25 @@ function useFifty(){
 function skipQuestion(){
  if(used.skip||locked||page!=='battle')return;
  used.skip=true;const b=document.getElementById('skip');b.disabled=true;b.style.opacity=.35;
- answer(-2);
+ const present=new Set(bank.map(q=>q[0]));
+ let replacement=null;
+ for(let attempt=0;attempt<9;attempt++){
+  const candidate=drawQuestionsV4(1)[0];
+  if(!present.has(candidate[0])){replacement=candidate;break}
+ }
+ if(!replacement){answer(-2);return}
+ clearInterval(clock);clock=null;
+ bank[idx]=replacement;
+ locked=true;
+ const feedback=document.getElementById('answerFeedback');
+ feedback.className='answer-feedback visible ok';
+ feedback.textContent='🔁 Joker kullanıldı! Soru değişiyor. Puanın korunuyor.';
+ const serial=roundSerial;
+ pendingTimer=setTimeout(()=>{
+  pendingTimer=null;if(serial!==roundSerial||page!=='battle')return;
+  document.querySelector('.qpanel').classList.remove('q-enter','answer-impact');
+  showTransitionThenQuestion();
+ },840);
 }
 function extraTime(){
  if(used.extra||locked||page!=='battle')return;
