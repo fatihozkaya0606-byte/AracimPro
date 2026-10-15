@@ -396,7 +396,7 @@ function drawQuestionsV4(count){
 }
 updateOptionsUi();
 
-let page='home', bank=[],idx=0,left=15,my=0,bot=0,clock=null,locked=false,used={},correctCount=0,roundStreak=0,bestRoundStreak=0,answersLog=[],pendingTimer=null,questionStart=0,roundSerial=0;
+let page='home', bank=[],idx=0,left=15,my=0,bot=0,clock=null,locked=false,used={},correctCount=0,roundStreak=0,bestRoundStreak=0,answersLog=[],pendingTimer=null,questionStart=0,roundSerial=0,questionDuration=20,roundPausedAt=0;
 const defaultState={coins:250,matches:0,wins:0,streak:0,lastGift:'',questionsAnswered:0,correctAnswers:0,history:[]};
 let stats=defaultState;try{stats=Object.assign({},defaultState,JSON.parse(localStorage.getItem('arenaStats')||'{}'))}catch(e){}
 function persist(){try{localStorage.setItem('arenaStats',JSON.stringify(stats))}catch(e){}}
@@ -426,7 +426,7 @@ function renderMatchHistory(){
 }
 function showPage(p){if(!document.getElementById(p))p='home';clearInterval(clock);page=p;document.body.classList.toggle('battle-mode',p==='battle');document.querySelectorAll('.page').forEach(e=>e.classList.toggle('active',e.id===p));document.querySelectorAll('.navbtn').forEach(e=>e.classList.toggle('active',e.dataset.nav===p));window.scrollTo(0,0);refreshStats();if(p==='profile')renderMatchHistory()}
 function modal(title,msg,icon,action,label){document.getElementById('modalicon').textContent=icon||'🏆';document.getElementById('modaltitle').textContent=title;document.getElementById('modaltext').textContent=msg;const b=document.getElementById('modalaction');b.textContent=label||'Tamam';b.onclick=action||hideModal;document.getElementById('modal').classList.add('show')}
-function hideModal(){document.getElementById('modal').classList.remove('show')}
+function hideModal(){document.getElementById('modal').classList.remove('show');if(page==='battle'&&roundPausedAt&&!locked){questionStart+=Date.now()-roundPausedAt;roundPausedAt=0;startRoundClock()}}
 function notice(t,m){modal(t,m,'🔔')}
 function enterOnline(){modal('Online Kapışma','Tasarım ve soru akışı hazır. Gerçek oyuncularla eşleşme için canlı sunucu henüz bağlı değil. Seçtiğin konu ve zorlukta Arena Bot ile hemen yarışabilirsin.','⚔️',()=>{hideModal();startPractice()},'Demo Kapışmayı Başlat')}
 function claimGift(){const today=new Date().toDateString();if(stats.lastGift===today){notice('Günlük ödül','Bugünkü ödülünü zaten aldın. Yarın tekrar gel!');return}stats.lastGift=today;stats.coins+=50;persist();refreshStats();modal('50 Altın Kazandın!','Yarın yeniden giriş yaparak günlük ödülünü alabilirsin.','🎁')}
@@ -476,7 +476,7 @@ function startPractice(){
 function renderQ(){
  clearRoundTimers();if(page!=='battle')return;
  if(idx>=bank.length){endMatch();return}
- locked=false;left=chosenSeconds;questionStart=Date.now();
+ locked=false;questionDuration=chosenSeconds;left=questionDuration;questionStart=Date.now();
  document.getElementById('seconds').textContent=left;
  document.getElementById('myscore').textContent=my;document.getElementById('botscore').textContent=bot;
  document.getElementById('qnum').textContent='Soru '+(idx+1)+'/10';
@@ -492,8 +492,12 @@ function renderQ(){
   e.setAttribute('aria-label',String.fromCharCode(65+i)+' seçeneği: '+bank[idx][1][i]);
  });
  updateRoundStatus();
+ startRoundClock();
+}
+function startRoundClock(){
+ clearInterval(clock);
  clock=setInterval(()=>{
-  left=Math.max(0,chosenSeconds-Math.floor((Date.now()-questionStart)/1000));
+  left=Math.max(0,questionDuration-Math.floor((Date.now()-questionStart)/1000));
   document.getElementById('seconds').textContent=left;
   if(left<=0)answer(-1);
  },200);
@@ -549,9 +553,8 @@ function skipQuestion(){
 function extraTime(){
  if(used.extra||locked||page!=='battle')return;
  used.extra=true;const b=document.getElementById('extra');b.disabled=true;b.style.opacity=.35;
- chosenSeconds+=10;document.getElementById('seconds').textContent=left+10;
- // Extend only this question, restoring chosenSeconds on the next question.
- questionStart+=10000;
+ questionDuration+=10;left+=10;document.getElementById('seconds').textContent=left;
+ // Extra time applies to this question only; player setting stays unchanged.
 }
 function endMatch(){
  clearRoundTimers();roundSerial++;
@@ -588,7 +591,7 @@ function endMatch(){
  });
  showPage('results');
 }
-function confirmExit(){clearRoundTimers();modal('Maçtan Çıkılsın mı?','Bu antrenman tamamlanmadı. Çıkarsan maç puanın kaydedilmeyecek.','⚠️',()=>{hideModal();roundSerial++;showPage('home')},'Evet, Çık')}
+function confirmExit(){if(locked)return;roundPausedAt=Date.now();clearInterval(clock);clock=null;modal('Maçtan Çıkılsın mı?','Bu antrenman tamamlanmadı. Çıkarsan maç puanın kaydedilmeyecek.','⚠️',()=>{roundPausedAt=0;hideModal();clearRoundTimers();roundSerial++;showPage('home')},'Evet, Çık')}
 function pickTab(el){document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));el.classList.add('active');}
 window.goBack=function(){if(document.getElementById('modal').classList.contains('show'))hideModal();else if(page==='battle')confirmExit();else showPage('home')};refreshStats();
 
