@@ -38,6 +38,28 @@ service cloud.firestore {
              && d.likes == 0;
     }
 
+    // Live online device count: no profile data, email, GPS, plate or ad ID.
+    // Writes are bound to the caller's anonymous Firebase Auth UID.
+    // Deploy these rules to Firebase; adding them to GitHub alone is not enough.
+    match /app_presence/{presenceUid} {
+      allow get, list: if signedIn();
+
+      allow create, update: if signedIn()
+        && request.auth.uid == presenceUid
+        && request.resource.data.keys().hasOnly([
+          'lastSeen', 'foreground', 'platform', 'version'
+        ])
+        && request.resource.data.keys().hasAll([
+          'lastSeen', 'foreground', 'platform', 'version'
+        ])
+        && request.resource.data.lastSeen == request.time
+        && request.resource.data.foreground is bool
+        && request.resource.data.platform == 'android'
+        && validShortString(request.resource.data.version, 40);
+
+      allow delete: if signedIn() && request.auth.uid == presenceUid;
+    }
+
     match /vehicle_comments/{commentId} {
       allow read: if true;
       allow create: if signedIn() && validComment(request.resource.data);
