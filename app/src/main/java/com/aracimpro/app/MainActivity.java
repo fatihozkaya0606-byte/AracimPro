@@ -232,7 +232,12 @@ public class MainActivity extends Activity {
     private FirebaseAuth communityAuth;
     private FirebaseFirestore communityDb;
     private boolean communityConfigured = false;
-    private final Map<String, Translator> uiTranslators = new HashMap<>();
+    private final Map<String, Translator> uiTranslators = new java.util.concurrent.ConcurrentHashMap<>();
+    // ML Kit retains downloaded models on the device. Share the "ensure model"
+    // task across all batches for a language, so we do not recheck every time
+    // a new screen is translated. Failed tasks are removed for a later retry.
+    private final Map<String, com.google.android.gms.tasks.Task<Void>> uiTranslationModelChecks =
+            new java.util.concurrent.ConcurrentHashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -1805,20 +1810,21 @@ private void showLaunchSplash() {
                     return;
                 }
 
-                Translator translator = uiTranslators.get(target);
-                if (translator == null) {
+                final Translator tr = uiTranslators.computeIfAbsent(target, language -> {
                     TranslatorOptions options = new TranslatorOptions.Builder()
                             .setSourceLanguage(TranslateLanguage.TURKISH)
-                            .setTargetLanguage(target)
+                            .setTargetLanguage(language)
                             .build();
-                    translator = Translation.getClient(options);
-                    uiTranslators.put(target, translator);
-                }
+                    return Translation.getClient(options);
+                });
 
-                final Translator tr = translator;
-                DownloadConditions conditions = new DownloadConditions.Builder().build();
-                tr.downloadModelIfNeeded(conditions)
-                        .addOnSuccessListener(v -> {
+                // downloadModelIfNeeded downloads only a missing model. Cache its
+                // successful asynchronous task for this process as well, so each
+                // translation batch does not start another model check.
+                final com.google.android.gms.tasks.Task<Void> modelTask =
+                        uiTranslationModelChecks.computeIfAbsent(target, language ->
+                                tr.downloadModelIfNeeded(new DownloadConditions.Builder().build()));
+                modelTask.addOnSuccessListener(v -> {
                             AtomicInteger remaining = new AtomicInteger(input.length());
                             for (int i = 0; i < input.length(); i++) {
                                 final int index = i;
@@ -1840,8 +1846,11 @@ private void showLaunchSplash() {
                                         });
                             }
                         })
-                        .addOnFailureListener(e -> sendUiTranslationJs(
-                                requestId, output, e == null ? "Dil paketi indirilemedi" : String.valueOf(e.getMessage())));
+                        .addOnFailureListener(e -> {
+                            uiTranslationModelChecks.remove(target, modelTask);
+                            sendUiTranslationJs(requestId, output,
+                                    e == null ? "Dil paketi indirilemedi" : String.valueOf(e.getMessage()));
+                        });
             } catch (Exception e) {
                 sendUiTranslationJs(requestId, new JSONArray(), "Çeviri hazırlanamadı");
             }
@@ -4052,6 +4061,7 @@ private void showLaunchSplash() {
             try { translator.close(); } catch (Throwable ignored) {}
         }
         uiTranslators.clear();
+        uiTranslationModelChecks.clear();
         if(bannerAdView!=null){try{bannerAdView.destroy();}catch(Throwable ignored){} bannerAdView=null;}
         if (webView != null) webView.removeCallbacks(mrecAfterScroll);
         if(mrecAdView!=null){try{mrecAdView.destroy();}catch(Throwable ignored){} mrecAdView=null;}
