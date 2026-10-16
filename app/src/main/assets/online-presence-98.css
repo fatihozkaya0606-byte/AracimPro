@@ -1,0 +1,36 @@
+/* v98: prominent accessible live foreground count; scoped to home only. */
+body.r8HomeMode .ap98Online{
+ display:flex;align-items:center;gap:10px;min-height:58px;padding:9px 11px;
+ background:linear-gradient(112deg,#07312f 0%,#061f32 50%,#082c48 100%);
+ border:1px solid #178f85;border-radius:15px;
+ box-shadow:inset 0 1px #ffffff14,0 5px 12px #0007,0 0 10px #039e8b30;
+ color:#eafff8;margin:8px 0 12px;
+}
+body.r8HomeMode .ap98OnlineIcon{
+ display:grid;place-items:center;width:37px;height:37px;flex:0 0 37px;
+ border:1px solid #1e998c;border-radius:12px;background:#0e5550;
+ font-size:18px;
+}
+body.r8HomeMode .ap98OnlineCopy{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+body.r8HomeMode .ap98OnlineCopy strong{color:#f0fffc;font-size:12px;font-weight:900;line-height:1.2}
+body.r8HomeMode .ap98OnlineCopy small{color:#72dabc;font-size:9px;font-weight:650}
+body.r8HomeMode .ap98OnlineNumber{color:#6affc5;white-space:nowrap;
+ font-size:22px;line-height:1;font-weight:950;font-variant-numeric:tabular-nums}
+body.r8HomeMode .ap98OnlineNumber small{font-size:10px;color:#b4e8dc;font-weight:650}
+body.r8HomeMode .ap98OnlineRefresh{
+ display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;
+ border-radius:50%;border:1px solid #257d87;background:#0b4152;color:#b2e9ef;
+ font-size:18px;line-height:1;padding:0;
+}
+body.r8HomeMode .ap98Online.ap98OnlineOffline{
+ background:linear-gradient(112deg,#172c3b,#071e32);border-color:#335973;
+ box-shadow:0 4px 12px #0004;
+}
+body.r8HomeMode .ap98OnlineOffline .ap98OnlineNumber{color:#abc2d3}
+body.r8HomeMode .ap98OnlineOffline .ap98OnlineCopy small{color:#a8c1ce}
+@media(max-width:355px) {
+ body.r8HomeMode .ap98Online{gap:6px;padding:8px}
+ body.r8HomeMode .ap98OnlineCopy strong{font-size:11px}
+ body.r8HomeMode .ap98OnlineNumber{font-size:19px}
+ body.r8HomeMode .ap98OnlineIcon{width:32px;height:32px;flex-basis:32px}
+}
