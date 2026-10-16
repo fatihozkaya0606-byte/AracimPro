@@ -223,6 +223,14 @@ public class MainActivity extends Activity {
     private FirebaseAuth communityAuth;
     private FirebaseFirestore communityDb;
     private boolean communityConfigured = false;
+    // Presence has isolated anonymous auth: it never signs the user out of
+    // the vehicle comments / account system.
+    private FirebaseApp presenceFirebaseApp;
+    private FirebaseAuth presenceAuth;
+    private FirebaseFirestore presenceDb;
+    private boolean presenceConfigured = false;
+    private volatile boolean presenceForeground = false;
+    private volatile boolean presenceAuthPending = false;
     private final Map<String, Translator> uiTranslators = new HashMap<>();
 
     @Override
@@ -1389,6 +1397,8 @@ private void showLaunchSplash() {
     }
 
     @Override protected void onPause() {
+        presenceForeground = false;
+        updatePresenceDocument(false, false);
         mrecSlotVisible = false;
         updateMrecVisibility();
         super.onPause();
@@ -1397,6 +1407,9 @@ private void showLaunchSplash() {
 
     @Override protected void onResume() {
         super.onResume();
+        presenceForeground = true;
+        // Reconnect immediately when returning from the background.
+        if (pageReady && presenceConfigured) refreshPresenceCount();
         if (appWasBackgrounded && pageReady && webView != null) {
             webView.postDelayed(() -> webView.evaluateJavascript("window.appShouldLock && window.appShouldLock()", null), 250);
         }
@@ -1444,8 +1457,19 @@ private void showLaunchSplash() {
                 communityDb = FirebaseFirestore.getInstance(communityFirebaseApp);
                 communityConfigured = true;
             }
+            try {
+                presenceFirebaseApp = FirebaseApp.getInstance("AracimProPresence");
+            } catch (Exception unused) {
+                presenceFirebaseApp = FirebaseApp.initializeApp(this, options, "AracimProPresence");
+            }
+            if (presenceFirebaseApp != null) {
+                presenceAuth = FirebaseAuth.getInstance(presenceFirebaseApp);
+                presenceDb = FirebaseFirestore.getInstance(presenceFirebaseApp);
+                presenceConfigured = true;
+            }
         } catch (Exception ignored) {
             communityConfigured = false;
+            presenceConfigured = false;
         }
     }
 
@@ -1523,50 +1547,83 @@ private void showLaunchSplash() {
     }
 
     private void refreshPresenceCount() {
-        if (!communityConfigured || communityDb == null) {
-            sendPresenceCount(-1, "Firebase presence hazır değil");
+        if (!presenceConfigured || presenceAuth == null || presenceDb == null) {
+            sendPresenceCount(-1, "Canlı kullanıcı servisi henüz yapılandırılmadı");
             return;
         }
-        try {
-            android.content.SharedPreferences prefs =
-                    getSharedPreferences("aracimpro_presence", MODE_PRIVATE);
-            String deviceId = prefs.getString("device_id", "");
-            if (deviceId == null || deviceId.trim().isEmpty()) {
-                deviceId = java.util.UUID.randomUUID().toString();
-                prefs.edit().putString("device_id", deviceId).apply();
-            }
-
-            long now = System.currentTimeMillis();
-            Map<String, Object> data = new HashMap<>();
-            data.put("lastSeen", now);
-            data.put("platform", "android");
-            data.put("version", BuildConfig.VERSION_NAME);
-
-            FirebaseUser currentUser =
-                    communityAuth == null ? null : communityAuth.getCurrentUser();
-            if (currentUser != null) data.put("uid", currentUser.getUid());
-
-            final String docId = deviceId;
-            communityDb.collection("app_presence").document(docId).set(data)
-                    .addOnCompleteListener(writeTask -> {
-                        long cutoff = System.currentTimeMillis() - 120000L;
-                        communityDb.collection("app_presence")
-                                .whereGreaterThan("lastSeen", cutoff)
-                                .limit(500)
-                                .get()
-                                .addOnCompleteListener(readTask -> {
-                                    if (!readTask.isSuccessful() || readTask.getResult() == null) {
-                                        sendPresenceCount(-1, "Aktif kullanıcı sayısı alınamadı");
-                                    } else {
-                                        sendPresenceCount(readTask.getResult().size(), "");
-                                    }
-                                });
-                    });
-        } catch (Exception e) {
-            sendPresenceCount(-1, "Presence hatası");
+        if (!presenceForeground) {
+            sendPresenceCount(-1, "Uygulama arka planda");
+            return;
         }
+        updatePresenceDocument(true, true);
     }
 
+    /**
+     * Android foreground presence. Each installation uses the UID of its own
+     * anonymous FirebaseAuth session; no email, GPS, plate or advertising ID
+     * is written. The distinct FirebaseApp prevents breaking account login.
+     *
+     * Requires Firebase Console > Authentication > Anonymous enabled, and
+     * the deployed Firestore app_presence rules in firebase/firestore.rules.
+     */
+    private void updatePresenceDocument(boolean foreground, boolean fetchCount) {
+        if (!presenceConfigured || presenceAuth == null || presenceDb == null) {
+            if (fetchCount) sendPresenceCount(-1, "Firebase bağlantısı yok");
+            return;
+        }
+        FirebaseUser signedIn = presenceAuth.getCurrentUser();
+        if (signedIn == null) {
+            if (!foreground) return;
+            if (presenceAuthPending) return;
+            presenceAuthPending = true;
+            presenceAuth.signInAnonymously().addOnCompleteListener(task -> {
+                presenceAuthPending = false;
+                if (!task.isSuccessful() || task.getResult() == null) {
+                    sendPresenceCount(-1, "Firebase anonim oturumu açılamadı");
+                    return;
+                }
+                if (presenceForeground) updatePresenceDocument(true, true);
+            });
+            return;
+        }
+        Map<String, Object> data = new HashMap<>();
+        data.put("lastSeen", FieldValue.serverTimestamp());
+        data.put("foreground", foreground);
+        data.put("platform", "android");
+        data.put("version", BuildConfig.VERSION_NAME);
+        presenceDb.collection("app_presence").document(signedIn.getUid())
+                .set(data).addOnCompleteListener(writeTask -> {
+                    if (!writeTask.isSuccessful()) {
+                        if (fetchCount) sendPresenceCount(-1, "Canlı kullanıcı kaydı yazılamadı");
+                        return;
+                    }
+                    if (fetchCount && presenceForeground) queryPresenceCount();
+                });
+    }
+
+    private void queryPresenceCount() {
+        if (presenceDb == null || !presenceForeground) return;
+        // 2-minute heartbeat window; every foregrounded app refreshes every
+        // 45 seconds. Entries explicitly marked background are not counted.
+        long cutoff = System.currentTimeMillis() - 120000L;
+        presenceDb.collection("app_presence")
+                .whereGreaterThan("lastSeen",
+                        new com.google.firebase.Timestamp(new java.util.Date(cutoff)))
+                .limit(500)
+                .get(com.google.firebase.firestore.Source.SERVER)
+                .addOnCompleteListener(task -> {
+                    if (!presenceForeground) return;
+                    if (!task.isSuccessful() || task.getResult() == null) {
+                        sendPresenceCount(-1, "Çevrimiçi sayısı sunucudan alınamadı");
+                        return;
+                    }
+                    int active = 0;
+                    for (DocumentSnapshot document : task.getResult().getDocuments()) {
+                        if (Boolean.TRUE.equals(document.getBoolean("foreground"))) active++;
+                    }
+                    sendPresenceCount(active, "");
+                });
+    }
 
     private void sendAracimAiJs(String requestId, String text, String error) {
         runOnUiThread(() -> {
