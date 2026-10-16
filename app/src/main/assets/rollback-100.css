@@ -1,0 +1,22 @@
+/* Stable V100 rollback from V97.
+   Restore a compact language selector without overlaying the vehicle screen. */
+body.r8HomeMode .apHeader .ap100Language,
+body:not(.r8HomeMode) .apHeader .ap100Language{
+  -webkit-appearance:none;appearance:none;cursor:pointer;
+  display:inline-flex!important;align-items:center;justify-content:center;
+  gap:4px;white-space:nowrap;vertical-align:middle;
+  font-family:inherit;line-height:1.1;
+  min-height:24px;min-width:67px;padding:3px 7px!important;
+  color:#dff7ff!important;background:#062944!important;
+  border:1px solid #1e78ae!important;border-radius:999px!important;
+  box-shadow:inset 0 1px 1px #ffffff20,0 0 7px #00aaff14!important;
+}
+body.r8HomeMode .apHeader .ap100Language b{
+  font-size:11px!important;font-weight:900!important;color:#fff!important;
+}
+body.r8HomeMode:not(.dark) .apHeader .ap100Language{
+  background:#ecf8ff!important;color:#154469!important;
+  border-color:#8ac4e8!important;
+}
+body.r8HomeMode:not(.dark) .apHeader .ap100Language b{color:#154469!important}
+.ap100Language:focus-visible{outline:2px solid #42c7ff!important;outline-offset:2px}
