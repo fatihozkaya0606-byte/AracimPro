@@ -1458,14 +1458,18 @@ private void showLaunchSplash() {
                 communityConfigured = true;
             }
             try {
-                presenceFirebaseApp = FirebaseApp.getInstance("AracimProPresence");
-            } catch (Exception unused) {
-                presenceFirebaseApp = FirebaseApp.initializeApp(this, options, "AracimProPresence");
-            }
-            if (presenceFirebaseApp != null) {
-                presenceAuth = FirebaseAuth.getInstance(presenceFirebaseApp);
-                presenceDb = FirebaseFirestore.getInstance(presenceFirebaseApp);
-                presenceConfigured = true;
+                try {
+                    presenceFirebaseApp = FirebaseApp.getInstance("AracimProPresence");
+                } catch (Exception unused) {
+                    presenceFirebaseApp = FirebaseApp.initializeApp(this, options, "AracimProPresence");
+                }
+                if (presenceFirebaseApp != null) {
+                    presenceAuth = FirebaseAuth.getInstance(presenceFirebaseApp);
+                    presenceDb = FirebaseFirestore.getInstance(presenceFirebaseApp);
+                    presenceConfigured = true;
+                }
+            } catch (Exception ignoredPresence) {
+                presenceConfigured = false;
             }
         } catch (Exception ignored) {
             communityConfigured = false;
