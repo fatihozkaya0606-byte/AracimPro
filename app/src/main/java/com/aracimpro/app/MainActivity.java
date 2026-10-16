@@ -181,7 +181,16 @@ public class MainActivity extends Activity {
     private long mrecScrollHoldUntil = 0L;
     private boolean admobBannerLoaded = false;
     private boolean admobSdkInitialized = false;
+    private boolean admobSdkReady = false;
     private boolean admobConsentRequested = false;
+    // Retry transient Google Play Billing / AdMob failures instead of getting stuck
+    // forever after the first failed request. No infinite fast refresh or forced ad.
+    private boolean premiumReconnectPending = false;
+    private int premiumReconnectAttempt = 0;
+    private int bannerRetryAttempt = 0;
+    private int mrecRetryAttempt = 0;
+    private int interstitialRetryAttempt = 0;
+    private boolean interstitialLoading = false;
     private ConsentInformation admobConsentInfo;
     // Single full-screen ad at an eligible, user-initiated page transition.
     // No ad on startup, back/exit, form clicks, or while using Premium.
@@ -842,26 +851,68 @@ private void showLaunchSplash() {
                     .enableAutoServiceReconnection()
                     .build();
 
+            connectPremiumBilling();
+        } catch (Throwable t) {
+            premiumBillingReady = false;
+            notifyPremiumJs("Google Play Billing başlatılamadı");
+            schedulePremiumBillingReconnect();
+            // Side-by-side debug APK is NOT on Google Play. It may use only
+            // Google's sample ad units, never real ads and never live billing.
+            if (BuildConfig.DEBUG) runOnUiThread(this::requestAdMobConsentIfNeeded);
+        }
+    }
+
+    private void connectPremiumBilling() {
+        if (billingClient == null || isFinishing() || isDestroyed()) return;
+        try {
             billingClient.startConnection(new BillingClientStateListener() {
-                @Override public void onBillingSetupFinished(BillingResult billingResult) {
-                    premiumBillingReady = billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK;
+                @Override public void onBillingSetupFinished(BillingResult result) {
+                    premiumBillingReady = result.getResponseCode() == BillingClient.BillingResponseCode.OK;
                     if (premiumBillingReady) {
+                        premiumReconnectAttempt = 0;
                         queryPremiumProduct();
                         refreshPremiumPurchases();
                     } else {
-                        notifyPremiumJs(billingResult.getDebugMessage());
+                        notifyPremiumJs(result.getDebugMessage());
+                        schedulePremiumBillingReconnect();
+                        if (BuildConfig.DEBUG) runOnUiThread(MainActivity.this::requestAdMobConsentIfNeeded);
                     }
                 }
                 @Override public void onBillingServiceDisconnected() {
                     premiumBillingReady = false;
                     removePremiumAds();
                     notifyPremiumJs("Google Play bağlantısı kesildi");
+                    schedulePremiumBillingReconnect();
+                    if (BuildConfig.DEBUG) runOnUiThread(MainActivity.this::requestAdMobConsentIfNeeded);
                 }
             });
         } catch (Throwable t) {
-            premiumBillingReady = false;
-            notifyPremiumJs("Google Play Billing başlatılamadı");
+            logAdMob("billing_reconnect_error", t.getClass().getSimpleName());
+            schedulePremiumBillingReconnect();
         }
+    }
+
+    private void schedulePremiumBillingReconnect() {
+        runOnUiThread(() -> {
+            if (premiumReconnectPending || isFinishing() || isDestroyed()) return;
+            premiumReconnectPending = true;
+            final long delay = adRetryDelay(premiumReconnectAttempt++);
+            mainHandler.postDelayed(() -> {
+                premiumReconnectPending = false;
+                if (isFinishing() || isDestroyed()) return;
+                if (billingClient != null && billingClient.isReady()) {
+                    premiumBillingReady = true;
+                    refreshPremiumPurchases();
+                } else {
+                    connectPremiumBilling();
+                }
+            }, delay);
+        });
+    }
+
+    private long adRetryDelay(int attempt) {
+        final long[] delays = {15000L, 45000L, 120000L, 300000L, 600000L};
+        return delays[Math.min(Math.max(0, attempt), delays.length - 1)];
     }
 
     private void queryPremiumProduct() {
@@ -957,8 +1008,12 @@ private void showLaunchSplash() {
         if (premiumActive) {
             removePremiumAds();
         } else {
-            // Never request an ad until Google Play confirms no active Premium purchase.
-            runOnUiThread(this::requestAdMobConsentIfNeeded);
+            // Never serve live ads before an authoritative Google Play purchase
+            // check. Once confirmed, recover ad views after a transient disconnect.
+            runOnUiThread(() -> {
+                if (admobConsentRequested && canRequestAdMobAds()) initAdMobBanner();
+                else requestAdMobConsentIfNeeded();
+            });
         }
         notifyPremiumJs("");
     }
@@ -982,6 +1037,7 @@ private void showLaunchSplash() {
                 notifyMrecJs(false);
                 oneInterstitialAd = null;
                 oneInterstitialReady = false;
+                interstitialLoading = false;
             } catch (Throwable ignored) {}
             bannerHeightPx = 0;
             applyWebMargins(lastInsetLeft,lastInsetTop,lastInsetRight,lastInsetBottom);
@@ -1064,12 +1120,15 @@ private void showLaunchSplash() {
     }
 
     private boolean canRequestAdMobAds() {
-        return !premiumActive && premiumBillingReady && admobConsentInfo != null
-            && admobConsentInfo.canRequestAds();
+        // Google Play purchase check gates LIVE ads. Debug preview builds use
+        // only Google's sample ad IDs and cannot query this Play subscription.
+        return !premiumActive && (premiumBillingReady || BuildConfig.DEBUG)
+            && admobConsentInfo != null && admobConsentInfo.canRequestAds();
     }
 
     private void requestAdMobConsentIfNeeded() {
-        if (premiumActive || !premiumBillingReady || admobConsentRequested || isFinishing() || isDestroyed()) return;
+        if (premiumActive || (!premiumBillingReady && !BuildConfig.DEBUG)
+                || admobConsentRequested || isFinishing() || isDestroyed()) return;
         admobConsentRequested = true;
         try {
             admobConsentInfo = UserMessagingPlatform.getConsentInformation(this);
@@ -1079,13 +1138,25 @@ private void showLaunchSplash() {
                     if (formError != null) logAdMob("consent_form_error", formError.getMessage());
                     if (canRequestAdMobAds()) initAdMobBanner();
                     else logAdMob("consent_required", "UMP is not ready to request ads");
+                    // Never circumvent a denied consent. Retry only if the form
+                    // itself malfunctioned and UMP has not allowed requests.
+                    if (formError != null && !canRequestAdMobAds()) {
+                        admobConsentRequested = false;
+                        mainHandler.postDelayed(this::requestAdMobConsentIfNeeded, 120000L);
+                    }
                 }),
                 requestError -> {
                     logAdMob("consent_error", requestError.getMessage());
                     if (canRequestAdMobAds()) initAdMobBanner();
+                    else {
+                        admobConsentRequested = false;
+                        mainHandler.postDelayed(this::requestAdMobConsentIfNeeded, 120000L);
+                    }
                 });
         } catch (Throwable t) {
             logAdMob("consent_exception", t.getClass().getSimpleName());
+            admobConsentRequested = false;
+            mainHandler.postDelayed(this::requestAdMobConsentIfNeeded, 120000L);
         }
     }
 
@@ -1124,21 +1195,28 @@ private void showLaunchSplash() {
     }
 
     private void initAdMobBanner() {
-        if (admobSdkInitialized || !canRequestAdMobAds()) return;
+        if (!canRequestAdMobAds() || isFinishing() || isDestroyed()) return;
+        // Important: initialization can stay true after premium / Billing
+        // disconnect destroyed both AdViews. Recreate missing units then.
+        if (admobSdkReady) {
+            createAdMobBanner();
+            createMrecAd();
+            loadSingleInterstitial();
+            return;
+        }
+        if (admobSdkInitialized) return; // asynchronous initialization in progress
         admobSdkInitialized = true;
         logAdMob("sdk_initializing", "Google Mobile Ads SDK initializing");
         try {
             MobileAds.initialize(this, status -> runOnUiThread(() -> {
+                admobSdkReady = true;
                 logAdMob("sdk_ready", "Google Mobile Ads initialized");
-                if (canRequestAdMobAds()) {
-                    createAdMobBanner();
-                    loadSingleInterstitial();
-                    createMrecAd();
-                }
+                if (canRequestAdMobAds()) initAdMobBanner();
             }));
         } catch (Throwable t) {
             admobSdkInitialized = false;
             logAdMob("sdk_error", t.getClass().getSimpleName());
+            mainHandler.postDelayed(this::initAdMobBanner, 60000L);
         }
     }
 
@@ -1154,6 +1232,7 @@ private void showLaunchSplash() {
                 @Override public void onAdLoaded() {
                     if (bannerAdView != banner || !canRequestAdMobAds()) return;
                     admobBannerLoaded = true;
+                    bannerRetryAttempt = 0;
                     logAdMob("banner_loaded", "AdMob banner loaded");
                     updateAdMobBannerVisibility();
                 }
@@ -1161,6 +1240,12 @@ private void showLaunchSplash() {
                     admobBannerLoaded = false;
                     logAdMob("banner_failed", error == null ? "Unknown" : error.toString());
                     updateAdMobBannerVisibility();
+                    final long delay = adRetryDelay(bannerRetryAttempt++);
+                    mainHandler.postDelayed(() -> {
+                        if (bannerAdView == banner && !admobBannerLoaded && canRequestAdMobAds()
+                                && !isFinishing() && !isDestroyed())
+                            banner.loadAd(new AdRequest.Builder().build());
+                    }, delay);
                 }
                 @Override public void onAdImpression() {
                     logAdMob("banner_impression", "AdMob banner impression");
@@ -1205,6 +1290,7 @@ private void showLaunchSplash() {
                 @Override public void onAdLoaded() {
                     if (ad != mrecAdView || !canRequestAdMobAds()) return;
                     mrecAdLoaded = true;
+                    mrecRetryAttempt = 0;
                     logAdMob("mrec_loaded", "300x250 AdMob ad loaded");
                     notifyMrecJs(true);
                     updateMrecVisibility();
@@ -1214,6 +1300,12 @@ private void showLaunchSplash() {
                     logAdMob("mrec_failed", error == null ? "No fill" : error.toString());
                     notifyMrecJs(false);
                     updateMrecVisibility();
+                    final long delay = adRetryDelay(mrecRetryAttempt++);
+                    mainHandler.postDelayed(() -> {
+                        if (mrecAdView == ad && !mrecAdLoaded && canRequestAdMobAds()
+                                && !isFinishing() && !isDestroyed())
+                            ad.loadAd(new AdRequest.Builder().build());
+                    }, delay);
                 }
                 @Override public void onAdImpression() {
                     logAdMob("mrec_impression", "300x250 medium rectangle impression");
@@ -1310,7 +1402,7 @@ private void showLaunchSplash() {
     }
 
     private void loadSingleInterstitial() {
-        if (!canRequestAdMobAds() || !apPremiumSplashHidden ||
+        if (interstitialLoading || !canRequestAdMobAds() || !apPremiumSplashHidden ||
                 oneInterstitialClaimed.get() || oneInterstitialAd != null) {
             // Splash may still be visible when SDK initializes; allow preload then.
             if (!canRequestAdMobAds() || oneInterstitialClaimed.get() || oneInterstitialAd != null) return;
@@ -1318,9 +1410,12 @@ private void showLaunchSplash() {
         final String unitId = (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
                 ? "ca-app-pub-3940256099942544/1033173712"
                 : "ca-app-pub-7205009121067400/2790024214";
+        interstitialLoading = true;
         InterstitialAd.load(this, unitId, new AdRequest.Builder().build(),
                 new InterstitialAdLoadCallback() {
                     @Override public void onAdLoaded(InterstitialAd ad) {
+                        interstitialLoading = false;
+                        interstitialRetryAttempt = 0;
                         if (!canRequestAdMobAds() || oneInterstitialClaimed.get()) return;
                         oneInterstitialAd = ad;
                         oneInterstitialLoadedAt = android.os.SystemClock.elapsedRealtime();
@@ -1329,9 +1424,16 @@ private void showLaunchSplash() {
                     }
 
                     @Override public void onAdFailedToLoad(LoadAdError error) {
+                        interstitialLoading = false;
                         oneInterstitialAd = null;
                         oneInterstitialReady = false;
                         logAdMob("interstitial_failed", error == null ? "No fill" : error.toString());
+                        final long delay = adRetryDelay(interstitialRetryAttempt++);
+                        mainHandler.postDelayed(() -> {
+                            if (!oneInterstitialClaimed.get() && canRequestAdMobAds()
+                                    && !isFinishing() && !isDestroyed())
+                                loadSingleInterstitial();
+                        }, delay);
                     }
                 });
     }
@@ -1404,6 +1506,10 @@ private void showLaunchSplash() {
             mainHandler.postDelayed(this::resumePendingLocationAction, 300L);
         }
         if (premiumBillingReady) refreshPremiumPurchases();
+        else if (!premiumReconnectPending && billingClient != null) schedulePremiumBillingReconnect();
+        if (canRequestAdMobAds()) initAdMobBanner();
+        else if (!admobConsentRequested && (premiumBillingReady || BuildConfig.DEBUG))
+            requestAdMobConsentIfNeeded();
         if (webView != null) {
             mrecSlotVisible = false;
             webView.postDelayed(() -> webView.evaluateJavascript(
