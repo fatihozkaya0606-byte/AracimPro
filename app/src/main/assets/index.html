@@ -1999,7 +1999,7 @@ body.r8HomeMode:not(.dark) .apMrecSlot{background:#e7f0f8;border-color:#c4d9e9}
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
 <script>
 const KEY='aracim_pro_v1';
-const V='7.11.27';
+const V='7.11.28';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.NumberFormat(apLocale(),{style:'currency',currency:apCurrency(),maximumFractionDigits:2}).format(Number(n)||0);const num=n=>(Number(n)||0).toLocaleString(apLocale());
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -2140,11 +2140,10 @@ function setGlobalPreferences(){
  const lc=document.getElementById('appLangSelect')?.value||apLang();
  const cc=document.getElementById('appCountrySelect')?.value||apCountry();
  const safeLang=(lc==='tr'||AP_ML_TARGET[lc])?lc:'tr';
- state.prefs.language=safeLang; state.prefs.country=cc;apNativeToastLang='';
+ state.prefs.language=safeLang; state.prefs.country=cc;
  if(!state.prefs.unitSystem)state.prefs.unitSystem=AP_COUNTRIES[cc]?.u||'metric';
  localStorage.setItem(KEY,JSON.stringify(state));
  closeModal(); render();
- toast((AP_LANGS[safeLang]?.[0]||safeLang)+' • '+countryFlag(cc)+' '+AP_COUNTRIES[cc].n+' ✓');
  setTimeout(()=>scheduleNativeI18n(document.body),160);
 }
 
@@ -2160,7 +2159,7 @@ function applyI18n(root=document){
 function setAppLanguage(code){
  if(!AP_LANGS[code])return;
  const safe=(code==='tr'||AP_ML_TARGET[code])?code:'tr';
- state.prefs.language=safe;apNativeToastLang='';
+ state.prefs.language=safe;
  localStorage.setItem(KEY,JSON.stringify(state));
  closeModal();render();
  setTimeout(()=>scheduleNativeI18n(document.body),160);
@@ -2188,7 +2187,7 @@ const apNativePending={};
 const apNativeCaches={};
 const apNodeState=new WeakMap();
 const apTranslatedAttrs=new WeakMap();
-let apNativeBusy=false,apNativeTimer=0,apNativeSeq=0,apNativeToastLang='';
+let apNativeBusy=false,apNativeTimer=0,apNativeSeq=0;
 
 function apNativeCache(lang){
   if(apNativeCaches[lang])return apNativeCaches[lang];
@@ -2223,10 +2222,8 @@ function apAddTranslationCandidate(groups,source,setter){
   if(!groups.has(source))groups.set(source,[]);
   groups.get(source).push(setter);
 }
-function apShowLangLoading(){
-  if(apLang()==='tr')return;
-  try{toast('🌐 '+(AP_LANGS[apLang()]?.[0]||apLang())+' çevirisi uygulanıyor…')}catch(e){}
-}
+// Language changes are deliberately silent. ML Kit translates in the background.
+function apShowLangLoading(){}
 function apHideLangLoading(){}
 
 function apRunNativeI18n(root=document){
@@ -2295,14 +2292,7 @@ function apRunNativeI18n(root=document){
   });
 
   const all=[...groups.keys()];
-  if(!all.length){
-    apHideLangLoading();
-    if(apNativeToastLang===lang){
-      apNativeToastLang='';
-      try{toast('✅ '+(AP_LANGS[lang]?.[0]||lang)+' hazır')}catch(e){}
-    }
-    return;
-  }
+  if(!all.length){apHideLangLoading();return;}
 
   const texts=all.slice(0,140);
   const id='ap736_'+(++apNativeSeq);
@@ -2310,10 +2300,6 @@ function apRunNativeI18n(root=document){
   apNativePending[id]={lang,texts,groups:selected};
   apNativeBusy=true;
 
-  if(apNativeToastLang!==lang){
-    apNativeToastLang=lang;
-    try{toast('🌐 '+(AP_LANGS[lang]?.[0]||lang)+' hazırlanıyor…')}catch(e){}
-  }
   try{
     Android.translateUiBatch(target,id,JSON.stringify(texts));
   }catch(e){
@@ -2331,6 +2317,18 @@ window.onNativeTranslations=(requestId,payload,error)=>{
   delete apNativePending[requestId];
   apNativeBusy=false;
   if(!req){scheduleNativeI18n(document.body,120);return}
+  // An earlier language request may finish after the user chose another.
+  // Never apply a stale translation to the current screen.
+  if(req.lang!==apLang()){scheduleNativeI18n(document.body,80);return}
+
+  if(error){
+    console.log('ML Translate:',error);
+    // Failed model downloads are not valid translations and must not be cached.
+    setTimeout(()=>{
+      if(apLang()===req.lang)scheduleNativeI18n(document.body,100);
+    },15000);
+    return;
+  }
 
   let arr=[];
   try{arr=JSON.parse(payload||'[]')}catch(e){}
@@ -2343,13 +2341,7 @@ window.onNativeTranslations=(requestId,payload,error)=>{
   });
   apSaveNativeCache(req.lang);
 
-  if(error){
-    console.log('ML Translate:',error);
-    apHideLangLoading();
-    setTimeout(()=>scheduleNativeI18n(document.body,1200),1200);
-  }else{
-    setTimeout(()=>scheduleNativeI18n(document.body,50),50);
-  }
+  setTimeout(()=>scheduleNativeI18n(document.body,50),50);
 };
 
 setTimeout(()=>{
