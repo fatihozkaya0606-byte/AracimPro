@@ -1998,7 +1998,7 @@ body.r8HomeMode:not(.dark) .apMrecSlot{background:#e7f0f8;border-color:#c4d9e9}
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
 <script>
 const KEY='aracim_pro_v1';
-const V='7.11.22';
+const V='7.11.25';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.NumberFormat(apLocale(),{style:'currency',currency:apCurrency(),maximumFractionDigits:2}).format(Number(n)||0);const num=n=>(Number(n)||0).toLocaleString(apLocale());
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -2009,9 +2009,9 @@ const apSessionStartedAt=Date.now();
 let apCornerTimer=null,apPresenceTimer=null,apActiveUsers=null;
 function apFmtElapsed(ms){const s=Math.max(0,Math.floor(ms/1000)),hh=String(Math.floor(s/3600)).padStart(2,'0'),mm=String(Math.floor((s%3600)/60)).padStart(2,'0'),ss=String(s%60).padStart(2,'0');return hh+':'+mm+':'+ss}
 function apUpdateCorner(){const now=new Date(),clock=document.getElementById('apClockNow'),timer=document.getElementById('apSessionElapsed'),active=document.getElementById('apActiveUsers');if(clock)clock.textContent=now.toLocaleTimeString(apLocale(),{hour:'2-digit',minute:'2-digit',second:'2-digit'});if(timer)timer.textContent=apFmtElapsed(Date.now()-apSessionStartedAt);if(active)active.textContent=apActiveUsers==null?'—':String(apActiveUsers)}
-function apRefreshPresence(){try{Android.refreshPresence()}catch(e){}}
+function apRefreshPresence(){/* V100: Eski çevrimiçi sayacı kaldırıldı; başarısız sunucu isteği yapılmaz. */}
 window.onPresenceCount=(count,error)=>{const n=Number(count);apActiveUsers=Number.isFinite(n)&&n>=0?n:null;apUpdateCorner()}
-function apStartCornerStatus(){apUpdateCorner();if(!apCornerTimer)apCornerTimer=setInterval(apUpdateCorner,1000);if(!apPresenceTimer){apRefreshPresence();apPresenceTimer=setInterval(()=>{if(document.visibilityState==='visible')apRefreshPresence()},45000)}}
+function apStartCornerStatus(){apUpdateCorner();if(!apCornerTimer)apCornerTimer=setInterval(apUpdateCorner,1000)}
 try{const _liveDefault=String(Android.getDefaultLiveDataApiUrl?.()||'').trim();if(_liveDefault&&!state.prefs.liveDataApiUrl)state.prefs.liveDataApiUrl=_liveDefault;const _marketDefault=String(Android.getDefaultMarketApiUrl?.()||'').trim();if(_marketDefault&&!state.prefs.marketApiUrl)state.prefs.marketApiUrl=_marketDefault;if(_liveDefault||_marketDefault)localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}
 const LOCAL_PROFILE_KEY='aracimpro_local_profile_v1',LOCAL_COMMENTS_KEY='aracimpro_local_comments_v1';
 let communityAuthState={configured:false,localMode:false,signedIn:false,uid:'',name:'',email:'',emailVerified:false},communityComments=[],communityCommentsKey='',communityLoading=false,communityError='';
@@ -2688,7 +2688,7 @@ function apHeaderStatusHtml(){
 
   const wc=state.prefs.weatherCache||{},rc=state.prefs.roadCache||{};
   const last=Math.max(+wc.ts||0,+rc.updatedAt||0);
-  out.push({icon:'⚡',title:'Canlı veri',sub:apFreshnessText(last),click:'autoLiveDataRefresh()'});
+  // V100: Çalışmayan 'Canlı veri' kartı kaldırıldı.
 
   return `<div class="apStatusScroll">${out.map(x=>`
     <button class="apStatusChip ${x.cls||''}" onclick="${x.click||''}">
@@ -2757,7 +2757,7 @@ function apHeaderStatusHtml(){
 
   const wc=state.prefs.weatherCache||{},rc=state.prefs.roadCache||{};
   const last=Math.max(+wc.ts||0,+rc.updatedAt||0);
-  out.push({icon:'⚡',title:'Canlı veri',sub:apFreshnessText(last),click:'autoLiveDataRefresh()'});
+  // V100: Çalışmayan 'Canlı veri' kartı kaldırıldı.
 
   return `<div class="apStatusScroll">${out.map(x=>`
     <button class="apStatusChip ${x.cls||''}" onclick="${x.click||''}">
@@ -2954,7 +2954,7 @@ function header(){
       </div>
       <div class="apRightStack">
         <div class="apLiveCorner">
-          <span class="apLiveMini active"><b id="apActiveUsers">—</b> aktif</span>
+          <button type="button" class="apLiveMini active ap100Language" onclick="languageModal()" title="Dil ve ülke seç" aria-label="Uygulama dilini değiştir" data-no-translate="true">🌐 <b>${apLang().toUpperCase()}</b> ▾</button>
           <span class="apLiveMini clock">🕒 <b id="apClockNow">--:--:--</b><em>•</em> ⏱ <b id="apSessionElapsed">00:00:00</b></span>
         </div>
         <div class="apHeaderActions">
@@ -3229,6 +3229,8 @@ function homeFuelSummary(){
 }
 
 function ensureHomeFuelPrices(){
+  // V100: otomatik konumlu canlı pompa fiyatları kapatıldı.
+  return;
   if(current!=='home'||apHomeFuelAutoBusy)return;
   const now=Date.now();
   const nearby=state.prefs.nearbyFuelPrices||{};
@@ -3364,7 +3366,7 @@ function tiresView(){const a=vf(state.tires);return `<div class="sectionHead"><h
 function reportsView(){const a=monthlyData(6),max=Math.max(1,...a.map(x=>x.total)),v=activeVehicle(),val=currentValuation(),dep=(v?.purchasePrice&&val)?val-(+v.purchasePrice):0;return `<div class="sectionHead"><h2>Raporlar</h2><span class="chip">Tüm zamanlar</span></div><div class="card"><div class="muted small">Toplam araç gideri</div><div style="font-size:32px;font-weight:900;margin-top:4px">${money(totalAll())}</div><div class="bars">${a.map(x=>`<div class="bar"><em>${x.total?Math.round(x.total/1000)+'K':''}</em><b style="height:${Math.max(4,x.total/max*120)}px"></b><span>${x.label}</span></div>`).join('')}</div></div><div class="grid2"><div class="card metric"><div class="label">Maliyet / km</div><strong>${costPerKm()?costPerKm().toFixed(2)+' TL':'—'}</strong></div><div class="card metric"><div class="label">Güncel Değer</div><strong>${val?money(val):'—'}</strong></div><div class="card metric"><div class="label">Yakıt</div><strong>${money(totals().fuel)}</strong></div><div class="card metric"><div class="label">Değer Değişimi</div><strong class="${dep<0?'dangerText':''}">${v?.purchasePrice&&val?money(dep):'—'}</strong></div></div><div class="sectionHead"><h2>Analiz Araçları</h2></div><div class="quickGrid"><button class="quick" onclick="fuelBudgetCalculator()"><span class="qico">${ico('fuel')}</span><b>Aylık Yakıt Tahmini</b></button><button class="quick" onclick="routeCalculator()"><span class="qico">${ico('calculator')}</span><b>Yol Maliyeti</b></button><button class="quick" onclick="compareVehicles()"><span class="qico">${ico('compare')}</span><b>Araç Karşılaştır</b></button><button class="quick" onclick="valuationModal()"><span class="qico">${ico('value')}</span><b>Değer Takibi</b></button></div><div class="sectionHead"><h2>Dışa Aktar</h2></div><div class="quickGrid"><button class="quick" onclick="exportPdf()"><span class="qico">${ico('document')}</span><b>PDF Araç Dosyası</b></button><button class="quick" onclick="exportXls()"><span class="qico">${ico('records')}</span><b>Excel Raporu</b></button><button class="quick" onclick="exportCsv()"><span class="qico">${ico('records')}</span><b>CSV Raporu</b></button><button class="quick" onclick="shareSummary()"><span class="qico">${ico('cloud')}</span><b>Özeti Paylaş</b></button></div>`}
 function moreCategory(title){const m={
 'Canlı Sürüş':'yol','Acil Yardım':'saglik','Yol Yardım':'yol','Yakın Benzinlik':'yol','Yakın Eczane':'saglik','Yakın Cami':'gunluk','Yakın Noter':'gunluk',
-'Akaryakıt Zam':'arac','Alırken Kontrol':'arac','Teknik Özellikler':'arac','Muayene':'arac','Şarj İstasyonu':'yol','Yakın Hastane':'saglik','Sağlık Ocağı':'saglik',
+'Alırken Kontrol':'arac','Teknik Özellikler':'arac','Muayene':'arac','Şarj İstasyonu':'yol','Yakın Hastane':'saglik','Sağlık Ocağı':'saglik',
 'Otel & Konaklama':'kesfet','Yeme & İçme':'kesfet','Gezilecek Yerler':'kesfet','Yakın Otopark':'yol','WC & Dinlenme':'yol','Lastikçi':'arac',
 'Toplanma Alanı':'saglik','Yakın ATM':'gunluk','Yakın Market':'gunluk','Oto Yıkama':'arac','Park & Mesire':'kesfet','Nöbetçi Eczane':'saglik',
 'Acil Kurumlar':'saglik','Oto Elektrik & Akücü':'arac','Ekspertiz':'arac','Yedek Parça':'arac','Uzun Yol Asistanı':'yol'};return m[title]||'gunluk'}
@@ -3498,7 +3500,6 @@ function moreAllServices(){
     {id:'autoelectric',cat:'service',action:"nearbyAutoElectric()",img:'autoelectric',icon:'battery',title:'Oto Elektrik & Akücü',sub:'Elektrik, akü ve marş desteği'},
     {id:'expertise',cat:'service',action:"nearbyExpertise()",img:'buycheck',icon:'shield',title:'Ekspertiz',sub:'Yakındaki oto ekspertizler'},
     {id:'parts',cat:'service',action:"nearbySpareParts()",img:'parts',icon:'wrench',title:'Yedek Parça',sub:'Oto yedek parça mağazaları'},
-    {id:'refresh-live',cat:'tools',action:"refreshLiveData()",img:'telemetry',icon:'refresh',title:'Canlı Verileri Yenile',sub:'Güncel verileri tekrar al'},
     {id:'refresh-cars',cat:'tools',action:"refreshAllVehicleSpecs(true)",img:'service',icon:'car',title:'Araçları Yenile',sub:'Teknik araç verilerini yenile'},
     {id:'compare',cat:'tools',action:"compareVehicles()",img:'compare',icon:'chart',title:'Karşılaştırma',sub:'Araçları yan yana karşılaştır'},
     {id:'valuation',cat:'tools',action:"valuationModal()",img:'market',icon:'value',title:'Değer Geçmişi',sub:'Piyasa değer değişimini gör'},
@@ -4731,6 +4732,8 @@ function fuelPricesModal(force=false){
   }
 }
 function refreshNearbyFuelPrices(showToast=true){
+  // V100: canlı yakıt fiyatı API isteği devre dışı.
+  return;
   if(apNearbyFuelPriceLoading)return;
   apNearbyFuelPriceLoading=true;
   if(showToast)toast('Konumuna göre yakıt fiyatları güncelleniyor…');
@@ -4778,10 +4781,10 @@ window.onNearbyFuelPricesResult=(payload,error)=>{
 };
 
 function fuelMarketModal(force=false){const f=state.fuelMarket||{};modal('Akaryakıt Zam Takibi',`<div id="fuelMarketModalMarker" class="card fuelBanner" style="margin:0"><div style="display:flex;justify-content:space-between;gap:8px"><div><b>Yaklaşan akaryakıt zamları</b><div class="muted small">${f.updatedAt?new Date(+f.updatedAt).toLocaleString(apLocale()):'Henüz kontrol edilmedi'} • Haber taraması</div></div><button class="secondary" onclick="refreshFuelDashboard(true)" style="background:#fff">Kontrol et</button></div></div><div class="sectionHead"><h2>Son Zam Haberleri</h2><span class="sourceBadge">Haber akışı</span></div>${f.news?.length?`<div class="card">${f.news.map(n=>`<div class="newsRow" onclick="openNews('${esc(n.link||'')}')"><b>${esc(n.title)}</b><div class="muted small">${esc(n.pubDate||'')}</div></div>`).join('')}</div>`:`<div class="notice">Yeni zam haberi bulunamadı. “Kontrol et”e bas.</div>`}<div class="card" style="margin-top:12px"><label class="toggle"><span><b>Zam haberi bildirimi</b><div class="muted small">Uygulama kapalıyken yaklaşık 6 saatte bir kontrol eder; yeni zam haberi varsa bildirir.</div></span><input type="checkbox" ${state.prefs.fuelAlertsEnabled?'checked':''} onchange="toggleFuelAlerts(this.checked)"></label><div class="hint" style="margin-top:10px">Canlı pompa fiyatı gösterilmez. Yalnızca yaklaşan zam haberleri takip edilir.</div></div>${force?`<div class="notice" style="margin-top:12px">Haberler kontrol ediliyor…</div>`:''}`);if(force)refreshFuelDashboard(false)}
-function refreshFuelDashboard(showToast=false){if(showToast)toast('Akaryakıt verisi güncelleniyor…');try{Android.fetchFuelDashboard(state.prefs.fuelCity,state.prefs.fuelAlertType)}catch(e){toast('Akaryakıt servisine erişilemiyor')}}
+function refreshFuelDashboard(showToast=false){return; if(showToast)toast('Akaryakıt verisi güncelleniyor…');try{Android.fetchFuelDashboard(state.prefs.fuelCity,state.prefs.fuelAlertType)}catch(e){toast('Akaryakıt servisine erişilemiyor')}}
 window.onRoadStatusResult=(payload,error)=>{try{if(error){state.prefs.roadCache={error:String(error),updatedAt:0};console.log('road',error);refreshLiveTickerOnly();return}const d=JSON.parse(payload||'{}');state.prefs.roadCache=d;localStorage.setItem(KEY,JSON.stringify(state));refreshLiveTickerOnly()}catch(e){console.log(e)}};
 window.onFuelDashboardResult=(payload,error)=>{let r;try{r=JSON.parse(payload||'{}')}catch(e){};if(!r||!Object.keys(r).length){toast(error||'Akaryakıt verisi alınamadı');return}state.fuelMarket={...initial.fuelMarket,...r};localStorage.setItem(KEY,JSON.stringify(state));render();if(document.getElementById('fuelMarketModalMarker'))fuelMarketModal(false);if(error)toast(error);setTimeout(refreshLiveTickerOnly,60)}
-function toggleFuelAlerts(on){state.prefs.fuelAlertsEnabled=on;save();configureFuelNative();if(on){try{Android.requestNotificationPermission()}catch(e){};refreshFuelDashboard(true)}}
+function toggleFuelAlerts(on){return; state.prefs.fuelAlertsEnabled=on;save();configureFuelNative();if(on){try{Android.requestNotificationPermission()}catch(e){};refreshFuelDashboard(true)}}
 function configureFuelNative(){try{Android.configureFuelAlerts(!!state.prefs.fuelAlertsEnabled,state.prefs.fuelCity,state.prefs.fuelAlertType)}catch(e){}}
 function openNews(u){if(!u)return;try{Android.openUri(u,'')}catch(e){location.href=u}}
 function monthlyData(n){const out=[];const now=new Date();for(let i=n-1;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1),ym=d.toISOString().slice(0,7);const m=d.toLocaleDateString('tr-TR',{month:'short'});let total=0;for(const a of [vf(state.fuel),vf(state.expenses),vf(state.maintenance).filter(x=>x.dateDone),vf(state.services)])for(const x of a){const dt=x.date||x.dateDone;if(dt?.startsWith(ym))total+=Number(x.cost??x.total??0)||0}out.push({label:m,total})}return out}
