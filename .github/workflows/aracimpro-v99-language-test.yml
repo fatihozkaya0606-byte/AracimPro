@@ -1,0 +1,83 @@
+name: AracimPro v99 Restore Language Button TEST APK
+on:
+  push:
+    branches: [aracimpro-99-language-shortcut]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  debug-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Install required SDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" "ndk;27.2.12479018"
+      - name: Verify online counter wiring, Firebase guard, and AdMob
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          html=Path('app/src/main/assets/index.html').read_text()
+          js=Path('app/src/main/assets/online-presence-98.js').read_text()
+          css=Path('app/src/main/assets/online-presence-98.css').read_text()
+          native=Path('app/src/main/java/com/aracimpro/app/MainActivity.java').read_text()
+          rules=Path('firebase/firestore.rules').read_text()
+          gradle=Path('app/build.gradle').read_text()
+          manifest=Path('app/src/main/AndroidManifest.xml').read_text()
+          assert 'versionCode 99' in gradle and "versionName '7.11.24'" in gradle
+          assert '.neonpreview' in gradle
+          assert "neon-dashboard-97.js" in html and "online-presence-98.js" in html
+          assert html.index('neon-dashboard-97.js')<html.index('online-presence-98.js')
+          assert 'online-presence-98.css' in html
+          assert 'language-shortcut-99.css' in html
+          assert 'language-shortcut-99.js' in html
+          assert html.index('online-presence-98.js') < html.index('language-shortcut-99.js')
+          assert 'languageModal()' in Path('app/src/main/assets/language-shortcut-99.js').read_text()
+          assert 'body.r8HomeMode .header.apHeader .apUtilityRow' in Path('app/src/main/assets/language-shortcut-99.css').read_text()
+          assert 'ap98OnlineCount' in js and 'window.onPresenceCount' in js
+          assert 'refreshPresenceCount' in native and 'signInAnonymously' in native
+          assert 'AracimProPresence' in native and 'presenceForeground = false' in native
+          assert 'FieldValue.serverTimestamp()' in native and '120000L' in native
+          assert 'Source.SERVER' in native and 'whereGreaterThan("lastSeen"' in native
+          assert 'match /app_presence/{presenceUid}' in rules
+          assert 'request.auth.uid == presenceUid' in rules
+          assert 'request.resource.data.lastSeen == request.time' in rules
+          assert 'apMrecCardHtml()' in Path('app/src/main/assets/neon-dashboard-97.js').read_text()
+          assert 'updateMrecSlotNative' in native
+          assert 'requestAdMobConsentIfNeeded' in native
+          assert 'com.google.android.gms.ads.APPLICATION_ID' in manifest
+          assert 'adMob' in native or 'AdMob' in native
+          print('PASS: UI, Firebase anonymous presence, 2-minute TTL, rules, Android ads')
+          PY
+          node --check app/src/main/assets/r8plus-clean.js
+          node --check app/src/main/assets/neon-dashboard-97.js
+          node --check app/src/main/assets/online-presence-98.js
+          node --check app/src/main/assets/language-shortcut-99.js
+      - name: Compile v99 installable TEST APK
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
+          LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
+        run: gradle --no-daemon assembleDebug
+      - name: Verify APK output
+        run: test -s app/build/outputs/apk/debug/app-debug.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AracimPro-v99-LANGUAGE-TEST-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
