@@ -127,8 +127,9 @@ homeView=function(){
   if(!v)return previousHome();
   setTimeout(ensureRef791VehiclePhoto,140);
   return '<div class="n97Dashboard">'+
-    n97Hero(v)+n97Stats()+n97Actions()+n97Reminders()+n97Report()+
-    '<div class="n97AdArea">'+apMrecCardHtml()+'</div>'+
+    n97Hero(v)+n97Stats()+n97Actions()+
+    '<div class="n97AdArea">'+apMrecCardHtml()+'</div>'+ 
+    n97Reminders()+n97Report()+
     '</div>';
 };
 header=function(){
