@@ -1,0 +1,50 @@
+/* v99: make the old language modal reachable on home without expanding all
+   utility pills or covering the top nav/ticker. */
+body.r8HomeMode .header.apHeader .apUtilityRow{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  margin:5px 0 0!important;
+  padding:0!important;
+  min-height:28px!important;
+  height:auto!important;
+  overflow:visible!important;
+  gap:0!important;
+}
+body.r8HomeMode .header.apHeader .apUtilityRow > :not(.ap99LanguageButton){
+  display:none!important;
+}
+body.r8HomeMode .header.apHeader .ap99LanguageButton{
+  display:inline-flex!important;
+  align-items:center;justify-content:center;gap:5px;
+  color:#ecfaff!important;
+  background:#092944!important;
+  border:1px solid #267daf!important;
+  border-radius:10px!important;
+  min-height:28px;
+  min-width:67px;
+  padding:3px 9px!important;
+  font-size:11px;
+  font-weight:850;
+  line-height:1.1;
+  white-space:nowrap;
+  box-shadow:inset 0 1px #fff2,0 2px 7px #0004;
+}
+body.r8HomeMode .header.apHeader .ap99LanguageButton b{
+  font-size:12px;letter-spacing:.3px;color:#fff!important;
+}
+body.r8HomeMode .header.apHeader .ap99LanguageButton:focus-visible{
+  outline:2px solid #56c8ff;outline-offset:2px;
+}
+body.r8HomeMode .header.apHeader .ap99LanguageButton:active{
+  transform:scale(.97);
+}
+body.r8HomeMode:not(.dark) .header.apHeader .ap99LanguageButton{
+  background:#eaf7ff!important;color:#133654!important;
+  border-color:#b2d9f6!important;
+}
+body.r8HomeMode:not(.dark) .header.apHeader .ap99LanguageButton b{
+  color:#133654!important;
+}
+/* Outside the compact home, the original country/region switch stays visible. */
+body:not(.r8HomeMode) .ap99LanguageButton{display:none!important}
