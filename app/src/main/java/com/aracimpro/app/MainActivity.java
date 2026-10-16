@@ -1405,7 +1405,7 @@ private void showLaunchSplash() {
         if (interstitialLoading || !canRequestAdMobAds() || !apPremiumSplashHidden ||
                 oneInterstitialClaimed.get() || oneInterstitialAd != null) {
             // Splash may still be visible when SDK initializes; allow preload then.
-            if (!canRequestAdMobAds() || oneInterstitialClaimed.get() || oneInterstitialAd != null) return;
+            if (interstitialLoading || !canRequestAdMobAds() || oneInterstitialClaimed.get() || oneInterstitialAd != null) return;
         }
         final String unitId = (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
                 ? "ca-app-pub-3940256099942544/1033173712"
