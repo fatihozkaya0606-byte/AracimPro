@@ -3,7 +3,7 @@ name: Google Play Release AAB
 on:
   workflow_dispatch:
   push:
-    branches: [ aracimpro-play-quality-83 ]
+    branches: [ aracimpro-play-quality-83, aracimpro-115-exact-engine-catalog-all-makes ]
 
 jobs:
   build-release:
