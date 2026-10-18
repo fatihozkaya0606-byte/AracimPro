@@ -1,0 +1,61 @@
+/* R8 Interactive Studio: contained layout, touch-friendly, no ad or nav overlays. */
+.ap116Dock,.ap116Page{box-sizing:border-box;min-width:0}
+.ap116Dock{margin:12px 0 15px;padding:12px;border-radius:18px;border:1px solid #2786bc;
+ background:linear-gradient(140deg,#07172d,#0e355c 76%,#155080);color:#f3fbff;box-shadow:0 8px 20px #001b3540}
+.ap116DockHeading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.ap116DockHeading strong{font-size:12px;letter-spacing:.8px}.ap116DockHeading span{font-size:11px;color:#a8d5f4}
+.ap116DockScroll{display:flex;gap:8px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;padding-bottom:4px}
+.ap116DockScroll button{flex:0 0 104px;scroll-snap-align:start;min-width:0;min-height:81px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;
+ border-radius:13px;border:1px solid #2d6c9a;background:linear-gradient(160deg,#102e4e,#0b253f);color:#f5fcff;padding:8px 7px;text-align:center;cursor:pointer}
+.ap116DockScroll button span{font-size:24px;line-height:1}.ap116DockScroll button b{font-size:11px;font-weight:800;line-height:1.35}
+.ap116Dock button:focus-visible,.ap116Page button:focus-visible{outline:2px solid #b6f3ff;outline-offset:2px}
+.ap116Page{display:flex;flex-direction:column;gap:12px;padding-bottom:8px;overflow-wrap:anywhere;color:var(--ink)}
+.ap116Hero{padding:17px 16px;color:#effaff;border:1px solid #3b9eda;border-radius:17px;
+ background:radial-gradient(circle at 85% 5%,#1b6da260,transparent 45%),linear-gradient(135deg,#081b33,#134c7c)}
+.ap116Hero small{display:block;letter-spacing:1.2px;color:#82e1ff;font-size:10px;font-weight:850}
+.ap116Hero h2{font-size:20px;line-height:1.35;color:white;margin:7px 0}
+.ap116Hero p{font-size:12px;line-height:1.55;color:#cde5f5;margin:4px 0 0}
+.ap116Stage{--ap116rx:0deg;--ap116ry:0deg;position:relative;min-height:215px;background:radial-gradient(ellipse at 50% 80%,#246d9c80,transparent 65%),linear-gradient(#061b31,#0a3457);
+ border:1px solid #328bbd;border-radius:18px;display:grid;place-items:center;overflow:hidden;touch-action:pan-y;perspective:850px;user-select:none}
+.ap116CarFrame{width:90%;height:185px;overflow:hidden;border:1px solid #5296bb;border-radius:15px;background:#0f2943;
+ box-shadow:0 20px 24px #0009;transform:rotateX(var(--ap116rx)) rotateY(var(--ap116ry));transition:transform .15s ease}
+.ap116CarFrame img{width:100%;height:100%;object-fit:contain;display:block}
+.ap116NoPhoto{height:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;font-size:48px;color:white}
+.ap116NoPhoto small{font-size:12px;color:#b8dafa;max-width:210px;text-align:center}
+.ap116StageLabel{position:absolute;left:11px;bottom:9px;color:#b8e8ff;letter-spacing:.8px;font-size:9px;font-weight:800}
+.ap116Note{font-size:11px;line-height:1.55;padding:11px 12px;border-radius:12px;background:var(--card);border:1px solid var(--line);color:var(--muted)}
+.ap116Stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ap116Stats>div{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:11px;min-width:0}
+.ap116Stats span{display:block;font-size:11px;color:var(--muted);margin-bottom:7px}
+.ap116Stats b{font-size:13px;line-height:1.4;color:var(--ink);overflow-wrap:anywhere}
+.ap116Actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ap116Actions button{min-width:0;min-height:46px;padding:10px 5px;font-size:12px;border-radius:12px}
+.ap116HealthTop{display:flex;align-items:center;gap:18px;padding:13px;border-radius:15px;background:var(--card);border:1px solid var(--line)}
+.ap116Gauge{--ap116Health:0;flex:0 0 104px;width:104px;height:104px;border-radius:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;
+ background:radial-gradient(closest-side,#092841 75%,transparent 78%),conic-gradient(#39d6b2 calc(var(--ap116Health)*1%),#24455c 0);color:white}
+.ap116Gauge b{font-size:31px;line-height:1}.ap116Gauge small{font-size:10px;color:#b4dce9}
+.ap116HealthText{display:flex;flex-direction:column;gap:7px}.ap116HealthText b{font-size:14px;color:var(--ink)}
+.ap116HealthText span{font-size:12px;color:#279ed7}.ap116HealthText small{font-size:11px;color:var(--muted);line-height:1.55}
+.ap116Systems{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.ap116Systems button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:94px;padding:7px 3px;border-radius:12px;
+ border:1px solid #3383b7;background:linear-gradient(145deg,#0b2443,#115381);color:white}
+.ap116Systems span{font-size:21px}.ap116Systems b{font-size:11px;line-height:1.2}
+.ap116Systems small{font-size:9px;color:#b2e2ff}
+.ap116Card{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:14px}
+.ap116Card>b{font-size:13px}.ap116Check{font-size:12px;color:var(--muted);margin:10px 0 0}
+.ap116RouteForm{display:flex;flex-direction:column;gap:11px}
+.ap116RouteForm label,.ap116ComparePick label{font-size:12px;font-weight:750;display:flex;flex-direction:column;gap:6px;color:var(--ink)}
+.ap116RouteForm input,.ap116ComparePick select{display:block;width:100%;min-width:0;box-sizing:border-box;padding:11px 12px;min-height:45px;
+ border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;font-size:13px}
+.ap116Cost{padding:14px;color:#d5f6ff;font-size:13px;font-weight:800;line-height:1.5;border:1px solid #2389ae;border-radius:12px;background:#0d3451}
+.ap116RouteForm button.wide{min-height:48px;font-size:13px}
+.ap116ComparePick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ap116CompareTitle{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-radius:12px;overflow:hidden;margin-bottom:8px}
+.ap116CompareTitle>div{background:#0a365c;padding:11px;color:white;font-size:12px;font-weight:800;border-right:1px solid #36759b;overflow-wrap:anywhere}
+.ap116CompareTitle small{display:block;font-size:10px;font-weight:400;color:#c5e2f5;margin-top:6px}
+.ap116CompareRow{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid var(--line);background:var(--card)}
+.ap116CompareRow span{grid-column:1/-1;font-size:11px;font-weight:700;color:var(--muted);padding:9px 10px 2px}
+.ap116CompareRow b{font-size:12px;line-height:1.4;padding:4px 10px 10px;color:var(--ink);font-weight:750;min-width:0;overflow-wrap:anywhere}
+.ap116CompareRow b+ b{border-left:1px solid var(--line)}
+@media (max-width:365px){.ap116Systems{grid-template-columns:repeat(2,minmax(0,1fr))}.ap116HealthTop{gap:10px}.ap116Gauge{flex-basis:86px;width:86px;height:86px}}
+@media (prefers-reduced-motion:reduce){.ap116CarFrame{transform:none!important;transition:none!important}.ap116DockScroll{scroll-behavior:auto}}
