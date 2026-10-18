@@ -3972,8 +3972,6 @@ private void showLaunchSplash() {
         }
         if ("Hyundai".equalsIgnoreCase(make) && (m.equalsIgnoreCase("Accent Era")||m.equalsIgnoreCase("Accent Blue"))) set.add("Accent");
         if ("Citroen".equalsIgnoreCase(make)) set.add(m.replace("C-", "C"));
-        if (m.toLowerCase(Locale.ROOT).contains("pro max")) set.add(m.replaceAll("(?i)\\s*Pro Max", ""));
-        if (m.toLowerCase(Locale.ROOT).contains("pro")) set.add(m.replaceAll("(?i)\\s*Pro", ""));
         return new java.util.ArrayList<>(set);
     }
 
@@ -3982,7 +3980,6 @@ private void showLaunchSplash() {
         String m=make==null?"":make.trim(); if(!m.isEmpty()) set.add(m);
         if (m.equalsIgnoreCase("SsangYong/KGM")) { set.add("SsangYong"); set.add("KGM"); }
         if (m.equalsIgnoreCase("Mercedes-Benz")) { set.add("Mercedes-Benz"); set.add("Mercedes"); }
-        if (m.equalsIgnoreCase("DS")) set.add("Citroen");
         return new java.util.ArrayList<>(set);
     }
 
@@ -4013,11 +4010,49 @@ private void showLaunchSplash() {
         return best;
     }
 
-    private JSONObject findOtoBrand(String make)throws Exception{
-        Exception last=null; for(String q:makeCandidates(make)){try{JSONObject r=otoGet("/brands?q="+URLEncoder.encode(q,"UTF-8")+"&offset=0");JSONObject b=bestNamed(r.optJSONArray("data"),q);if(b!=null)return b;}catch(Exception e){last=e;}Thread.sleep(220);} if(last!=null)throw last; throw new IllegalStateException("Marka bulunamadı: "+make);
+    // Fuzzy search can return a DIFFERENT model. Never use such a result
+    // to populate a model-specific engine or trim dropdown.
+    private static JSONObject strictNamed(JSONArray results, String expected) {
+        if (results == null) return null;
+        String needle = compactApiText(expected);
+        for (int i = 0; i < results.length(); i++) {
+            JSONObject row = results.optJSONObject(i);
+            if (row != null && !needle.isEmpty() &&
+                    needle.equals(compactApiText(row.optString("name", ""))))
+                return row;
+        }
+        return null;
     }
-    private JSONObject findOtoModel(int brandId,String make,String model)throws Exception{
-        Exception last=null; for(String q:modelCandidates(make,model)){try{JSONObject r=otoGet("/models?brand_id="+brandId+"&q="+URLEncoder.encode(q,"UTF-8")+"&offset=0");JSONObject m=bestNamed(r.optJSONArray("data"),q);if(m!=null)return m;}catch(Exception e){last=e;}Thread.sleep(220);} if(last!=null)throw last; throw new IllegalStateException("Model bulunamadı: "+model);
+
+    private JSONObject findOtoBrand(String make) throws Exception {
+        Exception last = null;
+        for (String query : makeCandidates(make)) {
+            try {
+                JSONObject response = otoGet("/brands?q=" +
+                        URLEncoder.encode(query, "UTF-8") + "&offset=0");
+                JSONObject match = strictNamed(response.optJSONArray("data"), query);
+                if (match != null) return match;
+            } catch (Exception e) { last = e; }
+            Thread.sleep(220);
+        }
+        if (last != null) throw last;
+        throw new IllegalStateException("Bu markanın doğrulanmış OtoAPI kaydı bulunamadı: " + make);
+    }
+
+    private JSONObject findOtoModel(int brandId, String make, String model) throws Exception {
+        Exception last = null;
+        for (String query : modelCandidates(make, model)) {
+            try {
+                JSONObject response = otoGet("/models?brand_id=" + brandId +
+                        "&q=" + URLEncoder.encode(query, "UTF-8") + "&offset=0");
+                JSONObject match = strictNamed(response.optJSONArray("data"), query);
+                if (match != null) return match;
+            } catch (Exception e) { last = e; }
+            Thread.sleep(220);
+        }
+        if (last != null) throw last;
+        throw new IllegalStateException(
+                "Bu marka altında model doğrulanamadı: " + make + " " + model);
     }
 
     private static double[] numbersIn(String raw){java.util.ArrayList<Double> vals=new java.util.ArrayList<>();if(raw==null)return new double[0];java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?<![A-Za-z0-9])(-?\\d+(?:[\\.,]\\d+)?)").matcher(raw);while(m.find()&&vals.size()<6){try{vals.add(Double.parseDouble(m.group(1).replace(',','.')));}catch(Exception ignored){}}double[] out=new double[vals.size()];for(int i=0;i<vals.size();i++)out[i]=vals.get(i);return out;}
