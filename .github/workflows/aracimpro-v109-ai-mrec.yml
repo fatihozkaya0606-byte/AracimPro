@@ -123,7 +123,7 @@ jobs:
           assert 'aras109Robot' in a and 'aras109Robot' in css109
           assert 'market109Photo' in a and 'market109Photo' in css109
           assert 'Reklam alanı • Gösterim AdMob durumuna bağlıdır.' in h
-          assert 'body.apMrecReady .apMrecCard{display:flex!important}' in css109
+          assert 'body .apMrecCard,body.apMrecReady .apMrecCard{display:flex!important}' in css109
           assert 'createAdMobBanner();\n            createMrecAd();\n            loadSingleInterstitial();' in n
           assert 'aracimOfflineContextResult' in h
           assert 'LPG’ye geçişte motor stop ediyor' in h
