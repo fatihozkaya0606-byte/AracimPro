@@ -33,8 +33,8 @@ jobs:
           n=Path('app/src/main/java/com/aracimpro/app/MainActivity.java').read_text()
           m=Path('app/src/main/AndroidManifest.xml').read_text()
           assert "applicationId 'com.aracimpro.app'" in g
-          assert 'versionCode 115' in g and "versionName '7.11.40'" in g
-          assert "const V='7.11.40'" in h
+          assert 'versionCode 116' in g and "versionName '7.11.41'" in g
+          assert "const V='7.11.41'" in h
           assert "buildConfigField 'boolean', 'ADMOB_TEST_MODE', 'false'" in g
           assert 'neon-dashboard-97.js' in h and 'neon-dashboard-97.css' in h
           d=Path('app/src/main/assets/neon-dashboard-97.js').read_text()
@@ -248,7 +248,7 @@ jobs:
           jarsigner -verify app/build/outputs/bundle/release/app-release.aab
       - uses: actions/upload-artifact@v4
         with:
-          name: AracimPro-v115-EXACT-MOTORS-ALL-CARS-APK-AND-SIGNED-AAB
+          name: AracimPro-v116-EXACT-MOTORS-ALL-CARS-APK-AND-SIGNED-AAB
           path: |
             app/build/outputs/bundle/release/app-release.aab
             app/build/outputs/apk/debug/app-debug.apk
