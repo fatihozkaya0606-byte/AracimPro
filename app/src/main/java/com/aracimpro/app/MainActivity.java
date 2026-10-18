@@ -486,6 +486,13 @@ private void showLaunchSplash() {
         brand.setGravity(android.view.Gravity.BOTTOM | android.view.Gravity.CENTER_HORIZONTAL);
         apLaunchBrand = brand;
 
+        android.widget.TextView tagline = apSplashText("ARACIM PRO  •  DİJİTAL GARAJ", 10f,
+                android.graphics.Color.parseColor("#73CFFF"), true);
+        tagline.setGravity(android.view.Gravity.CENTER);
+        tagline.setLetterSpacing(0.13f);
+        tagline.setPadding(0, 0, 0, dp(9));
+        brand.addView(tagline);
+
         android.widget.TextView title = apSplashText("Aracım Pro", 26f, android.graphics.Color.WHITE, true);
         title.setLetterSpacing(-0.02f);
         title.setGravity(android.view.Gravity.CENTER);
