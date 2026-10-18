@@ -312,7 +312,9 @@ body.r118Skin.r8HomeMode .ap116Dock::before{
 }
 /* Prevent long Turkish labels overflowing narrower Android screens. */
 @media(max-width:420px){
- body.r118Skin.r8HomeMode .ap116DockScroll{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ body.r118Skin.r8HomeMode .ap116DockScroll{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:5px!important}
+ body.r118Skin.r8HomeMode .ap116DockScroll button span{width:36px!important;height:38px!important}
+ body.r118Skin.r8HomeMode .ap116DockScroll button b{font-size:8px!important;overflow-wrap:anywhere}
  body.r118Skin.r8HomeMode .ap116DockScroll button{min-height:93px!important}
  body.r118Skin.r8HomeMode .n97Dashboard .n97Hero.n117Hero{min-height:350px!important}
  body.r118Skin.r8HomeMode .n97Dashboard .n97Stats{gap:6px!important}
