@@ -4540,13 +4540,90 @@ function optList(arr,current='',placeholder='Seç',sort=true){let vals=[...new S
 function modelType(model){if(PICKUP_MODELS.has(model))return'Pickup';if(VAN_MODELS.has(model))return'Hafif Ticari';if(SUV_MODELS.has(model))return'SUV/Crossover';return'Otomobil'}
 function bodyOptions(type){return type==='SUV/Crossover'?['SUV','Crossover']:type==='Pickup'?['Pickup / Çift Kabin','Pickup / Tek Kabin']:type==='Hafif Ticari'?['Panelvan','Camlı Van','Combi','Minibüs']:type==='Motosiklet'?['Scooter','Naked','Touring','Sport','Enduro']:type==='Karavan'?['Motokaravan','Campervan']:['Sedan','Hatchback','Station Wagon','Coupe','Cabrio','MPV']}
 const azSort=(a,b)=>String(a).localeCompare(String(b),'tr',{numeric:true,sensitivity:'base'});
-function variantRule(make,model,year){const a=MODEL_VARIANTS[`${make}|${model}`]||[];const y=+year||0;return a.find(r=>(!r.from||y>=r.from)&&(!r.to||y<=r.to))||(a.length?(y&&y<(a[0].from||0)?a[0]:a[a.length-1]):null)}
-function vehicleFuelOptions(make,model,year){const r=variantRule(make,model,+year||0);return r?Object.keys(r.fuels||{}).sort(azSort):FUEL_TYPES.slice().sort(azSort)}
-function engineOptions(fuel,make='',model='',year=0){const r=variantRule(make,model,+year||0);const exact=r?.fuels?.[fuel];return (exact&&exact.length?exact:(ENGINE_OPTIONS[fuel]||ENGINE_OPTIONS.Bilinmiyor)).slice().sort(azSort)}
-function allVariantEngines(make='',model='',year=0){const r=variantRule(make,model,+year||0);if(!r?.fuels)return[];return [...new Set(Object.values(r.fuels).flat().filter(Boolean))].sort(azSort)}
-function vehicleEngineOptions(make='',model='',year=0,fuel=''){const all=allVariantEngines(make,model,year);return all.length?all:engineOptions(fuel||'Benzin',make,model,year)}
-function fuelForEngine(make='',model='',year=0,engine=''){const r=variantRule(make,model,+year||0);if(!r?.fuels||!engine)return'';for(const [fuel,engines] of Object.entries(r.fuels))if((engines||[]).includes(engine))return fuel;return''}
-function trimOptions(make,model='',year=0,engine=''){const r=variantRule(make,model,+year||0);return (r?.trims?.length?r.trims:(BRAND_TRIMS[make]||GENERIC_TRIMS)).slice().sort(azSort)}
+/* V115: For EVERY brand, engines are resolved only for the exact
+   make, model, production year and selected fuel. Unverified models have
+   no suggested engines. Never use the pooled ENGINE_OPTIONS fallback. */
+const v115Cache=Object.create(null),v115Status=Object.create(null),v115Pending=new Set();
+function v115Key(make,model,year){return [make||'',model||'',String(+year||0)].join('|')}
+function variantRule(make,model,year){
+ const y=+year||0,a=MODEL_VARIANTS[(make||'')+'|'+(model||'')]||[];
+ return y?a.find(r=>y>=(r.from||0)&&y<=(r.to||9999))||null:null;
+}
+function v115Fuel(raw){
+ const s=String(raw||'').toLocaleLowerCase('tr-TR');
+ if(/plug.?in|phev/.test(s))return 'Plug-in Hibrit';
+ if(/hibrit|hybrid|mhev/.test(s))return 'Hibrit';
+ if(/lpg|otogaz/.test(s))return 'LPG';
+ if(/dizel|diesel|motorin/.test(s))return 'Dizel';
+ if(/benzin|petrol|gasoline/.test(s))return 'Benzin';
+ if(/elektrik|electric|battery/.test(s))return 'Elektrik';
+ if(/hidrojen|hydrogen/.test(s))return 'Hidrojen';
+ return '';
+}
+function v115EngineLabel(x){
+ let explicit=String(x.engineName||x.engine_name||x.engine||x.motor||'').trim();
+ if(explicit)return explicit.slice(0,96);
+ const name=String(x.name||'').trim();
+ if(!name)return '';
+ const found=name.match(/\b\d(?:[.,]\d)?\s*(?:TSI|TDI|TFSI|FSI|TCe|dCi|BlueHDi|HDi|PureTech|EcoBoost|EcoBlue|T-GDI|GDI|MPI|CRDi|CDTI|Multijet|FireFly|i-VTEC|VTEC|Skyactiv|D-4D|VVT-i|D-CVVT|TGDI|PHEV|e:HEV|Hybrid|Hibrit|EV|Turbo|SCe|VTI|THP)\b/i);
+ if(found){const base=found[0].replace(',','.').replace(/\s+/g,' ').trim();
+    return x.powerHp?base+' • '+Math.round(+x.powerHp)+' hp':base}
+ return 'Varyant: '+name.slice(0,90);
+}
+function v115Remote(make,model,year,fuel=''){
+ const a=v115Cache[v115Key(make,model,year)]||[];
+ return a.filter(x=>!fuel||v115Fuel(x.fuel||x.fuel_type)===fuel).map(v115EngineLabel).filter(Boolean);
+}
+function vehicleFuelOptions(make,model,year){
+ const r=variantRule(make,model,year);
+ const fromLocal=r?Object.keys(r.fuels||{}):[];
+ const fromRemote=(v115Cache[v115Key(make,model,year)]||[]).map(x=>v115Fuel(x.fuel||x.fuel_type));
+ const result=[...new Set([...fromLocal,...fromRemote].filter(Boolean))];
+ return result.length?result.sort(azSort):FUEL_TYPES.slice().sort(azSort);
+}
+function engineOptions(fuel,make='',model='',year=0){return vehicleEngineOptions(make,model,year,fuel)}
+function allVariantEngines(make='',model='',year=0,fuel=''){
+ const r=variantRule(make,model,year);
+ const local=!r?.fuels?[]:(fuel?(r.fuels[fuel]||[]):Object.values(r.fuels).flat());
+ return [...new Set([...local,...v115Remote(make,model,year,fuel)])].sort(azSort);
+}
+function vehicleEngineOptions(make='',model='',year=0,fuel=''){
+ return make&&model&&+year?allVariantEngines(make,model,year,fuel):[];
+}
+function fuelForEngine(make='',model='',year=0,engine=''){
+ const r=variantRule(make,model,year);
+ if(r?.fuels)for(const [fuel,engines] of Object.entries(r.fuels))if(engines.includes(engine))return fuel;
+ const match=(v115Cache[v115Key(make,model,year)]||[]).find(x=>v115EngineLabel(x)===engine);
+ return match?v115Fuel(match.fuel||match.fuel_type):'';
+}
+function v115SafeList(a,cur,placeholder){
+ const vals=[...new Set((a||[]).filter(Boolean))];
+ return optList(vals,vals.includes(cur)?cur:'',placeholder);
+}
+function v115Message(){
+ const f=selectedVehicleForm(),el=document.getElementById('v115EngineInfo');if(!f||!el)return;
+ const make=f.elements.make.value,model=f.elements.model.value,year=+f.elements.year.value,fuel=f.elements.fuel.value;
+ const key=v115Key(make,model,year),count=vehicleEngineOptions(make,model,year,fuel).length;
+ el.textContent=!make||!model?'Önce marka ve model seç.':count?
+ count+' motor / varyant bu araç ve model yılı için listelendi.':
+ v115Pending.has(key)?'Bu modelin gerçek motor seçenekleri getiriliyor…':
+ v115Status[key]==='error'?'OtoAPI erişilemiyor. Başka markaların motoru gösterilmez.':
+ 'Bu model/yıl için doğrulanmış motor yok. OtoAPI varyantlarını kontrol et.';
+}
+function v115Load(){
+ const f=selectedVehicleForm();if(!f)return;
+ const make=f.elements.make.value,model=f.elements.model.value,year=+f.elements.year.value;
+ if(!make||!model||!year)return;
+ const key=v115Key(make,model,year);
+ if(v115Status[key]||v115Pending.has(key))return;
+ v115Pending.add(key);v115Message();
+ try{Android.fetchOtoVariants(make,model,year)}
+ catch(e){v115Pending.delete(key);v115Status[key]='error';v115Message()}
+}
+function trimOptions(make,model='',year=0,engine=''){
+ const r=variantRule(make,model,+year||0);
+ return (r?.trims?.length?r.trims:(BRAND_TRIMS[make]||GENERIC_TRIMS)).slice().sort(azSort);
+}
 function staticModels(make){return (OFFLINE_MODELS[make]||[]).slice().sort(azSort)}
 function mergeModels(a,b){return [...new Set([...(a||[]),...(b||[])].filter(Boolean))].sort(azSort)}
 let remoteModelCache={};
