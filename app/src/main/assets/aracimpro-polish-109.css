@@ -1,0 +1,55 @@
+/* V109: professional ARAS bot, real automotive imagery, original ad placement and compact AI chat */
+.aras108Bot{width:100px!important;min-width:100px!important;height:106px!important;flex:0 0 100px!important;overflow:visible}
+.aras108Dock{min-height:112px!important;align-items:center!important;gap:9px!important;margin:11px 0 13px!important}
+.aras108Bot:before{width:77px!important;height:77px!important;left:11px!important;top:13px!important;background:radial-gradient(circle at 42% 30%,#174777,#071e39 68%,#020f27)!important;
+border-color:#3689b5!important;box-shadow:0 0 16px #087ac44a,inset 0 0 14px #00b9ff2c!important}
+.aras109Robot{width:106px;height:122px;position:relative;z-index:2;overflow:visible;filter:drop-shadow(0 9px 7px rgba(1,12,28,.62));animation:aras109Hover 3.8s ease-in-out infinite}
+.aras109Eye{animation:aras109Blink 7.6s linear infinite;transform-origin:center;transform-box:fill-box}
+.aras109Signal{animation:aras109Pulse 2.8s ease-in-out infinite}
+.aras108Talk{min-height:90px!important;background:linear-gradient(133deg,#071c34,#123c68)!important;border:1px solid #367cae!important}
+.aras108Talk strong{font-size:13.6px!important;letter-spacing:-.2px}
+.aras108Talk small{font-size:11px!important}
+.market109Photo{width:100%;height:100%;display:block;overflow:hidden;border-radius:inherit;position:relative}
+.market109Photo img{width:100%;height:100%;object-fit:cover;object-position:50% 50%;display:block;filter:contrast(1.06) saturate(1.08)}
+.market109Photo:after{content:"";position:absolute;inset:0;background:linear-gradient(140deg,transparent 52%,rgba(0,50,108,.2))}
+.market108Icon{width:96px!important;min-width:96px!important;height:63px!important;overflow:hidden;border-radius:10px!important;background:#0a2c4d!important;padding:0!important}
+.market108Icon .market109Photo{width:100%;height:100%}
+.market108Link{min-height:84px!important}
+.proWelcomeHeroGraphic108{flex:0 0 116px!important;width:116px!important;height:95px!important;overflow:hidden!important;border-radius:12px!important;box-shadow:0 6px 17px rgba(0,8,29,.32)}
+.proWelcomeHeroGraphic108 .market109Photo{width:100%;height:100%}
+.market107Cover .market108ListingCar{width:100%;height:100%;display:flex}
+.market107Cover .market108ListingCar .market109Photo{height:100%;width:100%;border-radius:0}
+.market107DetailCar .market108ListingCar{width:100%;height:100%}
+.market107DetailCar .market109Photo{height:140px;width:100%;border-radius:15px}
+.n97AdArea{display:block!important;margin:9px 0 14px!important}
+body .apMrecCard,body.apMrecReady .apMrecCard{display:flex!important;gap:8px!important;margin:12px 0!important;padding:12px 10px 14px!important}
+body .apMrecCard{max-width:100%!important}
+body .apMrecSlot{width:300px!important;max-width:100%!important;height:250px!important;border-radius:13px!important;
+background:linear-gradient(155deg,#092640,#0d3154)!important;border-color:#295d88!important}
+body .apMrecSlot>span{font-size:11px!important;color:#8cb2ca!important;line-height:1.6;text-align:center;max-width:220px;padding:9px}
+body.r8HomeMode:not(.dark) .apMrecSlot{background:linear-gradient(145deg,#edf7ff,#daeaf8)!important}
+body.r8HomeMode:not(.dark) .apMrecSlot>span{color:#587b9b!important}
+.aiIntro{padding:12px 14px!important;margin-bottom:9px!important;border-radius:15px!important}
+.aiIntro b{font-size:15px!important}.aiIntro small{font-size:11px!important;line-height:1.45!important}
+.aiVehicle{margin-top:6px!important}.aiQuick{gap:6px!important;margin-bottom:0!important}
+.aiQuick button{font-size:10px!important;padding:7px 9px!important}
+.aiChat{max-height:min(46vh,430px)!important;overflow-y:auto!important;gap:10px!important}
+.aiBubble{max-width:94%!important;font-size:12px!important;line-height:1.52!important;padding:11px 12px!important}
+.aiBubble ul{padding-left:17px!important}.aiBubble li{margin-bottom:5px}
+.aiComposer{position:relative!important;bottom:auto!important;z-index:2!important;background:var(--card)!important;
+padding:8px 0 6px!important;box-shadow:none!important}
+.aiComposer textarea{min-height:43px!important;max-height:85px!important;font-size:13px!important}
+.aiComposer button{width:45px!important;height:45px!important}
+.aiErrorDetails{border-top:1px solid rgba(157,196,222,.25);margin-top:10px;padding-top:8px;font-size:10px;color:var(--muted);word-break:break-word}
+.aiErrorDetails summary{cursor:pointer;color:#79c8e9;padding:5px 0;font-weight:700}
+@keyframes aras109Hover{0%,100%{transform:translateY(1px) rotate(-1.5deg)}50%{transform:translateY(-6px) rotate(1.3deg)}}
+@keyframes aras109Blink{0%,46%,48%,100%{transform:scaleY(1)}47%{transform:scaleY(.10)}}
+@keyframes aras109Pulse{0%,100%{opacity:.62}50%{opacity:1}}
+@media(max-width:390px){
+.aras108Bot{width:86px!important;min-width:86px!important;flex-basis:86px!important;height:100px!important}
+.aras109Robot{width:93px;height:112px}
+.aras108Talk{padding:11px!important}.aras108Talk strong{font-size:12px!important}
+.market108Icon{width:79px!important;min-width:79px!important}
+.proWelcomeHeroGraphic108{flex-basis:86px!important;width:86px!important}
+}
+@media(prefers-reduced-motion:reduce){.aras109Robot,.aras109Eye,.aras109Signal{animation:none!important}}
