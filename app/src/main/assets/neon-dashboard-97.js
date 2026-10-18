@@ -44,7 +44,13 @@ function n97Hero(v){
   const title=[v.year,v.make,v.model].filter(Boolean).join(' ')||'Aracım';
   const subtitle=[v.engine,v.fuel,v.transmission].filter(Boolean).join(' • ');
   const photo=typeof v.photo==='string'?v.photo.trim():'';
-  return '<section class="n97Hero">'+
+  const photoMarkup=photo?
+    '<div class="n117Ambient" aria-hidden="true"><img src="'+safeText(photo)+'" alt="" decoding="async"></div>'+
+    '<div class="n117PhotoFrame"><div class="n117PhotoFloat">'+
+    '<img class="n117PhotoSharp" src="'+safeText(photo)+'" alt="'+safeText(title)+'" decoding="async" loading="eager"></div></div>'+
+    '<div class="n117GroundGlow" aria-hidden="true"></div>':
+    '<div class="n97NoPhoto">'+ico('car')+'<small>Aracının gerçek fotoğrafını ekle</small></div>';
+  return '<section class="n97Hero n117Hero">'+
     '<div class="n97HeroShine" aria-hidden="true"></div>'+
     '<div class="n97HeroCopy">'+
       '<span class="n97Active"><i></i> Aktif Araç</span>'+
@@ -57,8 +63,9 @@ function n97Hero(v){
       '</div>'+
       '<button class="n97Details" onclick="go(\'garage\')">Araç Detayları <span>→</span></button>'+
     '</div>'+
-    '<div class="n97Photo">'+(photo?'<img src="'+safeText(photo)+'" alt="'+safeText(title)+'" decoding="async" loading="eager">':
-      '<div class="n97NoPhoto">'+ico('car')+'<small>Fotoğraf ekle</small></div>')+'</div>'+
+    '<div class="n97Photo n117Photo" aria-label="Aracın fotoğrafı; yatay sürükleyerek hafif derinlik efekti ver">'+
+      photoMarkup+
+    '</div>'+
     '<button class="n97EditPhoto" onclick="openVehicle(\''+safeText(v.id)+'\')" aria-label="Araç fotoğrafını seç">📷 Fotoğraf</button>'+
     '</section>';
 }
