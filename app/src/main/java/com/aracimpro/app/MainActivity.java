@@ -1205,6 +1205,7 @@ private void showLaunchSplash() {
         // disconnect destroyed both AdViews. Recreate missing units then.
         if (admobSdkReady) {
             createAdMobBanner();
+            createMrecAd();
             loadSingleInterstitial();
             return;
         }
