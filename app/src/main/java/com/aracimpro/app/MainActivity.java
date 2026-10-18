@@ -93,6 +93,7 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
+import com.google.android.gms.ads.appopen.AppOpenAd;
 import com.google.android.ump.ConsentInformation;
 import com.google.android.ump.ConsentRequestParameters;
 import com.google.android.ump.UserMessagingPlatform;
@@ -205,6 +206,12 @@ public class MainActivity extends Activity {
             new java.util.concurrent.atomic.AtomicBoolean(false);
     private volatile long oneInterstitialLoadedAt = 0L;
     private final long sessionStartedAt = android.os.SystemClock.elapsedRealtime();
+    // App-open is a distinct AdMob format; never show ordinary interstitials at launch.
+    private AppOpenAd appOpenAd122;
+    private boolean appOpenLoading122 = false;
+    private boolean appOpenShowing122 = false;
+    private int appOpenLaunchCount122 = 0;
+    private long appOpenLastShownAt122 = 0L;
     private int bannerHeightPx = 0;
     private int lastInsetLeft = 0, lastInsetTop = 0, lastInsetRight = 0, lastInsetBottom = 0;
     private FrameLayout root;
@@ -251,6 +258,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        android.content.SharedPreferences openPrefs122 = getSharedPreferences("aracim_app_open", MODE_PRIVATE);
+        appOpenLaunchCount122 = openPrefs122.getInt("opens", 0) + 1;
+        appOpenLastShownAt122 = openPrefs122.getLong("last_shown", 0L);
+        openPrefs122.edit().putInt("opens", appOpenLaunchCount122).apply();
         installLocalCrashRecorder();
         // Use the platform's edge-to-edge window handling without calling
         // WindowCompat.enableEdgeToEdge(), whose legacy implementations can
@@ -631,7 +642,9 @@ private void showLaunchSplash() {
         // Keep the intro visible for ~3.35 seconds on a ready device.
         // If the WebView is still loading, never expose an uninitialized blank screen.
         if (!splashDismissAllowed || !pageReady) return;
-
+        // If a legitimate App Open ad is running over the loading screen, do not
+        // remove the splash until the ad is dismissed.
+        if (appOpenShowing122) return;
         if (apPremiumSplashHidden) return;
         apPremiumSplashHidden = true;
         if (apLaunchProgressTick != null)
@@ -1170,6 +1183,8 @@ private void showLaunchSplash() {
                 oneInterstitialAd = null;
                 oneInterstitialReady = false;
                 interstitialLoading = false;
+                appOpenAd122 = null;
+                appOpenLoading122 = false;
             } catch (Throwable ignored) {}
             bannerHeightPx = 0;
             applyWebMargins(lastInsetLeft,lastInsetTop,lastInsetRight,lastInsetBottom);
@@ -1334,6 +1349,7 @@ private void showLaunchSplash() {
             createAdMobBanner();
             createMrecAd();
             loadSingleInterstitial();
+            loadAppOpenDuringSplash122();
             return;
         }
         if (admobSdkInitialized) return; // asynchronous initialization in progress
@@ -1536,6 +1552,112 @@ private void showLaunchSplash() {
             }
         }
         updateMrecVisibility();
+    }
+
+    // Only the loading screen may show an App Open ad. No full-screen ad
+    // unexpectedly appears once the user has entered the app.
+    private void loadAppOpenDuringSplash122() {
+        if (!canRequestAdMobAds() || !admobSdkReady ||
+            appOpenLaunchCount122 < 3 || appOpenLoading122 ||
+            appOpenShowing122 || appOpenAd122 != null ||
+            apPremiumSplashHidden || apPremiumSplashView == null ||
+            isFinishing() || isDestroyed()) return;
+        long now = System.currentTimeMillis();
+        if (appOpenLastShownAt122 > 0 &&
+            now - appOpenLastShownAt122 < 4L * 60L * 60L * 1000L) return;
+        final String unit = (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
+            ? "ca-app-pub-3940256099942544/9257395921"
+            : BuildConfig.APP_OPEN_AD_UNIT_ID;
+        if (unit == null || !unit.matches("ca-app-pub-[0-9]+/[0-9]+")) {
+            logAdMob("app_open_disabled", "Dedicated App Open unit is not configured");
+            return;
+        }
+        appOpenLoading122 = true;
+        AppOpenAd.load(this, unit, new AdRequest.Builder().build(),
+            new AppOpenAd.AppOpenAdLoadCallback() {
+                @Override public void onAdLoaded(AppOpenAd ad) {
+                    appOpenLoading122 = false;
+                    if (!canRequestAdMobAds() || isFinishing() || isDestroyed()) return;
+                    appOpenAd122 = ad;
+                    showAppOpenOnSplash122();
+                }
+                @Override public void onAdFailedToLoad(LoadAdError error) {
+                    appOpenLoading122 = false;
+                    appOpenAd122 = null;
+                    logAdMob("app_open_failed", error == null ? "No fill" : error.toString());
+                }
+            });
+    }
+
+    private void showAppOpenOnSplash122() {
+        final AppOpenAd ad = appOpenAd122;
+        if (ad == null || !canRequestAdMobAds() || appOpenShowing122 ||
+            apPremiumSplashHidden || apPremiumSplashView == null ||
+            // When content already finished and splash duration elapsed, the
+            // ad has missed the loading window and must NOT appear late.
+            (pageReady && splashDismissAllowed) ||
+            oneInterstitialClaimed.get() || isFinishing() || isDestroyed()) {
+            appOpenAd122 = null;
+            return;
+        }
+        appOpenAd122 = null;
+        appOpenShowing122 = true;
+        ad.setFullScreenContentCallback(new FullScreenContentCallback() {
+            @Override public void onAdShowedFullScreenContent() {
+                appOpenLastShownAt122 = System.currentTimeMillis();
+                getSharedPreferences("aracim_app_open", MODE_PRIVATE).edit()
+                    .putLong("last_shown", appOpenLastShownAt122).apply();
+                stopLaunchEngineSound();
+                logAdMob("app_open_shown", "Only during splash, not every launch");
+            }
+            @Override public void onAdDismissedFullScreenContent() {
+                appOpenShowing122 = false;
+                hideLaunchSplashWhenReady();
+            }
+            @Override public void onAdFailedToShowFullScreenContent(AdError error) {
+                appOpenShowing122 = false;
+                logAdMob("app_open_show_failed", String.valueOf(error));
+                hideLaunchSplashWhenReady();
+            }
+        });
+        try { ad.show(this); }
+        catch (Throwable t) {
+            appOpenShowing122 = false;
+            logAdMob("app_open_exception", t.getClass().getSimpleName());
+            hideLaunchSplashWhenReady();
+        }
+    }
+
+    // Vehicle-save is a completed user task, not a disruptive "Aracı Ekle"
+    // click. The same one-ad-per-session cap also applies to tab transitions.
+    private void requestInterstitialAfterVehicleSaved122() {
+        long now = android.os.SystemClock.elapsedRealtime();
+        if (!oneInterstitialReady || oneInterstitialAd == null ||
+            !canRequestAdMobAds() || !apPremiumSplashHidden ||
+            appOpenShowing122 ||
+            now - sessionStartedAt < 30000L ||
+            now - oneInterstitialLoadedAt > 45L * 60L * 1000L ||
+            (appOpenLastShownAt122 > 0 &&
+             System.currentTimeMillis() - appOpenLastShownAt122 < 180000L) ||
+            isFinishing() || isDestroyed()) return;
+        if (!oneInterstitialClaimed.compareAndSet(false, true)) return;
+        final InterstitialAd ad = oneInterstitialAd;
+        oneInterstitialAd = null;
+        oneInterstitialReady = false;
+        if (ad == null) return;
+        ad.setFullScreenContentCallback(new FullScreenContentCallback() {
+            @Override public void onAdShowedFullScreenContent() {
+                logAdMob("vehicle_saved_interstitial", "After successful new vehicle save");
+            }
+            @Override public void onAdDismissedFullScreenContent() {
+                logAdMob("vehicle_saved_interstitial_closed", "Return to the saved vehicle");
+            }
+            @Override public void onAdFailedToShowFullScreenContent(AdError error) {
+                logAdMob("vehicle_saved_interstitial_failed", String.valueOf(error));
+            }
+        });
+        try { ad.show(this); }
+        catch (Throwable t) { logAdMob("vehicle_saved_interstitial_error", t.toString()); }
     }
 
     private void loadSingleInterstitial() {
@@ -1881,6 +2003,12 @@ private void showLaunchSplash() {
 
         @JavascriptInterface public boolean showOneInterstitialBeforeNavigation(String target) {
             return requestOneInterstitialForNavigation(target);
+        }
+
+        @JavascriptInterface public void showOneInterstitialAfterVehicleSaved() {
+            // Called only after a new vehicle has been successfully persisted.
+            runOnUiThread(() -> mainHandler.postDelayed(
+                MainActivity.this::requestInterstitialAfterVehicleSaved122, 700L));
         }
 
         @JavascriptInterface public String admobAdsDiagnostics() {
