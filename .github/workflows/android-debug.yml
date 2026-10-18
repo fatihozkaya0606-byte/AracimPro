@@ -3,7 +3,7 @@ name: Android Debug Build
 on:
   workflow_dispatch:
   push:
-    branches: [ main, aracimpro-115-exact-engine-catalog-all-makes ]
+    branches: [ main, aracimpro-115-exact-engine-catalog-all-makes, aracimpro-116-r8-interactive-studio ]
 
 jobs:
   build-debug:
