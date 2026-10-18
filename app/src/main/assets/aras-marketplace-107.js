@@ -93,6 +93,73 @@ moreAllServices=function(){
  * A device-only draft is never labeled as online or published. */
 const DRAFT_KEY='aracim_market_draft_107';
 let rows=[],loading=false,lastError='',activeFilter='',myListings=false;
+let marketFilterMake='',marketFilterModel='',marketFilterYear='',marketShowCatalog=false;
+const MARKET_YEAR_MAX=new Date().getFullYear()+1;
+function marketBrands(){
+  return (typeof vehicleBrands!=='undefined'?vehicleBrands:[]).slice().sort(azSort);
+}
+function marketModels(make,year){
+  if(!make)return[];
+  const offline=typeof staticModels==='function'?staticModels(make):[];
+  const remote=typeof remoteModelCache!=='undefined'?remoteModelCache[make+'|'+year]||[]:[];
+  return [...new Set([...offline,...remote])].sort(azSort);
+}
+function marketSelect(list,value,placeholder){
+  const vals=[...new Set((list||[]).filter(Boolean))];
+  if(value&&!vals.includes(String(value)))vals.unshift(String(value));
+  return '<option value="">'+esc(placeholder)+'</option>'+
+    vals.map(s=>'<option value="'+esc(s)+'" '+(String(s)===String(value)?'selected':'')+'>'+esc(s)+'</option>').join('');
+}
+function marketYears(){
+  return Array.from({length:MARKET_YEAR_MAX-1970+1},(_,i)=>String(MARKET_YEAR_MAX-i));
+}
+function marketFetchModels(make,year){
+  if(!make||!year)return;
+  try{Android.fetchVehicleModels(make,+year)}catch(e){}
+}
+window.onMarketVehicleModels=function(make,year,payload,error){
+  const f=document.getElementById('market107Form');
+  if(f&&f.elements.make.value===make&&+f.elements.year.value===+year){
+    const model=f.elements.model,existing=model.value;
+    model.innerHTML=marketSelect(marketModels(make,year),existing,'Model seç');
+    model.value=existing;
+    const status=document.getElementById('market111CatalogStatus');
+    if(status)status.textContent=error?'Çevrimdışı model kataloğu kullanılıyor.':'Model listesi güncellendi.';
+  }
+  const browseMake=document.getElementById('marketBrowseMake');
+  const browseModel=document.getElementById('marketBrowseModel');
+  if(browseMake&&browseModel&&browseMake.value===make&&+marketFilterYear===+year){
+    browseModel.innerHTML=marketSelect(marketModels(make,year),marketFilterModel,'Tüm modeller');
+  }
+};
+window.aracimMarketMakeChanged=function(){
+  const f=document.getElementById('market107Form');if(!f)return;
+  const make=f.elements.make.value,year=f.elements.year.value;
+  f.elements.model.innerHTML=marketSelect(marketModels(make,year),'','Model seç');
+  const hint=document.getElementById('market111CatalogStatus');
+  if(hint)hint.textContent=make?marketModels(make,year).length+' model seçime hazır.':'Önce marka seç.';
+  marketFetchModels(make,year);
+};
+window.aracimMarketYearChanged=function(){
+  const f=document.getElementById('market107Form');if(!f)return;
+  const model=f.elements.model.value,make=f.elements.make.value,year=f.elements.year.value;
+  f.elements.model.innerHTML=marketSelect(marketModels(make,year),model,'Model seç');
+  marketFetchModels(make,year);
+};
+window.aracimMarketFromGarage=function(id){
+  const v=(state.vehicles||[]).find(x=>x.id===id);
+  const f=document.getElementById('market107Form');if(!v||!f)return;
+  f.elements.make.innerHTML=marketSelect(marketBrands(),v.make,'Marka seç');
+  f.elements.make.value=v.make;
+  f.elements.year.value=String(v.year||'');
+  f.elements.model.innerHTML=marketSelect(marketModels(v.make,v.year),v.model,'Model seç');
+  f.elements.model.value=v.model;
+  if(v.km)f.elements.km.value=v.km;
+  if(v.fuel)f.elements.fuel.value=v.fuel;
+  if(v.transmission)f.elements.transmission.value=v.transmission;
+  marketFetchModels(v.make,v.year);
+  toast('Araç bilgileri garajından aktarıldı');
+};
 function ready(){
  try{return JSON.parse(Android.communityStatus()||'{}')}catch(e){return{configured:false,signedIn:false}}
 }
@@ -124,7 +191,12 @@ function listingCard(v){
 function filtered(){
  const q=activeFilter.trim().toLocaleLowerCase('tr-TR');
  const uid=ready().uid||'';
- return rows.filter(x=>(!myListings||x.ownerId===uid)&&(!q||[x.make,x.model,x.city,String(x.year),x.fuel].join(' ').toLocaleLowerCase('tr-TR').includes(q))).sort((a,b)=>b.createdAt-a.createdAt);
+ return rows.filter(x=>(!myListings||x.ownerId===uid)
+  &&(!marketFilterMake||x.make===marketFilterMake)
+  &&(!marketFilterModel||x.model===marketFilterModel)
+  &&(!marketFilterYear||String(x.year)===marketFilterYear)
+  &&(!q||[x.make,x.model,x.city,String(x.year),x.fuel].join(' ').toLocaleLowerCase('tr-TR').includes(q))
+ ).sort((a,b)=>b.createdAt-a.createdAt);
 }
 function listingGrid(){
  const found=filtered();
@@ -141,12 +213,44 @@ function marketIntro(){
  (!account.configured?'<div class="market107Notice"><b>Beta / çevrimdışı taslak modu.</b> Firebase ilan yayınlama servisi yapılandırılmadığında ilanları başka kullanıcılara gösteremeyiz.</div>':'')+
  '<div class="market107Guide">🔐 Araç ruhsatı, plaka, şasi numarası, kimlik ve kapora bilgilerini paylaşma. Satın almadan önce ekspertiz, noter ve güvenli ödeme doğrulaması yap.</div>';
 }
+function marketCatalogHtml(){
+ if(!marketShowCatalog)return '';
+ const makes=marketFilterMake?[marketFilterMake]:marketBrands().slice(0,45);
+ const cards=makes.map(make=>{
+  const models=marketModels(make,marketFilterYear);
+  return '<div class="market111CatalogMake"><b>'+esc(make)+'</b>'+
+    '<small>'+models.length+' kayıtlı model</small>'+
+    '<div class="market111CatalogChips">'+models.slice(0,12).map(model=>
+      '<button type="button" data-make="'+esc(make)+'" data-model="'+esc(model)+'" onclick="aracimMarketCatalogPick(this.dataset.make,this.dataset.model)">'+esc(model)+'</button>').join('')+
+    (models.length>12?'<span>+'+(models.length-12)+' model</span>':'')+'</div></div>';
+ }).join('');
+ return '<div class="market111Catalog"><div class="market111CatalogInfo">Katalogdaki araçlar satılık ilan değildir. Satılık ilanları kullanıcılar oluşturdukça aşağıda görünür.</div>'+cards+'</div>';
+}
 function drawMarket(){
  modal('🚘 Araç Pazarı • BETA','<div class="market107">'+marketIntro()+
- '<div class="market107Filters"><input id="market107Search" type="search" aria-label="İlan ara" value="'+esc(activeFilter)+'" placeholder="Marka, model veya şehir ara" oninput="aracimMarketFilter(this.value)"/>'+
+ '<div class="market111Browse"><label>Marka<select id="marketBrowseMake" onchange="aracimMarketBrowseMake(this.value)">'+marketSelect(marketBrands(),marketFilterMake,'Tüm markalar')+'</select></label>'+
+ '<label>Model<select id="marketBrowseModel" onchange="aracimMarketBrowseModel(this.value)">'+marketSelect(marketModels(marketFilterMake,marketFilterYear),marketFilterModel,'Tüm modeller')+'</select></label>'+
+ '<label>Yıl<select id="marketBrowseYear" onchange="aracimMarketBrowseYear(this.value)">'+marketSelect(marketYears(),marketFilterYear,'Tüm yıllar')+'</select></label></div>'+
+ '<div class="market107Filters"><input id="market107Search" type="search" aria-label="İlan ara" value="'+esc(activeFilter)+'" placeholder="İlanlarda şehir veya araç ara" oninput="aracimMarketFilter(this.value)"/>'+
  '<label class="market107My"><input type="checkbox" '+(myListings?'checked':'')+' onchange="aracimMarketMy(this.checked)"> Yalnız ilanlarım</label></div>'+
- listingGrid()+'<div class="market107Footer">Aracım Pro alıcı/satıcı arasındaki ödemeye aracılık etmez. İlan bilgileri satıcı beyanıdır.</div></div>');
+ '<button type="button" class="market111CatalogToggle" onclick="aracimMarketToggleCatalog()">🚘 '+(marketShowCatalog?'Araç kataloğunu gizle':'Tüm araç markalarını ve modelleri gör')+' <span>›</span></button>'+
+ marketCatalogHtml()+
+ '<h3 class="market111ResultsTitle">Yayımlanmış satış ilanları</h3>'+
+ listingGrid()+'<div class="market107Footer">Araç kataloğu ilan değildir. Satılık ilanlar yalnız gerçek kullanıcı yayımladığında gösterilir. Aracım Pro ödemeye aracılık etmez.</div></div>');
 }
+window.aracimMarketBrowseMake=function(make){
+ marketFilterMake=String(make||'');marketFilterModel='';
+ drawMarket();marketFetchModels(marketFilterMake,marketFilterYear);
+};
+window.aracimMarketBrowseModel=function(model){marketFilterModel=String(model||'');drawMarket()};
+window.aracimMarketBrowseYear=function(year){
+ marketFilterYear=String(year||'');marketFilterModel='';drawMarket();
+ marketFetchModels(marketFilterMake,marketFilterYear);
+};
+window.aracimMarketToggleCatalog=function(){marketShowCatalog=!marketShowCatalog;drawMarket()};
+window.aracimMarketCatalogPick=function(make,model){
+ marketFilterMake=make;marketFilterModel=model;marketShowCatalog=false;drawMarket();
+};
 window.aracimMarketOpen=function(){
  drawMarket();
  aracimMarketRefresh();
@@ -214,12 +318,17 @@ window.onMarketReported=function(payload,error){toast(error?'Şikâyet gönderil
 window.aracimMarketCreate=function(){
  const v=activeVehicle()||{},d=draftGet()||{},base={year:v.year||'',make:v.make||'',model:v.model||'',km:v.km||'',fuel:v.fuel||'',transmission:v.transmission||'',...d};
  const options=(list,val)=>list.map(x=>'<option '+(x===val?'selected':'')+' value="'+esc(x)+'">'+esc(x||'Seçiniz')+'</option>').join('');
- modal('🚘 Araç Satış İlanı','<div class="market107"><div class="market107Notice">İlanı önce bu cihazda taslak olarak saklayabilirsin. Başka kullanıcılara yayımlamak için doğrulanmış hesap ve etkin Firebase ilan servisi gerekir.</div>'+
- '<form class="form market107Form" onsubmit="aracimMarketSave(event)">'+
- '<div class="formrow"><div class="field"><label>Marka</label><input name="make" maxlength="40" required value="'+esc(base.make||'')+'" placeholder="Örn. Hyundai"></div>'+
- '<div class="field"><label>Model</label><input name="model" maxlength="45" required value="'+esc(base.model||'')+'" placeholder="Örn. Elantra"></div></div>'+
- '<div class="formrow"><div class="field"><label>Model yılı</label><input type="number" name="year" min="1970" max="2027" required value="'+esc(base.year||'')+'"></div>'+
+ const cars=(state.vehicles||[]);
+ const garage=cars.length?'<div class="market111Garage"><label>Garajımdaki araçlardan seç</label><select onchange="if(this.value)aracimMarketFromGarage(this.value)"><option value="">Araç seçerek bilgileri aktar</option>'+
+ cars.map(car=>'<option value="'+esc(car.id)+'">'+esc([car.year,car.make,car.model].filter(Boolean).join(' '))+'</option>').join('')+'</select></div>':'';
+ modal('🚘 Araç Satış İlanı','<div class="market107"><div class="market107Notice">Aracını katalogdan seç; marka ve modeli elle yazman gerekmiyor. İlanı bu cihazda taslak olarak saklayabilirsin. Yayımlama için doğrulanmış hesap ve Firebase ilan servisi gerekir.</div>'+
+ garage+
+ '<form id="market107Form" class="form market107Form" onsubmit="aracimMarketSave(event)">'+
+ '<div class="formrow"><div class="field"><label>Marka</label><select name="make" required onchange="aracimMarketMakeChanged()">'+marketSelect(marketBrands(),base.make,'Marka seç')+'</select></div>'+
+ '<div class="field"><label>Model</label><select name="model" required>'+marketSelect(marketModels(base.make,base.year),base.model,'Model seç')+'</select></div></div>'+
+ '<div class="formrow"><div class="field"><label>Model yılı</label><select name="year" required onchange="aracimMarketYearChanged()">'+marketSelect(marketYears(),base.year,'Yıl seç')+'</select></div>'+
  '<div class="field"><label>Kilometre</label><input type="number" name="km" min="0" max="2000000" required value="'+esc(base.km||'')+'"></div></div>'+
+ '<div id="market111CatalogStatus" class="market111CatalogStatus">Marka ve model seçimi mevcut araç kataloğundan yapılır.</div>'+
  '<div class="formrow"><div class="field"><label>Fiyat (TL)</label><input type="number" name="price" min="10000" max="100000000" required value="'+esc(base.price||'')+'" placeholder="1200000"></div>'+
  '<div class="field"><label>İl</label><input name="city" maxlength="45" required value="'+esc(base.city||'')+'" placeholder="Örn. Ankara"></div></div>'+
  '<div class="formrow"><div class="field"><label>Yakıt</label><select name="fuel">'+options(['Benzin','Dizel','LPG','Hibrit','Elektrik','Diğer'],base.fuel)+'</select></div>'+
@@ -231,6 +340,8 @@ window.aracimMarketCreate=function(){
  '<button class="secondary wide" type="submit" name="saveAction" value="draft">Taslak kaydet</button>'+
  '<button class="primary wide" type="submit" name="saveAction" value="publish">İlanı yayımla</button>'+
  '<button class="secondary wide" type="button" onclick="aracimMarketOpen()">← Pazara dön</button></form></div>');
+ const m=document.getElementById('market107Form');
+ if(m&&m.elements.make.value&&m.elements.year.value)marketFetchModels(m.elements.make.value,m.elements.year.value);
 };
 window.aracimMarketSave=function(event){
  event.preventDefault();
