@@ -450,6 +450,20 @@ private void showLaunchSplash() {
                 android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
                 android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
 
+        // The original splash image contains a printed, non-working loading
+        // percentage. Mask it and draw the real native 0-100% indicator here.
+        android.view.View footerPanel = new android.view.View(this);
+        footerPanel.setBackground(new android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[] {
+                        android.graphics.Color.argb(246, 4, 17, 31),
+                        android.graphics.Color.parseColor("#04111F"),
+                        android.graphics.Color.parseColor("#04111F")
+                }));
+        splash.addView(footerPanel, new android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT, dp(250),
+                android.view.Gravity.BOTTOM));
+
         android.widget.LinearLayout brand = new android.widget.LinearLayout(this);
         brand.setOrientation(android.widget.LinearLayout.VERTICAL);
         brand.setPadding(dp(20), dp(20), dp(20), dp(26));
