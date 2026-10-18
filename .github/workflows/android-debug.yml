@@ -3,7 +3,7 @@ name: Android Debug Build
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ main, aracimpro-115-exact-engine-catalog-all-makes ]
 
 jobs:
   build-debug:
@@ -51,5 +51,5 @@ jobs:
         run: gradle --no-daemon assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: AracimPro-V15.6-Test-APK
+          name: AracimPro-V116-Test-APK
           path: app/build/outputs/apk/debug/app-debug.apk
