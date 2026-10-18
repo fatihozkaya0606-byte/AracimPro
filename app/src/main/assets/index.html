@@ -1989,6 +1989,13 @@ body.r8HomeMode:not(.dark) .apMrecCard{background:linear-gradient(140deg,#f3f9ff
 body.r8HomeMode:not(.dark) .apMrecTitle{color:#173650}
 body.r8HomeMode:not(.dark) .apMrecTitle small{color:#4f7898}
 body.r8HomeMode:not(.dark) .apMrecSlot{background:#e7f0f8;border-color:#c4d9e9}
+/* V104: the same native-backed ad is available inside every main tab.
+   It belongs to document flow and is never positioned over action controls. */
+.apMrecCard{box-sizing:border-box;min-width:0;width:100%;max-width:100%;clear:both}
+body:not(.r8HomeMode):not(.dark) .apMrecCard{background:linear-gradient(140deg,#f3f9ff,#e5f2ff);border-color:#a6cdea}
+body:not(.r8HomeMode):not(.dark) .apMrecTitle{color:#173650}
+body:not(.r8HomeMode):not(.dark) .apMrecTitle small{color:#4f7898}
+body:not(.r8HomeMode):not(.dark) .apMrecSlot{background:#e7f0f8;border-color:#c4d9e9}
 </style>
 <link rel="stylesheet" href="r8plus-clean.css">
 <link rel="stylesheet" href="r8-premium-96.css">
@@ -1999,7 +2006,7 @@ body.r8HomeMode:not(.dark) .apMrecSlot{background:#e7f0f8;border-color:#c4d9e9}
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
 <script>
 const KEY='aracim_pro_v1';
-const V='7.11.28';
+const V='7.11.29';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.NumberFormat(apLocale(),{style:'currency',currency:apCurrency(),maximumFractionDigits:2}).format(Number(n)||0);const num=n=>(Number(n)||0).toLocaleString(apLocale());
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -3031,7 +3038,13 @@ window.appBack=function(){
   }
   return false;
 }
-function render(){document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();setTimeout(apSyncMrecSlot,70);setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);setTimeout(startTickerMotion7105,420);setTimeout(showWhatsNewOnce,850);if(current==='home'){setTimeout(loadHomeWeather,350)}}
+function render(){
+  // Hide the native MREC before replacing WebView HTML: a stale native overlay
+  // must never cover buttons while a tab is changing.
+  try{if(typeof Android!=='undefined' && Android.updateMrecSlot)Android.updateMrecSlot(0,0,0,0,window.innerWidth,false)}catch(e){}
+  document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${view()}</main>`+nav()+fab();
+  apMrecMountOnContentPage();
+  setTimeout(apSyncMrecSlot,70);setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);setTimeout(startTickerMotion7105,420);setTimeout(showWhatsNewOnce,850);if(current==='home'){setTimeout(loadHomeWeather,350)}}
 function view(){if(!activeVehicle()&&current!=='garage'&&current!=='more')return welcome();return ({home:homeView,garage:garageView,records:recordsView,plan:planView,reports:reportsView,more:moreView}[current]||homeView)()}
 
 function apMrecCardHtml(){
@@ -3045,6 +3058,52 @@ window.apMrecAvailability=function(ready){
   document.body.classList.toggle('apMrecReady',!!ready);
   requestAnimationFrame(apMrecQueueSync);
 };
+// V104: One native AdMob medium rectangle is MOVED between tab views,
+ // not duplicated or reloaded. All content remains scrollable.
+function apMrecMountOnContentPage(){
+  if(current==='home')return; // Home and empty-state already place the card.
+  const main=document.querySelector('#app > main');
+  if(!main || main.querySelector('#apMrecSlot'))return;
+  let html='';
+  try{html=apMrecCardHtml()}catch(e){return}
+  if(!html)return; // Premium always stays ad-free.
+  const holder=document.createElement('div');
+  holder.innerHTML=html.trim();
+  const card=holder.firstElementChild;
+  if(!card)return;
+
+  let anchor=null;
+  switch(current){
+    case 'garage':
+      // After vehicle cards, not over their selection/edit controls.
+      anchor=main.querySelector('.list .row:nth-child(2)')
+        || main.querySelector('.list .row')
+        || main.querySelector('.sectionHead');
+      break;
+    case 'records':
+      // Keep the records tabs, metrics and add buttons fully usable.
+      anchor=main.querySelector('.grid2') || main.querySelector('.tabs');
+      break;
+    case 'plan':
+      anchor=main.querySelector('.notice') || main.querySelector('.tabs');
+      break;
+    case 'reports':
+      anchor=main.querySelector('.grid2') || main.querySelector('.card');
+      break;
+    case 'more':
+      // More includes category drill-downs. Keep search and category actions clear.
+      anchor=main.querySelector('.moreCatHero')
+        || main.querySelector('.moreFavGrid')
+        || main.querySelector('.moreCatSearchResults')
+        || main.querySelector('.more796Top');
+      break;
+    default:
+      return;
+  }
+  if(anchor)anchor.insertAdjacentElement('afterend',card);
+  else main.appendChild(card);
+}
+
 // A native AdMob MREC is drawn above WebView. Never allow a stale overlay
 // to cover the header or dashboard while a swipe/scroll is in progress.
 let apMrecFrameQueued=false;
@@ -3055,7 +3114,7 @@ function apSyncMrecSlot(){
   apMrecFrameQueued=false;
   try{
     if(typeof Android==='undefined'||!Android.updateMrecSlot)return;
-    const slot=current==='home'?document.getElementById('apMrecSlot'):null;
+    const slot=document.getElementById('apMrecSlot');
     const vw=window.innerWidth;
     if(!slot || document.hidden || Date.now()<apMrecScrollBlockedUntil){
       Android.updateMrecSlot(0,0,0,0,vw,false);
