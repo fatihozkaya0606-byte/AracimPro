@@ -2003,6 +2003,7 @@ body:not(.r8HomeMode):not(.dark) .apMrecSlot{background:#e7f0f8;border-color:#c4
 <link rel="stylesheet" href="rollback-100.css">
 <link rel="stylesheet" href="aras-marketplace-107.css">
 <link rel="stylesheet" href="aracimpro-home-108.css">
+<link rel="stylesheet" href="aracimpro-polish-109.css">
 </head>
 <body>
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
@@ -3053,7 +3054,7 @@ function apMrecCardHtml(){
   try{if(isPremium())return '';}catch(e){}
   return `<section class="apMrecCard" aria-label="Sponsorlu reklam">
     <div class="apMrecTitle"><strong>Öne Çıkan Reklam</strong><small>Sponsorlu</small></div>
-    <div id="apMrecSlot" class="apMrecSlot"><span aria-hidden="true"></span></div>
+    <div id="apMrecSlot" class="apMrecSlot"><span>Reklam alanı • Gösterim AdMob durumuna bağlıdır.</span></div>
   </section>`;
 }
 window.apMrecAvailability=function(ready){
@@ -3970,10 +3971,10 @@ function faultGuideModal(){
   const v=activeVehicle(); // New users can also ask ARAS about symptoms without adding a vehicle.
   if(faultAiTimeout)clearTimeout(faultAiTimeout);
   faultAiPendingId='';faultAiBusy=false;faultAiHistory=[];faultAiTimeout=null;
-  modal('🛠️ Akıllı Arıza Rehberi',`
+  modal('🤖 Aras • Araç Asistanı',`
     <div class="aiIntro">
-      <b>Aracım AI • akıllı arıza danışmanı</b>
-      <small>Belirtileri sor, Aras olası nedenleri değerlendirsin. Firebase AI etkinse konuşmayı hatırlar; erişilemezse çevrimdışı temel rehber çalışır. Yazdığın sorular ve araç özelliklerin AI servisine gönderilebilir.</small>
+      <b>Aras AI • akıllı araç danışmanı</b>
+      <small>Aracındaki sorunu anlat, belirtilere göre inceleyelim. AI bağlantısı açıksa önceki cevaplarını hatırlar; bağlantı yoksa konuya özel çevrimdışı rehber çalışır. Soruların ve araç bilgilerin AI servisine gönderilebilir.</small>
       <div class="aiVehicle"><span>🚗 ${esc(aracimAiVehicleSummary(v)||'Aracını eklemeden de soru sorabilirsin')}</span></div>
     </div>
     <div class="aiQuick">
