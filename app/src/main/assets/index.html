@@ -4000,8 +4000,61 @@ function faultPreset(q){
 }
 function faultGuideSend(e){e.preventDefault();const i=document.getElementById('faultInput');const q=String(i?.value||'').trim();if(q)faultGuideRun(q)}
 
+// V109: offline advice is genuinely symptom-specific and includes
+// earlier driver answers in the current session; it is not cloud AI.
+function aracimOfflineContextResult(question){
+  const recent=faultAiHistory.filter(x=>x.role==='Sürücü').slice(-3).map(x=>x.text).join(' ');
+  const q=faultNorm(question), context=faultNorm((recent+' '+question).trim());
+  const result=(level,title,causes,checks,stop=false)=>faultResult(level,title,causes,checks,stop);
+  const isLpg=/(lpg|benzinden\s+(gaza|lp|tup)|tup(lu)?\s+arac|gaz\s+gecis|gaz(a)?\s+gecer|lpgye|otogaz)/.test(context);
+  const stall=/(istop|stop\s+ed|stop\s+et|stop\s+ol|calisirken\s+son|motor\s+dur|motor\s+son|gaz\s+verince\s+son)/.test(context);
+  if(isLpg&&stall)return result('DİKKAT','LPG’ye geçişte motor stop ediyor',
+    ['LPG regülatör basıncı veya sıcaklık sensörü sorunu','LPG filtre/enjektör beslemesinde düzensizlik','Benzin-LPG geçiş kalibrasyonunun bozulması','Buji, bobin veya boğaz kelebeği sorunu LPG’de daha belirginleşebilir'],
+    ['Benzinde çalışırken de stop ediyor mu, yoksa yalnız LPG’ye geçerken mi?','Motor tamamen ısındıktan sonra da aynı sorun oluyor mu?','Gaz kokusu varsa motoru kapat, tekrar çalıştırma ve LPG servisinden yardım al','LPG yetkili servisinde basınç, geçiş sıcaklığı ve hata kodlarını kontrol ettir']);
+  if(isLpg&&/(gecis|gec|gazda|gaza|benzinde|sars|tekle|titr|sorun)/.test(context))return result('DİKKAT','Benzinden LPG’ye geçiş sorunu',
+    ['LPG geçiş sıcaklığı ve regülatör basınç ayarı','Gaz enjektörleri veya LPG filtresinde kirlenme','Ateşleme bobini/buji verimsizliği','LPG kalibrasyonunun motorla uyumsuzluğu'],
+    ['Gaz sistemine müdahale etme; gaz kokusu varsa aracı durdur','Geçişte motor stop mu ediyor, tekliyor mu, yoksa titriyor mu?','Benzinde sürüş sorunsuz mu?','LPG servisine geçiş sıcaklığı ve basınç değerlerini kontrol ettir']);
+  if(stall)return result('DİKKAT','Motorun stop etmesi',
+    ['Kirli gaz kelebeği veya düzensiz rölanti hava beslemesi','Yakıt pompası/basınç sorunu','Krank sensörü ya da ateşleme kesintisi','Motor arıza koduyla anlaşılabilecek elektronik kesintiler'],
+    ['Stop etme rölantide mi, ışıklarda mı, hareket hâlindeyken mi?','Sadece soğukken mi, motor ısınınca da oluyor mu?','Trafikte veya hareket halinde stop ediyorsa güvenli yerde dur; aracı zorlayarak kullanma','OBD hata kodları ve yakıt beslemesini kontrol ettir']);
+  if(/sanziman|vites|dct|cv(t|t\s)|debriyaj/.test(q)&&/(vur|sars|gec|takil|kay|tit|ses|problem|ariza|sert)/.test(q))
+    return result('DİKKAT','Şanzıman / vites geçişinde sorun',
+      ['Şanzıman yağı/ısı koşulları ve bakım geçmişi','Motor/şanzıman takozlarında boşluk','Kavrama, mekatronik veya valf gövdesi arızası; şanzıman tipine göre değişir'],
+      ['Otomatik mi, manuel mi; hangi vites aralığında oluyor?','Soğukken ve ısındığında fark var mı?','İkaz lambası varsa arıza kodu okut; şanzımanı zorlayarak deneme']);
+  if(/(motor|arac|otomobil).*(tekle|silkel|bogul|gaz\s+yem|sarsil)/.test(q)||/(tekle|silkel|bogul).*(motor|arac)/.test(q))
+    return result('DİKKAT','Motor teklemesi / boğulma',
+      ['Buji/bobin ateşleme kesintisi','Yakıt enjektörü veya yakıt basıncı sorunu','Hava kaçağı veya MAF/MAP sensörü','LPG varsa LPG enjektör ve kalibrasyon koşulları'],
+      ['Sorun rölantide mi hızlanırken mi?','Motor arıza lambası yanıp sönüyorsa yük bindirmeden güvenli şekilde dur','OBD arıza kodunu okut; yakıt türüne göre teşhisi daralt']);
+  if(/klima|havalandirma/.test(q)&&/(koku|kokuyor|rutubet|kuf)/.test(q))
+    return result('NORMAL','Klima / havalandırma kokusu',
+      ['Polen filtresi kirlenmiş olabilir','Evaporatör üzerinde nem ve mikrobiyal birikim','Kabin hava girişinde yaprak ve kir birikmesi'],
+      ['Koku klima açılır açılmaz mı geliyor?','Polen filtresini kontrol ettir','Klima drenaj hattının tıkalı olup olmadığını servise kontrol ettir']);
+  if(/fren/.test(q)&&/(ses|ot|cirt|gicir)/.test(q))
+    return result('DİKKAT','Frenlerden gelen ses',
+      ['Balata aşınması veya yüzey sertleşmesi','Disk yüzeyinde pas/kir ve düzensizlik','Kaliper kızaklarında hareket sorunu'],
+      ['Ses hafif frenlemede mi, her frenlemede mi?','Fren gücü azaldıysa sürüşe devam etme','Balata/disk ve kaliper kontrolü yaptır']);
+  if(/lastik/.test(q)&&/(hava\s+kac|patla|balon|yaril|in|basinc)/.test(q))
+    return result('DİKKAT','Lastik basıncı / hasar şüphesi',
+      ['Çivi/vida veya supap kaçağı','Jant kenarı hava kaçırması','Yanaktaki balon veya karkas hasarı'],
+      ['Lastikte balon/yarık varsa aracı sürme, lastik servisi çağır','Soğuk lastik basıncını üretici değerine göre kontrol ettir','Hava kaybı tekrarlıyorsa deliği ve supabı kontrol ettir']);
+  if(/turbo/.test(q))
+    return result('DİKKAT','Turbo / basınç sorusu',
+      ['Basınç hortumu kaçağı','Turbo kontrol mekanizmasında arıza','Hava emiş veya sensör sorunu'],
+      ['Çekiş düşüklüğü veya motor uyarısı var mı?','Ses sadece hızlanmada mı duyuluyor?','Hortum ve hata kodu kontrolü için servise başvur']);
+  if(/(motor\s+ariza|check\s+engine|ariza\s+lamp|ikaz\s+isig|uyari\s+isik)/.test(q))
+    return result('DİKKAT','Motor arıza lambası yandı',
+      ['Ateşleme/yanma düzensizliği','Emisyon sensörü veya yakıt karışımı sorunu','Başka bir motor yönetim arızası'],
+      ['Lamba sabit mi, yanıp sönüyor mu? Yanıp sönüyorsa güvenli durup yardım al','OBD kodunu (ör. P0300) yazarsan anlamını inceleyelim','Performans kaybı veya anormal ses var mı belirt']);
+  if(/(p0[0-9]{3}|p1[0-9]{3})/.test(q)){
+    const code=q.match(/p[01][0-9]{3}/)?.[0].toUpperCase()||'OBD';
+    return result('DİKKAT',code+' arıza kodu',
+      ['Bu bir OBD arıza kodudur; motor ve marka bilgisi olmadan kesin teşhis konmaz','Arıza koduna bağlı sistem ve ilgili sensörler kontrol edilmelidir'],
+      ['Aracın marka, model, motor ve model yılını yaz','Gösterge lambası yanıp sönüyorsa güvenli şekilde dur','Arıza kodunun tam açıklamasını OBD cihazı veya servis kaydıyla doğrula']);
+  }
+  return diagnoseFault(question,activeVehicle());
+}
 function faultGuideOfflineHtml(q){
-  const r=diagnoseFault(q,activeVehicle());
+  const r=aracimOfflineContextResult(q);
   const stop=r.stop?'<div style="margin-top:10px;padding:10px;border-radius:12px;background:#35151b;border:1px solid #71313b;color:#ff9aa6"><b>⛔ Aracı kullanmaya devam etme.</b> Güvenli yerde durdur ve profesyonel destek al.</div>':'';
   return `<div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
@@ -4024,10 +4077,10 @@ function faultGuideFinish(id,answer,error){
   if(!pending)return;
   const q=pending.getAttribute('data-question')||'';
   const success=!!String(answer||'').trim()&&!error;
-  const reply=success?String(answer).trim().slice(0,3500):'Çevrimdışı öneri gösterildi; yanıt için daha fazla belirti yazabilirsin.';
+  const reply=success?String(answer).trim().slice(0,3500):'Aras çevrimdışı belirti analizi gösterdi; teşhisi daraltmak için ek ayrıntı yazabilirsin.';
   pending.outerHTML=success?
     faultBubble('assistant',esc(reply)):
-    faultBubble('assistant','<div class="muted small" style="margin-bottom:8px">ℹ️ Yapay zekâ bağlantısı kurulamadı; çevrimdışı kontrol sonuçları:</div>'+faultGuideOfflineHtml(q));
+    faultBubble('assistant','<div class="muted small" style="margin-bottom:8px">ℹ️ Çevrimdışı Aras rehberi · Gerçek AI bağlantısı hazır değil</div>'+faultGuideOfflineHtml(q)+'<details class="aiErrorDetails"><summary>Bağlantı nedenini göster</summary>'+esc(String(error||'Sunucu yanıt vermedi').slice(0,260))+'</details>');
   faultAiHistory.push({role:'Sürücü',text:q},{role:'Asistan',text:reply});
   faultAiHistory=faultAiHistory.slice(-10);
   const chat=document.getElementById('faultChat');
