@@ -4480,7 +4480,11 @@ private void showLaunchSplash() {
             boolean ok = hasLocationPermission();
             if (webView != null) webView.evaluateJavascript("window.onLocationPermissionResult && window.onLocationPermissionResult(" + (ok ? "true" : "false") + ")", null);
             if (ok) resumePendingLocationAction();
-            else pendingLocationAction = "";
+            else {
+                if ("map120".equals(pendingLocationAction))
+                    map120SendLocation(null, "Konum izni verilmedi. Haritadan hedef seçebilirsin.");
+                pendingLocationAction = "";
+            }
         }
     }
 
@@ -4497,6 +4501,8 @@ private void showLaunchSplash() {
         if (webView != null) webView.removeCallbacks(mrecAfterScroll);
         if(mrecAdView!=null){try{mrecAdView.destroy();}catch(Throwable ignored){} mrecAdView=null;}
         stopSpeedTrackingNative();
+        try { if (locationManager != null && map120LocationListener != null) locationManager.removeUpdates(map120LocationListener); } catch (Throwable ignored) {}
+        map120LocationListener = null;
         try { if (arasTts != null) { arasTts.stop(); arasTts.shutdown(); arasTts = null; } } catch (Exception ignored) {}
         try { if (locationManager != null && nearbyLocationListener != null) locationManager.removeUpdates(nearbyLocationListener); } catch (Throwable ignored) {}
         nearbyLocationListener = null;
