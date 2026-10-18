@@ -61,14 +61,14 @@ welcome=function(){
  '<p>İlk aracını ekle; bakımını, giderlerini ve geçmişini tek yerden yönet.</p></div>'+
  '<div class="proWelcomeHeroGraphic108" aria-hidden="true">'+garageHeroPhoto()+'</div></div>'+
  '<button type="button" class="proWelcomeAdd108" onclick="openVehicle()">＋ Aracımı Ekle <span>→</span></button></section>'+
- arasHtml()+apMrecCardHtml()+dailyQuickHtml()+'</div>';
+ apMrecCardHtml()+arasHtml()+dailyQuickHtml()+'</div>';
 };
 homeView=function(){
  const s=oldHome();
  if(s.includes('aras108Dock'))return s;
  const placement=arasHtml();
- return s.includes('<div class="n97AdArea">')?
- s.replace('<div class="n97AdArea">',placement+'<div class="n97AdArea">'):
+ return s.includes('<section class="n97Section n97Reminders">')?
+ s.replace('<section class="n97Section n97Reminders">',placement+'<section class="n97Section n97Reminders">'):
  s.replace('<div class="sectionHead">',placement+'<div class="sectionHead">');
 };
 // The initial HTML is rendered by the inline script BEFORE this file loads.
