@@ -1,0 +1,339 @@
+/* ARACIM PRO R8 ULTRA 3D V118 – working UI, not a screenshot.
+   Entire application skin. AdMob native placement and layout remain unchanged. */
+body.r118Skin {
+ --r118-ink:#eefaff; --r118-edge:#267fc0; --r118-glow:#1097f7;
+ --r118-night:#02101e; --r118-surface:#071e36;
+}
+body.r118Skin .app{background:#020c1c;color:#eefaff}
+body.r118Skin .app>main{
+ background:radial-gradient(ellipse at 85% 0%,#123c6b50,transparent 35%),
+ radial-gradient(ellipse at 8% 50%,#0a43832d,transparent 43%),#020c1b;
+ color:#eaf6ff;
+}
+body.r118Skin #app .header.apHeader{
+ background:linear-gradient(120deg,#010d1d,#0a2345 60%,#041225)!important;
+ border-bottom:1px solid #105988!important;
+ box-shadow:0 4px 15px #0009!important;
+}
+body.r118Skin #app .apBrandText{
+ color:#f8fcff!important;letter-spacing:-.8px!important;
+ text-shadow:0 2px 4px #0007,0 0 16px #2b92fd25!important;
+}
+body.r118Skin #app .apBrandText b{color:#23b6ff!important;text-shadow:0 0 14px #168ffb8e!important}
+body.r118Skin #app .apAction{
+ background:linear-gradient(150deg,#133762,#04132c)!important;border:1px solid #2467a0!important;
+ box-shadow:inset 0 1px 2px #8fcfff40,0 5px 11px #0007,0 0 10px #067cff18!important;
+}
+body.r118Skin #app .nav{
+ background:linear-gradient(180deg,#071d38,#020e20)!important;
+ border-top:1px solid #207bb4!important;
+ box-shadow:0 -8px 26px #000c,inset 0 1px #67c5ff2b!important;
+}
+body.r118Skin #app .nav button{
+ min-width:0!important;border-radius:14px;transition:background .2s ease,color .2s ease!important;
+}
+body.r118Skin #app .nav button.active{
+ color:#79dcff!important;text-shadow:0 0 9px #15a8fe99!important;
+ background:radial-gradient(ellipse at 50% 25%,#065cad73,transparent 72%)!important;
+}
+body.r118Skin #app .nav button.active i{
+ filter:drop-shadow(0 0 6px #119bff)!important;transform:translateY(-2px);
+}
+body.r118Skin #app button:focus-visible{outline:2px solid #a8eeff!important;outline-offset:2px}
+body.r118Skin #app main>.sectionHead,body.r118Skin #app .sectionHead{color:#f4fbff}
+body.r118Skin #app .sectionHead h2{color:#fff!important;text-shadow:0 2px 8px #0007}
+body.r118Skin #app .card,body.r118Skin #app main .row,body.r118Skin #app .proPanel,
+body.r118Skin #app .specCell,body.r118Skin #app .sumCard,
+body.r118Skin #app .moreFavButton{
+ background:linear-gradient(155deg,#12385a,#081d35 47%,#031227)!important;
+ border:1px solid #255d88!important;color:#effaff!important;
+ box-shadow:inset 0 1px #92d5ff27,inset 0 -3px #001020aa,0 7px 15px #0007!important;
+}
+body.r118Skin #app main .row{border-radius:15px}
+body.r118Skin #app main .row .rowMain span,
+body.r118Skin #app main .row .muted,
+body.r118Skin #app .card .muted{color:#a9cae4!important}
+body.r118Skin #app .moreCatTile,
+body.r118Skin #app .more796Card{
+ border:1px solid #52a4da!important;
+ box-shadow:inset 0 2px 2px #d9f8ff50,inset 0 -5px 9px #011227b0,
+ 0 9px 0 #011329,0 15px 19px #0009,0 0 16px #0b9aff38!important;
+ transform:translateY(-2px);transition:transform .15s,box-shadow .15s!important;
+}
+body.r118Skin #app .more796Card{
+ background:linear-gradient(145deg,#0c3459,#061b30)!important;
+}
+body.r118Skin #app .moreCatTile:active,
+body.r118Skin #app .more796Card:active{transform:translateY(3px) scale(.99)!important;box-shadow:inset 0 2px 9px #0008,0 2px 0 #03172e!important}
+body.r118Skin #app .more796Icon,body.r118Skin #app .moreCatTile .catIcon{
+ background:linear-gradient(145deg,#1977b6,#0b2c58)!important;
+ border:1px solid #63bdff!important;
+ box-shadow:inset 0 2px 2px #eaffff75,inset 0 -3px 6px #021127,0 6px 7px #0009,0 0 12px #22bbff77!important;
+ text-shadow:0 3px 4px #00152f!important;
+}
+body.r118Skin #app .moreCatHero{
+ border:1px solid #63b9f4;
+ box-shadow:inset 0 2px #e2fcff50,0 8px 0 #021b34,0 13px 20px #0009!important;
+}
+body.r118Skin #app .moreCatHero>span{
+ box-shadow:inset 0 1px #fff8,0 4px 10px #0005;
+}
+body.r118Skin #app .primary{
+ background:linear-gradient(150deg,#16a4ff,#0652bc)!important;
+ color:white!important;border:1px solid #76d9ff!important;
+ box-shadow:inset 0 2px 2px #ffffff7a,inset 0 -4px #02448c,0 5px 12px #0007,0 0 10px #059ffb3b!important;
+}
+body.r118Skin #app .secondary{
+ background:linear-gradient(145deg,#153b63,#071a35)!important;
+ color:#d8f5ff!important;border:1px solid #337cac!important;
+ box-shadow:inset 0 1px #a8dfff4c,0 5px 9px #0006!important;
+}
+body.r118Skin #modalRoot .sheet{
+ background:linear-gradient(155deg,#0d2c48,#071b30 40%,#041329)!important;
+ color:#f1faff!important;border:1px solid #328bcc!important;
+ box-shadow:0 -9px 32px #000b!important;
+}
+body.r118Skin #modalRoot .sheet .card,body.r118Skin #modalRoot .sheet .proPanel{
+ background:linear-gradient(145deg,#0b2b48,#041a32)!important;
+ border-color:#2d729c!important;color:#f1faff!important;
+}
+body.r118Skin #modalRoot .sheet .primary,body.r118Skin #modalRoot .sheet .secondary{border-radius:13px}
+body.r118Skin #modalRoot .sheet input,body.r118Skin #modalRoot .sheet select,
+body.r118Skin #modalRoot .sheet textarea{
+ background:#0a2743!important;color:#f0fbff!important;border-color:#387eae!important;
+}
+body.r118Skin #modalRoot .sheet h1,body.r118Skin #modalRoot .sheet h2,
+body.r118Skin #modalRoot .sheet h3{color:#effaff}
+body.r118Skin #app .apMrecCard{
+ border:1px solid #236b9b!important;
+ box-shadow:0 7px 18px #0007,inset 0 1px #92d9ff33!important;
+}
+/* Larger-than-life vehicle hero; real selected vehicle image only. */
+body.r118Skin.r8HomeMode .n97Dashboard .n97Hero.n117Hero{
+ min-height:365px!important;margin:8px 0 16px!important;border-radius:23px!important;
+ border:1.5px solid #25b4f3!important;
+ background:radial-gradient(ellipse at 56% 83%,#145dabba,transparent 55%),
+ radial-gradient(ellipse at 81% 20%,#ec783e30,transparent 42%),
+ linear-gradient(132deg,#030e20,#103960 63%,#07132b)!important;
+ box-shadow:inset 0 1px #aaf1ff5c,inset 0 -4px 10px #021328,0 8px 0 #001327,
+ 0 17px 28px #000b,0 0 23px #00b9ff70!important;
+}
+body.r118Skin.r8HomeMode .n117Hero .n97HeroCopy{padding:19px 16px 13px!important}
+body.r118Skin.r8HomeMode .n117Hero .n97HeroCopy h1{
+ font-size:clamp(21px,5.8vw,29px)!important;text-shadow:0 2px 8px #000,0 0 13px #e6f7ff20;
+}
+body.r118Skin.r8HomeMode .n117Hero .n97Specs{
+ max-width:100%!important;margin-top:13px!important;gap:8px!important;
+}
+body.r118Skin.r8HomeMode .n117Hero .n97Specs div span{
+ background:linear-gradient(140deg,#227eb5,#092446)!important;
+ border:1px solid #4ac2ff!important;
+ box-shadow:inset 0 1px #e9faff7b,0 3px 6px #0009,0 0 9px #0eb7ff77;
+}
+body.r118Skin.r8HomeMode .n117Hero .n97Details{
+ margin-top:18px!important;padding:11px 16px!important;
+ background:linear-gradient(148deg,#0b87ed,#063d8a)!important;
+ border:1px solid #79e7ff!important;color:#f1fcff!important;
+ box-shadow:inset 0 2px #ffffff85,inset 0 -4px #063477,0 6px 0 #021c39,
+ 0 10px 16px #0009,0 0 12px #008ffd99!important;
+}
+body.r118Skin.r8HomeMode .n97Dashboard .n117Photo{
+ height:58%!important;bottom:0!important;
+}
+body.r118Skin.r8HomeMode .n117Photo .n117Ambient{
+ filter:blur(21px) brightness(.46) saturate(1.4)!important;opacity:.90!important;
+}
+body.r118Skin.r8HomeMode .n117Photo .n117PhotoFloat{
+ filter:drop-shadow(0 16px 10px #000a) drop-shadow(0 0 7px #24a7ff3b)!important;
+}
+body.r118Skin.r8HomeMode .n117Hero .n97EditPhoto{
+ border:1px solid #58c8ff!important;background:linear-gradient(150deg,#145e9b,#051e3b)!important;
+ color:white!important;box-shadow:inset 0 1px #fff5,0 5px 0 #021429,0 9px 12px #0009!important;
+}
+/* Status cards: metallic raised edge + color-specific lens glow */
+body.r118Skin.r8HomeMode .n97Dashboard .n97Stats{gap:9px!important;margin:12px 0 15px!important}
+body.r118Skin.r8HomeMode .n97Dashboard .n97Stat{
+ min-height:139px!important;border-radius:19px!important;padding:13px 9px 10px!important;
+ transform:translateY(-2px);
+ box-shadow:inset 0 2px #fff6,inset 0 -5px 9px #0009,
+ 0 7px 0 #011324,0 14px 19px #0009,0 0 13px #0b8cec56!important;
+ transition:transform .14s,box-shadow .14s;
+}
+body.r118Skin.r8HomeMode .n97Dashboard .n97Stat.health{
+ background:radial-gradient(ellipse at 45% 8%,#0b896d87,transparent 65%),linear-gradient(147deg,#05443e,#031d23)!important;
+ border:1px solid #1bdfae!important;box-shadow:inset 0 2px #b7ffe16b,inset 0 -5px #024139,0 7px 0 #002c29,0 15px 20px #0009,0 0 12px #00ceab66!important;
+}
+body.r118Skin.r8HomeMode .n97Dashboard .n97Stat.range{
+ background:radial-gradient(ellipse at 55% 0%,#147dd581,transparent 64%),linear-gradient(147deg,#09365a,#04152d)!important;
+ border:1px solid #14b5f9!important;
+}
+body.r118Skin.r8HomeMode .n97Dashboard .n97Stat.maintenance{
+ background:radial-gradient(ellipse at 55% 0%,#c7753080,transparent 66%),linear-gradient(147deg,#553019,#171a27)!important;
+ border:1px solid #ff9e29!important;
+ box-shadow:inset 0 2px #ffdc9659,inset 0 -5px #301c0a,0 7px 0 #3a220b,0 15px 20px #0009,0 0 12px #ff880045!important;
+}
+body.r118Skin.r8HomeMode .n97Dashboard .n97Stat:active{transform:translateY(4px)}
+body.r118Skin.r8HomeMode .n97Dashboard .n97Stat>strong{font-size:clamp(20px,5.5vw,28px)!important}
+body.r118Skin.r8HomeMode .n97Dashboard .n97StatLabel{
+ font-size:clamp(8.4px,2.5vw,12px)!important;text-shadow:0 2px 5px #0007;
+}
+body.r118Skin.r8HomeMode .n97Dashboard .n97StatDetail{font-size:9px!important;color:#c2def2!important}
+/* Raised and visibly extruded six quick buttons, not flat outlined tiles. */
+body.r118Skin.r8HomeMode .n97Dashboard .n97Actions{gap:7px!important;margin:15px 0 21px!important}
+body.r118Skin.r8HomeMode .n97Dashboard .n97Action{
+ min-height:97px!important;border-radius:16px!important;padding:11px 3px 7px!important;gap:8px!important;
+ border:1px solid #2875b6!important;
+ background:linear-gradient(150deg,#15375d,#08152d 79%)!important;
+ box-shadow:inset 0 2px #b1dbff4b,inset 0 -5px 7px #010d1e,
+ 0 7px 0 #02182f,0 12px 16px #000a,0 0 10px #008dff26!important;
+ transform:translateY(-3px);transition:transform .14s,box-shadow .14s!important;
+}
+body.r118Skin.r8HomeMode .n97Dashboard .n97Action:active{transform:translateY(3px)!important;box-shadow:inset 0 4px 8px #0007,0 1px 0 #01152b!important}
+body.r118Skin.r8HomeMode .n97Dashboard .n97ActionIcon{
+ width:42px!important;height:43px!important;border-radius:12px!important;
+ background:linear-gradient(145deg,#38b1ff,#0e4b9d 54%,#052250)!important;
+ border:1px solid #72dcff!important;
+ box-shadow:inset 0 2px #eeffffbd,inset -3px -5px 6px #042254,
+ 0 5px 0 #03172a,0 8px 10px #000a,0 0 17px #04aaff93!important;
+ transform:perspective(150px) rotateX(5deg);
+}
+body.r118Skin.r8HomeMode .n97Dashboard .n97ActionIcon .svgi{
+ width:25px!important;height:25px!important;filter:drop-shadow(0 2px 2px #00172f);
+}
+body.r118Skin.r8HomeMode .n97Dashboard .n97Action.red .n97ActionIcon{
+ background:linear-gradient(145deg,#ff7892,#b91945 50%,#4e102e)!important;
+ border-color:#ff6b83!important;box-shadow:inset 0 2px #fff8,0 5px 0 #280718,0 8px 10px #000a,0 0 14px #f52967a3!important;
+}
+body.r118Skin.r8HomeMode .n97Dashboard .n97Action.green .n97ActionIcon{
+ background:linear-gradient(145deg,#5bffd6,#078d77 50%,#04443b)!important;
+ border-color:#5cf5c5!important;box-shadow:inset 0 2px #fffa,0 5px 0 #023e37,0 8px 10px #000a,0 0 14px #14e4bda3!important;
+}
+body.r118Skin.r8HomeMode .n97Dashboard .n97Action.purple .n97ActionIcon{
+ background:linear-gradient(145deg,#e3abff,#8248d9 52%,#2b1757)!important;
+ border-color:#e0abff!important;box-shadow:inset 0 2px #fff9,0 5px 0 #211041,0 8px 10px #000a,0 0 14px #974cffb4!important;
+}
+body.r118Skin.r8HomeMode .n97Dashboard .n97Action.teal .n97ActionIcon{
+ background:linear-gradient(145deg,#7df3ff,#087da3 52%,#05405a)!important;
+ border-color:#75edff!important;
+}
+body.r118Skin.r8HomeMode .n97Dashboard .n97Action strong{
+ font-size:clamp(8px,2.25vw,10px)!important;line-height:1.22!important;color:#f0faff!important;
+ text-shadow:0 2px 4px #000b!important;
+}
+/* ARAS and main collection cards share the same dimensional design. */
+body.r118Skin.r8HomeMode .aras108Dock{
+ min-height:118px!important;margin:15px 0 18px!important;gap:10px!important;
+}
+body.r118Skin.r8HomeMode .aras109Robot{
+ filter:drop-shadow(0 8px 8px #0009) drop-shadow(0 0 9px #28bbff88)!important;
+}
+body.r118Skin.r8HomeMode .aras108Talk{
+ border:1px solid #58baff!important;border-radius:19px!important;
+ background:radial-gradient(ellipse at 92% 10%,#2075c45e,transparent 65%),linear-gradient(125deg,#06243e,#104978)!important;
+ box-shadow:inset 0 2px #c7f4ff42,inset 0 -4px #042347,0 7px 0 #031627,0 13px 20px #0008,0 0 16px #087df44f!important;
+}
+body.r118Skin.r8HomeMode .ap113Quick,
+body.r118Skin.r8HomeMode .ap116Dock,
+body.r118Skin.r8HomeMode .ap114Discovery{
+ position:relative;border-radius:21px!important;padding:14px 12px 18px!important;
+ border:1px solid #35a4eb!important;
+ background:radial-gradient(ellipse at 100% 100%,#145db06b,transparent 55%),
+ linear-gradient(130deg,#071a32,#0f3659 72%,#062747)!important;
+ box-shadow:inset 0 2px #a9e2ff3d,inset 0 -4px 8px #05182d,
+ 0 8px 0 #03182c,0 16px 20px #0009,0 0 20px #007dff35!important;
+ margin:18px 0 22px!important;
+}
+body.r118Skin.r8HomeMode .ap113Head b,
+body.r118Skin.r8HomeMode .ap116DockHeading strong,
+body.r118Skin.r8HomeMode .ap114DiscoveryTitle strong{
+ color:#f3fcff!important;font-size:clamp(11px,2.9vw,14px)!important;
+ text-shadow:0 2px 5px #0008;letter-spacing:.45px!important;
+}
+body.r118Skin.r8HomeMode .ap113GridQuick{gap:9px!important}
+body.r118Skin.r8HomeMode .ap113GridQuick button,
+body.r118Skin.r8HomeMode .ap116DockScroll button,
+body.r118Skin.r8HomeMode .ap114DiscoveryGrid button{
+ min-width:0;position:relative;overflow:hidden;
+ border:1px solid #3196d8!important;border-radius:15px!important;
+ background:radial-gradient(ellipse at 50% 0%,#1c69a479,transparent 70%),
+ linear-gradient(145deg,#0f365b,#05152e)!important;
+ box-shadow:inset 0 2px #b9eaff4d,inset 0 -4px 8px #001027,
+ 0 6px 0 #03172d,0 11px 12px #000a,0 0 12px #1479ca45!important;
+ transform:translateY(-2px);transition:transform .15s,box-shadow .15s!important;
+ text-shadow:0 2px 4px #0009;
+}
+body.r118Skin.r8HomeMode .ap113GridQuick button:active,
+body.r118Skin.r8HomeMode .ap116DockScroll button:active,
+body.r118Skin.r8HomeMode .ap114DiscoveryGrid button:active{
+ transform:translateY(3px)!important;
+ box-shadow:inset 0 4px 9px #0009,0 2px 0 #03172d!important;
+}
+body.r118Skin.r8HomeMode .ap113GridQuick button span,
+body.r118Skin.r8HomeMode .ap116DockScroll button span,
+body.r118Skin.r8HomeMode .ap114DiscoveryGrid button span{
+ display:grid;place-items:center;
+ width:50px;height:48px;margin:1px auto 4px!important;
+ border-radius:14px;
+ background:radial-gradient(circle at 28% 19%,#7fcafc75,transparent 52%),linear-gradient(145deg,#1a69b5,#062044);
+ border:1px solid #50baff;
+ box-shadow:inset 0 2px 2px #f4ffff8e,inset 0 -4px 5px #041631,
+ 0 5px 0 #06182d,0 9px 12px #0009,0 0 14px #098cfd88!important;
+ font-size:28px!important;filter:drop-shadow(0 2px 2px #0005);line-height:1;
+}
+body.r118Skin.r8HomeMode .ap113GridQuick button b,
+body.r118Skin.r8HomeMode .ap116DockScroll button b,
+body.r118Skin.r8HomeMode .ap114DiscoveryGrid button b{
+ font-size:clamp(9px,2.3vw,12px)!important;line-height:1.25!important;color:#eefaff!important;
+}
+body.r118Skin.r8HomeMode .ap113GridQuick button{min-height:111px!important;padding:10px 4px!important;gap:6px!important}
+body.r118Skin.r8HomeMode .ap113GridQuick button small{font-size:9px!important;color:#b5d8ef!important}
+body.r118Skin.r8HomeMode .ap116DockScroll{
+ display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:7px!important;
+ overflow:visible!important;padding:3px 2px 7px!important;scroll-snap-type:none!important;
+}
+body.r118Skin.r8HomeMode .ap116DockScroll button{
+ min-height:99px!important;width:auto!important;padding:7px 1px!important;gap:6px!important;
+ flex:none!important;
+}
+body.r118Skin.r8HomeMode .ap116DockScroll button span{
+ width:44px!important;height:44px!important;font-size:23px!important;margin:0 auto!important;
+}
+body.r118Skin.r8HomeMode .ap116DockScroll button b{font-size:clamp(8px,2.12vw,11px)!important}
+body.r118Skin.r8HomeMode .ap114DiscoveryGrid{gap:9px!important}
+body.r118Skin.r8HomeMode .ap114DiscoveryGrid button{min-height:108px!important;padding:9px 2px!important;gap:7px!important}
+body.r118Skin.r8HomeMode .ap114DiscoveryGrid button span{width:48px!important;height:46px!important}
+body.r118Skin.r8HomeMode .ap114MoreLink{font-size:11px!important;color:#89e4ff!important}
+body.r118Skin.r8HomeMode .ap116Dock::before{
+ content:"R8 3D";position:absolute;top:-9px;right:12px;
+ font-size:9px;letter-spacing:1px;font-weight:900;
+ background:linear-gradient(120deg,#048ccf,#123f88);border:1px solid #51c8ff;
+ color:#e8faff;border-radius:99px;padding:3px 8px;
+ box-shadow:0 0 10px #009cff9c;
+}
+/* Prevent long Turkish labels overflowing narrower Android screens. */
+@media(max-width:420px){
+ body.r118Skin.r8HomeMode .ap116DockScroll{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ body.r118Skin.r8HomeMode .ap116DockScroll button{min-height:93px!important}
+ body.r118Skin.r8HomeMode .n97Dashboard .n97Hero.n117Hero{min-height:350px!important}
+ body.r118Skin.r8HomeMode .n97Dashboard .n97Stats{gap:6px!important}
+ body.r118Skin.r8HomeMode .n97Dashboard .n97Stat{min-height:130px!important;padding:10px 6px!important}
+ body.r118Skin.r8HomeMode .n97Dashboard .n97StatLabel{font-size:8.8px!important}
+ body.r118Skin.r8HomeMode .n97Dashboard .n97ActionIcon{width:36px!important;height:38px!important}
+ body.r118Skin.r8HomeMode .n97Dashboard .n97ActionIcon .svgi{width:22px!important;height:22px!important}
+ body.r118Skin.r8HomeMode .ap114DiscoveryGrid{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px!important}
+ body.r118Skin.r8HomeMode .ap114DiscoveryGrid button span{width:43px!important;height:43px!important;font-size:22px!important}
+ body.r118Skin.r8HomeMode .ap114DiscoveryGrid button b{font-size:8.5px!important}
+ body.r118Skin.r8HomeMode .ap113GridQuick button span{width:45px!important;height:43px!important;font-size:25px!important}
+}
+@media(max-width:345px){
+ body.r118Skin.r8HomeMode .n97Dashboard .n97Action{min-height:86px!important}
+ body.r118Skin.r8HomeMode .n97Dashboard .n97ActionIcon{width:31px!important;height:33px!important}
+ body.r118Skin.r8HomeMode .n97Dashboard .n97Action strong{font-size:7.5px!important}
+ body.r118Skin.r8HomeMode .ap114DiscoveryGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+@media(prefers-reduced-motion:reduce){
+ body.r118Skin #app .n97Action,
+ body.r118Skin #app .ap113GridQuick button,
+ body.r118Skin #app .ap114DiscoveryGrid button,
+ body.r118Skin #app .ap116DockScroll button{transition:none!important}
+}
