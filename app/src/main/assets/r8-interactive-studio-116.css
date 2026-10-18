@@ -31,8 +31,8 @@
 .ap116Actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .ap116Actions button{min-width:0;min-height:46px;padding:10px 5px;font-size:12px;border-radius:12px}
 .ap116HealthTop{display:flex;align-items:center;gap:18px;padding:13px;border-radius:15px;background:var(--card);border:1px solid var(--line)}
-.ap116Gauge{--ap116Health:0;flex:0 0 104px;width:104px;height:104px;border-radius:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;
- background:radial-gradient(closest-side,#092841 75%,transparent 78%),conic-gradient(#39d6b2 calc(var(--ap116Health)*1%),#24455c 0);color:white}
+.ap116Gauge{--ap116Health:0%;flex:0 0 104px;width:104px;height:104px;border-radius:100%;display:flex;align-items:center;justify-content:center;flex-direction:column;
+ background:radial-gradient(closest-side,#092841 75%,transparent 78%),conic-gradient(#39d6b2 var(--ap116Health),#24455c 0);color:white}
 .ap116Gauge b{font-size:31px;line-height:1}.ap116Gauge small{font-size:10px;color:#b4dce9}
 .ap116HealthText{display:flex;flex-direction:column;gap:7px}.ap116HealthText b{font-size:14px;color:var(--ink)}
 .ap116HealthText span{font-size:12px;color:#279ed7}.ap116HealthText small{font-size:11px;color:var(--muted);line-height:1.55}
@@ -59,3 +59,7 @@
 .ap116CompareRow b+ b{border-left:1px solid var(--line)}
 @media (max-width:365px){.ap116Systems{grid-template-columns:repeat(2,minmax(0,1fr))}.ap116HealthTop{gap:10px}.ap116Gauge{flex-basis:86px;width:86px;height:86px}}
 @media (prefers-reduced-motion:reduce){.ap116CarFrame{transform:none!important;transition:none!important}.ap116DockScroll{scroll-behavior:auto}}
+/* R8 color treatment for the existing, permission-controlled GPS HUD. */
+.ap114HudHero{border:1px solid #32a1d3;border-radius:18px;background:radial-gradient(circle at 50% 35%,#16628c,#0a2543 68%,#041526);box-shadow:inset 0 0 28px #29b7ed25}
+.ap114HudDigits strong{color:#7ce9ff;text-shadow:0 0 18px #20c4ff75;font-weight:900;font-variant-numeric:tabular-nums}
+.ap114HudCaption,.ap114HudHero small{color:#b1edff}
