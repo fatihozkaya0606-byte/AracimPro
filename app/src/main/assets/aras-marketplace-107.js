@@ -211,4 +211,7 @@ window.onMarketPublished=function(payload,error){
  if(error){toast('İlan yayımlanamadı: '+String(error).slice(0,190));return}
  localStorage.removeItem(DRAFT_KEY);toast('İlanın yayımlandı');aracimMarketOpen();
 };
+// Initial HTML rendered before extension scripts loaded: refresh once so ARAS
+// and the market entry are visible immediately, without waiting for a tab change.
+setTimeout(()=>{try{if(document.getElementById('app'))render()}catch(e){}},80);
 })();
