@@ -224,6 +224,9 @@ public class MainActivity extends Activity {
     private View launchSplash;
     private long splashStartedAt = 0L;
     private volatile boolean splashDismissAllowed = false;
+    private android.widget.ProgressBar apLaunchProgressBar;
+    private android.widget.TextView apLaunchProgressLabel;
+    private Runnable apLaunchProgressTick;
     private AudioTrack launchAudioTrack;
     private Thread launchAudioThread;
     private volatile boolean launchAudioStopped = false;
@@ -360,6 +363,8 @@ public class MainActivity extends Activity {
             @Override public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 pageReady = true;
+                if (apLaunchProgressBar != null) apLaunchProgressBar.setProgress(100);
+                if (apLaunchProgressLabel != null) apLaunchProgressLabel.setText("Yükleniyor • %100");
                 hideLaunchSplashWhenReady();
                 if (mrecAdLoaded) notifyMrecJs(true);
             }
@@ -410,6 +415,7 @@ private void showLaunchSplash() {
 
         splashStartedAt = android.os.SystemClock.elapsedRealtime();
         splashDismissAllowed = false;
+        pageReady = false;
         startLaunchEngineSound();
 
         final android.view.ViewGroup root = findViewById(android.R.id.content);
@@ -461,7 +467,10 @@ private void showLaunchSplash() {
         brand.addView(sub);
 
         android.widget.ProgressBar bar = new android.widget.ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
-        bar.setIndeterminate(true);
+        bar.setIndeterminate(false);
+        bar.setMax(100);
+        bar.setProgress(0);
+        apLaunchProgressBar = bar;
         android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
         bg.setCornerRadius(dp(999));
         bg.setColor(android.graphics.Color.argb(60, 255, 255, 255));
@@ -472,6 +481,12 @@ private void showLaunchSplash() {
         }
         android.widget.LinearLayout.LayoutParams blp = new android.widget.LinearLayout.LayoutParams(dp(190), dp(4));
         brand.addView(bar, blp);
+        android.widget.TextView percent = apSplashText("Yükleniyor • %0", 13f,
+                android.graphics.Color.parseColor("#D9F3FF"), true);
+        percent.setGravity(android.view.Gravity.CENTER);
+        percent.setPadding(0, dp(11), 0, 0);
+        brand.addView(percent);
+        apLaunchProgressLabel = percent;
 
         android.widget.FrameLayout.LayoutParams brandLp = new android.widget.FrameLayout.LayoutParams(
                 android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
@@ -493,7 +508,19 @@ private void showLaunchSplash() {
         sub.animate().alpha(1f).setDuration(360L).setStartDelay(250L).start();
 
         apPremiumSplashHandler.removeCallbacksAndMessages(null);
-        apPremiumSplashHandler.removeCallbacksAndMessages(null);
+        apLaunchProgressTick = new Runnable() {
+            @Override public void run() {
+                if (apPremiumSplashView == null) return;
+                long elapsed = android.os.SystemClock.elapsedRealtime() - splashStartedAt;
+                // Only show 100% once WebView has actually finished loading.
+                int progress = pageReady ? 100 : Math.min(95, (int)(elapsed * 95L / 3600L));
+                if (apLaunchProgressBar != null) apLaunchProgressBar.setProgress(progress);
+                if (apLaunchProgressLabel != null)
+                    apLaunchProgressLabel.setText("Yükleniyor • %" + progress);
+                if (!apPremiumSplashHidden) apPremiumSplashHandler.postDelayed(this, 55L);
+            }
+        };
+        apPremiumSplashHandler.post(apLaunchProgressTick);
         apPremiumSplashHandler.postDelayed(() -> {
             splashDismissAllowed = true;
             hideLaunchSplashWhenReady();
@@ -511,11 +538,15 @@ private void showLaunchSplash() {
 
     private void hideLaunchSplashWhenReady() {
         // WebView çok hızlı yüklense bile splash 3.8 saniyeden önce kapanamaz.
-        if (!splashDismissAllowed) return;
-
+        if (!splashDismissAllowed || !pageReady) return;
 
         if (apPremiumSplashHidden) return;
         apPremiumSplashHidden = true;
+        if (apLaunchProgressTick != null)
+            apPremiumSplashHandler.removeCallbacks(apLaunchProgressTick);
+        if (apLaunchProgressBar != null) apLaunchProgressBar.setProgress(100);
+        if (apLaunchProgressLabel != null)
+            apLaunchProgressLabel.setText("Yükleniyor • %100");
 
         final android.view.ViewGroup root = findViewById(android.R.id.content);
         final android.view.View splash = apPremiumSplashView;
@@ -534,6 +565,9 @@ private void showLaunchSplash() {
             } catch (Throwable ignored) {}
             stopLaunchEngineSound();
             apPremiumSplashView = null;
+            apLaunchProgressBar = null;
+            apLaunchProgressLabel = null;
+            apLaunchProgressTick = null;
             if (root != null) apSetAdViewsVisible(root, true);
         }).start();
 
@@ -1866,6 +1900,22 @@ private void showLaunchSplash() {
         }
 
 
+        @JavascriptInterface public String aracimAiDiagnostics() {
+            JSONObject status = new JSONObject();
+            try {
+                boolean configured = communityConfigured &&
+                        !FirebaseApp.getApps(MainActivity.this).isEmpty();
+                status.put("configured", configured);
+                status.put("backend", "Firebase AI Logic / Gemini Developer API");
+                status.put("model", "gemini-3.8-flash");
+                if (!configured)
+                    status.put("detail", "Firebase proje kimlikleri veya varsayılan uygulama hazır değil");
+                else
+                    status.put("detail", "Yapılandırma var; gerçek servis yanıtı ilk soruyla kontrol edilir");
+            } catch (Throwable ignored) {}
+            return status.toString();
+        }
+
         @JavascriptInterface public void askAracimAi(String requestId, String prompt) {
             final String rid = requestId == null ? "" : requestId.trim();
             final String p = prompt == null ? "" : prompt.trim();
@@ -1879,6 +1929,10 @@ private void showLaunchSplash() {
                 return;
             }
 
+            if (!communityConfigured || FirebaseApp.getApps(MainActivity.this).isEmpty()) {
+                sendAracimAiJs(rid, "", "Firebase yapılandırması eksik; AI çevrimiçi servis hazır değil");
+                return;
+            }
             try {
                 GenerativeModel ai = FirebaseAI.getInstance(GenerativeBackend.googleAI())
                         .generativeModel("gemini-3.8-flash");
