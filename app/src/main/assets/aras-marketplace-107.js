@@ -75,7 +75,7 @@ function listingCard(v){
  '<div class="market107Info"><div class="market107Price">'+amount(v.price)+'</div>'+
  '<strong>'+esc(v.make)+' '+esc(v.model)+'</strong>'+
  '<small>'+esc(v.city)+' · '+num(v.km)+' km · '+esc(v.fuel||'Belirtilmedi')+'</small>'+
- '<div class="market107Actions"><button type="button" onclick="aracimMarketDetails('+JSON.stringify(String(v.id))+')">İlan detayları →</button>'+
+ '<div class="market107Actions"><button type="button" data-id="'+esc(v.id)+'" onclick="aracimMarketDetails(this.dataset.id)">İlan detayları →</button>'+
  (mine?'<span class="market107Own">İlanım</span>':'')+
  '</div></div></article>';
 }
@@ -142,9 +142,9 @@ window.aracimMarketDetails=function(id){
  '<div class="market107Facts"><span>📆 '+esc(v.year)+'</span><span>🛣 '+num(v.km)+' km</span><span>📍 '+esc(v.city)+'</span><span>⛽ '+esc(v.fuel||'—')+'</span><span>⚙️ '+esc(v.transmission||'—')+'</span></div>'+
  '<div class="market107Desc">'+esc(v.description||'Açıklama yok')+'</div>'+
  '<p class="market107Seller">İlan sahibi: '+esc(v.sellerName||'Aracım Pro kullanıcısı')+'</p>'+
- (v.publicPhone?'<button class="primary wide" type="button" onclick="aracimMarketContact('+JSON.stringify(String(v.id))+')">Satıcıyla WhatsApp üzerinden görüş</button>':'<div class="market107Notice">Satıcı iletişim numarası paylaşmamış.</div>')+
- (mine?'<button class="secondary wide" type="button" onclick="aracimMarketSold('+JSON.stringify(String(v.id))+')">İlanı kaldır / Satıldı</button>':
- '<button class="secondary wide" type="button" onclick="aracimMarketReport('+JSON.stringify(String(v.id))+')">⚑ İlanı şikâyet et</button>')+
+ (v.publicPhone?'<button class="primary wide" type="button" data-id="'+esc(v.id)+'" onclick="aracimMarketContact(this.dataset.id)">Satıcıyla WhatsApp üzerinden görüş</button>':'<div class="market107Notice">Satıcı iletişim numarası paylaşmamış.</div>')+
+ (mine?'<button class="secondary wide" type="button" data-id="'+esc(v.id)+'" onclick="aracimMarketSold(this.dataset.id)">İlanı kaldır / Satıldı</button>':
+ '<button class="secondary wide" type="button" data-id="'+esc(v.id)+'" onclick="aracimMarketReport(this.dataset.id)">⚑ İlanı şikâyet et</button>')+
  '<button class="secondary wide" type="button" onclick="aracimMarketOpen()">← Tüm ilanlara dön</button></div></div>');
 };
 window.aracimMarketContact=function(id){
