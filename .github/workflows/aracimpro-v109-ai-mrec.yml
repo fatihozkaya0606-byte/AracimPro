@@ -1,0 +1,205 @@
+name: AracimPro 109 ARAS AI and Ad Restored - Test APK and Signed AAB
+on:
+  push:
+    branches: [aracimpro-109-ai-and-mascot-fix]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  signed-release-candidate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Install SDK / NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" "ndk;27.2.12479018"
+      - name: Check V109 AI responses, photographic car, chrome bot and restored MREC
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          g=Path('app/build.gradle').read_text()
+          h=Path('app/src/main/assets/index.html').read_text()
+          n=Path('app/src/main/java/com/aracimpro/app/MainActivity.java').read_text()
+          m=Path('app/src/main/AndroidManifest.xml').read_text()
+          assert "applicationId 'com.aracimpro.app'" in g
+          assert 'versionCode 109' in g and "versionName '7.11.34'" in g
+          assert "const V='7.11.34'" in h
+          assert "buildConfigField 'boolean', 'ADMOB_TEST_MODE', 'false'" in g
+          assert 'neon-dashboard-97.js' in h and 'neon-dashboard-97.css' in h
+          d=Path('app/src/main/assets/neon-dashboard-97.js').read_text()
+          assert d.count("apMrecCardHtml()") == 1
+          assert d.index("n97Hero(v)+n97Stats()+n97Actions()") < d.index("apMrecCardHtml()") < d.index("n97Reminders()+n97Report()")
+          assert 'n97AdArea' in d and 'n97AdArea' in Path('app/src/main/assets/neon-dashboard-97.css').read_text()
+          assert 'id="apMrecSlot"' in h
+          assert 'function apMrecMountOnContentPage()' in h
+          assert 'apMrecMountOnContentPage();' in h
+          assert "const slot=document.getElementById('apMrecSlot');" in h
+          assert "const slot=current==='home'?" not in h
+          assert "current==='home')return" in h
+          assert "if(!main || main.querySelector('#apMrecSlot'))return" in h
+          assert "case 'garage':" in h and "case 'records':" in h
+          assert "case 'plan':" in h and "case 'reports':" in h
+          assert "case 'more':" in h
+          assert "if(!html)return; // Premium always stays ad-free." in h
+          assert "Android.updateMrecSlot(0,0,0,0,window.innerWidth,false)" in h
+          assert h.count('id="apMrecSlot"')==1
+          assert "ad.loadAd(new AdRequest.Builder().build());" in n
+          assert "if (!canRequestAdMobAds() || mrecAdView != null || root == null) return;" in n
+          assert 'uiTranslationModelChecks.computeIfAbsent(target' in n
+          assert 'uiTranslationModelChecks.remove(target, modelTask)' in n
+          assert 'private final Map<String, Translator> uiTranslators = new java.util.concurrent.ConcurrentHashMap<>()' in n
+          assert 'function apShowLangLoading(){}' in h
+          assert "apNativeToastLang" not in h
+          assert "✅ '+(AP_LANGS[lang]" not in h
+          assert "+' hazırlanıyor…')" not in h
+          assert "if(req.lang!==apLang())" in h
+          assert "if(error){" in h and "if(apLang()===req.lang)" in h
+          assert "aracimpro_full_i18n_v6_" in h
+          assert "Android.translateUiBatch(target,id" in h
+          assert 'private boolean admobSdkReady = false;' in n
+          assert 'if (admobSdkReady)' in n
+          assert 'premiumReconnectPending' in n
+          assert 'schedulePremiumBillingReconnect()' in n
+          assert 'bannerRetryAttempt++' in n
+          assert 'mrecRetryAttempt++' in n
+          assert 'interstitialRetryAttempt++' in n
+          assert 'admobConsentRequested = false;' in n
+          assert '(premiumBillingReady || BuildConfig.DEBUG)' in n
+          assert 'canRequestAdMobAds()' in n
+          assert 'ca-app-pub-3940256099942544/6300978111' in n
+          assert 'ca-app-pub-7205009121067400/9497290996' in n
+          assert 'function apSyncMrecSlot()' in h and 'window.addEventListener(\'scroll\',apMrecMarkScrolling' in h
+          assert 'rollback-100.css' in h
+          assert 'ap100Language' in h and 'onclick="languageModal()"' in h
+          assert "online-presence-98.js" not in h
+          assert "language-shortcut-99.js" not in h
+          assert "function ensureHomeFuelPrices(){\n  // V100" in h
+          assert "function refreshNearbyFuelPrices(showToast=true){\n  // V100" in h
+          assert "function apRefreshPresence(){/* V100" in h
+          assert "window.onPresenceCount=(count,error)" in h
+          assert "function openFuel(id='')" in h
+          assert 'fuelRangeModal()' in h and 'apMrecCardHtml()' in h
+          assert "requestAdMobConsentIfNeeded" in n
+          assert 'updateMrecSlotNative' in n
+          assert 'com.google.android.gms.ads.APPLICATION_ID' in m
+          assert 'ca-app-pub-7205009121067400~4069879501' in m
+          assert "com.startapp:inapp-sdk" not in g
+          assert 'Reklam yükleniyor…' not in h
+          assert 'mrecLastError' in n and 'mrecSlotVisible' in n
+          assert "line('Orta reklam yüklendi'" in h
+          assert "line('Orta reklam görünür'" in h
+          assert 'apMrecAvailability=function(ready)' in h
+          assert "Android.askAracimAi(id,prompt)" in h
+          assert "window.onAracimAiResult=function(requestId,text,error)" in h
+          assert "function faultGuideFinish(id,answer,error)" in h
+          assert "function faultGuideOfflineHtml(q)" in h
+          assert "Direksiyonda titreşim" in h
+          assert "Sürücünün yeni mesajı" in h
+          assert "Aras AI • akıllı araç danışmanı" in h
+          assert "gemini-3.8-flash" in n
+          a=Path('app/src/main/assets/aras-marketplace-107.js').read_text()
+          css=Path('app/src/main/assets/aras-marketplace-107.css').read_text()
+          rules=Path('firebase/firestore.rules').read_text()
+          assert 'aras-marketplace-107.js' in h and 'aras-marketplace-107.css' in h
+          css108=Path('app/src/main/assets/aracimpro-home-108.css').read_text()
+          assert 'aras108Dock' in a and 'arasOpenAi' in a
+          assert '@keyframes aras108Hover' in css108
+          assert 'market108Link' in a and 'r8ui/market.jpg' in a
+          assert 'proWelcome108' in a and 'proWelcomeHero108' in css108
+          assert 'aracimpro-home-108.css' in h
+          assert "function apMrecCardHtml(){\n  try{if(isPremium())return '';}" in h
+          assert "createAdMobBanner();\n            loadSingleInterstitial();" in n
+          css109=Path('app/src/main/assets/aracimpro-polish-109.css').read_text()
+          assert 'aras109Robot' in a and 'aras109Robot' in css109
+          assert 'market109Photo' in a and 'market109Photo' in css109
+          assert 'Reklam alanı • Gösterim AdMob durumuna bağlıdır.' in h
+          assert 'body.apMrecReady .apMrecCard{display:flex!important}' in css109
+          assert 'createAdMobBanner();\n            createMrecAd();\n            loadSingleInterstitial();' in n
+          assert 'aracimOfflineContextResult' in h
+          assert 'LPG’ye geçişte motor stop ediyor' in h
+          assert 'Bağlantı nedenini göster' in h
+          assert 'marketFetchListings' in n and 'marketPublishListing' in n
+          assert 'marketCloseListing' in n and 'marketReportListing' in n
+          assert 'openMarketplaceLink' in n and 'wa.me' in n
+          assert 'function drawMarket()' in a and 'aracimMarketOpen' in a
+          assert 'verifiedSeller()' in rules and 'validMarketListing' in rules
+          assert 'vehicle_listing_reports' in rules
+          assert 'vehicle_comments' in rules and 'comment_reports' in rules
+          assert 'Android.askAracimAi(id,prompt)' in h
+          assert 'function faultGuideModal()' in h
+          print('PASS: V109 metallic ARAS, real car image, dedicated offline diagnoses, restored AdMob MREC and banner')
+          PY
+          node --check app/src/main/assets/r8plus-clean.js
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          html=Path('app/src/main/assets/index.html').read_text()
+          scripts=re.findall(r'<script>(.*?)</script>',html,re.S)
+          assert scripts and len(scripts[0])>100000
+          Path('/tmp/aracimpro-inline.js').write_text(scripts[0])
+          PY
+          node --check /tmp/aracimpro-inline.js
+          node --check app/src/main/assets/neon-dashboard-97.js
+          node --check app/src/main/assets/aras-marketplace-107.js
+      - name: Build side-by-side V109 test APK
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
+          LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
+        run: gradle --no-daemon assembleDebug
+      - name: Restore Play upload signing key
+        env:
+          PLAY_UPLOAD_KEYSTORE_B64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_B64 }}
+        run: |
+          test -n "$PLAY_UPLOAD_KEYSTORE_B64" || (echo "Upload keystore secret missing" >&2; exit 1)
+          echo "$PLAY_UPLOAD_KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/upload-key.jks"
+      - name: Configure signing
+        env:
+          STORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+        run: |
+          test -n "$STORE_PASSWORD" && test -n "$KEY_ALIAS" && test -n "$KEY_PASSWORD"
+          cat > keystore.properties <<EOF
+          storeFile=$RUNNER_TEMP/upload-key.jks
+          storePassword=$STORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
+      - name: Build SIGNED AAB for manual review (never auto-publish)
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
+          LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
+        run: gradle --no-daemon bundleRelease
+      - name: Check release outputs
+        run: |
+          test -s app/build/outputs/bundle/release/app-release.aab
+          test -s app/build/outputs/mapping/release/mapping.txt
+          unzip -Z1 app/build/outputs/bundle/release/app-release.aab | grep -F -q 'BUNDLE-METADATA/com.android.tools.build.debugsymbols/'
+          jarsigner -verify app/build/outputs/bundle/release/app-release.aab
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AracimPro-v109-ARAS-AI-MREC-APK-AND-SIGNED-AAB
+          path: |
+            app/build/outputs/bundle/release/app-release.aab
+            app/build/outputs/apk/debug/app-debug.apk
+            app/build/outputs/mapping/release/mapping.txt
+          retention-days: 14
