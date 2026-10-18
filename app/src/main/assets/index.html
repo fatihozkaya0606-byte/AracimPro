@@ -2009,7 +2009,7 @@ body:not(.r8HomeMode):not(.dark) .apMrecSlot{background:#e7f0f8;border-color:#c4
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
 <script>
 const KEY='aracim_pro_v1';
-const V='7.11.34';
+const V='7.11.35';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.NumberFormat(apLocale(),{style:'currency',currency:apCurrency(),maximumFractionDigits:2}).format(Number(n)||0);const num=n=>(Number(n)||0).toLocaleString(apLocale());
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -3969,12 +3969,14 @@ let faultAiHistory=[];
 let faultAiTimeout=null;
 function faultGuideModal(){
   const v=activeVehicle(); // New users can also ask ARAS about symptoms without adding a vehicle.
+  const aiStatus=aracimAiConnectionStatus();
   if(faultAiTimeout)clearTimeout(faultAiTimeout);
   faultAiPendingId='';faultAiBusy=false;faultAiHistory=[];faultAiTimeout=null;
   modal('🤖 Aras • Araç Asistanı',`
     <div class="aiIntro">
-      <b>Aras AI • akıllı araç danışmanı</b>
-      <small>Aracındaki sorunu anlat, belirtilere göre inceleyelim. AI bağlantısı açıksa önceki cevaplarını hatırlar; bağlantı yoksa konuya özel çevrimdışı rehber çalışır. Soruların ve araç bilgilerin AI servisine gönderilebilir.</small>
+      <b>Aras AI • Akıllı Araç Danışmanı</b>
+      <span id="aras110Mode" class="aras110Mode">${aiStatus.configured?'● AI servisi kontrol ediliyor':'● Çevrimdışı rehber'}</span>
+      <small>Sorununu kendi kelimelerinle yaz. Aras belirtilerini değerlendirir, gerekiyorsa ek soru sorar. AI bağlantısı etkinse soru ve araç bilgileri sunucuya gönderilebilir.</small>
       <div class="aiVehicle"><span>🚗 ${esc(aracimAiVehicleSummary(v)||'Aracını eklemeden de soru sorabilirsin')}</span></div>
     </div>
     <div class="aiQuick">
@@ -3986,7 +3988,7 @@ function faultGuideModal(){
       <button onclick="faultPreset('Marş zor basıyor')">🔋 Akü / marş</button>
     </div>
     <div class="aiChat" id="faultChat">
-      ${faultBubble('assistant','Belirtiyi aşağıya yaz. Örn: <b>“80 km/s üzerinde uğultu geliyor”</b>')}
+      ${faultBubble('assistant','Merhaba! Ben Aras. Aracınla ilgili her sorunu yazabilirsin. Örneğin “Araç stop ediyor” ya da “Frene basınca titriyor”.')}
     </div>
     <form class="aiComposer" onsubmit="faultGuideSend(event)">
       <textarea id="faultInput" maxlength="500" placeholder="Örn. direksiyonu çevirirken sürtme sesi geliyor"></textarea>
@@ -4004,8 +4006,12 @@ function faultGuideSend(e){e.preventDefault();const i=document.getElementById('f
 // V109: offline advice is genuinely symptom-specific and includes
 // earlier driver answers in the current session; it is not cloud AI.
 function aracimOfflineContextResult(question){
-  const recent=faultAiHistory.filter(x=>x.role==='Sürücü').slice(-3).map(x=>x.text).join(' ');
-  const q=faultNorm(question), context=faultNorm((recent+' '+question).trim());
+  const recent=faultAiHistory.filter(x=>x.role==='Sürücü').slice(-2).map(x=>x.text).join(' ');
+  const q=faultNorm(question);
+  // Keep previous LPG context only for direct symptom follow-ups, never for unrelated questions.
+  const followUp=/^(arac|motor|o|bu|ayni|sadece|peki|stop|istop|gaz|benzinde|sicakken)/.test(q)
+     && /(stop|istop|tekle|gecis|gaz|benz|calism)/.test(q);
+  const context=faultNorm(((followUp?recent+' ':'')+question).trim());
   const result=(level,title,causes,checks,stop=false)=>faultResult(level,title,causes,checks,stop);
   const isLpg=/(lpg|benzinden\s+(gaza|lp|tup)|tup(lu)?\s+arac|gaz\s+gecis|gaz(a)?\s+gecer|lpgye|otogaz)/.test(context);
   const stall=/(istop|stop\s+ed|stop\s+et|stop\s+ol|calisirken\s+son|motor\s+dur|motor\s+son|gaz\s+verince\s+son)/.test(context);
@@ -4054,7 +4060,29 @@ function aracimOfflineContextResult(question){
   }
   return diagnoseFault(question,activeVehicle());
 }
+function aracimAiConnectionStatus(){
+  try {
+    const info=JSON.parse(Android.aracimAiDiagnostics()||'{}');
+    return {configured:info.configured===true,detail:String(info.detail||'')};
+  } catch(e){
+    return {configured:false,detail:'AI bağlantı durumu okunamadı'};
+  }
+}
+function aracimOfflineSmallTalk(q){
+  const text=faultNorm(q).replace(/[!?.,]+/g,' ').trim();
+  if(/^(merhaba|merhabalar|selam|selamlar|sa|hey|gunaydin|iyi aksamlar|iyi gunler)(\s|$)/.test(text))
+    return 'Merhaba! Ben Aras. Aracındaki sorunu anlatabilirsin. Örneğin “Araç ışıklarda stop ediyor” ya da “Direksiyon 100 km hızda titriyor” diye yaz. Belirtileri birlikte daraltalım.';
+  if(/^(nasilsin|ne haber|naber)(\s|$)/.test(text))
+    return 'İyiyim, teşekkür ederim! Aracında bir sorun mu var, yoksa bakım ve kullanım hakkında mı konuşalım?';
+  if(/^(tesekkur|sag ol|eyvallah|sagol)(\s|$)/.test(text))
+    return 'Rica ederim! Başka bir belirti veya araç sorusu varsa yazabilirsin.';
+  if(/^(kimsin|adin ne|sen kimsin)(\s|$)/.test(text))
+    return 'Ben Aras, Aracım Pro’nun araç danışmanıyım. Arıza belirtilerini ayırmana ve güvenli ilk kontrolleri bulmana yardımcı olurum; kesin teşhisi servis koyar.';
+  return '';
+}
 function faultGuideOfflineHtml(q){
+  const friendly=aracimOfflineSmallTalk(q);
+  if(friendly)return '<div class="aras110Friendly">'+esc(friendly)+'</div>';
   const r=aracimOfflineContextResult(q);
   const stop=r.stop?'<div style="margin-top:10px;padding:10px;border-radius:12px;background:#35151b;border:1px solid #71313b;color:#ff9aa6"><b>⛔ Aracı kullanmaya devam etme.</b> Güvenli yerde durdur ve profesyonel destek al.</div>':'';
   return `<div>
@@ -4078,10 +4106,17 @@ function faultGuideFinish(id,answer,error){
   if(!pending)return;
   const q=pending.getAttribute('data-question')||'';
   const success=!!String(answer||'').trim()&&!error;
-  const reply=success?String(answer).trim().slice(0,3500):'Aras çevrimdışı belirti analizi gösterdi; teşhisi daraltmak için ek ayrıntı yazabilirsin.';
+  const friendly=aracimOfflineSmallTalk(q);
+  const offlineResult=!friendly?aracimOfflineContextResult(q):null;
+  const reply=success?String(answer).trim().slice(0,3500):
+      (friendly||(offlineResult.title+': '+offlineResult.causes.slice(0,2).join('; ')+'. '+offlineResult.checks[0]));
+  const offlineNote='<div class="aras110OfflineNote">ℹ️ Çevrimdışı Aras · Bağlantı etkin değil, belirtilere göre rehber yanıtı</div>';
   pending.outerHTML=success?
     faultBubble('assistant',esc(reply)):
-    faultBubble('assistant','<div class="muted small" style="margin-bottom:8px">ℹ️ Çevrimdışı Aras rehberi · Gerçek AI bağlantısı hazır değil</div>'+faultGuideOfflineHtml(q)+'<details class="aiErrorDetails"><summary>Bağlantı nedenini göster</summary>'+esc(String(error||'Sunucu yanıt vermedi').slice(0,260))+'</details>');
+    faultBubble('assistant',offlineNote+faultGuideOfflineHtml(q)+
+      '<details class="aiErrorDetails"><summary>Bağlantı nedenini göster</summary>'+esc(String(error||'Sunucu yanıt vermedi').slice(0,300))+'</details>');
+  const mode=document.getElementById('aras110Mode');
+  if(mode)mode.textContent=success?'● Canlı AI yanıtladı':'● Çevrimdışı rehber';
   faultAiHistory.push({role:'Sürücü',text:q},{role:'Asistan',text:reply});
   faultAiHistory=faultAiHistory.slice(-10);
   const chat=document.getElementById('faultChat');
@@ -4117,13 +4152,18 @@ function faultGuideRun(q){
     history?'Önceki konuşma:\n'+history:'',
     'Sürücünün yeni mesajı: '+question
   ].filter(Boolean).join('\n\n');
-  faultAiTimeout=setTimeout(()=>faultGuideFinish(id,'','Zaman aşımı'),25000);
+  const aiStatus=aracimAiConnectionStatus();
+  if(!aiStatus.configured){
+    faultGuideFinish(id,'',aiStatus.detail||'Firebase AI servisi yapılandırılmadı');
+    return;
+  }
+  faultAiTimeout=setTimeout(()=>faultGuideFinish(id,'','AI yanıtı zaman aşımına uğradı'),20000);
   try{
     if(typeof Android==='undefined'||typeof Android.askAracimAi!=='function')
       throw new Error('AI servisi bağlı değil');
     Android.askAracimAi(id,prompt);
   }catch(e){
-    faultGuideFinish(id,'','AI servisi başlatılamadı');
+    faultGuideFinish(id,'','AI servisi başlatılamadı: '+String(e.message||e));
   }
 }
 /* Eski çağrılar bozulmasın */
