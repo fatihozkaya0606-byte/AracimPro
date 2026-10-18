@@ -1,0 +1,80 @@
+/* ARACIM PRO V114 – compact premium feature collection */
+.ap114Discovery{margin:14px 0;padding:13px;border:1px solid rgba(51,167,231,.34);border-radius:18px;
+ background:linear-gradient(128deg,#071d37,#12436e);color:#f3fbff;box-shadow:0 9px 23px rgba(4,30,65,.15)}
+.ap114DiscoveryTitle{display:flex;justify-content:space-between;gap:7px;align-items:center;margin-bottom:11px}
+.ap114DiscoveryTitle strong{font-weight:900;letter-spacing:1.1px;font-size:10px}
+.ap114DiscoveryTitle small{color:#97c7e8;font-size:9px}
+.ap114DiscoveryGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.ap114DiscoveryGrid button{border:1px solid rgba(114,191,255,.18);background:#0b2745;color:#f4fbff;
+ min-height:71px;min-width:0;padding:8px 3px;border-radius:13px;display:flex;flex-direction:column;align-items:center;
+ text-align:center;gap:6px;cursor:pointer}
+.ap114DiscoveryGrid button span{font-size:23px}.ap114DiscoveryGrid button b{font-size:9.5px;line-height:1.25}
+.ap114MoreLink{border:0;background:none;color:#8bddff;text-align:right;width:100%;font-weight:750;font-size:10px;
+ padding:13px 2px 1px;cursor:pointer}
+.ap114Page{display:flex;flex-direction:column;gap:12px;color:var(--ink);padding:0 0 12px;min-width:0}
+.ap114Hero{background:linear-gradient(136deg,#092c53,#11518d 70%,#125ea2);padding:17px;
+ color:#effaff;border-radius:18px;border:1px solid rgba(93,183,250,.4);box-shadow:0 9px 22px rgba(4,46,91,.12)}
+.ap114Hero h2,.ap114Hero h3{margin:6px 0;color:#fff;font-size:22px;line-height:1.3}
+.ap114Hero b{font-size:15px;color:#f0fbff}.ap114Hero p{color:#c8e2f3;font-size:11px;line-height:1.6;margin:8px 0 0}
+.ap114Hero small{font-weight:900;letter-spacing:1.35px;color:#80e0ff;font-size:9px}
+.ap114Wrapped{background:radial-gradient(ellipse at 87% 20%,rgba(64,208,250,.24),transparent 50%),linear-gradient(135deg,#08254d,#1559a9)}
+.ap114Panel{border:1px solid var(--line);border-radius:16px;padding:14px;background:var(--card);
+ font-size:12px;line-height:1.6;color:var(--ink);overflow-wrap:anywhere}
+.ap114Panel b{font-size:12px}.ap114Panel h3{margin:0 0 7px;font-size:17px}.ap114Panel p{margin:5px 0 9px;color:var(--muted)}
+.ap114Panel li{margin:5px 0}.ap114Panel ul{margin:8px 0;padding-left:21px}
+.ap114MetricGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.ap114Metric{border:1px solid var(--line);background:var(--card);border-radius:15px;padding:12px;min-width:0;
+ display:flex;flex-direction:column;gap:8px;overflow-wrap:anywhere}
+.ap114Metric>span{font-size:19px}.ap114Metric>small{color:var(--muted);font-size:10px}
+.ap114Metric>b{font-size:16px;color:var(--ink);overflow-wrap:anywhere}
+.ap114Split{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:9px 0;border-bottom:1px solid var(--line);font-size:11px}
+.ap114Split strong,.ap114Split b{color:#1e94d7}.ap114Split span,.ap114Split small{min-width:0;overflow-wrap:anywhere}
+.ap114Label,.ap114Page form label,.ap114Page>label,.ap114Panel label{display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--ink);font-weight:800}
+.ap114Page input,.ap114Page select,.ap114Page textarea{max-width:100%;min-width:0;width:100%;
+ box-sizing:border-box;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);
+ padding:11px 12px;font-size:13px;min-height:46px}
+.ap114Page textarea{min-height:88px}
+.ap114Page button.wide{min-height:47px;font-size:12px;margin:0}
+.ap114Two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.ap114Result{font-size:27px;color:#20a9ea;font-weight:950;margin:12px 0}
+.ap114Anatomy,.ap114DamageMap{position:relative;overflow:hidden;border-radius:17px;
+ background:linear-gradient(140deg,#06172b,#163d5f);height:190px;border:1px solid #327cae}
+.ap114Anatomy img,.ap114DamageMap img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.78) brightness(.68)}
+.ap114CarOverlay{position:absolute;left:12px;top:12px;color:#e9faff;font-size:9px;letter-spacing:1.3px;font-weight:900}
+.ap114Anatomy button,.ap114DamageMap button{position:absolute;z-index:2;transform:translate(-50%,-50%);
+ border:2px solid #baf2ff;background:rgba(9,76,131,.87);color:#fff;border-radius:50%;
+ width:36px;height:36px;box-shadow:0 0 0 5px rgba(29,151,231,.25);font-size:16px}
+.ap114DamageMap button{width:23px;height:23px;font-size:10px}
+.ap114DamageMap button.active{background:#22d4df;outline:3px solid #e9feff;color:#062444}
+.ap114Parts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.ap114Parts button{border:1px solid var(--line);background:var(--card);border-radius:10px;font-size:10px;
+ font-weight:850;padding:9px 5px;color:var(--ink)}
+.ap114Parts button.active{background:#1b83c6;color:white}
+.ap114Event{position:relative;display:flex;flex-direction:column;gap:4px;padding:12px 10px 12px 47px;
+ border-left:2px solid #2b94d9;margin:0 0 2px 14px;background:var(--card);border-radius:0 12px 12px 0}
+.ap114EventDot{position:absolute;left:-16px;top:10px;background:#06375c;width:30px;height:30px;border:1px solid #35c3ee;
+ display:grid;place-items:center;border-radius:50%;font-size:15px}
+.ap114Event small{font-size:10px;color:var(--muted)}.ap114Event b{font-size:12px;color:var(--ink)}
+.ap114Event>span:last-child{font-size:11px;color:#248cc9}
+.ap114Badges{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.ap114Badge{display:flex;flex-direction:column;gap:7px;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:12px}
+.ap114Badge>span{font-size:25px}.ap114Badge b{font-size:12px;color:var(--ink)}
+.ap114Badge small{font-size:9px;line-height:1.5;color:var(--muted)}.ap114Badge em{font-size:9px;color:#169bc7;font-style:normal;font-weight:900}
+.ap114Badge.locked{opacity:.55;filter:grayscale(.6)}
+.ap114VoiceControls{display:flex;flex-wrap:wrap;gap:5px;padding:11px 0 0}
+.ap114VoiceControls button{border:1px solid rgba(156,216,255,.35);border-radius:9px;padding:8px;
+ color:#f3faff;background:#0b426f;font-size:10px;font-weight:800}
+.ap114HudHero{background:radial-gradient(circle at 50% 37%,#133a4f,#021424);padding:26px 12px;
+ border-radius:20px;text-align:center;color:#2efbd5;border:1px solid #308e95}
+.ap114HudCaption{font-size:10px;letter-spacing:2px;font-weight:900;color:#b1fbef}
+.ap114HudDigits{display:flex;align-items:baseline;justify-content:center;gap:7px;margin:12px 0}
+.ap114HudDigits strong{font-size:85px;line-height:1.2;color:#4bffdd;font-variant-numeric:tabular-nums}
+.ap114HudDigits span{font-size:15px;color:#cbfff6}.ap114HudHero small{color:#8aefdd;font-size:11px}
+.ap114DamagePhoto{width:100%;max-height:220px;object-fit:contain;border-radius:10px}
+@media(max-width:390px){
+ .ap114DiscoveryGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .ap114DiscoveryGrid button{min-height:60px}
+ .ap114Two{grid-template-columns:1fr}
+ .ap114HudDigits strong{font-size:68px}
+}
+@media(prefers-reduced-motion:reduce){.ap114Page{scroll-behavior:auto}}
