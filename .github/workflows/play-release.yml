@@ -3,7 +3,7 @@ name: Google Play Release AAB
 on:
   workflow_dispatch:
   push:
-    branches: [ aracimpro-play-quality-83, aracimpro-115-exact-engine-catalog-all-makes, aracimpro-121-release-polish-signed-aab ]
+    branches: [ aracimpro-play-quality-83, aracimpro-115-exact-engine-catalog-all-makes, aracimpro-121-release-polish-signed-aab, aracimpro-122-mrec-placement-app-open ]
 
 jobs:
   build-release:
@@ -52,6 +52,7 @@ jobs:
       - name: Build signed release bundle
         env:
           OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          APP_OPEN_AD_UNIT_ID: ${{ secrets.APP_OPEN_AD_UNIT_ID }}
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
@@ -61,6 +62,7 @@ jobs:
       - name: Verify signed bundle, mapping and native symbols exist
         run: |
           test -s app/build/outputs/bundle/release/app-release.aab
+          jarsigner -verify app/build/outputs/bundle/release/app-release.aab
           test -s app/build/outputs/mapping/release/mapping.txt
           unzip -Z1 app/build/outputs/bundle/release/app-release.aab | grep -F -q 'BUNDLE-METADATA/com.android.tools.build.debugsymbols/'
           echo 'Confirmed: AAB contains native symbol metadata'
