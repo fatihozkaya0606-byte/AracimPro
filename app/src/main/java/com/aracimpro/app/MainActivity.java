@@ -1368,6 +1368,17 @@ private void showLaunchSplash() {
         }
     }
 
+    // The SDK supplies the winning network for each loaded impression.
+    // Store only the adapter class name (not ad content or user data) for troubleshooting.
+    private void recordAdSource123(String slot, com.google.android.gms.ads.ResponseInfo info) {
+        try {
+            String adapter = info == null ? "unknown" : info.getMediationAdapterClassName();
+            if (adapter == null || adapter.trim().isEmpty()) adapter = "unknown";
+            getSharedPreferences("aracim_admob_diagnostics", MODE_PRIVATE).edit()
+                .putString(slot + "Source", adapter).apply();
+        } catch (Throwable ignored) {}
+    }
+
     private void createAdMobBanner() {
         if (!canRequestAdMobAds() || bannerAdView != null) return;
         try {
@@ -1381,7 +1392,8 @@ private void showLaunchSplash() {
                     if (bannerAdView != banner || !canRequestAdMobAds()) return;
                     admobBannerLoaded = true;
                     bannerRetryAttempt = 0;
-                    logAdMob("banner_loaded", "AdMob banner loaded");
+                    logAdMob("banner_loaded", "Banner loaded through AdMob mediation");
+                    recordAdSource123("banner", banner.getResponseInfo());
                     updateAdMobBannerVisibility();
                 }
                 @Override public void onAdFailedToLoad(LoadAdError error) {
@@ -1439,7 +1451,8 @@ private void showLaunchSplash() {
                     if (ad != mrecAdView || !canRequestAdMobAds()) return;
                     mrecAdLoaded = true;
                     mrecRetryAttempt = 0;
-                    logAdMob("mrec_loaded", "300x250 AdMob ad loaded");
+                    logAdMob("mrec_loaded", "300x250 banner loaded through AdMob mediation");
+                    recordAdSource123("mrec", ad.getResponseInfo());
                     getSharedPreferences("aracim_admob_diagnostics", MODE_PRIVATE).edit()
                             .putString("mrecLastError", "").apply();
                     notifyMrecJs(true);
@@ -1679,7 +1692,8 @@ private void showLaunchSplash() {
                         oneInterstitialAd = ad;
                         oneInterstitialLoadedAt = android.os.SystemClock.elapsedRealtime();
                         oneInterstitialReady = true;
-                        logAdMob("interstitial_loaded", "Full-screen ad preloaded");
+                        logAdMob("interstitial_loaded", "Full-screen ad preloaded through AdMob mediation");
+                        recordAdSource123("interstitial", ad.getResponseInfo());
                     }
 
                     @Override public void onAdFailedToLoad(LoadAdError error) {
@@ -2037,6 +2051,10 @@ private void showLaunchSplash() {
                 out.put("lastEvent", log.getString("step", "Henüz olay yok"));
                 out.put("lastResult", log.getString("result", ""));
                 out.put("lastEventTime", log.getLong("timestamp", 0L));
+                out.put("bannerSource", log.getString("bannerSource", ""));
+                out.put("mrecSource", log.getString("mrecSource", ""));
+                out.put("interstitialSource", log.getString("interstitialSource", ""));
+                out.put("mediation", "AdMob + AppLovin adapter V123; requires AdMob group mapping");
             } catch (Exception ignored) {}
             return out.toString();
         }
