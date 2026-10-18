@@ -2001,12 +2001,13 @@ body:not(.r8HomeMode):not(.dark) .apMrecSlot{background:#e7f0f8;border-color:#c4
 <link rel="stylesheet" href="r8-premium-96.css">
 <link rel="stylesheet" href="neon-dashboard-97.css">
 <link rel="stylesheet" href="rollback-100.css">
+<link rel="stylesheet" href="aras-marketplace-107.css">
 </head>
 <body>
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
 <script>
 const KEY='aracim_pro_v1';
-const V='7.11.31';
+const V='7.11.32';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.NumberFormat(apLocale(),{style:'currency',currency:apCurrency(),maximumFractionDigits:2}).format(Number(n)||0);const num=n=>(Number(n)||0).toLocaleString(apLocale());
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -3965,14 +3966,14 @@ let faultAiBusy=false;
 let faultAiHistory=[];
 let faultAiTimeout=null;
 function faultGuideModal(){
-  const v=activeVehicle();if(!v)return toast('Önce araç eklemelisin');
+  const v=activeVehicle(); // New users can also ask ARAS about symptoms without adding a vehicle.
   if(faultAiTimeout)clearTimeout(faultAiTimeout);
   faultAiPendingId='';faultAiBusy=false;faultAiHistory=[];faultAiTimeout=null;
   modal('🛠️ Akıllı Arıza Rehberi',`
     <div class="aiIntro">
       <b>Aracım AI • akıllı arıza danışmanı</b>
-      <small>İnternet varsa Firebase AI ile sorunu değerlendirir, eksik belirtileri sorar ve önceki cevapları dikkate alır. Bağlantı yoksa çevrimdışı öneriler sunar. Soru ve plaka hariç araç özellikleri AI servisine iletilebilir.</small>
-      <div class="aiVehicle"><span>🚗 ${esc(aracimAiVehicleSummary(v))}</span></div>
+      <small>Belirtileri sor, Aras olası nedenleri değerlendirsin. Firebase AI etkinse konuşmayı hatırlar; erişilemezse çevrimdışı temel rehber çalışır. Yazdığın sorular ve araç özelliklerin AI servisine gönderilebilir.</small>
+      <div class="aiVehicle"><span>🚗 ${esc(aracimAiVehicleSummary(v)||'Aracını eklemeden de soru sorabilirsin')}</span></div>
     </div>
     <div class="aiQuick">
       <button onclick="faultPreset('Direksiyondan sürtme sesi geliyor')">🛞 Direksiyon sesi</button>
@@ -4036,7 +4037,7 @@ window.onAracimAiResult=function(requestId,text,error){
 };
 function faultGuideRun(q){
   const v=activeVehicle(),chat=document.getElementById('faultChat');
-  if(!v||!chat)return;
+  if(!chat)return;
   const question=String(q||'').trim().slice(0,500);
   if(!question)return;
   if(faultAiBusy){toast('Önce önceki yanıtı bekle');return}
@@ -4057,7 +4058,7 @@ function faultGuideRun(q){
     'Evde güvenle bakılabilecek şeylerle profesyonel kontrolü ayır. Tehlikeli tamir veya riskli test sürüşü önerme.',
     'Direksiyon hakimiyeti, fren kaybı, yağ basıncı, hararet, duman, yakıt kaçağı veya lastikte ciddi hasarda güvenli durmayı, sürmemeyi ve çekici/uzman yardımı öner.',
     'Azami 160 kelime, madde işaretleri kullanabilirsin. Reklam, gereksiz selamlama veya modelin kendisi hakkında metin yazma.',
-    'Araç (plaka, kimlik veya konum içermez): '+aracimAiVehicleSummary(v),
+    'Araç (plaka, kimlik veya konum içermez): '+(aracimAiVehicleSummary(v)||'Araç bilgisi henüz girilmedi'),
     history?'Önceki konuşma:\n'+history:'',
     'Sürücünün yeni mesajı: '+question
   ].filter(Boolean).join('\n\n');
@@ -4981,5 +4982,6 @@ syncCommunityStatus();try{state.prefs.fuelAlertsEnabled=false;Android.configureF
 </script>
 <script src="r8plus-clean.js"></script>
 <script src="neon-dashboard-97.js"></script>
+<script src="aras-marketplace-107.js"></script>
 </body>
 </html>
