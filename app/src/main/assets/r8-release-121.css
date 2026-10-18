@@ -1,0 +1,46 @@
+/* Aracim Pro V121 • production UI corrections. No AdMob IDs, analytics or paid logic modified. */
+/* Header remains dark even if user picks the light UI; override legacy white badge. */
+body.r118Skin #app .header.apHeader .apMarketStrip7103 .apMarketLive,
+body.r118Skin:not(.dark) #app .header.apHeader .apMarketStrip7103 .apMarketLive{
+ background:linear-gradient(150deg,#0b3451,#09233f)!important;
+ border:0!important;border-right:1px solid #397c9d!important;
+ box-shadow:inset 0 1px #91e9ff24,inset -1px 0 #031628a1!important;
+ color:#60f4bc!important;-webkit-text-fill-color:#60f4bc!important;
+ border-radius:9px 0 0 9px!important;
+ opacity:1!important;
+}
+body.r118Skin #app .header.apHeader .apMarketStrip7103 .apMarketLive i{
+ background:#2df4a3!important;box-shadow:0 0 9px #2df4a388!important;
+}
+body.r118Skin:not(.dark) #app .header.apHeader .apMarketStrip7103 .apTickerUnit,
+body.r118Skin:not(.dark) #app .header.apHeader .apMarketStrip7103 .apTickerPrice,
+body.r118Skin:not(.dark) #app .header.apHeader .apMarketStrip7103 .apTickerUnit b{
+ color:#effaff!important;-webkit-text-fill-color:#effaff!important;
+}
+/* The native AdMob MREC is mounted only after a successful load callback.
+   When no fill / no consent / test ad not loaded, hide the unused placeholder
+   so navigation and real content are never displaced by a 300x250 blank panel.
+   Once apMrecReady is true the original native slot size, geometry and policy stay intact. */
+body.r118Skin:not(.apMrecReady) #app .apMrecCard{
+ display:none!important;visibility:hidden!important;
+}
+body.r118Skin.apMrecReady #app .apMrecCard{
+ display:flex!important;visibility:visible!important;
+}
+body.r118Skin.apMrecReady #app .apMrecSlot{
+ width:300px!important;min-height:250px!important;
+}
+/* Better light-mode toolbar legibility, without flattening R8 3D buttons. */
+body.r118Skin:not(.dark) #app .header.apHeader .apHeaderActions button.apAction:active{
+ background:linear-gradient(145deg,#1368a9,#08254b)!important;
+}
+body.r118Skin:not(.dark) #app .header.apHeader .apHeaderActions button.apAction:focus-visible{
+ outline:2px solid #98e6ff!important;outline-offset:2px;
+}
+/* Keep bottom fixed bar from covering last content action on compact screens. */
+body.r118Skin #app>main{padding-bottom:max(115px,calc(93px + env(safe-area-inset-bottom,0px)))!important}
+@media(max-width:370px){
+ body.r118Skin #app .header.apHeader .apMarketStrip7103 .apMarketLive{
+  flex-basis:53px!important;font-size:8px!important;
+ }
+}
