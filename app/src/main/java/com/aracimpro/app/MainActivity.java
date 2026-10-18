@@ -1980,6 +1980,158 @@ private void showLaunchSplash() {
             sendCommunityJs("onCommunityAuthResult", communityStatusJson().toString(), "");
         }
 
+
+        private JSONObject marketListingJson(DocumentSnapshot d) {
+            JSONObject j = new JSONObject();
+            try {
+                j.put("id", d.getId());
+                String[] names = {"make", "model", "city", "fuel", "transmission",
+                        "description", "sellerName", "ownerId", "publicPhone", "status"};
+                for (String key : names) {
+                    String val = d.getString(key);
+                    j.put(key, val == null ? "" : val);
+                }
+                Long year = d.getLong("year");
+                Long km = d.getLong("km");
+                Long price = d.getLong("price");
+                Long date = d.getLong("createdAt");
+                j.put("year", year == null ? 0 : year);
+                j.put("km", km == null ? 0 : km);
+                j.put("price", price == null ? 0 : price);
+                j.put("createdAt", date == null ? 0 : date);
+            } catch (Exception ignored) {}
+            return j;
+        }
+
+        @JavascriptInterface public void marketFetchListings() {
+            if (!communityConfigured || communityDb == null) {
+                sendCommunityJs("onMarketListings", "[]", "Firebase ilan servisi henüz yapılandırılmadı");
+                return;
+            }
+            communityDb.collection("vehicle_listings")
+                    .whereEqualTo("status", "active").limit(80).get()
+                    .addOnCompleteListener(task -> {
+                        if (!task.isSuccessful() || task.getResult() == null) {
+                            sendCommunityJs("onMarketListings", "[]",
+                                    task.getException() == null ? "İlanlar getirilemedi" :
+                                    String.valueOf(task.getException().getMessage()));
+                            return;
+                        }
+                        JSONArray arr = new JSONArray();
+                        for (DocumentSnapshot d : task.getResult().getDocuments())
+                            arr.put(marketListingJson(d));
+                        sendCommunityJs("onMarketListings", arr.toString(), "");
+                    });
+        }
+
+        @JavascriptInterface public void marketPublishListing(String raw) {
+            if (!communityConfigured || communityDb == null || communityAuth == null) {
+                sendCommunityJs("onMarketPublished", "", "İlan servisi yapılandırılmadı");
+                return;
+            }
+            FirebaseUser user = communityAuth.getCurrentUser();
+            if (user == null || !user.isEmailVerified()) {
+                sendCommunityJs("onMarketPublished", "", "İlan vermek için doğrulanmış e-posta ile giriş yapmalısın");
+                return;
+            }
+            try {
+                JSONObject j = new JSONObject(raw == null ? "{}" : raw);
+                String make=j.optString("make","").trim(), model=j.optString("model","").trim();
+                String city=j.optString("city","").trim(),desc=j.optString("description","").trim();
+                String fuel=j.optString("fuel","").trim(),gear=j.optString("transmission","").trim();
+                String phone=j.optString("publicPhone","").replaceAll("[^0-9]","");
+                long year=j.optLong("year"),km=j.optLong("km"),price=j.optLong("price");
+                boolean consent=j.optBoolean("sharePhone", false);
+                if (make.length()<2||make.length()>40||model.length()<2||model.length()>45
+                  ||city.length()<2||city.length()>45||desc.length()<15||desc.length()>1200
+                  ||year<1970||year>2027||km<0||km>2000000||price<10000||price>100000000
+                  ||!consent||phone.length()<10||phone.length()>15
+                  ||fuel.length()>25||gear.length()>25) {
+                    sendCommunityJs("onMarketPublished", "", "İlan bilgileri veya iletişim izni geçersiz");
+                    return;
+                }
+                String seller=user.getDisplayName();
+                if (seller==null||seller.trim().length()<2) seller="Aracım Pro kullanıcısı";
+                Map<String,Object> data=new HashMap<>();
+                data.put("make",make);data.put("model",model);data.put("city",city);
+                data.put("description",desc);data.put("fuel",fuel);
+                data.put("transmission",gear);data.put("publicPhone",phone);
+                data.put("year",year);data.put("km",km);data.put("price",price);
+                data.put("ownerId",user.getUid());data.put("sellerName",seller.trim().substring(0,Math.min(60,seller.trim().length())));
+                data.put("status","active");data.put("createdAt",System.currentTimeMillis());
+                data.put("createdAtServer",FieldValue.serverTimestamp());
+                communityDb.collection("vehicle_listings").add(data).addOnCompleteListener(task->{
+                    if (!task.isSuccessful()) {
+                        sendCommunityJs("onMarketPublished", "",task.getException()==null
+                                ?"İlan yayımlanamadı":String.valueOf(task.getException().getMessage()));
+                    } else {
+                        sendCommunityJs("onMarketPublished", "{\"ok\":true}", "");
+                    }
+                });
+            } catch(Exception ex) {
+                sendCommunityJs("onMarketPublished", "", "İlan bilgileri okunamadı");
+            }
+        }
+
+        @JavascriptInterface public void marketCloseListing(String id) {
+            FirebaseUser user=communityAuth==null?null:communityAuth.getCurrentUser();
+            if (!communityConfigured||communityDb==null||user==null||id==null
+                    ||!id.matches("[A-Za-z0-9_-]{8,100}")) {
+                sendCommunityJs("onMarketClosed", "", "Geçerli hesap ve ilan gerekli");
+                return;
+            }
+            com.google.firebase.firestore.DocumentReference ref=
+                    communityDb.collection("vehicle_listings").document(id);
+            ref.get().addOnCompleteListener(read->{
+                if (!read.isSuccessful()||read.getResult()==null||!read.getResult().exists()
+                        ||!user.getUid().equals(read.getResult().getString("ownerId"))) {
+                    sendCommunityJs("onMarketClosed","","Yalnız kendi ilanını kaldırabilirsin");
+                    return;
+                }
+                ref.update("status","sold").addOnCompleteListener(write->{
+                    sendCommunityJs("onMarketClosed", write.isSuccessful()?"{\"ok\":true}":"",
+                            write.isSuccessful()?"":write.getException()==null?
+                            "İlan kaldırılamadı":String.valueOf(write.getException().getMessage()));
+                });
+            });
+        }
+
+        @JavascriptInterface public void marketReportListing(String id) {
+            FirebaseUser user=communityAuth==null?null:communityAuth.getCurrentUser();
+            if (!communityConfigured||communityDb==null||user==null||id==null
+                    ||!id.matches("[A-Za-z0-9_-]{8,100}")) {
+                sendCommunityJs("onMarketReported", "", "Bildirim için giriş yapmalısın");
+                return;
+            }
+            Map<String,Object> report=new HashMap<>();
+            report.put("listingId",id); report.put("reporterId",user.getUid());
+            report.put("reason","Yanıltıcı veya uygunsuz ilan");
+            report.put("createdAtServer",FieldValue.serverTimestamp());
+            // One report per account/listing, no easy duplicate report flooding.
+            communityDb.collection("vehicle_listing_reports").document(id+"_"+user.getUid())
+                    .set(report).addOnCompleteListener(task->{
+                        sendCommunityJs("onMarketReported",task.isSuccessful()?"{\"ok\":true}":"",
+                          task.isSuccessful()?"":task.getException()==null?
+                          "İlan bildirimi gönderilemedi":String.valueOf(task.getException().getMessage()));
+                    });
+        }
+
+        @JavascriptInterface public void openMarketplaceLink(String url) {
+            if (url == null) return;
+            try {
+                Uri u=Uri.parse(url);
+                if (!"https".equalsIgnoreCase(u.getScheme())||
+                        !"wa.me".equalsIgnoreCase(u.getHost())||
+                        u.getPath()==null||!u.getPath().matches("/[0-9]{10,15}")) return;
+                runOnUiThread(()->{
+                    try { startActivity(new Intent(Intent.ACTION_VIEW,u)); }
+                    catch (Exception ignored) {
+                        Toast.makeText(MainActivity.this,"WhatsApp bağlantısı açılamadı",Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } catch(Exception ignored) {}
+        }
+
         @JavascriptInterface public void communityFetchComments(String modelKey) {
             if (!communityConfigured || communityDb == null) {
                 sendCommunityJs("onCommunityCommentsResult", "[]", "Yorum sunucusu henüz yapılandırılmadı");
