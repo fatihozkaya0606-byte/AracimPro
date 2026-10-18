@@ -241,6 +241,7 @@ function drawMarket(){
  '<div class="market107Filters"><input id="market107Search" type="search" aria-label="İlan ara" value="'+esc(activeFilter)+'" placeholder="İlanlarda şehir veya araç ara" oninput="aracimMarketFilter(this.value)"/>'+
  '<label class="market107My"><input type="checkbox" '+(myListings?'checked':'')+' onchange="aracimMarketMy(this.checked)"> Yalnız ilanlarım</label></div>'+
  '<button type="button" class="market111CatalogToggle" onclick="aracimMarketToggleCatalog()">🚘 '+(marketShowCatalog?'Araç kataloğunu gizle':'Tüm araç markalarını ve modelleri gör')+' <span>›</span></button>'+
+ '<button type="button" class="market111ExternalSearch" onclick="aracimMarketExternalSearch()">🔎 Seçtiğim aracı internette satılık ara ↗</button>'+
  marketCatalogHtml()+
  '<h3 class="market111ResultsTitle">Yayımlanmış satış ilanları</h3>'+
  listingGrid()+'<div class="market107Footer">Araç kataloğu ilan değildir. Satılık ilanlar yalnız gerçek kullanıcı yayımladığında gösterilir. Aracım Pro ödemeye aracılık etmez.</div></div>');
@@ -253,6 +254,12 @@ window.aracimMarketBrowseModel=function(model){marketFilterModel=String(model||'
 window.aracimMarketBrowseYear=function(year){
  marketFilterYear=String(year||'');marketFilterModel='';drawMarket();
  marketFetchModels(marketFilterMake,marketFilterYear);
+};
+window.aracimMarketExternalSearch=function(){
+ if(!marketFilterMake){toast('Önce bir marka seç');return;}
+ const query=[marketFilterYear,marketFilterMake,marketFilterModel,'satılık araç ilanları'].filter(Boolean).join(' ');
+ const url='https://www.google.com/search?q='+encodeURIComponent(query);
+ try{Android.openUri(url,'')}catch(e){toast('Tarayıcı bağlantısı açılamadı')}
 };
 window.aracimMarketToggleCatalog=function(){marketShowCatalog=!marketShowCatalog;drawMarket()};
 window.aracimMarketCatalogPick=function(make,model){
