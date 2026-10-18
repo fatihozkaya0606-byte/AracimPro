@@ -115,7 +115,7 @@ jobs:
           import re
           from pathlib import Path
           html=Path('app/src/main/assets/index.html').read_text()
-          scripts=re.findall(r'<script(?:\\s[^>]*)?>([\\s\\S]*?)</script>',html)
+          scripts=re.findall(r'<script>(.*?)</script>',html,re.S)
           assert scripts and len(scripts[0])>100000
           Path('/tmp/aracimpro-inline.js').write_text(scripts[0])
           PY
