@@ -3,39 +3,71 @@
 'use strict';
 const oldWelcome=welcome,oldHome=homeView,oldServices=moreAllServices;
 
+
+/* V108: ARAS is a small animated companion, not an oversized promotion card.
+   The icon is an original SVG drawn in app; no external image or brand art. */
 function arasArt(){
-  return '<svg class="arasMascotSvg" viewBox="0 0 132 118" role="img" aria-label="Aras, Aracım Pro asistanı">'+
-  '<defs><linearGradient id="arasPaint107" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#78dcff"/><stop offset=".47" stop-color="#1687eb"/><stop offset="1" stop-color="#073ba3"/></linearGradient>'+
-  '<linearGradient id="arasGlass107" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#143e75"/><stop offset="1" stop-color="#031c3f"/></linearGradient></defs>'+
-  '<ellipse cx="66" cy="103" rx="50" ry="8" fill="#00b9ff" opacity=".2"/>'+
-  '<path d="M19 65L30 43Q36 29 49 27H83Q96 29 103 43L113 65V88Q110 96 101 97H31Q22 96 19 88Z" fill="url(#arasPaint107)" stroke="#a9eaff" stroke-width="2.5"/>'+
-  '<path d="M36 50Q41 37 51 36H81Q91 37 96 50L100 59H32Z" fill="url(#arasGlass107)" stroke="#8ce8ff" stroke-width="1.6"/>'+
-  '<path d="M46 53Q50 48 55 53M77 53Q82 48 87 53" fill="none" stroke="#74eaff" stroke-width="5.2" stroke-linecap="round" class="arasEyes"/>'+
-  '<path d="M58 76Q66 84 74 76" fill="none" stroke="#d8faff" stroke-width="3.2" stroke-linecap="round"/>'+
-  '<rect x="21" y="67" width="20" height="12" rx="6" fill="#eaffff" opacity=".9"/><rect x="91" y="67" width="20" height="12" rx="6" fill="#eaffff" opacity=".9"/>'+
-  '<rect x="31" y="91" width="19" height="11" rx="5" fill="#07294e"/><rect x="82" y="91" width="19" height="11" rx="5" fill="#07294e"/>'+
-  '<path d="M54 14L66 7L78 14" stroke="#4edbff" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="66" cy="7" r="5" fill="#8ff8ff" class="arasAntenna"/></svg>';
+ return '<svg class="aras108Car" viewBox="0 0 116 105" role="img" aria-label="Aras hareketli mini araç">'+
+ '<defs><linearGradient id="aras108Paint" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#b5f6ff"/><stop offset=".22" stop-color="#4cc8ff"/><stop offset=".68" stop-color="#0d70cc"/><stop offset="1" stop-color="#062c76"/></linearGradient>'+
+ '<linearGradient id="aras108Wind" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#0b3265"/><stop offset="1" stop-color="#031121"/></linearGradient>'+
+ '<linearGradient id="aras108Lamp" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#76eaff"/></linearGradient></defs>'+
+ '<ellipse cx="58" cy="96" rx="40" ry="7" fill="#0097ed" opacity=".26"/>'+
+ '<path d="M20 61L31 41Q36 29 49 26L67 26Q80 29 85 41L96 61L99 82Q97 90 90 91H26Q19 90 17 82Z" fill="url(#aras108Paint)" stroke="#b9f5ff" stroke-width="1.5"/>'+
+ '<path d="M35 48Q38 36 49 34H67Q78 36 81 48L87 59H29Z" fill="url(#aras108Wind)" stroke="#56b8ed" stroke-width="1.3"/>'+
+ '<path class="aras108Eyes" d="M40 51Q45 47 50 51M66 51Q71 47 76 51" stroke="#97edff" fill="none" stroke-width="4.7" stroke-linecap="round"/>'+
+ '<path d="M28 69L43 72L40 79L26 77Z" fill="url(#aras108Lamp)"/><path d="M88 69L73 72L76 79L90 77Z" fill="url(#aras108Lamp)"/>'+
+ '<path d="M51 74Q58 79 65 74" stroke="#d4f9ff" stroke-width="2.5" fill="none" stroke-linecap="round"/>'+
+ '<path d="M25 86H91" stroke="#0b3a75" stroke-width="3"/>'+
+ '<rect x="25" y="88" width="16" height="9" rx="3" fill="#0a2044"/><rect x="75" y="88" width="16" height="9" rx="3" fill="#0a2044"/>'+
+ '<path d="M43 29Q58 23 73 29" fill="none" stroke="#e4faff" opacity=".64" stroke-width="2.1"/>'+
+ '<path d="M58 15V22" stroke="#7feaff" stroke-width="2.5" stroke-linecap="round"/><circle class="aras108Radar" cx="58" cy="13" r="4.5" fill="#71efff"/></svg>';
 }
 function arasHtml(){
- return '<button type="button" class="arasAssist107" onclick="arasOpenAi()" aria-label="Aras yapay zekâ asistanını aç">'+
- '<span class="arasArtWrap">'+arasArt()+'<span class="arasOnlineDot"></span></span>'+
- '<span class="arasCopy"><span class="arasKicker">ARACIM PRO • AKILLI ASİSTAN</span><strong>Merhaba, ben Aras!</strong><small>Arızanı anlat, birlikte inceleyelim.</small></span>'+
- '<span class="arasArrow">→</span></button>';
+ return '<div class="aras108Dock" role="group" aria-label="Aras, Aracım Pro yapay zekâ asistanı">'+
+ '<button type="button" class="aras108Bot" onclick="arasOpenAi()" aria-label="Aras ile konuş">'+arasArt()+
+ '<span class="aras108BotAura"></span></button>'+
+ '<button type="button" class="aras108Talk" onclick="arasOpenAi()">'+
+ '<span class="aras108Eyebrow"><i></i> ARAS AI <span class="aras108Sparkle">✦</span></span>'+
+ '<strong>Aracınla ilgili ne merak ediyorsun?</strong>'+
+ '<small>Bir belirti yaz, birlikte inceleyelim <span aria-hidden="true">↗</span></small>'+
+ '</button></div>';
+}
+function marketIcon(){
+ return '<svg class="market108Car" viewBox="0 0 96 64" aria-hidden="true">'+
+ '<defs><linearGradient id="market108Metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#cfeaff"/><stop offset=".48" stop-color="#70bbea"/><stop offset="1" stop-color="#207cbd"/></linearGradient></defs>'+
+ '<path d="M7 41L17 36L29 20Q33 15 43 15H64Q73 16 78 25L87 37L92 40V52Q90 56 85 56H12Q7 55 7 51Z" fill="url(#market108Metal)" stroke="#aeeaff" stroke-width="1.3"/>'+
+ '<path d="M34 22H64Q70 22 74 29L78 37H24Z" fill="#0a2850" stroke="#4f94c7" stroke-width="1"/>'+
+ '<path d="M48 22V37" stroke="#7bbfe9" stroke-width="1.4"/>'+
+ '<path d="M12 42H26" stroke="#e8fdff" stroke-width="4" stroke-linecap="round"/><path d="M74 42H87" stroke="#e8fdff" stroke-width="4" stroke-linecap="round"/>'+
+ '<circle cx="25" cy="53" r="8" fill="#0a1932" stroke="#9ed6f3" stroke-width="2"/><circle cx="73" cy="53" r="8" fill="#0a1932" stroke="#9ed6f3" stroke-width="2"/>'+
+ '<circle cx="25" cy="53" r="3" fill="#96cfea"/><circle cx="73" cy="53" r="3" fill="#96cfea"/></svg>';
 }
 function marketTeaser(){
- return '<button type="button" class="arasMarketEntry" onclick="aracimMarketOpen()" aria-label="Araç Pazarı alım satım sayfasını aç">'+
- '<span class="arasMarketIcon">🚘</span><span><strong>Araç Pazarı <em>BETA</em></strong><small>İlan oluştur • Araç ara • Güvenli alışveriş ipuçları</small></span><b>›</b></button>';
+ return '<button type="button" class="market108Link" onclick="aracimMarketOpen()" aria-label="Araç Pazarı alım satım bölümünü aç">'+
+ '<span class="market108Icon">'+marketIcon()+'</span>'+
+ '<span class="market108Copy"><span class="market108Title">ARAÇ PAZARI <i>BETA</i></span>'+
+ '<span class="market108Desc">Satılık araçları incele · İlan ver</span></span>'+
+ '<span class="market108Chevron" aria-hidden="true">›</span></button>';
 }
 window.arasOpenAi=function(){
-  try{faultGuideModal()}catch(e){toast('Asistan şu anda açılamadı')};
+ try{faultGuideModal()}catch(e){toast('Aras şu anda açılamadı')};
 };
 welcome=function(){
- const s=oldWelcome();
- return s.replace('<div class="dailyQuickTitle"',arasHtml()+marketTeaser()+'<div class="dailyQuickTitle"');
+ return '<div class="proWelcome108">'+
+ '<section class="proWelcomeHero108"><span class="proWelcomeEyebrow108">ARACIM PRO GARJ</span>'+
+ '<div class="proWelcomeHeroRow108"><div><h2>Aracın, tüm bilgileriyle burada.</h2>'+
+ '<p>İlk aracını ekle; bakımını, giderlerini ve geçmişini tek yerden yönet.</p></div>'+
+ '<div class="proWelcomeHeroGraphic108" aria-hidden="true">'+marketIcon()+'</div></div>'+
+ '<button type="button" class="proWelcomeAdd108" onclick="openVehicle()">＋ Aracımı Ekle <span>→</span></button></section>'+
+ arasHtml()+marketTeaser()+dailyQuickHtml()+'</div>';
 };
 homeView=function(){
  const s=oldHome();
- return s.replace('<div class="n97AdArea">',arasHtml()+marketTeaser()+'<div class="n97AdArea">');
+ if(s.includes('aras108Dock'))return s;
+ const placement=arasHtml()+marketTeaser();
+ return s.includes('<div class="n97AdArea">')?
+ s.replace('<div class="n97AdArea">',placement+'<div class="n97AdArea">'):
+ s.replace('<div class="sectionHead">',placement+'<div class="sectionHead">');
 };
 moreAllServices=function(){
  const out=oldServices();
@@ -65,7 +97,8 @@ function emptyText(){
  if(!account.configured)return 'Çevrimiçi ilan servisi henüz etkin değil. İlan taslağını bu cihazda saklayabilirsin; başka kullanıcılara gösterilmez.';
  return lastError?'İlanlar yüklenemedi: '+lastError:'Henüz yayımlanmış ilan bulunamadı. İlk ilanını oluşturabilirsin.';
 }
-function marketCarSymbol(){return '<span class="marketCarSymbol" aria-hidden="true">🚘</span>'}
+function marketCarSymbol(){return '<span class="market108ListingCar" aria-hidden="true">'+marketIcon()+'</span>';}
+
 function listingCard(v){
  const uid=ready().uid||'';
  const mine=uid&&v.ownerId===uid;
