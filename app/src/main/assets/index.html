@@ -4464,6 +4464,13 @@ const MODEL_VARIANTS={
 ],
 'Chery|Tiggo 8 Pro':[
  {from:2022,to:2030,fuels:{'Benzin':['1.6 T-GDI']},trims:['Avantgarde','Excellent','Luxury']}
+],
+// Türkiye 2024-2025: Pro Max, Pro ile AYNI model değildir. Resmî Chery donanımları.
+'Chery|Tiggo 7 Pro Max':[
+ {from:2024,to:2025,fuels:{'Benzin':['1.6 T-GDI']},trims:['Intelligent','Exceptional']}
+],
+'Chery|Tiggo 8 Pro Max':[
+ {from:2024,to:2025,fuels:{'Benzin':['1.6 T-GDI']},trims:['Intelligent','Exceptional']}
 ]
 };
 const FUEL_STATIONS=['Opet','Shell','Petrol Ofisi','TotalEnergies','Aytemiz','Türkiye Petrolleri (TP)','Kadoil','Sunpet','Bağımsız / Diğer','Evde Şarj','Eşarj','ZES','Trugo','Voltrun','Diğer Şarj Noktası'];
@@ -4622,7 +4629,7 @@ function v115Load(){
 }
 function trimOptions(make,model='',year=0,engine=''){
  const r=variantRule(make,model,+year||0);
- return (r?.trims?.length?r.trims:(BRAND_TRIMS[make]||GENERIC_TRIMS)).slice().sort(azSort);
+ return (r?.trims||[]).slice().sort(azSort);
 }
 function staticModels(make){return (OFFLINE_MODELS[make]||[]).slice().sort(azSort)}
 function mergeModels(a,b){return [...new Set([...(a||[]),...(b||[])].filter(Boolean))].sort(azSort)}
@@ -4655,6 +4662,9 @@ function refreshDependentVehicleOptions(keep=true){
  const previous=keep?f.elements.engine.value:'';
  f.elements.engine.innerHTML=v115SafeList(engines,previous,
          engines.length?'Motor / versiyon seç':'Doğrulanmış motor bekleniyor');
+ // Model/yıl için tek doğrulanmış motor varsa boş açılır liste bırakma.
+ if(!f.elements.engine.value&&engines.length===1&&variantRule(make,model,year))
+     f.elements.engine.value=engines[0];
  const chosen=f.elements.engine.value;
  const inferred=chosen?fuelForEngine(make,model,year,chosen):'';
  if(inferred&&fuels.includes(inferred)){
@@ -4662,7 +4672,7 @@ function refreshDependentVehicleOptions(keep=true){
    f.elements.engine.innerHTML=v115SafeList(vehicleEngineOptions(make,model,year,inferred),chosen,'Motor / versiyon seç');
  }
  const previousTrim=keep?f.elements.trim.value:'';
- f.elements.trim.innerHTML=optList(trimOptions(make,model,year,chosen),previousTrim,'Paket / donanım seç');
+ f.elements.trim.innerHTML=v115SafeList(trimOptions(make,model,year,chosen),previousTrim,'Paket / donanım seç');
  v115Message();
 }
 function resetVehicleSpecsForSelection(){const f=selectedVehicleForm();if(!f)return;for(const key of ['engineCc','powerHp','torqueNm','zeroTo100','weightKg','trunkL','avgConsumptionL','fuelTankL','topSpeedKph','rangeKm'])if(f.elements[key])f.elements[key].value='';if(window._editingVehicle){for(const key of [...SPEC_CORE_KEYS,'engineCc','trunkL','fuelTankL','rangeKm','specSource','specUpdatedAt','specConfidence','specMatchedTrim','specError'])delete window._editingVehicle[key]}}
