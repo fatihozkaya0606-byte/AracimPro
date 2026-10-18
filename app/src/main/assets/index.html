@@ -4075,8 +4075,10 @@ function aracimOfflineSmallTalk(q){
     return 'Merhaba! Ben Aras. Aracındaki sorunu anlatabilirsin. Örneğin “Araç ışıklarda stop ediyor” ya da “Direksiyon 100 km hızda titriyor” diye yaz. Belirtileri birlikte daraltalım.';
   if(/^(nasilsin|ne haber|naber)(\s|$)/.test(text))
     return 'İyiyim, teşekkür ederim! Aracında bir sorun mu var, yoksa bakım ve kullanım hakkında mı konuşalım?';
-  if(/^(tesekkur|sag ol|eyvallah|sagol)(\s|$)/.test(text))
+  if(/^(tesekkur|tesekkurler|sag ol|eyvallah|sagol)(\s|$)/.test(text))
     return 'Rica ederim! Başka bir belirti veya araç sorusu varsa yazabilirsin.';
+  if(/^(yardim|ne yapabilirsin|neler biliyorsun|bana yardim et)(\s|$)/.test(text))
+    return 'Motor, vites, fren, direksiyon, LPG, lastik, klima veya bakım hakkında soru sorabilirsin. Belirtiyi ve ne zaman olduğunu yazarsan en olası nedenleri birlikte değerlendiririz.';
   if(/^(kimsin|adin ne|sen kimsin)(\s|$)/.test(text))
     return 'Ben Aras, Aracım Pro’nun araç danışmanıyım. Arıza belirtilerini ayırmana ve güvenli ilk kontrolleri bulmana yardımcı olurum; kesin teşhisi servis koyar.';
   return '';
