@@ -1,0 +1,44 @@
+name: Kapisma Arena - Android Test APK
+on:
+  push:
+    branches: [kapisma-arena-test-fix-20261018]
+    paths:
+      - 'kapisma-test/**'
+      - '.github/workflows/kapisma-test-build.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  android-debug-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Compile real Android debug APK
+        working-directory: kapisma-test
+        run: gradle :app:assembleDebug --no-daemon --stacktrace
+      - name: Verify APK and prepare download
+        run: |
+          mkdir -p kapisma-test-output
+          cp kapisma-test/app/build/outputs/apk/debug/app-debug.apk kapisma-test-output/KapismaArena-v0.7.1-Test-FIX.apk
+          ls -lh kapisma-test-output/KapismaArena-v0.7.1-Test-FIX.apk
+      - name: Upload APK build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: KapismaArena-v0.7.1-Test-FIX
+          path: kapisma-test-output/KapismaArena-v0.7.1-Test-FIX.apk
+      - name: Publish APK for direct download (test branch only)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add kapisma-test-output/KapismaArena-v0.7.1-Test-FIX.apk
+          git diff --cached --quiet || git commit -m "Test build: genuine Android APK [skip ci]"
+          git push origin HEAD:kapisma-arena-test-fix-20261018
