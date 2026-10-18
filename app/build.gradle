@@ -26,8 +26,8 @@ android {
         buildConfigField "String", "MARKET_API_URL", "\"${System.getenv('MARKET_API_URL') ?: ''}\""
         buildConfigField "String", "LIVE_DATA_API_URL", "\"${System.getenv('LIVE_DATA_API_URL') ?: ''}\""
         buildConfigField 'boolean', 'ADMOB_TEST_MODE', 'false'
-        versionCode 112
-        versionName '7.11.37'
+        versionCode 113
+        versionName '7.11.38'
     }
 
     signingConfigs {
@@ -82,6 +82,7 @@ dependencies {
     implementation 'androidx.core:core:1.18.0'
     implementation 'com.android.billingclient:billing:9.1.0'
     implementation 'com.google.mlkit:translate:17.0.3'
+    implementation 'com.google.mlkit:text-recognition:16.0.1'
     implementation platform('com.google.firebase:firebase-bom:34.19.0')
     implementation 'com.google.firebase:firebase-auth'
     implementation 'com.google.firebase:firebase-firestore'
