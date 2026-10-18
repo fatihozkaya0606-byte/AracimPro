@@ -1,0 +1,70 @@
+/* Aracim Pro V120: restore toolbar legibility in light mode, retain R8 3D layout. */
+body.r118Skin:not(.dark) #app .header.apHeader .apHeaderActions button.apAction,
+body.r118Skin:not(.dark) #app .header.apHeader .apHeaderActions .apProAction {
+ color:#ecfaff!important;-webkit-text-fill-color:#ecfaff!important;
+ background:linear-gradient(155deg,#1a5486,#061d3e)!important;
+ border:1px solid #458bc1!important;
+ opacity:1!important;
+ box-shadow:inset 0 2px #a6eaff61,0 4px 9px #0008,0 0 12px #0d8deb43!important;
+}
+body.r118Skin:not(.dark) #app .header.apHeader .apHeaderActions button .svgi,
+body.r118Skin:not(.dark) #app .header.apHeader .apHeaderActions button .svgi *,
+body.r118Skin:not(.dark) #app .header.apHeader .apHeaderActions button svg,
+body.r118Skin:not(.dark) #app .header.apHeader .apHeaderActions button svg *{
+ color:#f0fbff!important;stroke:#f0fbff!important;opacity:1!important;
+}
+body.r118Skin:not(.dark) #app .header.apHeader .apHeaderActions .apThemeAction {
+ color:#ffdc63!important;-webkit-text-fill-color:#ffdc63!important;
+}
+body.r118Skin:not(.dark) #app .header.apHeader .apBrandSub{
+ color:#bddbf1!important;opacity:1!important;
+}
+body.r118Skin:not(.dark) #app .header.apHeader .apBrandText {
+ color:#f6fcff!important;-webkit-text-fill-color:#f6fcff!important;
+}
+body.r118Skin:not(.dark) #app .header.apHeader .apBrandText b{
+ color:#48bbff!important;-webkit-text-fill-color:#48bbff!important;
+}
+body.r118Skin:not(.dark) #app .header.apHeader .apLiveMini.clock,
+body.r118Skin:not(.dark) #app .header.apHeader .apLiveMini.active{
+ color:#ebfaff!important;-webkit-text-fill-color:#e5f7ff!important;
+ background:#0c3051!important;border-color:#286b9e!important;
+}
+body.r118Skin:not(.dark) #app .header.apHeader .apLiveMini.active b{
+ color:#8affd0!important;-webkit-text-fill-color:#8affd0!important;
+}
+body.r118Skin:not(.dark) #app .header.apHeader .apMarketStrip7103{
+ background:linear-gradient(120deg,#09203c,#113e69 65%,#061c32)!important;
+ border-color:#257cbe!important;
+}
+body.r118Skin:not(.dark) #app .header.apHeader .apTickerUnit,
+body.r118Skin:not(.dark) #app .header.apHeader .apTickerPrice,
+body.r118Skin:not(.dark) #app .header.apHeader .apTickerUnit b{
+ color:#effaff!important;-webkit-text-fill-color:#effaff!important;
+}
+body.r118Skin:not(.dark) #app .header.apHeader .apMarketLive{
+ color:#70ffc7!important;-webkit-text-fill-color:#70ffc7!important;
+}
+/* Real 3D map: overlays above map are interactive and do not overlap bottom navbar/ads. */
+.ap120Route{display:flex;flex-direction:column;gap:11px;min-width:0;padding-bottom:12px;color:var(--ink)}
+.ap120Hero{padding:13px 14px;border:1px solid #3494d0;border-radius:17px;
+ background:linear-gradient(125deg,#051c35,#115488);color:#eafaff}
+.ap120Hero b{font-size:15px;font-weight:900;color:white}
+.ap120Hero p{font-size:11px;line-height:1.55;margin:6px 0 0;color:#bce4f6}
+.ap120MapBox{position:relative;height:min(49vh,405px);min-height:270px;border-radius:17px;overflow:hidden;
+ border:1px solid #3193d7;background:linear-gradient(145deg,#0b2f4f,#071a30);
+ box-shadow:inset 0 2px #fff4,0 7px 17px #0007}
+.ap120MapBox iframe{display:block;border:0;width:100%;height:100%;background:#071a2f}
+.ap120MapActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ap120MapActions button{min-height:43px;padding:8px 6px;font-size:11px!important;
+ border-radius:12px!important;white-space:normal}
+.ap120Destination{display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--ink);font-weight:800}
+.ap120Destination input{height:47px;min-width:0;width:100%;border:1px solid var(--line);
+ border-radius:13px;padding:10px 13px;box-sizing:border-box;background:var(--card);color:var(--ink);
+ font-size:13px}
+.ap120Status{border:1px solid var(--line);border-radius:12px;padding:11px;
+ background:var(--card);font-size:11px;color:var(--muted);line-height:1.55}
+.ap120Start{width:100%;min-height:50px;border-radius:15px;font-size:13px!important;font-weight:900}
+.ap120Foot{color:var(--muted);font-size:10px;line-height:1.55;margin:0}
+@media(max-width:375px){.ap120MapBox{height:37vh;min-height:245px}.ap120MapActions{gap:6px}}
+@media(prefers-reduced-motion:reduce){.ap120MapBox,.ap120MapActions button{transition:none!important}}

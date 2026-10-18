@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Aracım Pro 3D Harita</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.css">
+<style>
+*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;background:#09223c;color:#fff;font-family:system-ui,-apple-system,Arial,sans-serif}
+#map{position:absolute;inset:0}#status{position:absolute;top:12px;left:10px;right:10px;z-index:4;pointer-events:none;
+ background:#06213be8;color:#e9faff;border:1px solid #3495cb;border-radius:11px;
+ padding:10px;font-size:11px;line-height:1.4;max-width:90%;width:max-content;box-shadow:0 6px 15px #0008}
+#hint{position:absolute;bottom:24px;left:10px;right:10px;z-index:3;pointer-events:none;
+ display:flex;justify-content:center}
+#hint span{border:1px solid #2a90cd;border-radius:99px;padding:7px 10px;
+ background:#05213be8;color:#d5f0ff;font-size:10px;text-align:center}
+#bad{display:none;position:absolute;inset:45px 14px;z-index:4;padding:20px;
+ border-radius:15px;background:#07192df5;text-align:center;align-items:center;justify-content:center;flex-direction:column;gap:10px}
+#bad button{min-height:43px;border:1px solid #71c6fe;background:#115994;color:white;border-radius:12px;padding:9px 20px}
+.maplibregl-ctrl-attrib{font-size:8px!important}.maplibregl-ctrl-bottom-right{z-index:2}
+</style></head>
+<body><div id="map" role="application" aria-label="3 boyutlu etkileşimli harita"></div>
+<div id="status" role="status">3D harita yükleniyor…</div>
+<div id="hint"><span>Haritaya dokunarak hedef seç • İki parmakla döndür ve eğ</span></div>
+<div id="bad"><b>3D harita yüklenemedi.</b><small>İnternet, WebGL veya harita sunucusu erişimini kontrol et.</small><button type="button" onclick="location.reload()">Tekrar Dene</button></div>
+<script src="https://unpkg.com/maplibre-gl@5.9.0/dist/maplibre-gl.js"></script>
+<script>
+(function(){
+'use strict';
+let map=null,marker=null,failed=false;
+const status=document.getElementById('status'),bad=document.getElementById('bad');
+function inform(t){status.textContent=t;}
+function failure(reason){if(failed)return;failed=true;bad.style.display='flex';inform(reason||'Harita açılamadı');}
+const timeout=setTimeout(()=>{if(!map||!map.loaded())failure('Harita yüklenmesi gecikti.');},17000);
+try{
+ if(!window.maplibregl||!window.maplibregl.supported()){failure('Bu cihazda 3D WebGL desteklenmiyor.');return;}
+ map=new maplibregl.Map({
+  container:'map',style:'https://tiles.openfreemap.org/styles/bright',
+  center:[32.86,39.93],zoom:12.7,pitch:57,bearing:-16,
+  attributionControl:true,
+  canvasContextAttributes:{antialias:true},
+  maxPitch:75
+ });
+ map.addControl(new maplibregl.NavigationControl({visualizePitch:true,showCompass:true}),'bottom-left');
+ map.on('load',function(){
+  clearTimeout(timeout);inform('3D görünüm açık • Haritadan hedef seçebilirsin.');
+  try{
+   // OpenFreeMap vector building heights are not available in every area.
+   const style=map.getStyle(),src=(style.sources&&style.sources.openmaptiles)?'openmaptiles':
+     (style.sources&&style.sources.openfreemap)?'openfreemap':null;
+   let vectorSource=src;
+   if(!vectorSource){
+     try{map.addSource('ap120-openfreemap',{url:'https://tiles.openfreemap.org/planet',type:'vector'});vectorSource='ap120-openfreemap';}catch(_){}}
+   if(vectorSource){
+    const labels=style.layers.find(l=>l.type==='symbol'&&l.layout&&l.layout['text-field']);
+    const existing=style.layers.some(l=>l.type==='fill-extrusion');
+    if(!existing) map.addLayer({
+      id:'ap120-buildings',type:'fill-extrusion',source:vectorSource,'source-layer':'building',
+      minzoom:14.7,filter:['!=',['get','hide_3d'],true],
+      paint:{
+       'fill-extrusion-color':'#99bdd6',
+       'fill-extrusion-height':['interpolate',['linear'],['zoom'],14.7,0,16,['coalesce',['to-number',['get','render_height']],10]],
+       'fill-extrusion-base':['coalesce',['to-number',['get','render_min_height']],0],
+       'fill-extrusion-opacity':0.75
+      }
+    },labels?labels.id:undefined);
+   }
+  }catch(err){console.warn('3D binalar:',err);}
+ });
+ map.on('click',e=>{
+  const lng=e.lngLat.lng,lat=e.lngLat.lat;
+  if(marker)marker.remove();
+  marker=new maplibregl.Marker({color:'#148cf4'}).setLngLat([lng,lat]).addTo(map);
+  inform('Hedef seçildi. Aşağıdan Google Haritalar ile yol tarifi başlat.');
+  window.parent.postMessage({type:'ap120-destination',lat:lat,lon:lng},window.location.origin);
+ });
+ map.on('error',e=>{
+  // Ignore individual tile errors; don't mask a partially loaded, usable map.
+  console.warn('3D harita:',e.error);
+ });
+}catch(err){failure('Harita başlatılamadı.');}
+window.addEventListener('message',e=>{
+ if(e.origin!==window.location.origin||!e.data)return;
+ if(e.data.type==='ap120-tilt'&&map){map.easeTo({pitch:Math.max(0,Math.min(70,Number(e.data.pitch)||0)),duration:400});return;}
+ if(e.data.type!=='ap120-center')return;
+ const lat=Number(e.data.lat),lon=Number(e.data.lon);
+ if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180||!map)return;
+ map.easeTo({center:[lon,lat],zoom:16.5,pitch:60,bearing:-20,duration:450});
+ inform('Konum gösteriliyor. Haritadan hedef seçebilirsin.');
+});
+window.addEventListener('pagehide',()=>{clearTimeout(timeout);if(map){try{map.remove()}catch(_){}}});
+})();
+</script></body></html>
