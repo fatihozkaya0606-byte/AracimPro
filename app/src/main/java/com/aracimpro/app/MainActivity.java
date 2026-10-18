@@ -163,6 +163,10 @@ public class MainActivity extends Activity {
     private static final int LOCATION_PERMISSION_REQUEST = 7706;
     private static final int TAKE_PHOTO_REQUEST = 7707;
     private static final int ROAD_VIDEO_REQUEST = 7715;
+    private static final int ARAS_VOICE_REQUEST = 7716;
+    private static final int ENGINE_SOUND_REQUEST = 7717;
+    private android.speech.tts.TextToSpeech arasTts;
+    private android.net.Uri engineSoundLastUri;
 
     private static final String PREMIUM_PRODUCT_ID = "aracim_pro_premium";
     private static final String PREMIUM_MONTHLY_BASE = "aylik";
@@ -2356,6 +2360,96 @@ private void showLaunchSplash() {
             });
         }
 
+        @JavascriptInterface public void arasListen() {
+            runOnUiThread(() -> {
+                try {
+                    Intent speech = new Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+                    speech.putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                            android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+                    speech.putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE, "tr-TR");
+                    speech.putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT, "Aras'a sorunu anlat");
+                    speech.putExtra(android.speech.RecognizerIntent.EXTRA_MAX_RESULTS, 1);
+                    startActivityForResult(speech, ARAS_VOICE_REQUEST);
+                } catch (Exception e) {
+                    sendArasVoiceResult("", "Telefonda konuşma tanıma uygulaması bulunamadı");
+                }
+            });
+        }
+
+        private void sendArasVoiceResult(String text, String error) {
+            runOnUiThread(() -> {
+                if (webView != null)
+                    webView.evaluateJavascript("window.onArasVoiceRecognized && window.onArasVoiceRecognized("
+                            + JSONObject.quote(text == null ? "" : text) + ","
+                            + JSONObject.quote(error == null ? "" : error) + ")", null);
+            });
+        }
+
+        @JavascriptInterface public void arasSpeak(String text) {
+            if (text == null || text.trim().isEmpty()) return;
+            final String phrase = text.length() > 950 ? text.substring(0, 950) : text;
+            runOnUiThread(() -> {
+                try {
+                    if (arasTts == null) {
+                        arasTts = new android.speech.tts.TextToSpeech(MainActivity.this, status -> {
+                            if (status == android.speech.tts.TextToSpeech.SUCCESS && arasTts != null) {
+                                arasTts.setLanguage(new Locale("tr", "TR"));
+                                arasTts.setSpeechRate(0.96f);
+                                arasTts.speak(phrase, android.speech.tts.TextToSpeech.QUEUE_FLUSH,
+                                        null, "ARAS_USER_RESPONSE");
+                            }
+                        });
+                    } else {
+                        arasTts.speak(phrase, android.speech.tts.TextToSpeech.QUEUE_FLUSH,
+                                null, "ARAS_USER_RESPONSE");
+                    }
+                } catch (Exception e) {
+                    Toast.makeText(MainActivity.this, "Seslendirme başlatılamadı", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
+        @JavascriptInterface public void arasStopSpeak() {
+            runOnUiThread(() -> { try { if (arasTts != null) arasTts.stop(); } catch (Exception ignored) {} });
+        }
+
+        @JavascriptInterface public void recordEngineSound() {
+            runOnUiThread(() -> {
+                try {
+                    Intent intent = new Intent(android.provider.MediaStore.Audio.Media.RECORD_SOUND_ACTION);
+                    startActivityForResult(intent, ENGINE_SOUND_REQUEST);
+                } catch (Exception e) {
+                    sendEngineSoundResult(false, "Ses kayıt uygulaması bulunamadı");
+                }
+            });
+        }
+
+        private void sendEngineSoundResult(boolean ok, String detail) {
+            runOnUiThread(() -> {
+                if (webView != null)
+                    webView.evaluateJavascript("window.onEngineSoundRecorded && window.onEngineSoundRecorded("
+                            + ok + "," + JSONObject.quote(detail == null ? "" : detail) + ")", null);
+            });
+        }
+
+        @JavascriptInterface public void shareEngineSound() {
+            runOnUiThread(() -> {
+                if (engineSoundLastUri == null) {
+                    Toast.makeText(this, "Önce motor sesi kaydet", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                try {
+                    Intent share = new Intent(Intent.ACTION_SEND);
+                    share.setType("audio/*");
+                    share.putExtra(Intent.EXTRA_STREAM, engineSoundLastUri);
+                    share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    startActivity(Intent.createChooser(share, "Motor sesini paylaş"));
+                } catch (Exception e) {
+                    Toast.makeText(this, "Ses paylaşımı açılamadı", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
         @JavascriptInterface public void recordRoadVideo() {
             runOnUiThread(() -> {
                 try {
@@ -4284,6 +4378,7 @@ private void showLaunchSplash() {
         if (webView != null) webView.removeCallbacks(mrecAfterScroll);
         if(mrecAdView!=null){try{mrecAdView.destroy();}catch(Throwable ignored){} mrecAdView=null;}
         stopSpeedTrackingNative();
+        try { if (arasTts != null) { arasTts.stop(); arasTts.shutdown(); arasTts = null; } } catch (Exception ignored) {}
         try { if (locationManager != null && nearbyLocationListener != null) locationManager.removeUpdates(nearbyLocationListener); } catch (Throwable ignored) {}
         nearbyLocationListener = null;
         mainHandler.removeCallbacksAndMessages(null);
@@ -4314,6 +4409,21 @@ private void showLaunchSplash() {
             } catch (Exception e) { Toast.makeText(this, "Yedek dosyası okunamadı", Toast.LENGTH_SHORT).show(); }
         }
 
+        if (requestCode == ARAS_VOICE_REQUEST) {
+            String spoken = "";
+            if (resultCode == RESULT_OK && data != null) {
+                java.util.ArrayList<String> results =
+                        data.getStringArrayListExtra(android.speech.RecognizerIntent.EXTRA_RESULTS);
+                if (results != null && !results.isEmpty()) spoken = results.get(0);
+            }
+            sendArasVoiceResult(spoken, spoken.isEmpty() ? "Konuşma algılanamadı veya işlem iptal edildi" : "");
+        }
+        if (requestCode == ENGINE_SOUND_REQUEST) {
+            boolean ok = resultCode == RESULT_OK && data != null && data.getData() != null;
+            if (ok) engineSoundLastUri = data.getData();
+            sendEngineSoundResult(ok, ok ? "Motor ses kaydı hazır; paylaşabilirsin" :
+                    "Ses kaydı iptal edildi veya dosya alınamadı");
+        }
         if (requestCode == ROAD_VIDEO_REQUEST) {
             boolean ok = resultCode == RESULT_OK;
             String msg = ok ? "Video kamera uygulamasına kaydedildi" : "Video kaydı iptal edildi";
