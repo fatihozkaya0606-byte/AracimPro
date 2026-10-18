@@ -1,0 +1,6 @@
+plugins { id 'com.android.application' }
+android {
+  namespace 'com.kapismarena.testfix'
+  compileSdk 35
+  defaultConfig { applicationId 'com.kapismarena.testfix'; minSdk 24; targetSdk 28; versionCode 7; versionName '0.7.1-fix' }
+}
