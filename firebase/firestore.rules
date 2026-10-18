@@ -38,6 +38,120 @@ service cloud.firestore {
              && d.likes == 0;
     }
 
+
+    // Vehicle marketplace is public to browse, but publication requires
+    // email verification and strict ownership. Existing comments remain intact.
+    function verifiedSeller() {
+      return signedIn() && request.auth.token.email_verified == true;
+    }
+
+    function validMarketListing(d) {
+      return d.keys().hasOnly([
+        'make','model','year','km','price','city','fuel','transmission',
+        'description','publicPhone','ownerId','sellerName','status',
+        'createdAt','createdAtServer'
+      ]) && d.keys().hasAll([
+        'make','model','year','km','price','city','fuel','transmission',
+        'description','publicPhone','ownerId','sellerName','status',
+        'createdAt','createdAtServer'
+      ])
+      && d.ownerId == request.auth.uid
+      && d.status == 'active'
+      && d.make is string && d.make.size() >= 2 && d.make.size() <= 40
+      && d.model is string && d.model.size() >= 2 && d.model.size() <= 45
+      && d.city is string && d.city.size() >= 2 && d.city.size() <= 45
+      && validShortString(d.fuel,25)
+      && validShortString(d.transmission,25)
+      && d.description is string && d.description.size() >= 15 && d.description.size() <= 1200
+      && d.publicPhone is string && d.publicPhone.matches('^[0-9]{10,15}
+      allow read: if true;
+      allow create: if signedIn() && validComment(request.resource.data);
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    match /comment_reports/{reportId} {
+      allow create: if signedIn()
+                    && request.resource.data.keys().hasOnly([
+                         'commentId','reason','userId','createdAt','createdAtServer'
+                       ])
+                    && request.resource.data.commentId is string
+                    && request.resource.data.commentId.size() >= 1
+                    && request.resource.data.commentId.size() <= 180
+                    && request.resource.data.reason is string
+                    && request.resource.data.reason.size() >= 1
+                    && request.resource.data.reason.size() <= 300
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.createdAt is int
+                    && request.resource.data.createdAt > 0
+                    && request.resource.data.createdAtServer == request.time;
+
+      allow read, update, delete: if false;
+    }
+  }
+}
+)
+      && validShortString(d.sellerName,60) && d.sellerName.size() >= 2
+      && d.year is int && d.year >= 1970 && d.year <= 2027
+      && d.km is int && d.km >= 0 && d.km <= 2000000
+      && d.price is int && d.price >= 10000 && d.price <= 100000000
+      && d.createdAt is int && d.createdAt > 0
+      && d.createdAtServer == request.time;
+    }
+
+    match /vehicle_listings/{listingId} {
+      // Firestore queries must filter status == "active".
+      allow get, list: if resource.data.status == 'active'
+                       || (signedIn() && resource.data.ownerId == request.auth.uid);
+      allow create: if verifiedSeller() && validMarketListing(request.resource.data);
+      allow update: if verifiedSeller()
+        && resource.data.ownerId == request.auth.uid
+        && resource.data.status == 'active'
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.status == 'sold'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+      allow delete: if false;
+    }
+
+    match /vehicle_listing_reports/{reportId} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['listingId','reporterId','reason','createdAtServer'])
+        && request.resource.data.listingId is string
+        && request.resource.data.listingId.matches('^[A-Za-z0-9_-]{8,100}
+      allow read: if true;
+      allow create: if signedIn() && validComment(request.resource.data);
+      allow update: if false;
+      allow delete: if signedIn() && resource.data.userId == request.auth.uid;
+    }
+
+    match /comment_reports/{reportId} {
+      allow create: if signedIn()
+                    && request.resource.data.keys().hasOnly([
+                         'commentId','reason','userId','createdAt','createdAtServer'
+                       ])
+                    && request.resource.data.commentId is string
+                    && request.resource.data.commentId.size() >= 1
+                    && request.resource.data.commentId.size() <= 180
+                    && request.resource.data.reason is string
+                    && request.resource.data.reason.size() >= 1
+                    && request.resource.data.reason.size() <= 300
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.createdAt is int
+                    && request.resource.data.createdAt > 0
+                    && request.resource.data.createdAtServer == request.time;
+
+      allow read, update, delete: if false;
+    }
+  }
+}
+)
+        && request.resource.data.reporterId == request.auth.uid
+        && reportId == request.resource.data.listingId + '_' + request.auth.uid
+        && request.resource.data.reason == 'Yanıltıcı veya uygunsuz ilan'
+        && request.resource.data.createdAtServer == request.time;
+      allow read, update, delete: if false;
+    }
+
     match /vehicle_comments/{commentId} {
       allow read: if true;
       allow create: if signedIn() && validComment(request.resource.data);
