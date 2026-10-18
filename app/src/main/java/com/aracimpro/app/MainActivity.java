@@ -2309,6 +2309,52 @@ private void showLaunchSplash() {
             });
         }
 
+        // On-device ML Kit OCR. No receipt images are uploaded to Aracım Pro servers.
+        @JavascriptInterface public void scanReceiptText(String dataUrl) {
+            if (dataUrl == null || !dataUrl.startsWith("data:image/") ||
+                    dataUrl.length() > 5_000_000) {
+                sendReceiptOcrResult("", "Fiş fotoğrafı okunamadı veya fazla büyük");
+                return;
+            }
+            new Thread(() -> {
+                try {
+                    int comma = dataUrl.indexOf(',');
+                    if (comma < 0) throw new IllegalArgumentException("Geçersiz fotoğraf");
+                    byte[] bytes = android.util.Base64.decode(
+                            dataUrl.substring(comma + 1), android.util.Base64.DEFAULT);
+                    if (bytes.length > 3_500_000) throw new IllegalArgumentException("Fotoğraf büyük");
+                    android.graphics.Bitmap bmp = android.graphics.BitmapFactory.decodeByteArray(
+                            bytes, 0, bytes.length);
+                    if (bmp == null) throw new IllegalArgumentException("Fotoğraf çözümlenemedi");
+                    final com.google.mlkit.vision.text.TextRecognizer recognizer =
+                            com.google.mlkit.vision.text.TextRecognition.getClient(
+                            com.google.mlkit.vision.text.latin.TextRecognizerOptions.DEFAULT_OPTIONS);
+                    recognizer.process(
+                            com.google.mlkit.vision.common.InputImage.fromBitmap(bmp, 0))
+                            .addOnSuccessListener(result -> {
+                                sendReceiptOcrResult(result.getText(), "");
+                                recognizer.close();
+                            })
+                            .addOnFailureListener(error -> {
+                                sendReceiptOcrResult("", "Metin tanınamadı, elle girebilirsin");
+                                recognizer.close();
+                            });
+                } catch (Exception ex) {
+                    sendReceiptOcrResult("", "Fiş okunamadı, başka fotoğraf dene");
+                }
+            }).start();
+        }
+
+        private void sendReceiptOcrResult(String text, String error) {
+            runOnUiThread(() -> {
+                if (webView != null)
+                    webView.evaluateJavascript("window.onReceiptOcrResult && window.onReceiptOcrResult("
+                            + JSONObject.quote(text == null ? "" : text.substring(0,
+                                  Math.min(text.length(), 15000)))
+                            + "," + JSONObject.quote(error == null ? "" : error) + ")", null);
+            });
+        }
+
         @JavascriptInterface public void captureImage(String contextId) {
             runOnUiThread(() -> {
                 try {
