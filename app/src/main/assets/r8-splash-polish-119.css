@@ -1,0 +1,43 @@
+/* R8 V119: layout legibility and photo integration; no vehicle data/ad changes. */
+body.r118Skin.r8HomeMode .n97Dashboard{padding-bottom:calc(125px + env(safe-area-inset-bottom,0px))!important}
+body.r118Skin.r8HomeMode .n97Dashboard .n117Photo .n117PhotoFrame{
+  overflow:hidden;border-radius:17px;
+  -webkit-mask-image:radial-gradient(ellipse 91% 87% at 50% 52%,#000 64%,#000e 76%,transparent 100%);
+  mask-image:radial-gradient(ellipse 91% 87% at 50% 52%,#000 64%,#000e 76%,transparent 100%);
+}
+body.r118Skin.r8HomeMode .n97Dashboard .n117Photo .n117PhotoSharp{
+  -webkit-mask-image:none!important;mask-image:none!important;
+  object-fit:contain!important;object-position:center bottom!important;
+}
+body.r118Skin.r8HomeMode .n97Dashboard .n117Photo .n117Ambient{
+  filter:blur(25px) brightness(.35) saturate(1.18)!important;
+}
+body.r118Skin.r8HomeMode .n97Dashboard .n97Hero.n117Hero{
+  box-shadow:inset 0 1px #b4edff4c,inset 0 -4px 10px #021328,
+   0 7px 0 #001327,0 15px 26px #000a,0 0 16px #00aaff54!important;
+}
+body.r118Skin.r8HomeMode .n97Dashboard .n97StatLabel{
+  white-space:normal!important;text-overflow:clip!important;overflow:visible!important;
+  line-height:1.28!important;min-height:26px;font-size:clamp(9.2px,2.45vw,11.2px)!important;
+}
+body.r118Skin.r8HomeMode .n97Dashboard .n97Stat>strong{
+  margin-top:5px!important;
+}
+body.r118Skin.r8HomeMode .ap114Discovery{margin-bottom:22px!important}
+body.r118Skin.r8HomeMode .ap114MoreLink{
+  display:block!important;min-height:37px!important;
+  padding:13px 4px 5px!important;line-height:1.45!important;
+  white-space:normal!important;
+}
+body.r118Skin.r8HomeMode .ap116DockHeading,
+body.r118Skin.r8HomeMode .ap114DiscoveryTitle,
+body.r118Skin.r8HomeMode .ap113Head{flex-wrap:wrap}
+@media(max-width:370px){
+ body.r118Skin.r8HomeMode .n97Dashboard .n97StatLabel{font-size:9.2px!important}
+ body.r118Skin.r8HomeMode .n97Dashboard .n97Stats{gap:5px!important}
+ body.r118Skin.r8HomeMode .n97Dashboard .n97Stat{padding:9px 6px!important}
+ body.r118Skin.r8HomeMode .ap114DiscoveryGrid button{min-height:107px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ body.r118Skin .n97Hero,body.r118Skin .n117PhotoFrame{transition:none!important}
+}
