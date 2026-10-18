@@ -71,4 +71,13 @@ homeView=function(){
  s.replace('<div class="n97AdArea">',placement+'<div class="n97AdArea">'):
  s.replace('<div class="sectionHead">',placement+'<div class="sectionHead">');
 };
+// The initial HTML is rendered by the inline script BEFORE this file loads.
+// Refresh exactly once after overriding welcome/homeView so ARAS is visible
+// for both an empty garage and a vehicle-filled home screen.
+setTimeout(function(){
+  try{
+    if(typeof render==='function' && typeof current!=='undefined' && current==='home')
+      render();
+  }catch(e){console.warn('ARAS initial render',e)}
+},100);
 })();
