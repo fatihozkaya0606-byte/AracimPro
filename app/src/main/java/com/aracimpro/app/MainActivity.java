@@ -226,6 +226,7 @@ public class MainActivity extends Activity {
     private volatile boolean splashDismissAllowed = false;
     private android.widget.ProgressBar apLaunchProgressBar;
     private android.widget.TextView apLaunchProgressLabel;
+    private android.widget.LinearLayout apLaunchBrand;
     private Runnable apLaunchProgressTick;
     private AudioTrack launchAudioTrack;
     private Thread launchAudioThread;
@@ -304,6 +305,7 @@ public class MainActivity extends Activity {
                         bars.right,
                         Math.max(bars.bottom, ime.bottom)
                 );
+                updateSplashBottomInset(bars.bottom);
             } catch (Throwable ignored) {
                 applyWebMargins(0, fallbackTop, 0, fallbackBottom);
             }
@@ -364,7 +366,7 @@ public class MainActivity extends Activity {
                 super.onPageFinished(view, url);
                 pageReady = true;
                 if (apLaunchProgressBar != null) apLaunchProgressBar.setProgress(100);
-                if (apLaunchProgressLabel != null) apLaunchProgressLabel.setText("Yükleniyor • %100");
+                if (apLaunchProgressLabel != null) apLaunchProgressLabel.setText("HAZIR   %100");
                 hideLaunchSplashWhenReady();
                 if (mrecAdLoaded) notifyMrecJs(true);
             }
@@ -407,6 +409,20 @@ public class MainActivity extends Activity {
         if (bold) tv.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
         tv.setShadowLayer(12f, 0f, 2f, android.graphics.Color.argb(120, 0, 0, 0));
         return tv;
+    }
+
+private void updateSplashBottomInset(int bottomInset) {
+        if (apLaunchBrand == null) return;
+        android.view.ViewGroup.LayoutParams p = apLaunchBrand.getLayoutParams();
+        if (!(p instanceof android.widget.FrameLayout.LayoutParams)) return;
+        android.widget.FrameLayout.LayoutParams lp =
+                (android.widget.FrameLayout.LayoutParams) p;
+        int safe = Math.max(bottomInset, systemDimen("navigation_bar_height", dp(30)));
+        int target = safe + dp(22);
+        if (lp.bottomMargin != target) {
+            lp.bottomMargin = target;
+            apLaunchBrand.setLayoutParams(lp);
+        }
     }
 
 private void showLaunchSplash() {
@@ -466,10 +482,11 @@ private void showLaunchSplash() {
 
         android.widget.LinearLayout brand = new android.widget.LinearLayout(this);
         brand.setOrientation(android.widget.LinearLayout.VERTICAL);
-        brand.setPadding(dp(20), dp(20), dp(20), dp(26));
+        brand.setPadding(dp(20), dp(18), dp(20), dp(14));
         brand.setGravity(android.view.Gravity.BOTTOM | android.view.Gravity.CENTER_HORIZONTAL);
+        apLaunchBrand = brand;
 
-        android.widget.TextView title = apSplashText("Aracım Pro", 23f, android.graphics.Color.WHITE, true);
+        android.widget.TextView title = apSplashText("Aracım Pro", 26f, android.graphics.Color.WHITE, true);
         title.setLetterSpacing(-0.02f);
         title.setGravity(android.view.Gravity.CENTER);
         brand.addView(title);
@@ -477,7 +494,7 @@ private void showLaunchSplash() {
         android.widget.TextView sub = apSplashText("Akıllı sürüş • araç sağlığı • canlı yol verisi", 11.5f,
                 android.graphics.Color.parseColor("#B7CCE4"), false);
         sub.setGravity(android.view.Gravity.CENTER);
-        sub.setPadding(0, dp(6), 0, dp(14));
+        sub.setPadding(0, dp(7), 0, dp(18));
         brand.addView(sub);
 
         android.widget.ProgressBar bar = new android.widget.ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
@@ -493,12 +510,13 @@ private void showLaunchSplash() {
         if (pd != null) {
             try { pd.setTint(android.graphics.Color.parseColor("#2AA6FF")); } catch (Throwable ignored) {}
         }
-        android.widget.LinearLayout.LayoutParams blp = new android.widget.LinearLayout.LayoutParams(dp(190), dp(4));
+        android.widget.LinearLayout.LayoutParams blp = new android.widget.LinearLayout.LayoutParams(dp(238), dp(6));
         brand.addView(bar, blp);
-        android.widget.TextView percent = apSplashText("Yükleniyor • %0", 13f,
-                android.graphics.Color.parseColor("#D9F3FF"), true);
+        android.widget.TextView percent = apSplashText("HAZIRLANIYOR   %0", 12.5f,
+                android.graphics.Color.parseColor("#BDEAFF"), true);
         percent.setGravity(android.view.Gravity.CENTER);
-        percent.setPadding(0, dp(11), 0, 0);
+        percent.setLetterSpacing(0.10f);
+        percent.setPadding(0, dp(15), 0, 0);
         brand.addView(percent);
         apLaunchProgressLabel = percent;
 
@@ -506,9 +524,11 @@ private void showLaunchSplash() {
                 android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
                 android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
                 android.view.Gravity.BOTTOM);
+        brandLp.bottomMargin = systemDimen("navigation_bar_height", dp(36)) + dp(20);
         splash.addView(brand, brandLp);
 
         apPremiumSplashView = splash;
+        updateSplashBottomInset(lastInsetBottom);
         root.addView(splash, new android.widget.FrameLayout.LayoutParams(
                 android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
                 android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
@@ -530,7 +550,7 @@ private void showLaunchSplash() {
                 int progress = pageReady ? 100 : Math.min(95, (int)(elapsed * 95L / 3600L));
                 if (apLaunchProgressBar != null) apLaunchProgressBar.setProgress(progress);
                 if (apLaunchProgressLabel != null)
-                    apLaunchProgressLabel.setText("Yükleniyor • %" + progress);
+                    apLaunchProgressLabel.setText(pageReady ? "HAZIR   %100" : "HAZIRLANIYOR   %" + progress);
                 if (!apPremiumSplashHidden) apPremiumSplashHandler.postDelayed(this, 55L);
             }
         };
@@ -560,7 +580,7 @@ private void showLaunchSplash() {
             apPremiumSplashHandler.removeCallbacks(apLaunchProgressTick);
         if (apLaunchProgressBar != null) apLaunchProgressBar.setProgress(100);
         if (apLaunchProgressLabel != null)
-            apLaunchProgressLabel.setText("Yükleniyor • %100");
+            apLaunchProgressLabel.setText("HAZIR   %100");
 
         final android.view.ViewGroup root = findViewById(android.R.id.content);
         final android.view.View splash = apPremiumSplashView;
@@ -581,6 +601,7 @@ private void showLaunchSplash() {
             apPremiumSplashView = null;
             apLaunchProgressBar = null;
             apLaunchProgressLabel = null;
+            apLaunchBrand = null;
             apLaunchProgressTick = null;
             if (root != null) apSetAdViewsVisible(root, true);
         }).start();
