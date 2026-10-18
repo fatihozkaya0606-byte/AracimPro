@@ -1,0 +1,38 @@
+/* Driver tools v113 - compact buttons do not cover navigation or ad placements. */
+.ap113Quick{margin:14px 0 12px;padding:13px 12px 12px;border:1px solid rgba(57,154,220,.4);
+ background:linear-gradient(130deg,#071e36,#10446b);border-radius:18px;box-shadow:0 8px 20px rgba(0,29,63,.12);color:#f5fbff}
+.ap113Head{display:flex;justify-content:space-between;align-items:center;gap:6px;margin:0 0 11px}
+.ap113Head b{font-size:12px;letter-spacing:.2px;color:#eaf8ff}.ap113Head small{font-size:10px;color:#92c9eb}
+.ap113GridQuick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ap113GridQuick button{min-width:0;min-height:76px;display:flex;flex-direction:column;align-items:center;gap:4px;
+ background:rgba(1,13,30,.55);border:1px solid rgba(49,155,230,.18);border-radius:13px;color:#ecf8ff;
+ padding:9px 4px 7px;cursor:pointer;text-align:center}
+.ap113GridQuick button span{font-size:23px}.ap113GridQuick button b{font-size:11px}
+.ap113GridQuick button small{font-size:9px;line-height:1.2;color:#99c1df}
+.ap113Page{max-width:100%;overflow-wrap:anywhere;padding:0 0 12px}
+.ap113Hero{background:linear-gradient(135deg,#092d53,#1a63a6);padding:14px 15px;border-radius:16px;
+ color:#f3fbff;font-size:12px;line-height:1.65;margin:0 0 12px;border:1px solid rgba(116,211,254,.25)}
+.ap113Hero b{color:#dcf8ff;font-weight:900}.ap113Hero p{margin:7px 0 0}
+.ap113Page label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:800;color:var(--ink);min-width:0}
+.ap113Page input,.ap113Page select,.ap113Page textarea{width:100%;box-sizing:border-box;border:1px solid var(--line);
+ border-radius:12px;background:var(--card);color:var(--ink);font-size:14px;min-height:45px;padding:9px 12px}
+.ap113Page textarea{min-height:85px}
+.ap113Page .ap113Grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
+.ap113Page .ap113Grid button{font-size:12px;min-height:52px;line-height:1.3;padding:8px;border-radius:12px}
+.ap113Notice{border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--muted);
+ font-size:11px;line-height:1.6;margin:12px 0}
+.ap113Warning{border:1px solid #9f4e42;border-radius:13px;padding:13px;
+ background:rgba(220,77,57,.09);font-size:12px;color:var(--ink);line-height:1.5;margin-bottom:13px}
+.ap113Warning p{margin:5px 0 0}
+.ap113Guide details{margin:8px 0;border:1px solid var(--line);border-radius:10px;padding:10px 12px;
+ font-size:11px;line-height:1.6;background:var(--card);color:var(--ink)}
+.ap113Guide summary{font-size:12px;cursor:pointer;font-weight:850}
+.ap113Timer{font-size:42px;text-align:center;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:1px;
+ color:#36a7ec;margin:15px 0;padding:14px;background:rgba(26,116,185,.09);border:1px solid rgba(30,153,240,.25);
+ border-radius:18px}
+.ap113Raw summary{cursor:pointer;font-size:11px;color:var(--muted)}.ap113Raw pre{overflow:auto;
+ white-space:pre-wrap;word-break:break-word;font-size:10px;max-height:180px}
+.ap113Page button.wide{margin:10px 0 0;min-height:48px;font-size:13px}
+@media(max-width:370px){.ap113GridQuick{gap:5px}.ap113GridQuick button b{font-size:10px}
+ .ap113Page .ap113Grid{grid-template-columns:1fr}.ap113Timer{font-size:35px}}
+@media(prefers-reduced-motion:reduce){.ap113Quick,.ap113Page{scroll-behavior:auto}}
