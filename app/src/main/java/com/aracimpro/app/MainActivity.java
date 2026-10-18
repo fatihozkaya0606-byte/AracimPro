@@ -1876,8 +1876,7 @@ public class MainActivity extends Activity {
         }
         if ("Hyundai".equalsIgnoreCase(make) && (m.equalsIgnoreCase("Accent Era")||m.equalsIgnoreCase("Accent Blue"))) set.add("Accent");
         if ("Citroen".equalsIgnoreCase(make)) set.add(m.replace("C-", "C"));
-        if (m.toLowerCase(Locale.ROOT).contains("pro max")) set.add(m.replaceAll("(?i)\\s*Pro Max", ""));
-        if (m.toLowerCase(Locale.ROOT).contains("pro")) set.add(m.replaceAll("(?i)\\s*Pro", ""));
+        // "Pro" ve "Pro Max" farklı araçlardır; bu takıları kaldırmak yanlış eşleşme yaratır.
         return new java.util.ArrayList<>(set);
     }
 
@@ -1921,7 +1920,28 @@ public class MainActivity extends Activity {
         Exception last=null; for(String q:makeCandidates(make)){try{JSONObject r=otoGet("/brands?q="+URLEncoder.encode(q,"UTF-8")+"&offset=0");JSONObject b=bestNamed(r.optJSONArray("data"),q);if(b!=null)return b;}catch(Exception e){last=e;}Thread.sleep(220);} if(last!=null)throw last; throw new IllegalStateException("Marka bulunamadı: "+make);
     }
     private JSONObject findOtoModel(int brandId,String make,String model)throws Exception{
-        Exception last=null; for(String q:modelCandidates(make,model)){try{JSONObject r=otoGet("/models?brand_id="+brandId+"&q="+URLEncoder.encode(q,"UTF-8")+"&offset=0");JSONObject m=bestNamed(r.optJSONArray("data"),q);if(m!=null)return m;}catch(Exception e){last=e;}Thread.sleep(220);} if(last!=null)throw last; throw new IllegalStateException("Model bulunamadı: "+model);
+        // OtoAPI'deki "Tiggo 8 Pro" kaydı asla "Tiggo 8 Pro Max" olarak seçilmemeli.
+        final boolean exactSuffix = (" " + normalizeApiText(model) + " ").contains(" pro ");
+        final String wanted = compactApiText(model);
+        Exception last=null;
+        for(String q:modelCandidates(make,model)){
+            try{
+                JSONObject r=otoGet("/models?brand_id="+brandId+"&q="+URLEncoder.encode(q,"UTF-8")+"&offset=0");
+                JSONArray data=r.optJSONArray("data");
+                if(exactSuffix){
+                    if(data!=null)for(int i=0;i<data.length();i++){
+                        JSONObject candidate=data.optJSONObject(i);
+                        if(candidate!=null&&wanted.equals(compactApiText(candidate.optString("name",""))))return candidate;
+                    }
+                } else {
+                    JSONObject m=bestNamed(data,q);
+                    if(m!=null)return m;
+                }
+            }catch(Exception e){last=e;}
+            Thread.sleep(220);
+        }
+        if(last!=null)throw last;
+        throw new IllegalStateException("OtoAPI'de birebir model bulunamadı: "+model);
     }
 
     private static double[] numbersIn(String raw){java.util.ArrayList<Double> vals=new java.util.ArrayList<>();if(raw==null)return new double[0];java.util.regex.Matcher m=java.util.regex.Pattern.compile("(?<![A-Za-z0-9])(-?\\d+(?:[\\.,]\\d+)?)").matcher(raw);while(m.find()&&vals.size()<6){try{vals.add(Double.parseDouble(m.group(1).replace(',','.')));}catch(Exception ignored){}}double[] out=new double[vals.size()];for(int i=0;i<vals.size();i++)out[i]=vals.get(i);return out;}
