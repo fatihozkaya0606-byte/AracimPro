@@ -164,7 +164,7 @@ function damageEntries114(){
  const v=activeVehicle();return (state.prefs.ap114Damage||[]).filter(x=>v&&x.vehicleId===v.id);
 }
 window.damageMap114=function(piece){
- if(!owner114())return;
+ if(!activeVehicle()){requireVehicle('Araç Hasar Haritası');return}
  selectedPiece114=piece||selectedPiece114||DAMAGE_PIECES114[0][0];
  const entries=damageEntries114(),found=entries.filter(x=>x.part===selectedPiece114).sort((a,b)=>b.date.localeCompare(a.date));
  const imgKey='ap114_photo_'+activeVehicle().id+'_'+selectedPiece114;
