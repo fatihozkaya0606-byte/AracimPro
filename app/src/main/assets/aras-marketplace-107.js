@@ -7,20 +7,35 @@ const oldWelcome=welcome,oldHome=homeView,oldServices=moreAllServices;
 /* V108: ARAS is a small animated companion, not an oversized promotion card.
    The icon is an original SVG drawn in app; no external image or brand art. */
 function arasArt(){
- return '<svg class="aras108Car" viewBox="0 0 116 105" role="img" aria-label="Aras hareketli mini araç">'+
- '<defs><linearGradient id="aras108Paint" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#b5f6ff"/><stop offset=".22" stop-color="#4cc8ff"/><stop offset=".68" stop-color="#0d70cc"/><stop offset="1" stop-color="#062c76"/></linearGradient>'+
- '<linearGradient id="aras108Wind" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#0b3265"/><stop offset="1" stop-color="#031121"/></linearGradient>'+
- '<linearGradient id="aras108Lamp" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff"/><stop offset="1" stop-color="#76eaff"/></linearGradient></defs>'+
- '<ellipse cx="58" cy="96" rx="40" ry="7" fill="#0097ed" opacity=".26"/>'+
- '<path d="M20 61L31 41Q36 29 49 26L67 26Q80 29 85 41L96 61L99 82Q97 90 90 91H26Q19 90 17 82Z" fill="url(#aras108Paint)" stroke="#b9f5ff" stroke-width="1.5"/>'+
- '<path d="M35 48Q38 36 49 34H67Q78 36 81 48L87 59H29Z" fill="url(#aras108Wind)" stroke="#56b8ed" stroke-width="1.3"/>'+
- '<path class="aras108Eyes" d="M40 51Q45 47 50 51M66 51Q71 47 76 51" stroke="#97edff" fill="none" stroke-width="4.7" stroke-linecap="round"/>'+
- '<path d="M28 69L43 72L40 79L26 77Z" fill="url(#aras108Lamp)"/><path d="M88 69L73 72L76 79L90 77Z" fill="url(#aras108Lamp)"/>'+
- '<path d="M51 74Q58 79 65 74" stroke="#d4f9ff" stroke-width="2.5" fill="none" stroke-linecap="round"/>'+
- '<path d="M25 86H91" stroke="#0b3a75" stroke-width="3"/>'+
- '<rect x="25" y="88" width="16" height="9" rx="3" fill="#0a2044"/><rect x="75" y="88" width="16" height="9" rx="3" fill="#0a2044"/>'+
- '<path d="M43 29Q58 23 73 29" fill="none" stroke="#e4faff" opacity=".64" stroke-width="2.1"/>'+
- '<path d="M58 15V22" stroke="#7feaff" stroke-width="2.5" stroke-linecap="round"/><circle class="aras108Radar" cx="58" cy="13" r="4.5" fill="#71efff"/></svg>';
+ return '<svg class="aras109Robot" viewBox="0 0 130 150" aria-hidden="true">'+
+ '<defs>'+
+ '<radialGradient id="aras109Shell" cx=".29" cy=".19" r=".88"><stop stop-color="#b4eaff"/><stop offset=".26" stop-color="#4bbbee"/><stop offset=".52" stop-color="#1266bd"/><stop offset=".83" stop-color="#091f52"/><stop offset="1" stop-color="#020917"/></radialGradient>'+
+ '<linearGradient id="aras109Chrome" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset=".18" stop-color="#b9d6f3"/><stop offset=".49" stop-color="#4e89bf"/><stop offset=".69" stop-color="#f5fcff"/><stop offset="1" stop-color="#23537d"/></linearGradient>'+
+ '<radialGradient id="aras109Lens"><stop stop-color="#ddfaff"/><stop offset=".24" stop-color="#45c8ff"/><stop offset=".51" stop-color="#0877e0"/><stop offset=".73" stop-color="#092f78"/><stop offset="1" stop-color="#02132a"/></radialGradient>'+
+ '<linearGradient id="aras109Visor" x1="0" y1="0" x2=".7" y2="1"><stop stop-color="#123f77"/><stop offset=".4" stop-color="#040e24"/><stop offset=".9" stop-color="#081b41"/><stop offset="1" stop-color="#0b3261"/></linearGradient>'+
+ '<radialGradient id="aras109Glow"><stop stop-color="#33bfff" stop-opacity=".6"/><stop offset="1" stop-color="#168cff" stop-opacity="0"/></radialGradient></defs>'+
+ '<ellipse cx="62" cy="143" rx="51" ry="7" fill="#051329" opacity=".45"/>'+
+ '<path d="M37 104L23 115L23 130L42 130L51 118" fill="url(#aras109Shell)" stroke="#54c6fa" stroke-width="2"/>'+
+ '<path d="M87 104L106 115L109 130L92 131L79 116" fill="url(#aras109Shell)" stroke="#54c6fa" stroke-width="2"/>'+
+ '<path d="M41 112Q30 111 30 122L30 143L53 143L57 122M73 122L78 143L99 143L100 121Q97 111 87 111" fill="url(#aras109Chrome)" stroke="#19568c" stroke-width="2"/>'+
+ '<path d="M34 107Q64 97 94 107L103 126Q103 140 90 144H40Q29 141 28 129Z" fill="url(#aras109Shell)" stroke="#7ddbff" stroke-width="2.5"/>'+
+ '<path d="M48 115Q65 105 82 115L84 131L65 138L46 131Z" fill="#0a2755" stroke="#51bdf1" stroke-width="1.3"/>'+
+ '<path d="M58 117L70 117L75 127L64 134L54 127Z" fill="#19aaff"/><path d="M60 122H69L65 130Z" fill="#d6faff"/>'+
+ '<rect x="10" y="43" width="20" height="46" rx="10" fill="url(#aras109Chrome)" stroke="#65bbee" stroke-width="2"/>'+
+ '<rect x="102" y="43" width="20" height="46" rx="10" fill="url(#aras109Chrome)" stroke="#65bbee" stroke-width="2"/>'+
+ '<path d="M16 68Q9 42 28 24Q42 8 66 9Q92 8 105 29Q115 46 113 69L104 96Q91 107 66 108Q39 108 24 95Z" fill="url(#aras109Chrome)" stroke="#70d7ff" stroke-width="2"/>'+
+ '<path d="M26 56Q25 25 60 21Q101 18 105 54L101 82Q92 99 65 100Q38 99 29 82Z" fill="url(#aras109Visor)" stroke="#2c7bad" stroke-width="2"/>'+
+ '<path d="M37 34Q61 23 85 33" fill="none" stroke="#76d7ff" stroke-width="2" opacity=".65"/>'+
+ '<ellipse cx="46" cy="62" rx="19" ry="22" fill="url(#aras109Glow)"/><ellipse cx="84" cy="62" rx="19" ry="22" fill="url(#aras109Glow)"/>'+
+ '<ellipse class="aras109Eye" cx="47" cy="62" rx="13" ry="16" fill="url(#aras109Lens)" stroke="#7de5ff" stroke-width="2"/>'+
+ '<ellipse class="aras109Eye" cx="83" cy="62" rx="13" ry="16" fill="url(#aras109Lens)" stroke="#7de5ff" stroke-width="2"/>'+
+ '<ellipse cx="43" cy="57" rx="4" ry="5" fill="#f5ffff"/><ellipse cx="79" cy="57" rx="4" ry="5" fill="#f5ffff"/>'+
+ '<ellipse cx="51" cy="70" rx="2" ry="3" fill="#89eaff" opacity=".9"/><ellipse cx="87" cy="70" rx="2" ry="3" fill="#89eaff" opacity=".9"/>'+
+ '<path d="M51 83Q65 92 79 83" stroke="#e6faff" fill="none" stroke-width="3" stroke-linecap="round"/>'+
+ '<path d="M56 15V8" stroke="#8beaff" stroke-width="3"/><circle class="aras109Signal" cx="56" cy="7" r="5" fill="#87f5ff"/>'+
+ '<circle cx="114" cy="110" r="10" fill="url(#aras109Chrome)" stroke="#5baeee" stroke-width="2"/>'+
+ '<path d="M112 102L117 92M119 105L126 97M121 111L129 109" stroke="#cbf3ff" stroke-width="4" stroke-linecap="round"/>'+
+ '</svg>';
 }
 function arasHtml(){
  return '<div class="aras108Dock" role="group" aria-label="Aras, Aracım Pro yapay zekâ asistanı">'+
@@ -33,15 +48,9 @@ function arasHtml(){
  '</button></div>';
 }
 function marketIcon(){
- return '<svg class="market108Car" viewBox="0 0 96 64" aria-hidden="true">'+
- '<defs><linearGradient id="market108Metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#cfeaff"/><stop offset=".48" stop-color="#70bbea"/><stop offset="1" stop-color="#207cbd"/></linearGradient></defs>'+
- '<path d="M7 41L17 36L29 20Q33 15 43 15H64Q73 16 78 25L87 37L92 40V52Q90 56 85 56H12Q7 55 7 51Z" fill="url(#market108Metal)" stroke="#aeeaff" stroke-width="1.3"/>'+
- '<path d="M34 22H64Q70 22 74 29L78 37H24Z" fill="#0a2850" stroke="#4f94c7" stroke-width="1"/>'+
- '<path d="M48 22V37" stroke="#7bbfe9" stroke-width="1.4"/>'+
- '<path d="M12 42H26" stroke="#e8fdff" stroke-width="4" stroke-linecap="round"/><path d="M74 42H87" stroke="#e8fdff" stroke-width="4" stroke-linecap="round"/>'+
- '<circle cx="25" cy="53" r="8" fill="#0a1932" stroke="#9ed6f3" stroke-width="2"/><circle cx="73" cy="53" r="8" fill="#0a1932" stroke="#9ed6f3" stroke-width="2"/>'+
- '<circle cx="25" cy="53" r="3" fill="#96cfea"/><circle cx="73" cy="53" r="3" fill="#96cfea"/></svg>';
+ return '<span class="market109Photo" aria-label="Gerçek otomobil fotoğrafı"><img src="r8ui/market.jpg" alt="Otomobil" loading="lazy"></span>';
 }
+
 function marketTeaser(){
  return '<button type="button" class="market108Link" onclick="aracimMarketOpen()" aria-label="Araç Pazarı alım satım bölümünü aç">'+
  '<span class="market108Icon">'+marketIcon()+'</span>'+
@@ -59,7 +68,7 @@ welcome=function(){
  '<p>İlk aracını ekle; bakımını, giderlerini ve geçmişini tek yerden yönet.</p></div>'+
  '<div class="proWelcomeHeroGraphic108" aria-hidden="true">'+marketIcon()+'</div></div>'+
  '<button type="button" class="proWelcomeAdd108" onclick="openVehicle()">＋ Aracımı Ekle <span>→</span></button></section>'+
- arasHtml()+marketTeaser()+dailyQuickHtml()+'</div>';
+ arasHtml()+marketTeaser()+apMrecCardHtml()+dailyQuickHtml()+'</div>';
 };
 homeView=function(){
  const s=oldHome();
