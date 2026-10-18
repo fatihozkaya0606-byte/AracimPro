@@ -2435,7 +2435,7 @@ private void showLaunchSplash() {
         @JavascriptInterface public void shareEngineSound() {
             runOnUiThread(() -> {
                 if (engineSoundLastUri == null) {
-                    Toast.makeText(this, "Önce motor sesi kaydet", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Önce motor sesi kaydet", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 try {
@@ -2445,7 +2445,7 @@ private void showLaunchSplash() {
                     share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                     startActivity(Intent.createChooser(share, "Motor sesini paylaş"));
                 } catch (Exception e) {
-                    Toast.makeText(this, "Ses paylaşımı açılamadı", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Ses paylaşımı açılamadı", Toast.LENGTH_SHORT).show();
                 }
             });
         }
@@ -4416,13 +4416,18 @@ private void showLaunchSplash() {
                         data.getStringArrayListExtra(android.speech.RecognizerIntent.EXTRA_RESULTS);
                 if (results != null && !results.isEmpty()) spoken = results.get(0);
             }
-            sendArasVoiceResult(spoken, spoken.isEmpty() ? "Konuşma algılanamadı veya işlem iptal edildi" : "");
+            if (webView != null) webView.evaluateJavascript(
+                    "window.onArasVoiceRecognized && window.onArasVoiceRecognized(" +
+                    JSONObject.quote(spoken) + "," +
+                    JSONObject.quote(spoken.isEmpty() ? "Konuşma algılanamadı veya işlem iptal edildi" : "") + ")", null);
         }
         if (requestCode == ENGINE_SOUND_REQUEST) {
             boolean ok = resultCode == RESULT_OK && data != null && data.getData() != null;
             if (ok) engineSoundLastUri = data.getData();
-            sendEngineSoundResult(ok, ok ? "Motor ses kaydı hazır; paylaşabilirsin" :
-                    "Ses kaydı iptal edildi veya dosya alınamadı");
+            if (webView != null) webView.evaluateJavascript(
+                    "window.onEngineSoundRecorded && window.onEngineSoundRecorded(" +
+                    ok + "," + JSONObject.quote(ok ? "Motor ses kaydı hazır; paylaşabilirsin" :
+                    "Ses kaydı iptal edildi veya dosya alınamadı") + ")", null);
         }
         if (requestCode == ROAD_VIDEO_REQUEST) {
             boolean ok = resultCode == RESULT_OK;
