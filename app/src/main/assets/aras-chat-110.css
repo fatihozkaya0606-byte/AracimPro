@@ -1,0 +1,27 @@
+/* Aracım Pro V110 - polished, compact Aras chat without hiding the input */
+.aiIntro{background:linear-gradient(128deg,#073255,#194994 55%,#2252ac)!important;color:#f7fbff!important;
+  padding:16px!important;border:1px solid rgba(89,192,255,.42)!important;border-radius:18px!important;
+  box-shadow:0 9px 23px rgba(0,59,142,.16)!important;margin-bottom:12px!important}
+.aiIntro b{font-size:16px!important;font-weight:900!important;letter-spacing:-.2px}
+.aiIntro small{display:block;font-size:11px!important;line-height:1.5!important;color:#d1e7ff!important;margin-top:8px!important}
+.aiIntro .aiVehicle{margin-top:10px!important}
+.aras110Mode{display:inline-flex;align-items:center;gap:5px;vertical-align:middle;border-radius:999px;
+ padding:5px 8px;background:rgba(2,20,41,.40);border:1px solid rgba(150,219,255,.45);
+ font-size:9px;font-weight:900;color:#b9f1ff;margin:0 0 0 8px;line-height:1.2}
+.aiChat{max-height:44vh!important;gap:11px!important;scroll-behavior:smooth;padding:6px 1px 14px!important}
+.aiBubble.assistant{border-radius:15px 15px 15px 4px!important;line-height:1.55!important;
+ box-shadow:0 8px 18px rgba(3,23,48,.08)}
+.aiBubble.user{border-radius:15px 15px 4px 15px!important;line-height:1.55!important}
+.aiComposer{position:sticky;bottom:0;z-index:5;border-radius:17px!important;
+ background:#eef6ff!important;padding:7px!important;box-shadow:0 5px 16px rgba(0,39,83,.1)!important;
+ display:flex!important;align-items:flex-end!important;gap:7px!important}
+.aiComposer textarea{min-height:47px!important;max-height:110px!important;line-height:1.45!important;background:#fff!important;color:#0b2541!important;
+ font-size:13px!important;border:1px solid #c6daed!important;border-radius:12px!important}
+.aiComposer button{min-width:48px!important;min-height:48px!important}
+.aras110OfflineNote{color:#a2d8ff;font-weight:750;font-size:11px;margin-bottom:9px;
+ border-bottom:1px solid rgba(116,165,220,.28);padding:3px 0 8px}
+.aras110Friendly{line-height:1.65;color:#eaf7ff;font-size:13px;padding:3px 0 7px}
+.aiErrorDetails{font-size:10px;line-height:1.5;margin:12px 0 0;color:#b7cadf}
+.aiErrorDetails summary{cursor:pointer;text-decoration:underline}
+@media(max-width:390px){.aras110Mode{display:flex;width:fit-content;margin:8px 0 0}.aiIntro b{font-size:15px!important}}
+@media(prefers-reduced-motion:reduce){.aiChat{scroll-behavior:auto}}
