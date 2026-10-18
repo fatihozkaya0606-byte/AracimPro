@@ -337,3 +337,37 @@ body.r118Skin.r8HomeMode .ap116Dock::before{
  body.r118Skin #app .ap114DiscoveryGrid button,
  body.r118Skin #app .ap116DockScroll button{transition:none!important}
 }
+/* Pictograms are live SVG elements in interactive buttons, not screenshot slices. */
+body.r118Skin .r118PictogramWrap svg{width:31px;height:31px;stroke:#c7f2ff;filter:drop-shadow(0 2px 1px #000a) drop-shadow(0 0 5px #42c5ff);overflow:visible}
+body.r118Skin .ap116DockScroll button:nth-child(1) span{
+ background:radial-gradient(circle at 28% 15%,#ffaea788,transparent 50%),linear-gradient(145deg,#bc4958,#511638)!important;
+ border-color:#ff728b!important;box-shadow:inset 0 2px #fff9,0 5px 0 #31091c,0 9px 12px #0009,0 0 14px #ff5478a0!important
+}
+body.r118Skin .ap116DockScroll button:nth-child(2) span{
+ background:radial-gradient(circle at 28% 15%,#a7ffe888,transparent 50%),linear-gradient(145deg,#20a88b,#06554f)!important;
+ border-color:#5affc9!important;box-shadow:inset 0 2px #fff9,0 5px 0 #05362e,0 9px 12px #0009,0 0 14px #34ffa4b2!important
+}
+body.r118Skin .ap116DockScroll button:nth-child(3) span{
+ background:radial-gradient(circle at 28% 15%,#fff4adbb,transparent 50%),linear-gradient(145deg,#e8a62e,#875011)!important;
+ border-color:#ffd66f!important;box-shadow:inset 0 2px #fff9,0 5px 0 #4a2e0c,0 9px 12px #0009,0 0 14px #ffaf32b3!important
+}
+body.r118Skin .ap116DockScroll button:nth-child(4) span{
+ background:radial-gradient(circle at 28% 15%,#7fecffba,transparent 50%),linear-gradient(145deg,#087fda,#073563)!important;
+ border-color:#58daff!important
+}
+body.r118Skin .ap116DockScroll button:nth-child(5) span{
+ background:radial-gradient(circle at 28% 15%,#e6bcff99,transparent 50%),linear-gradient(145deg,#9e58d2,#47216f)!important;
+ border-color:#b37df1!important
+}
+body.r118Skin .ap113GridQuick button:nth-child(2) span,
+body.r118Skin .ap114DiscoveryGrid button:nth-child(3) span{
+ background:linear-gradient(145deg,#ffcf78,#ae6608 55%,#533609)!important;
+ border-color:#ffe397!important;
+ box-shadow:inset 0 2px #fff9,0 5px 0 #503307,0 8px 10px #000a,0 0 14px #ffb7268a!important
+}
+body.r118Skin .ap113GridQuick button:nth-child(3) span,
+body.r118Skin .ap114DiscoveryGrid button:nth-child(4) span{
+ background:linear-gradient(145deg,#ff8b95,#b82145 60%,#4b1226)!important;
+ border-color:#ff8bad!important;
+ box-shadow:inset 0 2px #fff9,0 5px 0 #4f1227,0 8px 10px #000a,0 0 14px #ff35728a!important
+}
