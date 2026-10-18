@@ -132,6 +132,13 @@ window.onMarketVehicleModels=function(make,year,payload,error){
     browseModel.innerHTML=marketSelect(marketModels(make,year),marketFilterModel,'Tüm modeller');
   }
 };
+// The garage catalog already refreshes remote models; also update market selects.
+const previousVehicleModelsResult=window.onVehicleModelsResult;
+window.onVehicleModelsResult=function(make,year,payload,error){
+  if(typeof previousVehicleModelsResult==='function')
+    previousVehicleModelsResult(make,year,payload,error);
+  window.onMarketVehicleModels(make,year,payload,error);
+};
 window.aracimMarketMakeChanged=function(){
   const f=document.getElementById('market107Form');if(!f)return;
   const make=f.elements.make.value,year=f.elements.year.value;
