@@ -366,7 +366,7 @@ public class MainActivity extends Activity {
                 super.onPageFinished(view, url);
                 pageReady = true;
                 if (apLaunchProgressBar != null) apLaunchProgressBar.setProgress(100);
-                if (apLaunchProgressLabel != null) apLaunchProgressLabel.setText("HAZIR   %100");
+                if (apLaunchProgressLabel != null) apLaunchProgressLabel.setText("HAZIR    %100");
                 hideLaunchSplashWhenReady();
                 if (mrecAdLoaded) notifyMrecJs(true);
             }
@@ -426,9 +426,7 @@ private void updateSplashBottomInset(int bottomInset) {
     }
 
 private void showLaunchSplash() {
-
         if (apPremiumSplashView != null) return;
-
         splashStartedAt = android.os.SystemClock.elapsedRealtime();
         splashDismissAllowed = false;
         pageReady = false;
@@ -436,140 +434,190 @@ private void showLaunchSplash() {
 
         final android.view.ViewGroup root = findViewById(android.R.id.content);
         if (root == null) return;
-
         apSetAdViewsVisible(root, false);
         apPremiumSplashHidden = false;
 
+        final int dark = android.graphics.Color.parseColor("#041121");
+        final int blue = android.graphics.Color.parseColor("#48BFFF");
         android.widget.FrameLayout splash = new android.widget.FrameLayout(this);
         splash.setClickable(true);
         splash.setFocusable(true);
-        splash.setBackgroundColor(android.graphics.Color.parseColor("#04111F"));
-        splash.setAlpha(1f);
+        splash.setBackground(new android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{
+                        android.graphics.Color.parseColor("#061831"),
+                        android.graphics.Color.parseColor("#092B4C"),
+                        dark
+                }));
         splash.setElevation(9999f);
 
-        android.widget.ImageView hero = new android.widget.ImageView(this);
-        hero.setImageResource(R.drawable.intro_realistic_opt);
-        hero.setScaleType(android.widget.ImageView.ScaleType.CENTER_CROP);
-        splash.addView(hero, new android.widget.FrameLayout.LayoutParams(
-                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
-                android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
+        // Original intro image had a giant, baked-in wordmark and tiny labels
+        // outside the mobile safe area. Keep ONLY its photographic car segment.
+        // All splash copy is now real native Android text that scales to width.
+        final android.graphics.Bitmap carBitmap =
+                android.graphics.BitmapFactory.decodeResource(getResources(), R.drawable.intro_realistic_opt);
+        if (carBitmap != null) {
+            android.view.View carPhoto = new android.view.View(this) {
+                private final android.graphics.Paint paint = new android.graphics.Paint(
+                        android.graphics.Paint.ANTI_ALIAS_FLAG | android.graphics.Paint.FILTER_BITMAP_FLAG);
+                @Override protected void onDraw(android.graphics.Canvas canvas) {
+                    super.onDraw(canvas);
+                    if (getWidth() <= 0 || getHeight() <= 0 || carBitmap.isRecycled()) return;
+                    int sw = carBitmap.getWidth(), sh = carBitmap.getHeight();
+                    int left = 0, right = sw;
+                    int top = (int)(sh * 0.44f), bottom = (int)(sh * 0.91f);
+                    int ch = Math.max(1,bottom-top);
+                    float sourceRatio = (float)sw / ch;
+                    float targetRatio = (float)getWidth()/getHeight();
+                    if (sourceRatio > targetRatio) {
+                        int w = Math.max(1,(int)(ch*targetRatio));
+                        left = Math.max(0,(sw-w)/2);
+                        right = Math.min(sw,left+w);
+                    } else {
+                        int h = Math.max(1,(int)(sw/targetRatio));
+                        top = Math.min(bottom-h,top+(ch-h)/2);
+                        bottom = top+h;
+                    }
+                    paint.setShader(null);
+                    canvas.drawBitmap(carBitmap,
+                            new android.graphics.Rect(left,top,right,bottom),
+                            new android.graphics.Rect(0,0,getWidth(),getHeight()),paint);
+                    paint.setShader(new android.graphics.LinearGradient(
+                            0,0,0,getHeight(),
+                            new int[]{0xBD041121,0x00041121,0x00041121,0xF0041121},
+                            new float[]{0f,0.20f,0.65f,1f},
+                            android.graphics.Shader.TileMode.CLAMP));
+                    canvas.drawRect(0,0,getWidth(),getHeight(),paint);
+                    paint.setShader(null);
+                }
+            };
+            int panelHeight = Math.min(dp(390), (int)(getResources().getDisplayMetrics().heightPixels*0.48f));
+            android.widget.FrameLayout.LayoutParams pictureLp =
+                    new android.widget.FrameLayout.LayoutParams(
+                            android.widget.FrameLayout.LayoutParams.MATCH_PARENT,panelHeight,
+                            android.view.Gravity.CENTER);
+            pictureLp.topMargin = dp(30);
+            splash.addView(carPhoto,pictureLp);
+            carPhoto.setAlpha(0.55f);
+            carPhoto.animate().alpha(1f).scaleX(1.025f).scaleY(1.025f)
+                    .setDuration(2600L).start();
+        }
 
-        android.view.View dim = new android.view.View(this);
-        dim.setBackground(new android.graphics.drawable.GradientDrawable(
-                android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[] {
-                        android.graphics.Color.argb(40,0,0,0),
-                        android.graphics.Color.argb(20,0,0,0),
-                        android.graphics.Color.argb(175,2,9,18)
-                }));
-        splash.addView(dim, new android.widget.FrameLayout.LayoutParams(
-                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
-                android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
+        android.widget.LinearLayout heading = new android.widget.LinearLayout(this);
+        heading.setOrientation(android.widget.LinearLayout.VERTICAL);
+        heading.setGravity(android.view.Gravity.CENTER_HORIZONTAL);
+        heading.setPadding(dp(24),dp(9),dp(24),dp(8));
 
-        // The original splash image contains a printed, non-working loading
-        // percentage. Mask it and draw the real native 0-100% indicator here.
-        android.view.View footerPanel = new android.view.View(this);
-        footerPanel.setBackground(new android.graphics.drawable.GradientDrawable(
-                android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
-                new int[] {
-                        android.graphics.Color.argb(246, 4, 17, 31),
-                        android.graphics.Color.parseColor("#04111F"),
-                        android.graphics.Color.parseColor("#04111F")
-                }));
-        splash.addView(footerPanel, new android.widget.FrameLayout.LayoutParams(
-                android.widget.FrameLayout.LayoutParams.MATCH_PARENT, dp(250),
-                android.view.Gravity.BOTTOM));
+        android.widget.TextView eyebrow = apSplashText("AKILLI ARAÇ DENEYİMİ",10f,blue,true);
+        eyebrow.setLetterSpacing(.23f);
+        eyebrow.setGravity(android.view.Gravity.CENTER);
+        heading.addView(eyebrow);
 
+        android.widget.TextView logo = apSplashText("ARACIM PRO",30f,
+                android.graphics.Color.WHITE,true);
+        android.text.SpannableString brandName = new android.text.SpannableString("ARACIM PRO");
+        brandName.setSpan(new android.text.style.ForegroundColorSpan(blue),7,10,
+                android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        logo.setText(brandName);
+        logo.setLetterSpacing(-.06f);
+        logo.setGravity(android.view.Gravity.CENTER);
+        logo.setMaxLines(1);
+        logo.setAutoSizeTextTypeWithDefaults(android.widget.TextView.AUTO_SIZE_TEXT_TYPE_UNIFORM);
+        logo.setPadding(0,dp(10),0,dp(4));
+        heading.addView(logo);
+
+        android.widget.TextView tagline = apSplashText("Aracının tüm dünyası tek yerde",12f,
+                android.graphics.Color.parseColor("#C6DAED"),false);
+        tagline.setGravity(android.view.Gravity.CENTER);
+        tagline.setMaxLines(2);
+        heading.addView(tagline);
+
+        android.widget.FrameLayout.LayoutParams headingLp =
+                new android.widget.FrameLayout.LayoutParams(
+                        android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                        android.view.Gravity.TOP);
+        headingLp.topMargin = systemDimen("status_bar_height",dp(28))+dp(48);
+        splash.addView(heading,headingLp);
+        heading.setAlpha(0f);
+        heading.animate().alpha(1f).translationY(-dp(5)).setDuration(700L).start();
+
+        // Branded footer stays ABOVE the three-button or gesture navigation bar.
         android.widget.LinearLayout brand = new android.widget.LinearLayout(this);
         brand.setOrientation(android.widget.LinearLayout.VERTICAL);
-        brand.setPadding(dp(20), dp(18), dp(20), dp(14));
-        brand.setGravity(android.view.Gravity.BOTTOM | android.view.Gravity.CENTER_HORIZONTAL);
+        brand.setPadding(dp(26),dp(16),dp(26),dp(14));
+        brand.setGravity(android.view.Gravity.CENTER_HORIZONTAL);
         apLaunchBrand = brand;
+        android.widget.TextView readyTitle = apSplashText("YOLA HAZIRLANIYOR",11f,
+                android.graphics.Color.parseColor("#D7EDFF"),true);
+        readyTitle.setLetterSpacing(.15f);
+        readyTitle.setGravity(android.view.Gravity.CENTER);
+        brand.addView(readyTitle);
+        android.widget.TextView info = apSplashText("Araç asistanın başlatılıyor",11f,
+                android.graphics.Color.parseColor("#A4C6E5"),false);
+        info.setGravity(android.view.Gravity.CENTER);
+        info.setPadding(0,dp(8),0,dp(17));
+        brand.addView(info);
 
-        android.widget.TextView tagline = apSplashText("ARACIM PRO  •  DİJİTAL GARAJ", 10f,
-                android.graphics.Color.parseColor("#73CFFF"), true);
-        tagline.setGravity(android.view.Gravity.CENTER);
-        tagline.setLetterSpacing(0.13f);
-        tagline.setPadding(0, 0, 0, dp(9));
-        brand.addView(tagline);
-
-        android.widget.TextView title = apSplashText("Aracım Pro", 26f, android.graphics.Color.WHITE, true);
-        title.setLetterSpacing(-0.02f);
-        title.setGravity(android.view.Gravity.CENTER);
-        brand.addView(title);
-
-        android.widget.TextView sub = apSplashText("Akıllı sürüş • araç sağlığı • canlı yol verisi", 11.5f,
-                android.graphics.Color.parseColor("#B7CCE4"), false);
-        sub.setGravity(android.view.Gravity.CENTER);
-        sub.setPadding(0, dp(7), 0, dp(18));
-        brand.addView(sub);
-
-        android.widget.ProgressBar bar = new android.widget.ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
+        android.widget.ProgressBar bar = new android.widget.ProgressBar(this,null,
+                android.R.attr.progressBarStyleHorizontal);
         bar.setIndeterminate(false);
         bar.setMax(100);
         bar.setProgress(0);
         apLaunchProgressBar = bar;
-        android.graphics.drawable.GradientDrawable bg = new android.graphics.drawable.GradientDrawable();
-        bg.setCornerRadius(dp(999));
-        bg.setColor(android.graphics.Color.argb(60, 255, 255, 255));
-        bar.setBackground(bg);
+        android.graphics.drawable.GradientDrawable track = new android.graphics.drawable.GradientDrawable();
+        track.setCornerRadius(dp(999));
+        track.setColor(android.graphics.Color.argb(55,165,220,255));
+        bar.setBackground(track);
         android.graphics.drawable.Drawable pd = bar.getProgressDrawable();
         if (pd != null) {
-            try { pd.setTint(android.graphics.Color.parseColor("#2AA6FF")); } catch (Throwable ignored) {}
+            try { pd.setTint(blue); } catch (Throwable ignored) {}
         }
-        android.widget.LinearLayout.LayoutParams blp = new android.widget.LinearLayout.LayoutParams(dp(238), dp(6));
-        brand.addView(bar, blp);
-        android.widget.TextView percent = apSplashText("HAZIRLANIYOR   %0", 12.5f,
-                android.graphics.Color.parseColor("#BDEAFF"), true);
+        android.widget.LinearLayout.LayoutParams blp =
+                new android.widget.LinearLayout.LayoutParams(
+                        android.widget.LinearLayout.LayoutParams.MATCH_PARENT,dp(6));
+        brand.addView(bar,blp);
+
+        android.widget.TextView percent = apSplashText("YÜKLENİYOR    %0",12f,blue,true);
         percent.setGravity(android.view.Gravity.CENTER);
-        percent.setLetterSpacing(0.10f);
-        percent.setPadding(0, dp(15), 0, 0);
+        percent.setLetterSpacing(.10f);
+        percent.setPadding(0,dp(14),0,0);
         brand.addView(percent);
         apLaunchProgressLabel = percent;
 
-        android.widget.FrameLayout.LayoutParams brandLp = new android.widget.FrameLayout.LayoutParams(
-                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
-                android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
-                android.view.Gravity.BOTTOM);
-        brandLp.bottomMargin = systemDimen("navigation_bar_height", dp(36)) + dp(20);
-        splash.addView(brand, brandLp);
-
+        android.widget.FrameLayout.LayoutParams brandLp =
+                new android.widget.FrameLayout.LayoutParams(
+                        android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                        android.widget.FrameLayout.LayoutParams.WRAP_CONTENT,
+                        android.view.Gravity.BOTTOM);
+        brandLp.bottomMargin = systemDimen("navigation_bar_height",dp(36))+dp(34);
+        splash.addView(brand,brandLp);
         apPremiumSplashView = splash;
         updateSplashBottomInset(lastInsetBottom);
-        root.addView(splash, new android.widget.FrameLayout.LayoutParams(
+        root.addView(splash,new android.widget.FrameLayout.LayoutParams(
                 android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
                 android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
-
-        hero.setScaleX(1.0f);
-        hero.setScaleY(1.0f);
-        hero.animate().scaleX(1.05f).scaleY(1.05f).setDuration(2200L).start();
-        title.setAlpha(0f);
-        sub.setAlpha(0f);
-        title.animate().alpha(1f).setDuration(360L).setStartDelay(120L).start();
-        sub.animate().alpha(1f).setDuration(360L).setStartDelay(250L).start();
 
         apPremiumSplashHandler.removeCallbacksAndMessages(null);
         apLaunchProgressTick = new Runnable() {
             @Override public void run() {
                 if (apPremiumSplashView == null) return;
-                long elapsed = android.os.SystemClock.elapsedRealtime() - splashStartedAt;
-                // Only show 100% once WebView has actually finished loading.
-                int progress = pageReady ? 100 : Math.min(95, (int)(elapsed * 95L / 3600L));
+                long elapsed = android.os.SystemClock.elapsedRealtime()-splashStartedAt;
+                int progress = pageReady ? 100 : Math.min(95,(int)(elapsed*95L/3600L));
                 if (apLaunchProgressBar != null) apLaunchProgressBar.setProgress(progress);
                 if (apLaunchProgressLabel != null)
-                    apLaunchProgressLabel.setText(pageReady ? "HAZIR   %100" : "HAZIRLANIYOR   %" + progress);
-                if (!apPremiumSplashHidden) apPremiumSplashHandler.postDelayed(this, 55L);
+                    apLaunchProgressLabel.setText(pageReady?"HAZIR    %100":"YÜKLENİYOR    %"+progress);
+                if (!apPremiumSplashHidden) apPremiumSplashHandler.postDelayed(this,55L);
             }
         };
         apPremiumSplashHandler.post(apLaunchProgressTick);
-        apPremiumSplashHandler.postDelayed(() -> {
+        apPremiumSplashHandler.postDelayed(()->{
             splashDismissAllowed = true;
             hideLaunchSplashWhenReady();
-        }, 3800L);
-
+        },3800L);
     }
 
-    private void stopLaunchVideo() {
+        private void stopLaunchVideo() {
         android.widget.VideoView v = launchVideoView;
         launchVideoView = null;
         if (v != null) {
@@ -587,7 +635,7 @@ private void showLaunchSplash() {
             apPremiumSplashHandler.removeCallbacks(apLaunchProgressTick);
         if (apLaunchProgressBar != null) apLaunchProgressBar.setProgress(100);
         if (apLaunchProgressLabel != null)
-            apLaunchProgressLabel.setText("HAZIR   %100");
+            apLaunchProgressLabel.setText("HAZIR    %100");
 
         final android.view.ViewGroup root = findViewById(android.R.id.content);
         final android.view.View splash = apPremiumSplashView;
