@@ -2572,6 +2572,11 @@ private void showLaunchSplash() {
             runOnUiThread(() -> ensureLocationPermission("permission"));
         }
 
+        @JavascriptInterface public void locateMap120() {
+            // Only starts after the user taps "Konumumu Göster" on the map.
+            runOnUiThread(() -> ensureLocationPermission("map120"));
+        }
+
         @JavascriptInterface public void openLocationSettings() {
             runOnUiThread(MainActivity.this::openLocationSettingsNative);
         }
@@ -3226,6 +3231,10 @@ private void showLaunchSplash() {
             return;
         }
         pendingLocationAction = "";
+        if ("map120".equals(action)) {
+            requestMap120LocationNative();
+            return;
+        }
         if ("speed".equals(action)) {
             startSpeedTrackingNative();
             return;
@@ -3257,6 +3266,83 @@ private void showLaunchSplash() {
             if (net == null) return gps;
             return gps.getTime() >= net.getTime() ? gps : net;
         } catch (Throwable ignored) { return null; }
+    }
+
+    // Short-lived, permission-gated location fetch for the embedded 3D map.
+    // No continuous background tracking or location persistence.
+    private android.location.LocationListener map120LocationListener;
+
+    private void map120SendLocation(Location loc, String error) {
+        if (webView == null || isFinishing() || isDestroyed()) return;
+        final String payload;
+        if (loc == null) payload = "window.ap120NativeLocation && window.ap120NativeLocation(null,null," +
+                org.json.JSONObject.quote(error == null ? "Konum alınamadı." : error) + ")";
+        else payload = String.format(Locale.US,
+                "window.ap120NativeLocation && window.ap120NativeLocation(%.7f,%.7f,'')",
+                loc.getLatitude(), loc.getLongitude());
+        webView.evaluateJavascript(payload, null);
+    }
+
+    @SuppressWarnings("MissingPermission")
+    private void requestMap120LocationNative() {
+        if (!hasLocationPermission()) { ensureLocationPermission("map120"); return; }
+        if (!isLocationServiceEnabled()) {
+            map120SendLocation(null, "Telefonun Konum / GPS özelliğini aç ve tekrar dene.");
+            return;
+        }
+        if (locationManager == null) locationManager =
+                (LocationManager) getSystemService(LOCATION_SERVICE);
+        if (locationManager == null) {
+            map120SendLocation(null, "Konum servisine ulaşılamadı.");
+            return;
+        }
+        Location fresh = bestLastLocation();
+        if (fresh != null && Math.abs(System.currentTimeMillis()-fresh.getTime()) < 90000L) {
+            map120SendLocation(fresh, "");
+            return;
+        }
+        if (map120LocationListener != null) {
+            try { locationManager.removeUpdates(map120LocationListener); } catch (Exception ignored) {}
+            map120LocationListener = null;
+        }
+        android.location.LocationListener listener = new LocationListener() {
+            @Override public void onLocationChanged(Location loc) {
+                if (map120LocationListener != this || loc == null) return;
+                try { locationManager.removeUpdates(this); } catch (Exception ignored) {}
+                map120LocationListener = null;
+                map120SendLocation(loc, "");
+            }
+        };
+        map120LocationListener = listener;
+        boolean started = false;
+        try {
+            if (locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 800L, 0f,
+                        listener, Looper.getMainLooper());
+                started = true;
+            }
+        } catch (Exception ignored) {}
+        try {
+            if (locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 800L, 0f,
+                        listener, Looper.getMainLooper());
+                started = true;
+            }
+        } catch (Exception ignored) {}
+        if (!started) {
+            map120LocationListener = null;
+            map120SendLocation(null, "GPS konumuna erişilemiyor. Konum hizmetini aç.");
+            return;
+        }
+        mainHandler.postDelayed(() -> {
+            if (map120LocationListener != listener) return;
+            try { locationManager.removeUpdates(listener); } catch (Exception ignored) {}
+            map120LocationListener = null;
+            Location last = bestLastLocation();
+            if (last != null && Math.abs(System.currentTimeMillis()-last.getTime()) < 900000L) {
+                map120SendLocation(last, "");
+            } else map120SendLocation(null, "Konum alınamadı. Açık alanda yeniden dene.");
+        }, 7000L);
     }
 
     @SuppressWarnings("MissingPermission")
