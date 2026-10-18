@@ -54,7 +54,7 @@ window.arasOpenAi=function(){
 };
 welcome=function(){
  return '<div class="proWelcome108">'+
- '<section class="proWelcomeHero108"><span class="proWelcomeEyebrow108">ARACIM PRO GARJ</span>'+
+ '<section class="proWelcomeHero108"><span class="proWelcomeEyebrow108">ARACIM PRO GARAJ</span>'+
  '<div class="proWelcomeHeroRow108"><div><h2>Aracın, tüm bilgileriyle burada.</h2>'+
  '<p>İlk aracını ekle; bakımını, giderlerini ve geçmişini tek yerden yönet.</p></div>'+
  '<div class="proWelcomeHeroGraphic108" aria-hidden="true">'+marketIcon()+'</div></div>'+
