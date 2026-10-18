@@ -62,7 +62,7 @@ function draftGet(){try{return JSON.parse(localStorage.getItem(DRAFT_KEY)||'null
 function draftPut(v){localStorage.setItem(DRAFT_KEY,JSON.stringify(v))}
 function emptyText(){
  const account=ready();
- if(!account.configured)return 'Çevrimiçi ilan servisi henüz etkin değil. İlan taslağı oluşturup paylaşabilirsin; herkese açık ilanlar gösterilmez.';
+ if(!account.configured)return 'Çevrimiçi ilan servisi henüz etkin değil. İlan taslağını bu cihazda saklayabilirsin; başka kullanıcılara gösterilmez.';
  return lastError?'İlanlar yüklenemedi: '+lastError:'Henüz yayımlanmış ilan bulunamadı. İlk ilanını oluşturabilirsin.';
 }
 function marketCarSymbol(){return '<span class="marketCarSymbol" aria-hidden="true">🚘</span>'}
@@ -121,7 +121,7 @@ window.onMarketListings=function(payload,error){
   try{const data=JSON.parse(payload||'[]');rows=Array.isArray(data)?data.filter(x=>x&&typeof x==='object').slice(0,80):[]}
   catch(e){rows=[];lastError='İlan bilgileri okunamadı'}
  }
- drawMarket();
+ if(document.querySelector('#modalRoot .market107'))drawMarket();
 };
 window.aracimMarketFilter=function(q){
  activeFilter=String(q||'').slice(0,90);
@@ -151,7 +151,7 @@ window.aracimMarketContact=function(id){
  const v=rows.find(r=>String(r.id)===String(id));if(!v||!v.publicPhone)return;
  const phone=noPhone(v.publicPhone);if(phone.length<10)return toast('Telefon numarası geçersiz');
  const msg='Merhaba, Aracım Pro Araç Pazarı üzerinde '+v.year+' '+v.make+' '+v.model+' ilanınızı gördüm.';
- const url='https://wa.me/'+encodeURIComponent(phone)+'?text='+encodeURIComponent(msg);
+ const url='https://wa.me/'+phone+'?text='+encodeURIComponent(msg);
  try{Android.openMarketplaceLink(url)}catch(e){toast('WhatsApp bağlantısı açılamadı')}
 };
 window.aracimMarketSold=function(id){
