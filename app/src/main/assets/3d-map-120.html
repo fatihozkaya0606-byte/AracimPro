@@ -45,11 +45,14 @@ try{
    // OpenFreeMap vector building heights are not available in every area.
    const style=map.getStyle(),src=(style.sources&&style.sources.openmaptiles)?'openmaptiles':
      (style.sources&&style.sources.openfreemap)?'openfreemap':null;
-   if(src){
+   let vectorSource=src;
+   if(!vectorSource){
+     try{map.addSource('ap120-openfreemap',{url:'https://tiles.openfreemap.org/planet',type:'vector'});vectorSource='ap120-openfreemap';}catch(_){}}
+   if(vectorSource){
     const labels=style.layers.find(l=>l.type==='symbol'&&l.layout&&l.layout['text-field']);
     const existing=style.layers.some(l=>l.type==='fill-extrusion');
     if(!existing) map.addLayer({
-      id:'ap120-buildings',type:'fill-extrusion',source:src,'source-layer':'building',
+      id:'ap120-buildings',type:'fill-extrusion',source:vectorSource,'source-layer':'building',
       minzoom:14.7,filter:['!=',['get','hide_3d'],true],
       paint:{
        'fill-extrusion-color':'#99bdd6',
@@ -74,7 +77,9 @@ try{
  });
 }catch(err){failure('Harita başlatılamadı.');}
 window.addEventListener('message',e=>{
- if(e.origin!==window.location.origin||!e.data||e.data.type!=='ap120-center')return;
+ if(e.origin!==window.location.origin||!e.data)return;
+ if(e.data.type==='ap120-tilt'&&map){map.easeTo({pitch:Math.max(0,Math.min(70,Number(e.data.pitch)||0)),duration:400});return;}
+ if(e.data.type!=='ap120-center')return;
  const lat=Number(e.data.lat),lon=Number(e.data.lon);
  if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180||!map)return;
  map.easeTo({center:[lon,lat],zoom:16.5,pitch:60,bearing:-20,duration:450});
