@@ -456,8 +456,8 @@ private void showLaunchSplash() {
                 }));
         splash.setElevation(9999f);
 
-        // Original intro image had a giant, baked-in wordmark and tiny labels
-        // outside the mobile safe area. Keep ONLY its photographic car segment.
+        // The original intro asset contains a pre-rendered loading label and percent.
+        // Crop away that lower portion, retaining only the car photo region.
         // All splash copy is now real native Android text that scales to width.
         final android.graphics.Bitmap carBitmap =
                 android.graphics.BitmapFactory.decodeResource(getResources(), R.drawable.intro_realistic_opt);
@@ -470,7 +470,7 @@ private void showLaunchSplash() {
                     if (getWidth() <= 0 || getHeight() <= 0 || carBitmap.isRecycled()) return;
                     int sw = carBitmap.getWidth(), sh = carBitmap.getHeight();
                     int left = 0, right = sw;
-                    int top = (int)(sh * 0.44f), bottom = (int)(sh * 0.91f);
+                    int top = (int)(sh * 0.40f), bottom = (int)(sh * 0.79f);
                     int ch = Math.max(1,bottom-top);
                     float sourceRatio = (float)sw / ch;
                     float targetRatio = (float)getWidth()/getHeight();
@@ -489,8 +489,8 @@ private void showLaunchSplash() {
                             new android.graphics.Rect(0,0,getWidth(),getHeight()),paint);
                     paint.setShader(new android.graphics.LinearGradient(
                             0,0,0,getHeight(),
-                            new int[]{0xBD041121,0x00041121,0x00041121,0xF0041121},
-                            new float[]{0f,0.20f,0.65f,1f},
+                            new int[]{0xCA041121,0x00041121,0x10041121,0xFF041121},
+                            new float[]{0f,0.20f,0.70f,1f},
                             android.graphics.Shader.TileMode.CLAMP));
                     canvas.drawRect(0,0,getWidth(),getHeight(),paint);
                     paint.setShader(null);
@@ -583,12 +583,9 @@ private void showLaunchSplash() {
                         android.widget.LinearLayout.LayoutParams.MATCH_PARENT,dp(6));
         brand.addView(bar,blp);
 
-        android.widget.TextView percent = apSplashText("YÜKLENİYOR    %0",12f,blue,true);
-        percent.setGravity(android.view.Gravity.CENTER);
-        percent.setLetterSpacing(.10f);
-        percent.setPadding(0,dp(14),0,0);
-        brand.addView(percent);
-        apLaunchProgressLabel = percent;
+        // No second loading label. The single thin progress bar is sufficient;
+        // the numeric percentage was a timer estimate, not a real download percentage.
+        apLaunchProgressLabel = null;
 
         android.widget.FrameLayout.LayoutParams brandLp =
                 new android.widget.FrameLayout.LayoutParams(
@@ -608,7 +605,7 @@ private void showLaunchSplash() {
             @Override public void run() {
                 if (apPremiumSplashView == null) return;
                 long elapsed = android.os.SystemClock.elapsedRealtime()-splashStartedAt;
-                int progress = pageReady ? 100 : Math.min(95,(int)(elapsed*95L/3600L));
+                int progress = pageReady ? 100 : Math.min(94,(int)(elapsed*94L/3350L));
                 if (apLaunchProgressBar != null) apLaunchProgressBar.setProgress(progress);
                 if (apLaunchProgressLabel != null)
                     apLaunchProgressLabel.setText(pageReady?"HAZIR    %100":"YÜKLENİYOR    %"+progress);
@@ -619,7 +616,7 @@ private void showLaunchSplash() {
         apPremiumSplashHandler.postDelayed(()->{
             splashDismissAllowed = true;
             hideLaunchSplashWhenReady();
-        },3800L);
+        },3350L);
     }
 
         private void stopLaunchVideo() {
@@ -631,7 +628,8 @@ private void showLaunchSplash() {
     }
 
     private void hideLaunchSplashWhenReady() {
-        // WebView çok hızlı yüklense bile splash 3.8 saniyeden önce kapanamaz.
+        // Keep the intro visible for ~3.35 seconds on a ready device.
+        // If the WebView is still loading, never expose an uninitialized blank screen.
         if (!splashDismissAllowed || !pageReady) return;
 
         if (apPremiumSplashHidden) return;
@@ -651,7 +649,7 @@ private void showLaunchSplash() {
             return;
         }
 
-        splash.animate().alpha(0f).setDuration(300L).withEndAction(() -> {
+        splash.animate().alpha(0f).setDuration(220L).withEndAction(() -> {
             try {
                 if (splash.getParent() instanceof android.view.ViewGroup) {
                     ((android.view.ViewGroup) splash.getParent()).removeView(splash);
