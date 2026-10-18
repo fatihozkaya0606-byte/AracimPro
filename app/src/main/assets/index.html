@@ -4683,8 +4683,47 @@ function onVehicleFuelChange(){
 function onVehicleEngineChange(){const f=selectedVehicleForm();if(!f)return;clearOtoVariantSelection();resetVehicleSpecsForSelection();const make=f.elements.make.value,model=f.elements.model.value,year=+f.elements.year.value,engine=f.elements.engine.value;const inferred=fuelForEngine(make,model,year,engine);if(inferred){const fuels=vehicleFuelOptions(make,model,year);f.elements.fuel.innerHTML=optList(fuels,inferred,'Yakıt seç');f.elements.fuel.value=inferred}f.elements.trim.innerHTML=optList(trimOptions(make,model,year,engine),f.elements.trim.value,'Paket / donanım seç')}
 function clearOtoVariantSelection(){const f=selectedVehicleForm();if(f?.elements?.otoCarId){f.elements.otoCarId.innerHTML='<option value="">Kesin varyant seçilmedi</option>';f.elements.otoCarId.value=''}if(window._editingVehicle){window._editingVehicle.otoCarId='';window._editingVehicle.otoVariantName=''}window._otoVariants=[];const st=document.getElementById('otoVariantStatus');if(st)st.textContent='Marka + model + yıl seçtikten sonra OtoAPI varyantlarını getir.'}
 function otoVariantScoreClient(v,engine,fuel){const n=String(v?.name||'').toLocaleLowerCase('tr-TR'),e=String(engine||'').toLocaleLowerCase('tr-TR'),f=String(fuel||'').toLocaleLowerCase('tr-TR'),vf=String(v?.fuel||'').toLocaleLowerCase('tr-TR');let s=0;if(e&&n.includes(e))s+=100;const toks=e.split(/\s+/).filter(x=>x.length>2);for(const t of toks)if(n.includes(t))s+=8;if(f&&vf&&(vf.includes(f)||f.includes(vf)))s+=20;return s}
-function loadOtoVariants(){const f=selectedVehicleForm();if(!f)return;const make=f.elements.make.value,model=f.elements.model.value,year=+f.elements.year.value;if(!make||!model||!year){toast('Önce marka, model ve yıl seç');return}const st=document.getElementById('otoVariantStatus');if(st)st.textContent='OtoAPI kesin varyantları getiriliyor…';try{Android.fetchOtoVariants(make,model,year)}catch(e){if(st)st.textContent='Varyant servisi açılamadı'}}
-window.onOtoVariantsResult=(payload,error,make,model,year)=>{const f=selectedVehicleForm(),st=document.getElementById('otoVariantStatus');if(!f||f.elements.make.value!==make||f.elements.model.value!==model||+f.elements.year.value!==+year)return;let r={};try{r=JSON.parse(payload||'{}')}catch(e){};let a=Array.isArray(r.data)?r.data:[];const engine=f.elements.engine.value,fuel=f.elements.fuel.value;a=a.slice().sort((x,y)=>otoVariantScoreClient(y,engine,fuel)-otoVariantScoreClient(x,engine,fuel)||String(x.name).localeCompare(String(y.name),'tr'));window._otoVariants=a;const cur=+(window._editingVehicle?.otoCarId||f.elements.otoCarId.value||0);f.elements.otoCarId.innerHTML='<option value="">Kesin varyant seç</option>'+a.map(x=>`<option value="${+x.id}" ${+x.id===cur?'selected':''}>${esc(x.name)}${x.powerHp?' • '+Math.round(x.powerHp)+' hp':''}${x.fuel?' • '+esc(x.fuel):''}</option>`).join('');if(!cur&&a.length&&otoVariantScoreClient(a[0],engine,fuel)>=80){f.elements.otoCarId.value=String(a[0].id);onOtoVariantChange()}if(st){st.textContent=error?error:(a.length?`${a.length} varyant bulundu${r.hasMore?' • Daha fazla kayıt olabilir; Free API sayfa limiti nedeniyle ilk 25 gösteriliyor.':''}`:'Bu yıl için varyant bulunamadı.')}}
+function loadOtoVariants(){
+ const f=selectedVehicleForm();if(!f)return;
+ const make=f.elements.make.value,model=f.elements.model.value,year=+f.elements.year.value;
+ if(!make||!model||!year){toast('Önce marka, model ve yıl seç');return}
+ const key=v115Key(make,model,year);
+ if(v115Pending.has(key))return;
+ v115Pending.add(key);v115Message();
+ const st=document.getElementById('otoVariantStatus');
+ if(st)st.textContent='OtoAPI bu modele ait kesin motor/varyantları kontrol ediyor…';
+ try{Android.fetchOtoVariants(make,model,year)}
+ catch(e){v115Pending.delete(key);v115Status[key]='error';v115Message();if(st)st.textContent='Varyant servisi açılamadı'}
+}
+window.onOtoVariantsResult=(payload,error,make,model,year)=>{
+ // Cache results exclusively under exact make+model+year. A response from an
+ // old request MUST NEVER repaint the newly selected car's engine list.
+ const key=v115Key(make,model,year);
+ v115Pending.delete(key);
+ let r={};try{r=JSON.parse(payload||'{}')}catch(e){error='Geçersiz varyant verisi'}
+ const data=Array.isArray(r.data)?r.data.filter(x=>x&&+x.id>0&&x.name):[];
+ if(error){v115Status[key]='error';delete v115Cache[key]}
+ else{v115Status[key]=data.length?'ok':'empty';v115Cache[key]=data}
+ const f=selectedVehicleForm(),st=document.getElementById('otoVariantStatus');
+ if(!f||f.elements.make.value!==make||f.elements.model.value!==model||+f.elements.year.value!==+year)return;
+ const engine=f.elements.engine.value,fuel=f.elements.fuel.value;
+ const a=data.slice().sort((x,y)=>otoVariantScoreClient(y,engine,fuel)-otoVariantScoreClient(x,engine,fuel)||String(x.name).localeCompare(String(y.name),'tr'));
+ window._otoVariants=a;
+ const cur=+(window._editingVehicle?.otoCarId||f.elements.otoCarId.value||0);
+ f.elements.otoCarId.innerHTML='<option value="">Kesin varyant seç</option>'+a.map(x=>
+   '<option value="'+(+x.id)+'" '+(+x.id===cur?'selected':'')+'>'+
+   esc(x.name)+(x.powerHp?' • '+Math.round(x.powerHp)+' hp':'')+
+   (x.fuel?' • '+esc(x.fuel):'')+'</option>').join('');
+ refreshDependentVehicleOptions(true);
+ if(!cur&&a.length&&engine&&otoVariantScoreClient(a[0],engine,fuel)>=80){
+   f.elements.otoCarId.value=String(a[0].id);onOtoVariantChange();
+ }
+ if(st)st.textContent=error?'Motor kataloğu: '+String(error).slice(0,170):
+ (a.length?a.length+' bu araç/yıla ait varyant yüklendi.'+
+ (r.hasMore?' Daha fazla sonuç olabilir.':''):
+ 'Bu model yılı için doğrulanmış çevrimiçi varyant bulunamadı.');
+ v115Message();
+};
 function onOtoVariantChange(){const f=selectedVehicleForm();if(!f)return;const id=+f.elements.otoCarId.value||0,v=(window._otoVariants||[]).find(x=>+x.id===id);if(window._editingVehicle){window._editingVehicle.otoCarId=id||'';window._editingVehicle.otoVariantName=v?.name||''}if(v){if(v.body&&f.elements.body)f.elements.body.value=[...f.elements.body.options].some(o=>o.value===v.body)?v.body:f.elements.body.value;if(v.drive&&f.elements.drive)f.elements.drive.value=[...f.elements.drive.options].some(o=>o.value===v.drive)?v.drive:f.elements.drive.value;const st=document.getElementById('otoVariantStatus');if(st)st.textContent=`Kesin OtoAPI kaydı seçildi: ${v.name} • carId ${v.id}`}}
 
 
