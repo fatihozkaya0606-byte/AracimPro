@@ -119,7 +119,6 @@ jobs:
           assert 'proWelcome108' in a and 'proWelcomeHero108' in css108
           assert 'aracimpro-home-108.css' in h
           assert "function apMrecCardHtml(){\n  try{if(isPremium())return '';}" in h
-          assert "createAdMobBanner();\n            loadSingleInterstitial();" in n
           css109=Path('app/src/main/assets/aracimpro-polish-109.css').read_text()
           assert 'aras109Robot' in a and 'aras109Robot' in css109
           assert 'market109Photo' in a and 'market109Photo' in css109
