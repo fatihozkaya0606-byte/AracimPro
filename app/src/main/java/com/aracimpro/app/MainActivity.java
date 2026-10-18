@@ -162,6 +162,7 @@ public class MainActivity extends Activity {
     private static final int PICK_DOCUMENT_REQUEST = 7705;
     private static final int LOCATION_PERMISSION_REQUEST = 7706;
     private static final int TAKE_PHOTO_REQUEST = 7707;
+    private static final int ROAD_VIDEO_REQUEST = 7715;
 
     private static final String PREMIUM_PRODUCT_ID = "aracim_pro_premium";
     private static final String PREMIUM_MONTHLY_BASE = "aylik";
@@ -2355,6 +2356,23 @@ private void showLaunchSplash() {
             });
         }
 
+        @JavascriptInterface public void recordRoadVideo() {
+            runOnUiThread(() -> {
+                try {
+                    Intent i = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                    i.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 60);
+                    i.putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1);
+                    if (i.resolveActivity(getPackageManager()) == null) {
+                        Toast.makeText(MainActivity.this,"Video kamera uygulaması bulunamadı",Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    startActivityForResult(i, ROAD_VIDEO_REQUEST);
+                } catch(Exception e) {
+                    Toast.makeText(MainActivity.this,"Video kamerası açılamadı",Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
         @JavascriptInterface public void captureImage(String contextId) {
             runOnUiThread(() -> {
                 try {
@@ -4296,6 +4314,13 @@ private void showLaunchSplash() {
             } catch (Exception e) { Toast.makeText(this, "Yedek dosyası okunamadı", Toast.LENGTH_SHORT).show(); }
         }
 
+        if (requestCode == ROAD_VIDEO_REQUEST) {
+            boolean ok = resultCode == RESULT_OK;
+            String msg = ok ? "Video kamera uygulamasına kaydedildi" : "Video kaydı iptal edildi";
+            if (webView != null) webView.evaluateJavascript(
+                    "window.onRoadVideoRecorded && window.onRoadVideoRecorded(" +
+                    ok + "," + JSONObject.quote(msg) + ")", null);
+        }
         if (requestCode == TAKE_PHOTO_REQUEST) {
             final String pickerContext = pendingPickerContext;
             pendingPickerContext = null;
