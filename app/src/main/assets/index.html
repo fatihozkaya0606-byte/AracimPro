@@ -2006,7 +2006,7 @@ body:not(.r8HomeMode):not(.dark) .apMrecSlot{background:#e7f0f8;border-color:#c4
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
 <script>
 const KEY='aracim_pro_v1';
-const V='7.11.29';
+const V='7.11.30';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.NumberFormat(apLocale(),{style:'currency',currency:apCurrency(),maximumFractionDigits:2}).format(Number(n)||0);const num=n=>(Number(n)||0).toLocaleString(apLocale());
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -3051,7 +3051,7 @@ function apMrecCardHtml(){
   try{if(isPremium())return '';}catch(e){}
   return `<section class="apMrecCard" aria-label="Sponsorlu reklam">
     <div class="apMrecTitle"><strong>Öne Çıkan Reklam</strong><small>Sponsorlu</small></div>
-    <div id="apMrecSlot" class="apMrecSlot"><span>Reklam yükleniyor…</span></div>
+    <div id="apMrecSlot" class="apMrecSlot"><span aria-hidden="true"></span></div>
   </section>`;
 }
 window.apMrecAvailability=function(ready){
@@ -4865,16 +4865,22 @@ function admobAdsDiagnosticsModal(){
   const yes=x=>x?'Evet':'Hayır';
   const time=d.lastEventTime?new Date(d.lastEventTime).toLocaleString(apLocale()):'Henüz yok';
   const line=(key,value)=>'<div style="padding:7px 0;border-bottom:1px solid rgba(127,127,127,.15)"><b>'+esc(key)+':</b> '+esc(String(value))+'</div>';
-  modal('AdMob Reklam Kontrolü',`<div class="form"><div class="notice">Bu sürüm canlı AdMob banner birimini kullanır. Reklam gösterimi AdMob uygunluğuna, izinlere ve reklam envanterine bağlıdır.</div><div class="card">`+
+  modal('AdMob Reklam Kontrolü',`<div class="form"><div class="notice">Bu sürüm gerçek AdMob banner ve 300×250 orta reklam birimlerini kullanır. Kartın görünmesi reklamın gösterildiği anlamına gelmez. Orta reklam yüklü ancak görünür değilse reklam alanını ekrana kaydırın. Reklam bulunamazsa alan gizlenir.</div><div class="card">`+
   line('Uygulama sürümü',d.version||'?')+
   line('Reklam izni',yes(d.consent))+
   line('Premium doğrulaması',yes(d.premiumBillingReady))+
   line('Premium aktif',yes(d.premiumActive))+
-  line('AdMob başlatıldı',yes(d.sdkInitialized))+
+  line('AdMob başlatıldı',yes(d.sdkReady))+
+  line('Reklam isteği yapılabilir',yes(d.canRequestAds))+
   line('Test modu',yes(d.testMode))+
   line('Banner oluşturuldu',yes(d.bannerCreated))+
   line('Banner yüklendi',yes(d.bannerLoaded))+
   line('Banner görünür',yes(d.bannerVisible))+
+  line('Orta reklam oluşturuldu',yes(d.mrecCreated))+
+  line('Orta reklam yüklendi',yes(d.mrecLoaded))+
+  line('Orta reklam için alan uygun',yes(d.mrecSlotVisible))+
+  line('Orta reklam görünür',yes(d.mrecVisible))+
+  line('Orta reklamın son hatası',d.mrecLastError||'Yok')+
   line('Tam ekran hazır',yes(d.interstitialLoaded))+
   line('Oturumda tam ekran kullanıldı',yes(d.interstitialClaimed))+
   line('Açılış tamamlandı',yes(d.splashHidden))+
