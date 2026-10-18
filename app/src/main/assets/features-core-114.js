@@ -100,8 +100,12 @@ window.forecastCompute114=function(event){
  event.preventDefault();
  const f=new FormData(event.target),months=monthlyCosts114(),keys=Object.keys(months).sort().slice(-12);
  const sumFuel=keys.reduce((s,k)=>s+months[k].fuel,0),sumOther=keys.reduce((s,k)=>s+months[k].other,0);
- const inflation=1+(+f.get('inflation')||0)/100,km=1+(+f.get('kmchange')||0)/100;
- const annualFuel=(sumFuel/Math.max(1,keys.length))*12*km*inflation;
+ const inflation=1+(+f.get('inflation')||0)/100;
+ const priorKm=Math.max(1,+state.prefs.annualKm||12000);
+ const chosenKm=Math.max(1,+f.get('km')||priorKm);
+ const kmChange=1+(+f.get('kmchange')||0)/100;
+ const distanceFactor=chosenKm/priorKm*kmChange;
+ const annualFuel=(sumFuel/Math.max(1,keys.length))*12*distanceFactor*inflation;
  const annualOther=(sumOther/Math.max(1,keys.length))*12*inflation;
  const el=document.getElementById('ap114ForecastResult');if(!el)return;
  el.innerHTML='<strong>12 aylık senaryo</strong>'+
