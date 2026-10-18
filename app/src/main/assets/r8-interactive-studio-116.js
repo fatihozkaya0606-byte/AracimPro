@@ -59,6 +59,7 @@ function health(){
  '<button data-ap116="anatomy" class="secondary">🚘 Parça Rehberi</button></div>');
 }
 function route(){
+ if(typeof window.ap120OpenRoute==='function')return window.ap120OpenRoute();
  const v=car();
  const avg=v&&typeof avgConsumption==='function'?avgConsumption():0;
  const price=v&&typeof lastFuelPrice==='function'?lastFuelPrice():0;
