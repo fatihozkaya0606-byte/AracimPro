@@ -1,0 +1,75 @@
+/* Aracım Pro V108 - compact dashboard. No empty midpage advertising UI.
+   The bottom native AdMob banner is unaffected. */
+body .apMrecCard,body.apMrecReady .apMrecCard{display:none!important}
+.n97AdArea{display:none!important}
+.proWelcome108{display:flex;flex-direction:column;gap:0;padding-bottom:4px}
+.proWelcomeHero108{position:relative;isolation:isolate;overflow:hidden;border:1px solid #21618d;border-radius:19px;
+ background:linear-gradient(118deg,#062440 0%,#092d53 55%,#0a4171 100%);color:#eff9ff;padding:19px 18px 16px;
+ box-shadow:0 12px 28px rgba(0,21,52,.19);margin:10px 0 12px}
+.proWelcomeHero108:before{content:"";position:absolute;right:-54px;top:-70px;width:230px;height:220px;
+ background:radial-gradient(circle,rgba(54,186,245,.25),transparent 70%);pointer-events:none;z-index:-1}
+.proWelcomeEyebrow108{font-size:9px;font-weight:900;letter-spacing:1.4px;color:#78d8fa}
+.proWelcomeHeroRow108{display:flex;align-items:center;gap:10px}
+.proWelcomeHeroRow108>div:first-child{min-width:0;flex:1}
+.proWelcomeHeroRow108 h2{color:#f7fcff;font-size:20px;line-height:1.19;font-weight:900;letter-spacing:-.5px;margin:10px 0 7px}
+.proWelcomeHeroRow108 p{color:#b1cde6;font-size:11px;line-height:1.55;margin:0}
+.proWelcomeHeroGraphic108{flex:0 0 106px;width:106px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 8px 11px rgba(0,9,28,.28))}
+.proWelcomeHeroGraphic108 .market108Car{width:106px;height:72px}
+.proWelcomeAdd108{margin-top:16px;background:#21a3ea;color:#fff;border:0;border-radius:12px;box-shadow:0 5px 15px rgba(10,117,193,.28);
+ font-weight:900;font-size:12px;padding:12px 14px;min-width:140px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.proWelcomeAdd108 span{font-size:19px;line-height:0}
+.aras108Dock{display:flex;align-items:center;gap:6px;margin:10px 0 11px;padding:0;max-width:100%;min-height:80px}
+.aras108Bot{width:82px;height:82px;min-width:82px;border:0;background:transparent;position:relative;padding:0;display:grid;place-items:center;
+ overflow:visible;cursor:pointer;filter:drop-shadow(0 8px 9px rgba(0,90,154,.19));z-index:1}
+.aras108Bot:before{content:"";width:67px;height:67px;position:absolute;left:9px;top:7px;border:1px solid #2478ae;
+ background:radial-gradient(circle at 33% 25%,#1f6193 0%,#0b345c 55%,#071a35 100%);border-radius:50%;z-index:-1;
+ box-shadow:inset 0 1px 7px rgba(145,225,255,.22),0 0 0 4px rgba(14,126,200,.10)}
+.aras108Car{width:92px;height:88px;animation:aras108Hover 3.9s ease-in-out infinite;
+ filter:drop-shadow(0 3px 4px rgba(0,8,22,.3));position:relative;z-index:2}
+.aras108Eyes{animation:aras108Blink 5.8s infinite;transform-origin:58px 50px}
+.aras108Radar{animation:aras108Pulse 2.9s infinite;transform-origin:58px 13px}
+.aras108BotAura{position:absolute;inset:7px;border-radius:50%;border:1px solid rgba(89,213,255,.19);
+ animation:aras108Ring 4s ease-in-out infinite;pointer-events:none}
+.aras108Talk{min-height:67px;flex:1;min-width:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+ text-align:left;gap:4px;border:1px solid rgba(64,172,237,.30);border-radius:15px;
+ background:linear-gradient(135deg,#0a2746,#10395d);color:#f4faff;padding:10px 11px 10px 14px;position:relative;
+ box-shadow:0 7px 18px rgba(0,30,76,.12);cursor:pointer}
+.aras108Talk:before{content:"";position:absolute;left:-6px;top:28px;width:10px;height:10px;
+ transform:rotate(45deg);background:#0b2e4f;border-left:1px solid rgba(64,172,237,.30);border-bottom:1px solid rgba(64,172,237,.30)}
+.aras108Eyebrow{font-size:8px;font-weight:900;letter-spacing:1.3px;color:#70dcff;display:flex;align-items:center;gap:5px}
+.aras108Eyebrow i{width:5px;height:5px;background:#39e5b7;border-radius:100%;box-shadow:0 0 7px #39e5b7}
+.aras108Sparkle{font-size:10px;color:#b6faff;margin-left:5px}
+.aras108Talk strong{font-size:12.4px;letter-spacing:-.12px;line-height:1.32;font-weight:900;color:#fff}
+.aras108Talk small{font-size:10px;line-height:1.25;color:#b7d4ed}
+.aras108Talk small span{color:#78e3ff;font-size:14px;margin-left:4px}
+.market108Link{width:100%;display:flex;align-items:center;gap:11px;min-height:70px;text-align:left;cursor:pointer;
+ padding:9px 11px;border-radius:14px;border:1px solid #2373a1;color:#eaf7ff;
+ background:linear-gradient(112deg,#0a2545 0%,#113f66 75%,#14517a 100%);
+ box-shadow:0 6px 19px rgba(0,28,68,.13);margin:2px 0 17px}
+.market108Icon{width:87px;min-width:87px;height:50px;display:grid;place-items:center;
+ border-radius:11px;background:linear-gradient(130deg,#0c3458,#175888);border:1px solid rgba(97,200,255,.16)}
+.market108Car{width:87px;height:57px;filter:drop-shadow(0 4px 7px rgba(0,10,25,.34))}
+.market108Copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.market108Title{font-size:12px;font-weight:900;letter-spacing:.9px;color:#f3faff;line-height:1.25}
+.market108Title i{font-style:normal;font-size:8px;letter-spacing:.35px;
+ background:rgba(43,159,225,.18);border:1px solid rgba(92,206,255,.4);border-radius:5px;color:#7cdeff;padding:2px 5px;margin-left:4px}
+.market108Desc{font-size:10px;color:#b3d1e9;line-height:1.45}
+.market108Chevron{font-size:26px;color:#89d9ff;margin:0 4px 0 0;line-height:1}
+.market108ListingCar{display:grid;place-items:center}
+.market108ListingCar .market108Car{width:92px;max-width:100%;height:69px}
+.market107DetailCar .market108ListingCar .market108Car{width:170px;height:110px}
+.aras108Bot:focus-visible,.aras108Talk:focus-visible,.market108Link:focus-visible,.proWelcomeAdd108:focus-visible{
+ outline:3px solid #8aedff;outline-offset:2px}
+@keyframes aras108Hover{0%,100%{transform:translateY(1px) rotate(-1.5deg)}50%{transform:translateY(-5px) rotate(1.4deg)}}
+@keyframes aras108Blink{0%,42%,44%,100%{transform:scaleY(1)}43%{transform:scaleY(.08)}}
+@keyframes aras108Pulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.18)}}
+@keyframes aras108Ring{0%,100%{opacity:.3;transform:scale(.98)}50%{opacity:.7;transform:scale(1.065)}}
+@media(max-width:390px){
+ .aras108Dock{gap:4px}.aras108Bot{width:74px;min-width:74px;height:76px}
+ .aras108Car{width:82px;height:80px}.aras108Bot:before{width:63px;height:63px;left:5px;top:7px}
+ .aras108Talk{padding:9px 9px 9px 12px}.aras108Talk strong{font-size:11.3px}
+ .market108Icon{width:71px;min-width:71px}.market108Car{width:77px;height:52px}
+ .proWelcomeHeroGraphic108{flex-basis:75px;width:75px}.proWelcomeHeroGraphic108 .market108Car{width:82px;height:61px}
+ .proWelcomeHeroRow108 h2{font-size:18px}
+}
+@media(prefers-reduced-motion:reduce){.aras108Car,.aras108Eyes,.aras108Radar,.aras108BotAura{animation:none!important}}
