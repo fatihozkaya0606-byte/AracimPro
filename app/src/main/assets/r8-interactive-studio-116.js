@@ -49,7 +49,7 @@ function health(){
  panel('💚 R8 • Araç Sağlık Ekranı',
  '<div class="ap116Hero"><small>BAKIM KAYDI TEMELLİ SAĞLIK</small><h2>'+E(carName(v))+'</h2>'+
  '<p>Canlı OBD ölçümü değildir; yalnızca uygulamadaki kayıtlardan hesaplanır.</p></div>'+
- '<div class="ap116HealthTop"><div class="ap116Gauge" style="--ap116Health:'+Math.min(100,Math.max(0,h.score||0))+'"><b>'+E(h.score)+'</b><small>/100</small></div>'+
+ '<div class="ap116HealthTop"><div class="ap116Gauge" style="--ap116Health:'+Math.min(100,Math.max(0,h.score||0))+'%"><b>'+E(h.score)+'</b><small>/100</small></div>'+
  '<div class="ap116HealthText"><b>Bakım takip puanı</b><span>'+E(h.label)+'</span>'+
  '<small>Kayıt eksikliği puanı etkileyebilir. Gerçek mekanik arızaya teşhis koymaz.</small></div></div>'+
  '<div class="ap116Systems">'+systems.map(x=>'<button type="button" data-ap116="part:'+x[0]+'"><span>'+x[1]+'</span><b>'+x[2]+'</b><small>Kontrol rehberi →</small></button>').join('')+'</div>'+
