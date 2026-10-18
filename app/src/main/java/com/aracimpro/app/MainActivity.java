@@ -1297,12 +1297,17 @@ private void showLaunchSplash() {
                     mrecAdLoaded = true;
                     mrecRetryAttempt = 0;
                     logAdMob("mrec_loaded", "300x250 AdMob ad loaded");
+                    getSharedPreferences("aracim_admob_diagnostics", MODE_PRIVATE).edit()
+                            .putString("mrecLastError", "").apply();
                     notifyMrecJs(true);
                     updateMrecVisibility();
                 }
                 @Override public void onAdFailedToLoad(LoadAdError error) {
                     mrecAdLoaded = false;
-                    logAdMob("mrec_failed", error == null ? "No fill" : error.toString());
+                    final String mrecError = error == null ? "Bilinmeyen hata" : error.toString();
+                    logAdMob("mrec_failed", mrecError);
+                    getSharedPreferences("aracim_admob_diagnostics", MODE_PRIVATE).edit()
+                            .putString("mrecLastError", mrecError).apply();
                     notifyMrecJs(false);
                     updateMrecVisibility();
                     final long delay = adRetryDelay(mrecRetryAttempt++);
@@ -1760,6 +1765,8 @@ private void showLaunchSplash() {
                 out.put("premiumActive", premiumActive);
                 out.put("consent", admobConsentInfo != null && admobConsentInfo.canRequestAds());
                 out.put("sdkInitialized", admobSdkInitialized);
+                out.put("sdkReady", admobSdkReady);
+                out.put("canRequestAds", canRequestAdMobAds());
                 out.put("testMode", BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE);
                 out.put("bannerCreated", bannerAdView != null);
                 out.put("bannerLoaded", admobBannerLoaded);
@@ -1767,7 +1774,9 @@ private void showLaunchSplash() {
                 out.put("bannerVisible", bannerAdView != null && bannerAdView.getVisibility() == View.VISIBLE);
                 out.put("mrecCreated", mrecAdView != null);
                 out.put("mrecLoaded", mrecAdLoaded);
+                out.put("mrecSlotVisible", mrecSlotVisible);
                 out.put("mrecVisible", mrecAdView != null && mrecAdView.getVisibility() == View.VISIBLE);
+                out.put("mrecLastError", log.getString("mrecLastError", ""));
                 out.put("interstitialLoaded", oneInterstitialReady);
                 out.put("interstitialClaimed", oneInterstitialClaimed.get());
                 out.put("lastEvent", log.getString("step", "Henüz olay yok"));
