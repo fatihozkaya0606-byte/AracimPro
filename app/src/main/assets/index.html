@@ -2011,12 +2011,13 @@ body:not(.r8HomeMode):not(.dark) .apMrecSlot{background:#e7f0f8;border-color:#c4
 <link rel="stylesheet" href="r8-ultra-3d-118.css">
 <link rel="stylesheet" href="r8-splash-polish-119.css">
 <link rel="stylesheet" href="r8-3d-nav-120.css">
+<link rel="stylesheet" href="r8-release-121.css">
 </head>
 <body>
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
 <script>
 const KEY='aracim_pro_v1';
-const V='7.11.44';
+const V='7.11.45';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.NumberFormat(apLocale(),{style:'currency',currency:apCurrency(),maximumFractionDigits:2}).format(Number(n)||0);const num=n=>(Number(n)||0).toLocaleString(apLocale());
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
