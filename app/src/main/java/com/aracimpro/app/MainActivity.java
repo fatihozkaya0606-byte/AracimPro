@@ -207,6 +207,7 @@ public class MainActivity extends Activity {
     private RewardedAd excelRewardedAd124;
     private boolean excelRewardedLoading124 = false;
     private boolean excelRewardedShowing124 = false;
+    private long lastExcelRewardedShownAt124 = 0L;
     private long excelRewardedLoadedAt124 = 0L;
     private static final String EXCEL_REWARDS_PREFS124 = "aracim_excel_reward_124";
 
@@ -1661,6 +1662,8 @@ private void showLaunchSplash() {
         if (!oneInterstitialReady || oneInterstitialAd == null ||
             !canRequestAdMobAds() || !apPremiumSplashHidden ||
             appOpenShowing122 ||
+            // Do not stack a forced interstitial after a voluntary rewarded video.
+            (lastExcelRewardedShownAt124 > 0L && now - lastExcelRewardedShownAt124 < 180000L) ||
             now - sessionStartedAt < 30000L ||
             now - oneInterstitialLoadedAt > 45L * 60L * 1000L ||
             (appOpenLastShownAt122 > 0 &&
@@ -1764,7 +1767,8 @@ private void showLaunchSplash() {
         };
         ad.setFullScreenContentCallback(new FullScreenContentCallback() {
             @Override public void onAdShowedFullScreenContent() {
-                logAdMob("rewarded_excel_shown", "User requested an Excel report ad");
+                lastExcelRewardedShownAt124 = android.os.SystemClock.elapsedRealtime();
+                logAdMob("rewarded_excel_shown", "Optional Excel report reward from Add Vehicle");
             }
             @Override public void onAdDismissedFullScreenContent() {
                 excelRewardedShowing124 = false;
@@ -1844,6 +1848,8 @@ private void showLaunchSplash() {
               "records".equals(target) || "plan".equals(target) ||
               "reports".equals(target) || "more".equals(target))) return false;
         if (!oneInterstitialReady || oneInterstitialAd == null ||
+                (lastExcelRewardedShownAt124 > 0L &&
+                 android.os.SystemClock.elapsedRealtime() - lastExcelRewardedShownAt124 < 180000L) ||
                 android.os.SystemClock.elapsedRealtime() - sessionStartedAt < 15000L ||
                 android.os.SystemClock.elapsedRealtime() - oneInterstitialLoadedAt > 45 * 60 * 1000L ||
                 !canRequestAdMobAds() || !apPremiumSplashHidden ||
