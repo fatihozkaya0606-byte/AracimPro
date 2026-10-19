@@ -29,8 +29,11 @@ android {
         // Dedicated App Open ad unit: set APP_OPEN_AD_UNIT_ID as a GitHub Actions secret.
         // Never reuse interstitial or banner IDs. Without a valid unit, live App Open stays off.
         buildConfigField 'String', 'APP_OPEN_AD_UNIT_ID', '\"' + ((System.getenv('APP_OPEN_AD_UNIT_ID') ?: '').matches('ca-app-pub-[0-9]+/[0-9]+') ? System.getenv('APP_OPEN_AD_UNIT_ID') : '') + '\"'
-        versionCode 123
-        versionName '7.11.47'
+        // Rewarded video is enabled for release only with a distinct real AdMob unit ID.
+        // Configure REWARDED_AD_UNIT_ID in the release workflow's GitHub secret.
+        buildConfigField 'String', 'REWARDED_AD_UNIT_ID', '"' + ((System.getenv('REWARDED_AD_UNIT_ID') ?: '').matches('ca-app-pub-[0-9]+/[0-9]+') ? System.getenv('REWARDED_AD_UNIT_ID') : '') + '"'
+        versionCode 124
+        versionName '7.11.48'
     }
 
     signingConfigs {
