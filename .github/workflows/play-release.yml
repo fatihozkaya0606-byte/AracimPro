@@ -3,7 +3,7 @@ name: Google Play Release AAB
 on:
   workflow_dispatch:
   push:
-    branches: [ aracimpro-play-quality-83, aracimpro-115-exact-engine-catalog-all-makes, aracimpro-121-release-polish-signed-aab, aracimpro-122-mrec-placement-app-open, aracimpro-124-rewarded-excel, aracimpro-125-rewarded-addvehicle ]
+    branches: [ aracimpro-play-quality-83, aracimpro-115-exact-engine-catalog-all-makes, aracimpro-121-release-polish-signed-aab, aracimpro-122-mrec-placement-app-open, aracimpro-124-rewarded-excel, aracimpro-125-rewarded-addvehicle, aracimpro-126-play-versioncode ]
 
 jobs:
   build-release:
