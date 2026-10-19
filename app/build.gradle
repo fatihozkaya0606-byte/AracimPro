@@ -29,10 +29,9 @@ android {
         // Dedicated App Open ad unit: set APP_OPEN_AD_UNIT_ID as a GitHub Actions secret.
         // Never reuse interstitial or banner IDs. Without a valid unit, live App Open stays off.
         buildConfigField 'String', 'APP_OPEN_AD_UNIT_ID', '\"' + ((System.getenv('APP_OPEN_AD_UNIT_ID') ?: '').matches('ca-app-pub-[0-9]+/[0-9]+') ? System.getenv('APP_OPEN_AD_UNIT_ID') : '') + '\"'
-        // Dedicated rewarded video unit created in AdMob for Aracim Pro.
-        // This public unit ID is safe to ship in the APK/AAB. A GitHub secret
-        // can still override it when rotating the unit in a later release.
-        buildConfigField 'String', 'REWARDED_AD_UNIT_ID', '"' + ((System.getenv('REWARDED_AD_UNIT_ID') ?: '').matches('ca-app-pub-[0-9]+/[0-9]+') ? System.getenv('REWARDED_AD_UNIT_ID') : 'ca-app-pub-7205009121067400/7362031917') + '"'
+        // A public AdMob rewarded unit ID. Debug mode independently uses Google's
+        // sample rewarded ad ID in MainActivity; production uses this exact unit.
+        buildConfigField 'String', 'REWARDED_AD_UNIT_ID', '"ca-app-pub-7205009121067400/7362031917"'
         versionCode 124
         versionName '7.11.48'
     }
