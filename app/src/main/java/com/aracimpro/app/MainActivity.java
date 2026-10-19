@@ -93,6 +93,8 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
+import com.google.android.gms.ads.rewarded.RewardedAd;
+import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.google.android.gms.ads.appopen.AppOpenAd;
 import com.google.android.ump.ConsentInformation;
 import com.google.android.ump.ConsentRequestParameters;
@@ -200,6 +202,14 @@ public class MainActivity extends Activity {
     private ConsentInformation admobConsentInfo;
     // Single full-screen ad at an eligible, user-initiated page transition.
     // No ad on startup, back/exit, form clicks, or while using Premium.
+    // Optional reward: one completed video grants one Excel report export.
+    // This never bypasses subscriptions and cannot grant cash or transferable points.
+    private RewardedAd excelRewardedAd124;
+    private boolean excelRewardedLoading124 = false;
+    private boolean excelRewardedShowing124 = false;
+    private long excelRewardedLoadedAt124 = 0L;
+    private static final String EXCEL_REWARDS_PREFS124 = "aracim_excel_reward_124";
+
     private volatile InterstitialAd oneInterstitialAd;
     private volatile boolean oneInterstitialReady = false;
     private final java.util.concurrent.atomic.AtomicBoolean oneInterstitialClaimed =
@@ -1183,6 +1193,8 @@ private void showLaunchSplash() {
                 oneInterstitialAd = null;
                 oneInterstitialReady = false;
                 interstitialLoading = false;
+                excelRewardedAd124 = null;
+                excelRewardedLoading124 = false;
                 appOpenAd122 = null;
                 appOpenLoading122 = false;
             } catch (Throwable ignored) {}
@@ -1349,6 +1361,7 @@ private void showLaunchSplash() {
             createAdMobBanner();
             createMrecAd();
             loadSingleInterstitial();
+            loadExcelRewardedAd124();
             loadAppOpenDuringSplash122();
             return;
         }
@@ -1671,6 +1684,112 @@ private void showLaunchSplash() {
         });
         try { ad.show(this); }
         catch (Throwable t) { logAdMob("vehicle_saved_interstitial_error", t.toString()); }
+    }
+
+
+    // The production rewarded ad unit is supplied independently by AdMob.
+    // Debug builds use Google's official test unit. Release does not request
+    // test inventory and stays safely disabled until a real ID is configured.
+    private String excelRewardedUnit124() {
+        if (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
+            return "ca-app-pub-3940256099942544/5224354917";
+        return BuildConfig.REWARDED_AD_UNIT_ID;
+    }
+
+    private void loadExcelRewardedAd124() {
+        if (!admobSdkReady || !canRequestAdMobAds() || excelRewardedLoading124 ||
+            excelRewardedShowing124 || excelRewardedAd124 != null ||
+            isFinishing() || isDestroyed()) return;
+        final String unit = excelRewardedUnit124();
+        if (unit == null || !unit.matches("ca-app-pub-[0-9]+/[0-9]+")) return;
+        excelRewardedLoading124 = true;
+        RewardedAd.load(this, unit, new AdRequest.Builder().build(), new RewardedAdLoadCallback() {
+            @Override public void onAdLoaded(RewardedAd ad) {
+                excelRewardedLoading124 = false;
+                if (!canRequestAdMobAds() || isFinishing() || isDestroyed()) return;
+                excelRewardedAd124 = ad;
+                excelRewardedLoadedAt124 = android.os.SystemClock.elapsedRealtime();
+                logAdMob("rewarded_excel_loaded", "A voluntary rewarded ad is ready");
+            }
+            @Override public void onAdFailedToLoad(LoadAdError error) {
+                excelRewardedLoading124 = false;
+                excelRewardedAd124 = null;
+                logAdMob("rewarded_excel_load_failed", error == null ? "No fill" : error.toString());
+            }
+        });
+    }
+
+    private void notifyExcelRewardJs124(String status) {
+        if (webView == null || isFinishing() || isDestroyed()) return;
+        webView.evaluateJavascript(
+            "window.onRewardedExcelStatus && window.onRewardedExcelStatus(" +
+            JSONObject.quote(status) + ")", null);
+    }
+
+    private void grantExcelReportCredit124() {
+        android.content.SharedPreferences prefs = getSharedPreferences(EXCEL_REWARDS_PREFS124, MODE_PRIVATE);
+        int existing = Math.max(0, prefs.getInt("credits", 0));
+        prefs.edit().putInt("credits", Math.min(20, existing + 1)).commit();
+        notifyExcelRewardJs124("earned");
+        logAdMob("rewarded_excel_earned", "One in-app Excel export credit issued");
+    }
+
+    private void showExcelRewardedAd124() {
+        if (!canRequestAdMobAds() || excelRewardedShowing124 ||
+            isFinishing() || isDestroyed()) {
+            notifyExcelRewardJs124("unavailable");
+            return;
+        }
+        RewardedAd ad = excelRewardedAd124;
+        if (ad == null) {
+            loadExcelRewardedAd124();
+            notifyExcelRewardJs124("not_ready");
+            return;
+        }
+        if (android.os.SystemClock.elapsedRealtime() - excelRewardedLoadedAt124 > 45L * 60L * 1000L) {
+            excelRewardedAd124 = null;
+            loadExcelRewardedAd124();
+            notifyExcelRewardJs124("not_ready");
+            return;
+        }
+        excelRewardedAd124 = null;
+        excelRewardedShowing124 = true;
+        final java.util.concurrent.atomic.AtomicBoolean earned = new java.util.concurrent.atomic.AtomicBoolean(false);
+        final java.util.concurrent.atomic.AtomicBoolean dismissed = new java.util.concurrent.atomic.AtomicBoolean(false);
+        final java.util.concurrent.atomic.AtomicBoolean credited = new java.util.concurrent.atomic.AtomicBoolean(false);
+        final Runnable finalizeReward = () -> {
+            if (earned.get() && dismissed.get() && credited.compareAndSet(false, true)) {
+                grantExcelReportCredit124();
+            }
+        };
+        ad.setFullScreenContentCallback(new FullScreenContentCallback() {
+            @Override public void onAdShowedFullScreenContent() {
+                logAdMob("rewarded_excel_shown", "User requested an Excel report ad");
+            }
+            @Override public void onAdDismissedFullScreenContent() {
+                excelRewardedShowing124 = false;
+                dismissed.set(true);
+                finalizeReward.run();
+                if (!earned.get()) notifyExcelRewardJs124("not_earned");
+                mainHandler.postDelayed(() -> loadExcelRewardedAd124(), 1500L);
+            }
+            @Override public void onAdFailedToShowFullScreenContent(AdError error) {
+                excelRewardedShowing124 = false;
+                notifyExcelRewardJs124("unavailable");
+                logAdMob("rewarded_excel_show_failed", String.valueOf(error));
+                mainHandler.postDelayed(() -> loadExcelRewardedAd124(), 3000L);
+            }
+        });
+        try {
+            ad.show(this, rewardItem -> runOnUiThread(() -> {
+                earned.set(true);
+                finalizeReward.run();
+            }));
+        } catch (Throwable error) {
+            excelRewardedShowing124 = false;
+            notifyExcelRewardJs124("unavailable");
+            mainHandler.postDelayed(() -> loadExcelRewardedAd124(), 3000L);
+        }
     }
 
     private void loadSingleInterstitial() {
@@ -2025,6 +2144,27 @@ private void showLaunchSplash() {
                 MainActivity.this::requestInterstitialAfterVehicleSaved122, 700L));
         }
 
+        @JavascriptInterface public void showRewardedExcelAd() {
+            // A direct, voluntary tap in the Excel report paywall.
+            runOnUiThread(MainActivity.this::showExcelRewardedAd124);
+        }
+
+        @JavascriptInterface public boolean rewardedExcelConfigured() {
+            return excelRewardedUnit124() != null &&
+                    excelRewardedUnit124().matches("ca-app-pub-[0-9]+/[0-9]+");
+        }
+
+        @JavascriptInterface public boolean consumeRewardedExcelCredit() {
+            // Java-side credits only exist after the SDK confirms the earned reward.
+            synchronized (MainActivity.this) {
+                android.content.SharedPreferences prefs =
+                    getSharedPreferences(EXCEL_REWARDS_PREFS124, MODE_PRIVATE);
+                int credits = prefs.getInt("credits", 0);
+                if (credits < 1) return false;
+                return prefs.edit().putInt("credits", credits - 1).commit();
+            }
+        }
+
         @JavascriptInterface public String admobAdsDiagnostics() {
             JSONObject out = new JSONObject();
             try {
@@ -2048,6 +2188,8 @@ private void showLaunchSplash() {
                 out.put("mrecLastError", log.getString("mrecLastError", ""));
                 out.put("interstitialLoaded", oneInterstitialReady);
                 out.put("interstitialClaimed", oneInterstitialClaimed.get());
+                out.put("rewardedExcelConfigured", excelRewardedUnit124().matches("ca-app-pub-[0-9]+/[0-9]+"));
+                out.put("rewardedExcelLoaded", excelRewardedAd124 != null);
                 out.put("lastEvent", log.getString("step", "Henüz olay yok"));
                 out.put("lastResult", log.getString("result", ""));
                 out.put("lastEventTime", log.getLong("timestamp", 0L));

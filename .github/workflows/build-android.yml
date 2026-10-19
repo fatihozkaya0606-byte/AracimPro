@@ -24,6 +24,7 @@ jobs:
       - name: Build debug APK
         env:
           OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          REWARDED_AD_UNIT_ID: ${{ secrets.REWARDED_AD_UNIT_ID }}
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
@@ -33,6 +34,7 @@ jobs:
       - name: Build release AAB
         env:
           OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          REWARDED_AD_UNIT_ID: ${{ secrets.REWARDED_AD_UNIT_ID }}
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
