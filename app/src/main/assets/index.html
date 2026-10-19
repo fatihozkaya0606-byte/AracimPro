@@ -4758,7 +4758,16 @@ const MARKET_REFERENCES={};
 function marketReferenceFor(v){if(!v)return null;const exact=MARKET_REFERENCES[`${v.make}|${v.model}|${v.year}|${v.trim||''}`]||MARKET_REFERENCES[`${v.make}|${v.model}|${v.year}|`];if(!exact)return null;const km=+v.km||exact.baselineKm||0,baseKm=exact.baselineKm||km;const kmAdj=Math.max(-0.16,Math.min(0.16,(baseKm-km)/100000*0.10));const avg=Math.round(exact.avg*(1+kmAdj));return {...exact,avg,min:Math.round((exact.min||exact.avg*.92)*(1+kmAdj)),max:Math.round((exact.max||exact.avg*1.08)*(1+kmAdj))}}
 function autoMarketForVehicle(v){if(!v||state.prefs.autoMarketOnSave===false)return;if(state.prefs.marketApiUrl){v.marketStatus='Canlı değerleme sorgulanıyor';try{Android.fetchMarketValue(state.prefs.marketApiUrl,JSON.stringify({year:v.year,make:v.make,model:v.model,engine:v.engine,trim:v.trim,km:v.km,fuel:v.fuel,transmission:v.transmission}))}catch(e){v.marketStatus='Canlı değerleme bağlantısı açılamadı'}return}v.marketStatus='Canlı piyasa verisi için güvenli değerleme sunucusu bağlanmalı';localStorage.setItem(KEY,JSON.stringify(state))}
 const vehicleBrands=['Abarth','Alfa Romeo','Audi','BMW','BYD','Chery','Chevrolet','Citroën','Cupra','Dacia','DS','Fiat','Ford','Honda','Hyundai','Isuzu','Jaguar','Jeep','Kia','Land Rover','Lexus','Maserati','Mazda','Mercedes-Benz','MG','MINI','Mitsubishi','Nissan','Opel','Peugeot','Porsche','Renault','Seat','Skoda','Subaru','Suzuki','Tesla','Toyota','Volkswagen','Volvo','Tofaş','Ferrari','Lamborghini','Bentley','Rolls-Royce','Polestar','Geely','SsangYong/KGM'];
-function openVehicle(id=''){const x=state.vehicles.find(v=>v.id===id)||{id:'v_'+uid(),type:'Otomobil',make:'',model:'',trim:'',year:new Date().getFullYear(),plate:'',km:0,fuel:'',engine:'',transmission:'',body:'',color:'',drive:'',powerHp:'',torqueNm:'',engineCc:'',trunkL:'',weightKg:'',zeroTo100:'',purchasePrice:'',purchaseDate:'',currentValue:'',note:'',photo:'',photoSource:'',photoLicense:'',photoCredit:''};window._editingVehicle={...x};modal(id?'Aracı Düzenle':'Seçimli Araç Ekle',`<form id="vehicleForm" class="form" onsubmit="saveVehicle(event,'${id}')"><div class="photoEdit"><div id="vehiclePhotoPreview">${x.photo?`<img class="photoPreview" src="${x.photo}">`:`<div class="photoPreview"><div class="emptyVehicle">${ico('car')}</div></div>`}</div><div class="grow"><button type="button" class="secondary wide" onclick="searchVehiclePhotos()">${ico('search')} Gerçek Araç Fotoğrafını Bul</button><button type="button" class="secondary wide" style="margin-top:7px" onclick="pickVehiclePhoto('${x.id}')">Galeriden Fotoğraf Seç</button><div class="hint">Modeli seçtiğinde fotoğraf otomatik aranır. Bulunamazsa galeriden kendi fotoğrafını seçebilirsin.</div></div></div><div id="imageSearchArea"></div>
+function openVehicle(id=''){const x=state.vehicles.find(v=>v.id===id)||{id:'v_'+uid(),type:'Otomobil',make:'',model:'',trim:'',year:new Date().getFullYear(),plate:'',km:0,fuel:'',engine:'',transmission:'',body:'',color:'',drive:'',powerHp:'',torqueNm:'',engineCc:'',trunkL:'',weightKg:'',zeroTo100:'',purchasePrice:'',purchaseDate:'',currentValue:'',note:'',photo:'',photoSource:'',photoLicense:'',photoCredit:''};window._editingVehicle={...x};
+let showRewardOffer=false;
+if(!id&&!isPremium())try{showRewardOffer=!!Android.rewardedExcelConfigured()}catch(e){}
+modal(id?'Aracı Düzenle':'Seçimli Araç Ekle',`<form id="vehicleForm" class="form" onsubmit="saveVehicle(event,'${id}')">
+${showRewardOffer?`<div id="rewardedVehicleOffer" class="notice" style="margin-bottom:12px;text-align:center">
+  <b>🎁 Aracını eklerken 1 Excel raporu hakkı kazan</b>
+  <p class="muted small" style="margin:7px 0">İstersen reklamı tamamla, araç kaydından sonra 1 Excel araç raporu oluştur. Reklam izlemek zorunlu değildir; araç ekleme ücretsizdir.</p>
+  <button type="button" class="secondary wide" onclick="watchExcelRewardedAd()">▶ Reklam İzle · 1 Excel Raporu</button>
+</div>`:''}
+<div class="photoEdit"><div id="vehiclePhotoPreview">${x.photo?`<img class="photoPreview" src="${x.photo}">`:`<div class="photoPreview"><div class="emptyVehicle">${ico('car')}</div></div>`}</div><div class="grow"><button type="button" class="secondary wide" onclick="searchVehiclePhotos()">${ico('search')} Gerçek Araç Fotoğrafını Bul</button><button type="button" class="secondary wide" style="margin-top:7px" onclick="pickVehiclePhoto('${x.id}')">Galeriden Fotoğraf Seç</button><div class="hint">Modeli seçtiğinde fotoğraf otomatik aranır. Bulunamazsa galeriden kendi fotoğrafını seçebilirsin.</div></div></div><div id="imageSearchArea"></div>
 <div class="catalogStep"><div class="catalogStepTitle">1 • Araç kimliği — yazmak yerine seç</div><div class="formrow"><div class="field"><label>Model Yılı</label><select name="year" onchange="onVehicleYearMakeChange()">${optList(YEAR_OPTIONS.map(String),String(x.year||new Date().getFullYear()),'Yıl seç',false)}</select></div><div class="field"><label>Marka</label><select name="make" required onchange="onVehicleYearMakeChange()">${optList(vehicleBrands,x.make,'Marka seç')}</select></div></div><div class="field"><label>Model</label><select name="model" required onchange="onVehicleModelChange()">${optList(staticModels(x.make),x.model,'Model seç')}</select><div id="catalogStatus" class="catalogStatus">Yerel Türkiye kataloğu hazır. İnternet varsa model listesi genişletilir.</div></div><div class="formrow"><div class="field"><label>Araç Türü</label><select name="type" onchange="onVehicleTypeChange()">${optList(['Otomobil','SUV/Crossover','Hafif Ticari','Pickup','Motosiklet','Karavan'],x.type||modelType(x.model),'Tür seç')}</select></div><div class="field"><label>Kasa</label><select name="body">${optList(bodyOptions(x.type||modelType(x.model)),x.body,'Kasa seç')}</select></div></div></div>
 <div class="catalogStep"><div class="catalogStepTitle">2 • Motor / versiyon, donanım ve görünüm</div><div class="formrow"><div class="field"><label>Motor / Versiyon</label><select name="engine" onchange="onVehicleEngineChange()">${v115SafeList(vehicleEngineOptions(x.make,x.model,x.year,x.fuel),x.engine,'Motor / versiyon seç')}</select><div id="v115EngineInfo" class="catalogStatus">Motor yalnızca seçilen marka / model / yıl / yakıt ile eşleşir. Eksik motor bilgisi başka markayla doldurulmaz.</div></div><div class="field"><label>Yakıt / Enerji</label><select name="fuel" onchange="onVehicleFuelChange()">${optList(vehicleFuelOptions(x.make,x.model,x.year),x.fuel,'Yakıt seç')}</select></div></div><div class="formrow"><div class="field"><label>Şanzıman</label><select name="transmission">${optList(TRANSMISSIONS,x.transmission,'Şanzıman seç')}</select></div><div class="field"><label>Çekiş</label><select name="drive">${optList(DRIVE_TYPES,x.drive,'Çekiş seç')}</select></div></div><div class="formrow"><div class="field"><label>Paket / Donanım</label><select name="trim">${optList(trimOptions(x.make,x.model,x.year,x.engine),x.trim,'Paket / donanım seç')}</select></div><div class="field"><label>Renk</label><select name="color">${optList(COLORS,x.color,'Renk seç')}</select></div></div></div>
 <div class="catalogStep"><div class="catalogStepTitle">3 • OtoAPI kesin varyant — teknik veriyi doğru kayda bağla</div><div class="selectNote">${ico('info')}<span>Boş teknik verilerin en büyük sebebi model adına göre tahmini eşleşmeydi. Buradan OtoAPI'nin gerçek varyant kaydını seçersen bundan sonra teknik bilgiler doğrudan carId üzerinden tek sorguyla alınır.</span></div><button type="button" class="secondary wide" onclick="loadOtoVariants()">OtoAPI Kesin Varyantlarını Getir</button><div class="field" style="margin-top:9px"><label>Kesin Varyant</label><select name="otoCarId" onchange="onOtoVariantChange()"><option value="${x.otoCarId||''}">${x.otoCarId?esc((x.otoVariantName||x.specMatchedTrim||'Kayıtlı varyant')+' • carId '+x.otoCarId):'Kesin varyant seçilmedi'}</option></select><div id="otoVariantStatus" class="catalogStatus">${x.otoCarId?'Kesin OtoAPI kaydı kayıtlı. Teknik sorgu doğrudan bu carId ile yapılacak.':'Marka + model + yıl seçtikten sonra varyantları getir.'}</div></div></div>
@@ -4911,9 +4920,10 @@ function watchExcelRewardedAd(){
 }
 window.onRewardedExcelStatus=(status)=>{
   if(status==='earned'){
-    closeModal();
-    toast('🎁 1 Excel raporu hakkı kazandın');
-    exportXls();
+    // Never close the in-progress vehicle form or export an old vehicle report.
+    // The native credit is stored for later use under Raporlar > Excel Raporu.
+    document.getElementById('rewardedVehicleOffer')?.remove();
+    toast('🎁 1 Excel raporu hakkı kazandın. Aracını kaydet, sonra Raporlar bölümünden kullan.');
   }else if(status==='not_ready'){
     toast('Video hazırlanıyor. Biraz sonra tekrar dene.');
   }else if(status==='not_earned'){
@@ -4937,8 +4947,6 @@ function premiumPreview(feature=''){
 
   const mp=esc(premiumInfo.monthlyPrice||'59,99 TL');
   const yp=esc(premiumInfo.yearlyPrice||'499,99 TL');
-  let excelRewardedConfigured=false;
-  try{excelRewardedConfigured=!!Android.rewardedExcelConfigured()}catch(e){}
 
   modal('Aracım Pro Premium',`
     <div class="premiumHero">
@@ -4967,12 +4975,6 @@ function premiumPreview(feature=''){
       </button>
     </div>
 
-    ${feature==='Excel Raporu'&&excelRewardedConfigured?`
-      <div class="notice" style="margin:12px 0;text-align:center">
-        <b>🎁 1 Excel raporu hakkı</b>
-        <div class="muted small" style="margin:6px 0 10px">İstersen bir ödüllü video izleyerek yalnızca bir Excel raporu indirebilirsin. İzlemek zorunlu değil.</div>
-        <button type="button" class="primary wide" onclick="watchExcelRewardedAd()">▶ Reklamı İzle · 1 Excel Raporu</button>
-      </div>`:''}
     <button class="primary wide premiumBuy" onclick="buyPremiumPlan('monthly')">👑 Premium'a Geç</button>
     <button class="secondary wide" style="margin-top:8px" onclick="restorePremiumPurchase()">Satın Alımları Geri Yükle</button>
 

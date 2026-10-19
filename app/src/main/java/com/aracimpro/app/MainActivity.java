@@ -207,6 +207,7 @@ public class MainActivity extends Activity {
     private RewardedAd excelRewardedAd124;
     private boolean excelRewardedLoading124 = false;
     private boolean excelRewardedShowing124 = false;
+    private long lastExcelRewardedClosedAt125 = 0L;
     private long excelRewardedLoadedAt124 = 0L;
     private static final String EXCEL_REWARDS_PREFS124 = "aracim_excel_reward_124";
 
@@ -1661,6 +1662,9 @@ private void showLaunchSplash() {
         if (!oneInterstitialReady || oneInterstitialAd == null ||
             !canRequestAdMobAds() || !apPremiumSplashHidden ||
             appOpenShowing122 ||
+            // Only a 40-second rest after the user closes a voluntary rewarded video.
+            excelRewardedShowing124 ||
+            (lastExcelRewardedClosedAt125 > 0L && now - lastExcelRewardedClosedAt125 < 40000L) ||
             now - sessionStartedAt < 30000L ||
             now - oneInterstitialLoadedAt > 45L * 60L * 1000L ||
             (appOpenLastShownAt122 > 0 &&
@@ -1764,9 +1768,10 @@ private void showLaunchSplash() {
         };
         ad.setFullScreenContentCallback(new FullScreenContentCallback() {
             @Override public void onAdShowedFullScreenContent() {
-                logAdMob("rewarded_excel_shown", "User requested an Excel report ad");
+                logAdMob("rewarded_excel_shown", "Optional Excel report reward from Add Vehicle");
             }
             @Override public void onAdDismissedFullScreenContent() {
+                lastExcelRewardedClosedAt125 = android.os.SystemClock.elapsedRealtime();
                 excelRewardedShowing124 = false;
                 dismissed.set(true);
                 finalizeReward.run();
@@ -1844,6 +1849,9 @@ private void showLaunchSplash() {
               "records".equals(target) || "plan".equals(target) ||
               "reports".equals(target) || "more".equals(target))) return false;
         if (!oneInterstitialReady || oneInterstitialAd == null ||
+                excelRewardedShowing124 ||
+                (lastExcelRewardedClosedAt125 > 0L &&
+                 android.os.SystemClock.elapsedRealtime() - lastExcelRewardedClosedAt125 < 40000L) ||
                 android.os.SystemClock.elapsedRealtime() - sessionStartedAt < 15000L ||
                 android.os.SystemClock.elapsedRealtime() - oneInterstitialLoadedAt > 45 * 60 * 1000L ||
                 !canRequestAdMobAds() || !apPremiumSplashHidden ||
