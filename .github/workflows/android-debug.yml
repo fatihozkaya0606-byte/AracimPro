@@ -3,7 +3,7 @@ name: Android Debug Build
 on:
   workflow_dispatch:
   push:
-    branches: [ main, aracimpro-115-exact-engine-catalog-all-makes, aracimpro-116-r8-interactive-studio, aracimpro-117-r8-hero-photo-polish, aracimpro-118-r8-3d-full-ui, aracimpro-119-splash-and-layout-fixes, aracimpro-120-3d-navigation-light-header, aracimpro-122-mrec-placement-app-open, aracimpro-123-admob-applovin-mediation ]
+    branches: [ main, aracimpro-115-exact-engine-catalog-all-makes, aracimpro-116-r8-interactive-studio, aracimpro-117-r8-hero-photo-polish, aracimpro-118-r8-3d-full-ui, aracimpro-119-splash-and-layout-fixes, aracimpro-120-3d-navigation-light-header, aracimpro-122-mrec-placement-app-open, aracimpro-123-admob-applovin-mediation, aracimpro-124-rewarded-excel ]
 
 jobs:
   build-debug:
@@ -44,6 +44,7 @@ jobs:
         env:
           OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
           APP_OPEN_AD_UNIT_ID: ${{ secrets.APP_OPEN_AD_UNIT_ID }}
+          REWARDED_AD_UNIT_ID: ${{ secrets.REWARDED_AD_UNIT_ID }}
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
