@@ -7,14 +7,14 @@ This branch adds a **voluntary** rewarded video entry on the **Excel Raporu** Pr
 - Credits are persisted on device, consumed once by the native bridge and not interchangeable with an overall Premium subscription.
 - Premium subscribers do not receive ads and retain full access to Excel exports.
 - Debug builds use Google's sample rewarded unit `ca-app-pub-3940256099942544/5224354917`.
-- Production deliberately disables the rewarded entry until a **new AdMob rewarded ad unit ID** is supplied.
+- Production uses the newly created AdMob rewarded unit `ca-app-pub-7205009121067400/7362031917`; debug builds still use Google's official sample unit.
 
-## Turn on live ads
+## AdMob setup completed
 
-1. AdMob > Apps > Aracım Pro > Ad units > Add ad unit > **Rewarded**.
-2. Name it **Aracım Pro Ödüllü Excel Raporu** and create it.
-3. Supply its separate ID (format `ca-app-pub-1234567890/0987654321`) as the `REWARDED_AD_UNIT_ID` secret in the GitHub repository, or send the unit ID for integration.
-4. Build a signed Play AAB from this branch after the live ID is configured.
-5. Test with test ads before using real traffic. Do not click/complete production ads merely to increase impressions.
+The rewarded ad unit **Aracım Pro Ödüllü Excel Raporu** was created in AdMob with amount **1** and reward type **Excel Rapor Hakkı**. Its unit ID is directly configured in `app/build.gradle`.
 
-Important: no account creation, monetary reward, forced autoplay, automatic repeat, or Premium bypass is introduced.
+The project still needs a **signed build and on-device test** before publishing. GitHub Actions for this branch builds a debug APK and signed Play AAB. Check whether the specific newest commit built successfully rather than relying on earlier runs.
+
+Test sequence: open app > Reports > Excel Raporu > choose rewarded video > finish a Google test video > ensure a single Excel export is granted. If no fill is available, no reward should be issued. If cancelled early, no reward should be issued. Existing banner/MREC/interstitial ad units and subscription paywall must remain functional.
+
+Do not repeatedly view your own live ads; use sample ads for testing.
