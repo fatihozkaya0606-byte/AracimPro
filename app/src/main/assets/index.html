@@ -4899,7 +4899,29 @@ function routeCalculator(){if(!isPremium())return premiumPreview('Yol Maliyeti')
 function accidentModal(){if(!isPremium())return premiumPreview('Kaza / Hasar Arşivi');return accidentModalCore.apply(this,arguments)}
 function backupCloud(){if(!isPremium())return premiumPreview('Bulut Yedekleme');return backupCloudCore.apply(this,arguments)}
 function compareVehicles(){if(!isPremium())return premiumPreview('Gelişmiş Araç Karşılaştırma');return compareVehiclesCore.apply(this,arguments)}
-function exportXls(){if(!isPremium())return premiumPreview('Excel Raporu');return exportXlsCore.apply(this,arguments)}
+function exportXls(){
+  if(isPremium())return exportXlsCore.apply(this,arguments);
+  // A credit comes from the Android rewarded-ad callback, never a JS-only flag.
+  try{if(Android.consumeRewardedExcelCredit())return exportXlsCore.apply(this,arguments)}catch(e){}
+  return premiumPreview('Excel Raporu');
+}
+function watchExcelRewardedAd(){
+  try{Android.showRewardedExcelAd()}
+  catch(e){toast('Ödüllü video bu cihazda açılamadı')}
+}
+window.onRewardedExcelStatus=(status)=>{
+  if(status==='earned'){
+    closeModal();
+    toast('🎁 1 Excel raporu hakkı kazandın');
+    exportXls();
+  }else if(status==='not_ready'){
+    toast('Video hazırlanıyor. Biraz sonra tekrar dene.');
+  }else if(status==='not_earned'){
+    toast('Video tamamlanmadığı için rapor hakkı verilmedi.');
+  }else{
+    toast('Şu an ödüllü reklam bulunamadı. Daha sonra tekrar dene.');
+  }
+};
 function premiumPreview(feature=''){
   window._premiumFeature=feature||'';
   loadPremiumStatus();
@@ -4915,6 +4937,8 @@ function premiumPreview(feature=''){
 
   const mp=esc(premiumInfo.monthlyPrice||'59,99 TL');
   const yp=esc(premiumInfo.yearlyPrice||'499,99 TL');
+  let excelRewardedConfigured=false;
+  try{excelRewardedConfigured=!!Android.rewardedExcelConfigured()}catch(e){}
 
   modal('Aracım Pro Premium',`
     <div class="premiumHero">
@@ -4943,6 +4967,12 @@ function premiumPreview(feature=''){
       </button>
     </div>
 
+    ${feature==='Excel Raporu'&&excelRewardedConfigured?`
+      <div class="notice" style="margin:12px 0;text-align:center">
+        <b>🎁 1 Excel raporu hakkı</b>
+        <div class="muted small" style="margin:6px 0 10px">İstersen bir ödüllü video izleyerek yalnızca bir Excel raporu indirebilirsin. İzlemek zorunlu değil.</div>
+        <button type="button" class="primary wide" onclick="watchExcelRewardedAd()">▶ Reklamı İzle · 1 Excel Raporu</button>
+      </div>`:''}
     <button class="primary wide premiumBuy" onclick="buyPremiumPlan('monthly')">👑 Premium'a Geç</button>
     <button class="secondary wide" style="margin-top:8px" onclick="restorePremiumPurchase()">Satın Alımları Geri Yükle</button>
 
