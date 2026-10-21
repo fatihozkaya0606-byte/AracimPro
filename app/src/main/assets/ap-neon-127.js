@@ -76,6 +76,34 @@ view=function(){
   if(current==='home')return home();
   return previousView();
 };
+/* V128: position real native horizontal AdMob 320x50 in content.
+   Never draw pretend advertisers or obscure bottom navigation controls. */
+window.apSyncMrecSlot=function(){
+ apMrecFrameQueued=false;
+ try{
+  if(typeof Android==='undefined'||!Android.updateMrecSlot)return;
+  const slot=document.getElementById('apMrecSlot');
+  const vw=window.innerWidth;
+  if(!slot||document.hidden||Date.now()<apMrecScrollBlockedUntil){
+   Android.updateMrecSlot(0,0,0,0,vw,false);return;
+  }
+  const r=slot.getBoundingClientRect();
+  const modalOpen=['modalRoot','lockRoot'].some(id=>{
+   const e=document.getElementById(id);return !!(e&&e.innerHTML.trim());
+  });
+  const nav=document.querySelector('nav.nav, .nav');
+  const navTop=nav?nav.getBoundingClientRect().top:window.innerHeight-90;
+  const header=document.querySelector('#app>.header');
+  const topGuard=header?header.getBoundingClientRect().bottom+6:85;
+  const visible=document.body.classList.contains('apMrecReady')
+   && !modalOpen
+   && r.width>=319 && r.height>=49
+   && r.left>=0 && r.right<=vw+2
+   && r.top>=Math.max(170,topGuard)
+   && r.bottom<=Math.min(window.innerHeight-86,navTop-10);
+  Android.updateMrecSlot(r.left,r.top,r.width,r.height,vw,visible);
+ }catch(e){}
+};
 const origRender=render;
 render=function(){origRender(); if(current==='home') setTimeout(()=>{try{apMrecQueueSync()}catch(e){}},150)};
 render();
