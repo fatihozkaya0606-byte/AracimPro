@@ -166,3 +166,18 @@ body.apNeon127.r8HomeMode #app .nav{min-height:0!important}
   .ap127-feature b{font-size:9px!important}
   body.r118Skin.apNeon127.r8HomeMode #app .ap127-ad-space .apMrecSlot{width:300px!important}
 }
+
+/* Keep language, time and notifications on one compact horizontal header line. */
+body.apNeon127.r8HomeMode #app .header .apRightStack{
+ display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:flex-end!important;gap:3px!important
+}
+body.apNeon127.r8HomeMode #app .header .apLiveCorner{display:flex!important;flex-wrap:nowrap!important;gap:3px!important}
+body.apNeon127.r8HomeMode #app .header .apBrandWrap{gap:5px!important;flex:1 1 auto!important}
+body.apNeon127.r8HomeMode #app .header .apBrandText{white-space:nowrap!important}
+body.apNeon127.r8HomeMode #app .header .apHeaderActions{gap:0!important}
+@media(max-width:390px){
+ body.apNeon127.r8HomeMode #app .header .apBrandText{font-size:18px!important}
+ body.apNeon127.r8HomeMode #app .header .apBrandSub{font-size:7px!important}
+ body.apNeon127.r8HomeMode #app .header .apLiveMini.clock{font-size:8px!important;padding:3px!important}
+ body.apNeon127.r8HomeMode #app .header .apLiveMini.active{font-size:8px!important;padding:3px!important}
+}
