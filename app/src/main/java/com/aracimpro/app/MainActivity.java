@@ -1501,7 +1501,7 @@ private void showLaunchSplash() {
         if (!canRequestAdMobAds() || mrecAdView != null || root == null) return;
         try {
             final AdView ad = new AdView(this);
-            ad.setAdSize(BuildConfig.DEBUG ? AdSize.BANNER : AdSize.MEDIUM_RECTANGLE); // V128 test: 320x50 horizontal middle ad
+            ad.setAdSize(AdSize.BANNER); // V131: native 320x50 horizontal in-feed banner, debug and release
             ad.setAdUnitId((BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
                 ? "ca-app-pub-3940256099942544/6300978111"
                 : "ca-app-pub-7205009121067400/3129664519");
@@ -1510,7 +1510,7 @@ private void showLaunchSplash() {
                     if (ad != mrecAdView || !canRequestAdMobAds()) return;
                     mrecAdLoaded = true;
                     mrecRetryAttempt = 0;
-                    logAdMob("mrec_loaded", "300x250 banner loaded through AdMob mediation");
+                    logAdMob("mrec_loaded", "320x50 in-feed banner loaded through AdMob mediation");
                     recordAdSource123("mrec", ad.getResponseInfo());
                     getSharedPreferences("aracim_admob_diagnostics", MODE_PRIVATE).edit()
                             .putString("mrecLastError", "").apply();
@@ -1533,24 +1533,21 @@ private void showLaunchSplash() {
                     }, delay);
                 }
                 @Override public void onAdImpression() {
-                    logAdMob("mrec_impression", "300x250 medium rectangle impression");
+                    logAdMob("mrec_impression", "320x50 in-feed banner impression");
                 }
             });
             // DEBUG uses the true 320x50 creative. Allocating the old 300x250
             // container centers the 50dp creative ~100dp too low and overlays
             // the "Bugun" rows, even though the nominal slot coordinates match.
             // LIVE builds retain their 300x250 MREC for compatibility.
-            final boolean horizontalPreview = BuildConfig.DEBUG;
             FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
-                    dp(horizontalPreview ? 320 : 300),
-                    dp(horizontalPreview ? 50 : 250),
-                    Gravity.TOP | Gravity.LEFT);
+                    dp(320), dp(50), Gravity.TOP | Gravity.LEFT);
             ad.setVisibility(View.INVISIBLE);
             mrecAdView = ad;
             root.addView(ad, lp);
             mrecAdLoaded = false;
             logAdMob("mrec_request", (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
-                    ? "Google test medium rectangle" : "Live medium rectangle");
+                    ? "Google test in-feed banner" : "Live in-feed banner");
             ad.loadAd(new AdRequest.Builder().build());
         } catch (Throwable t) {
             logAdMob("mrec_error", t.getClass().getSimpleName());
@@ -1594,9 +1591,8 @@ private void showLaunchSplash() {
                                       double viewportCssWidth, boolean visible) {
         if (webView == null || root == null || webView.getWidth() <= 0) return;
         double pxPerCss = webView.getWidth() / viewportCssWidth;
-        final boolean testBanner = BuildConfig.DEBUG;
-        final int adWidthDp = testBanner ? 320 : 300;
-        final int adHeightDp = testBanner ? 50 : 250;
+        final int adWidthDp = 320;
+        final int adHeightDp = 50;
         final int nativeWidth = dp(adWidthDp);
         final int nativeHeight = dp(adHeightDp);
         final int safetyMargin = dp(4);
