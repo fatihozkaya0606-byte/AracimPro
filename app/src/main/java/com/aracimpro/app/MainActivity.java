@@ -1456,7 +1456,7 @@ private void showLaunchSplash() {
         if (!canRequestAdMobAds() || mrecAdView != null || root == null) return;
         try {
             final AdView ad = new AdView(this);
-            ad.setAdSize(AdSize.MEDIUM_RECTANGLE);
+            ad.setAdSize(BuildConfig.DEBUG ? AdSize.BANNER : AdSize.MEDIUM_RECTANGLE); // V128 test: 320x50 horizontal middle ad
             ad.setAdUnitId((BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
                 ? "ca-app-pub-3940256099942544/6300978111"
                 : "ca-app-pub-7205009121067400/3129664519");
@@ -1550,18 +1550,18 @@ private void showLaunchSplash() {
                 && Double.isFinite(widthCss) && Double.isFinite(heightCss)
                 && Double.isFinite(viewportCssWidth)
                 && viewportCssWidth >= 320 && pxPerCss > 0
-                && widthCss >= 299 && heightCss >= 249
+                && widthCss >= (BuildConfig.DEBUG ? 319 : 299) && heightCss >= (BuildConfig.DEBUG ? 49 : 249)
                 && leftCss >= 0 && leftCss + widthCss <= viewportCssWidth + 2
                 // Prevent covering the header, sticky tabs, dialogs or bottom nav.
                 && topCss >= 170 && topCss + heightCss < viewportHeightCss - 86
                 && android.os.SystemClock.elapsedRealtime() >= mrecScrollHoldUntil;
         mrecSlotVisible = valid;
         if (valid && mrecAdView != null) {
-            int nativeWidth = (int) dp(300), nativeHeight = (int) dp(250);
+            int nativeWidth = (int) dp(BuildConfig.DEBUG ? 320 : 300), nativeHeight = (int) dp(BuildConfig.DEBUG ? 50 : 250);
             int nativeLeft = webView.getLeft() + (int) Math.round(
-                    (leftCss + (widthCss - 300) / 2) * pxPerCss);
+                    (leftCss + (widthCss - (BuildConfig.DEBUG ? 320 : 300)) / 2) * pxPerCss);
             int nativeTop = webView.getTop() + (int) Math.round(
-                    (topCss + (heightCss - 250) / 2) * pxPerCss);
+                    (topCss + (heightCss - (BuildConfig.DEBUG ? 50 : 250)) / 2) * pxPerCss);
             if (nativeLeft < webView.getLeft() ||
                 nativeLeft + nativeWidth > webView.getRight() + 2 ||
                 nativeTop < webView.getTop() ||
