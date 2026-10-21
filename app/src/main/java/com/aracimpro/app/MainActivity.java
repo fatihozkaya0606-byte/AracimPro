@@ -1536,8 +1536,15 @@ private void showLaunchSplash() {
                     logAdMob("mrec_impression", "300x250 medium rectangle impression");
                 }
             });
+            // DEBUG uses the true 320x50 creative. Allocating the old 300x250
+            // container centers the 50dp creative ~100dp too low and overlays
+            // the "Bugun" rows, even though the nominal slot coordinates match.
+            // LIVE builds retain their 300x250 MREC for compatibility.
+            final boolean horizontalPreview = BuildConfig.DEBUG;
             FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
-                    (int) dp(300), (int) dp(250), Gravity.TOP | Gravity.LEFT);
+                    dp(horizontalPreview ? 320 : 300),
+                    dp(horizontalPreview ? 50 : 250),
+                    Gravity.TOP | Gravity.LEFT);
             ad.setVisibility(View.INVISIBLE);
             mrecAdView = ad;
             root.addView(ad, lp);
@@ -1649,7 +1656,12 @@ private void showLaunchSplash() {
             updateMrecVisibility();
             return;
         }
-        if (lp.leftMargin != nativeLeft || lp.topMargin != nativeTop) {
+        // Guard the actual Android AdView size as well as its position.
+        // The native view must not exceed the placeholder bounds.
+        if (lp.width != nativeWidth || lp.height != nativeHeight
+                || lp.leftMargin != nativeLeft || lp.topMargin != nativeTop) {
+            lp.width = nativeWidth;
+            lp.height = nativeHeight;
             lp.leftMargin = nativeLeft;
             lp.topMargin = nativeTop;
             mrecAdView.setLayoutParams(lp);
