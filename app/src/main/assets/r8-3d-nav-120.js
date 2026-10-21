@@ -78,3 +78,17 @@ window.ap120NativeLocation=function(lat,lon,error){
  if(box)box.textContent='Harita konumuna yaklaştırıldı. Bir hedef noktası seçebilirsin.';
 };
 })();
+
+/* V127 separate-install interactive dashboard preview; no changes to native ads. */
+(function(){
+ if(window.ap127BootScheduled)return;
+ window.ap127BootScheduled=true;
+ const style=document.createElement('link');
+ style.rel='stylesheet';
+ style.href='ap-neon-127.css';
+ document.head.appendChild(style);
+ const script=document.createElement('script');
+ script.src='ap-neon-127.js';
+ script.addEventListener('error',()=>console.error('V127 neon preview could not load'));
+ document.body.appendChild(script);
+})();
