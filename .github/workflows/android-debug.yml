@@ -3,7 +3,7 @@ name: Android Debug Build
 on:
   workflow_dispatch:
   push:
-    branches: [ main, aracimpro-115-exact-engine-catalog-all-makes, aracimpro-116-r8-interactive-studio, aracimpro-117-r8-hero-photo-polish, aracimpro-118-r8-3d-full-ui, aracimpro-119-splash-and-layout-fixes, aracimpro-120-3d-navigation-light-header, aracimpro-122-mrec-placement-app-open, aracimpro-123-admob-applovin-mediation, aracimpro-124-rewarded-excel, aracimpro-125-rewarded-addvehicle, aracimpro-126-play-versioncode ]
+    branches: [ main, aracimpro-115-exact-engine-catalog-all-makes, aracimpro-116-r8-interactive-studio, aracimpro-117-r8-hero-photo-polish, aracimpro-118-r8-3d-full-ui, aracimpro-119-splash-and-layout-fixes, aracimpro-120-3d-navigation-light-header, aracimpro-122-mrec-placement-app-open, aracimpro-123-admob-applovin-mediation, aracimpro-124-rewarded-excel, aracimpro-125-rewarded-addvehicle, aracimpro-126-play-versioncode, aracimpro-127-neon-admob-ui-test ]
 
 jobs:
   build-debug:
