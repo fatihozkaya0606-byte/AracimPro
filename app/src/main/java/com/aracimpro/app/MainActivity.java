@@ -183,6 +183,7 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     private AdView bannerAdView;
+    private View bannerBackdrop129;
     private AdView mrecAdView;
     private boolean mrecAdLoaded = false;
     private boolean mrecSlotVisible = false;
@@ -285,9 +286,9 @@ public class MainActivity extends Activity {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
         root = new FrameLayout(this);
-        root.setBackgroundColor(0xFFF4F8FF);
+        root.setBackgroundColor(0xFF04172D);
         webView = new WebView(this);
-        webView.setBackgroundColor(0xFFF4F8FF);
+        webView.setBackgroundColor(0xFF04172D);
         // A native AdView sits above WebView. Hide it synchronously while the
         // document scrolls so an outdated rectangle never covers dashboard UI.
         webView.setOnScrollChangeListener((v, sx, sy, oldX, oldY) -> {
@@ -986,7 +987,21 @@ private void showLaunchSplash() {
         int effectiveBottom=bottom+bannerHeightPx;
         FrameLayout.LayoutParams lp=(FrameLayout.LayoutParams) webView.getLayoutParams();
         if(lp.leftMargin!=left||lp.topMargin!=top||lp.rightMargin!=right||lp.bottomMargin!=effectiveBottom){lp.setMargins(left,top,right,effectiveBottom);webView.setLayoutParams(lp);}
-        if(bannerAdView!=null){FrameLayout.LayoutParams ap=(FrameLayout.LayoutParams)bannerAdView.getLayoutParams();if(ap!=null&&ap.bottomMargin!=bottom){ap.bottomMargin=bottom;bannerAdView.setLayoutParams(ap);}}
+        
+        if(bannerAdView!=null){
+            FrameLayout.LayoutParams ap=(FrameLayout.LayoutParams)bannerAdView.getLayoutParams();
+            if(ap!=null && ap.bottomMargin!=bottom+dp(6)){
+                ap.bottomMargin=bottom+dp(6);
+                bannerAdView.setLayoutParams(ap);
+            }
+        }
+        if(bannerBackdrop129!=null){
+            FrameLayout.LayoutParams ap=(FrameLayout.LayoutParams)bannerBackdrop129.getLayoutParams();
+            if(ap!=null && ap.bottomMargin!=bottom){
+                ap.bottomMargin=bottom;
+                bannerBackdrop129.setLayoutParams(ap);
+            }
+        }
     }
 
 
@@ -1183,6 +1198,10 @@ private void showLaunchSplash() {
                     bannerAdView = null;
                 }
                 admobBannerLoaded = false;
+                if (bannerBackdrop129 != null) {
+                    root.removeView(bannerBackdrop129);
+                    bannerBackdrop129 = null;
+                }
                 if (mrecAdView != null) {
                     mrecAdView.destroy();
                     root.removeView(mrecAdView);
@@ -1347,7 +1366,9 @@ private void showLaunchSplash() {
         if (bannerAdView == null || webView == null) return;
         boolean visible = admobBannerLoaded && canRequestAdMobAds() && apPremiumSplashHidden;
         bannerAdView.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
-        int height = visible ? dp(50) : 0;
+        if (bannerBackdrop129 != null)
+            bannerBackdrop129.setVisibility(visible ? View.VISIBLE : View.GONE);
+        int height = visible ? dp(62) : 0;
         if (bannerHeightPx != height) {
             bannerHeightPx = height;
             applyWebMargins(lastInsetLeft, lastInsetTop, lastInsetRight, lastInsetBottom);
@@ -1430,8 +1451,27 @@ private void showLaunchSplash() {
             bannerHeightPx = 0;
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+
             params.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-            params.bottomMargin = lastInsetBottom;
+            params.bottomMargin = lastInsetBottom + dp(6);
+            // A theme-matched native surface around the real ad. Ad creative
+            // itself is owned and styled by Google; never recolor its content.
+            View adSurface = new View(this);
+            android.graphics.drawable.GradientDrawable adSurfaceBg =
+                new android.graphics.drawable.GradientDrawable(
+                    android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+                    new int[]{0xFF0B2A49, 0xFF04172D}
+                );
+            adSurfaceBg.setStroke(dp(1), 0xFF28648A);
+            adSurface.setBackground(adSurfaceBg);
+            FrameLayout.LayoutParams adSurfaceLp = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, dp(62),
+                Gravity.BOTTOM
+            );
+            adSurfaceLp.bottomMargin = lastInsetBottom;
+            adSurface.setVisibility(View.GONE);
+            bannerBackdrop129 = adSurface;
+            root.addView(adSurface, adSurfaceLp);
             root.addView(banner, params);
             banner.setVisibility(View.INVISIBLE);
             applyWebMargins(lastInsetLeft, lastInsetTop, lastInsetRight, lastInsetBottom);
@@ -1441,7 +1481,12 @@ private void showLaunchSplash() {
             logAdMob("banner_error", t.getClass().getSimpleName());
             if (bannerAdView != null) {
                 try { bannerAdView.destroy(); root.removeView(bannerAdView); } catch (Throwable ignored) {}
+
                 bannerAdView = null;
+            }
+            if (bannerBackdrop129 != null) {
+                try { root.removeView(bannerBackdrop129); } catch (Throwable ignored) {}
+                bannerBackdrop129 = null;
             }
             admobBannerLoaded = false;
             bannerHeightPx = 0;
@@ -1541,43 +1586,75 @@ private void showLaunchSplash() {
                                       double widthCss, double heightCss,
                                       double viewportCssWidth, boolean visible) {
         if (webView == null || root == null || webView.getWidth() <= 0) return;
-        // CSS viewport coordinates -> actual native view coordinates.
-        // Density alone isn't reliable if WebView/text zoom or display scaling changes.
         double pxPerCss = webView.getWidth() / viewportCssWidth;
-        double viewportHeightCss = webView.getHeight() / pxPerCss;
-        int navGuardPx = (int) dp(86);
+        final boolean testBanner = BuildConfig.DEBUG;
+        final int adWidthDp = testBanner ? 320 : 300;
+        final int adHeightDp = testBanner ? 50 : 250;
+        final int nativeWidth = dp(adWidthDp);
+        final int nativeHeight = dp(adHeightDp);
+        final int safetyMargin = dp(4);
+        final int navGuard = dp(88);
         boolean valid = visible && Double.isFinite(leftCss) && Double.isFinite(topCss)
                 && Double.isFinite(widthCss) && Double.isFinite(heightCss)
                 && Double.isFinite(viewportCssWidth)
-                && viewportCssWidth >= 320 && pxPerCss > 0
-                && widthCss >= (BuildConfig.DEBUG ? 319 : 299) && heightCss >= (BuildConfig.DEBUG ? 49 : 249)
+                && viewportCssWidth >= 320 && pxPerCss > 0 && pxPerCss < 10
+                && widthCss >= adWidthDp - 1 && heightCss >= adHeightDp - 1
                 && leftCss >= 0 && leftCss + widthCss <= viewportCssWidth + 2
-                // Prevent covering the header, sticky tabs, dialogs or bottom nav.
-                && topCss >= 170 && topCss + heightCss < viewportHeightCss - 86
+                && topCss >= 115
                 && android.os.SystemClock.elapsedRealtime() >= mrecScrollHoldUntil;
-        mrecSlotVisible = valid;
-        if (valid && mrecAdView != null) {
-            int nativeWidth = (int) dp(BuildConfig.DEBUG ? 320 : 300), nativeHeight = (int) dp(BuildConfig.DEBUG ? 50 : 250);
-            int nativeLeft = webView.getLeft() + (int) Math.round(
-                    (leftCss + (widthCss - (BuildConfig.DEBUG ? 320 : 300)) / 2) * pxPerCss);
-            int nativeTop = webView.getTop() + (int) Math.round(
-                    (topCss + (heightCss - (BuildConfig.DEBUG ? 50 : 250)) / 2) * pxPerCss);
-            if (nativeLeft < webView.getLeft() ||
-                nativeLeft + nativeWidth > webView.getRight() + 2 ||
-                nativeTop < webView.getTop() ||
-                nativeTop + nativeHeight > webView.getBottom() - navGuardPx) {
-                mrecSlotVisible = false;
-            } else {
-                FrameLayout.LayoutParams lp =
-                        (FrameLayout.LayoutParams) mrecAdView.getLayoutParams();
-                if (lp != null &&
-                        (lp.leftMargin != nativeLeft || lp.topMargin != nativeTop)) {
-                    lp.leftMargin = nativeLeft;
-                    lp.topMargin = nativeTop;
-                    mrecAdView.setLayoutParams(lp);
-                }
-            }
+        mrecSlotVisible = false;
+        if (!valid || mrecAdView == null) {
+            updateMrecVisibility();
+            return;
         }
+
+        // The incoming boundingClientRect is viewport-relative in CSS pixels.
+        // Use explicit on-screen offsets from root to WebView, rather than
+        // mixing parent's getTop() with the WebView's viewport coordinate space.
+        final int[] rootScreen = new int[2];
+        final int[] webScreen = new int[2];
+        root.getLocationOnScreen(rootScreen);
+        webView.getLocationOnScreen(webScreen);
+        final int webLeft = webScreen[0] - rootScreen[0];
+        final int webTop = webScreen[1] - rootScreen[1];
+        final int nativeLeft = webLeft + (int)Math.round(
+            (leftCss + (widthCss - adWidthDp)/2.0) * pxPerCss
+        );
+        final int nativeTop = webTop + (int)Math.round(
+            (topCss + (heightCss - adHeightDp)/2.0) * pxPerCss
+        );
+
+        // Validate that the *actual* AdView rectangle fits within the intended
+        // CSS placeholder projected to native pixels, not just the viewport.
+        final int slotLeft = webLeft + (int)Math.round(leftCss * pxPerCss);
+        final int slotTop = webTop + (int)Math.round(topCss * pxPerCss);
+        final int slotRight = slotLeft + (int)Math.round(widthCss * pxPerCss);
+        final int slotBottom = slotTop + (int)Math.round(heightCss * pxPerCss);
+        final int webRight = webLeft + webView.getWidth();
+        final int webBottom = webTop + webView.getHeight();
+        valid = nativeLeft >= slotLeft - safetyMargin
+            && nativeTop >= slotTop - safetyMargin
+            && nativeLeft + nativeWidth <= slotRight + safetyMargin
+            && nativeTop + nativeHeight <= slotBottom + safetyMargin
+            && nativeLeft >= webLeft && nativeLeft + nativeWidth <= webRight
+            && nativeTop >= webTop + dp(96)
+            && nativeTop + nativeHeight <= webBottom - navGuard;
+        if (!valid) {
+            updateMrecVisibility();
+            return;
+        }
+        FrameLayout.LayoutParams lp =
+            (FrameLayout.LayoutParams)mrecAdView.getLayoutParams();
+        if (lp == null) {
+            updateMrecVisibility();
+            return;
+        }
+        if (lp.leftMargin != nativeLeft || lp.topMargin != nativeTop) {
+            lp.leftMargin = nativeLeft;
+            lp.topMargin = nativeTop;
+            mrecAdView.setLayoutParams(lp);
+        }
+        mrecSlotVisible = true;
         updateMrecVisibility();
     }
 
