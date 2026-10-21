@@ -32,8 +32,8 @@ android {
         // A public AdMob rewarded unit ID. Debug mode independently uses Google's
         // sample rewarded ad ID in MainActivity; production uses this exact unit.
         buildConfigField 'String', 'REWARDED_AD_UNIT_ID', '"ca-app-pub-7205009121067400/7362031917"'
-        versionCode 127
-        versionName '7.11.51'
+        versionCode 128
+        versionName '7.11.52'
     }
 
     signingConfigs {
