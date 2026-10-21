@@ -181,3 +181,8 @@ body.apNeon127.r8HomeMode #app .header .apHeaderActions{gap:0!important}
  body.apNeon127.r8HomeMode #app .header .apLiveMini.clock{font-size:8px!important;padding:3px!important}
  body.apNeon127.r8HomeMode #app .header .apLiveMini.active{font-size:8px!important;padding:3px!important}
 }
+
+/* V130: native creative entirely fills the horizontal middle-ad slot.
+   Its helper text must not show through once AdMob has loaded an ad. */
+body.apNeon127.apMrecReady .ap127-ad-space .apMrecSlot>span{visibility:hidden!important}
+body.apNeon127 .ap127-ad-space{isolation:isolate}
