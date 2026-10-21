@@ -1,0 +1,111 @@
+/* V127: photo-led glossy neon dashboard faithful to approved visual.
+   App content is real data, not an image with dummy clickable regions.
+   Native AdMob banner/interstitial/rewarded remain in Java; one 300x250 MREC.
+*/
+body.apNeon127.r8HomeMode{--bg:#020e20;--card:#081d35;--ink:#edf8ff;--muted:#abc9df;}
+body.apNeon127.r8HomeMode #app,
+body.apNeon127.r8HomeMode #app>main{
+ background:radial-gradient(ellipse at 65% 0%,#10396475,transparent 58%),#031024!important;
+ color:#f4faff!important;
+}
+body.apNeon127.r8HomeMode #app>main{padding:10px 11px 118px!important}
+body.apNeon127.r8HomeMode #app .header.apHeader{
+ background:linear-gradient(135deg,#030d21,#05254a)!important;
+ border-bottom:1px solid #155280!important;
+ padding:9px 11px 8px!important;
+}
+body.apNeon127.r8HomeMode #app .header .apBrandText{font-size:24px!important;line-height:1.06!important}
+body.apNeon127.r8HomeMode #app .header .apBrandSub{font-size:9px!important;line-height:1.35!important;color:#abcbe4!important}
+body.apNeon127.r8HomeMode #app .header .apBrandMark{height:35px!important;width:35px!important;min-width:35px!important;max-width:35px!important}
+body.apNeon127.r8HomeMode #app .header .apUtilityRow,
+body.apNeon127.r8HomeMode #app .header .apMarketStrip7103,
+body.apNeon127.r8HomeMode #app .header .apTickerStrip,
+body.apNeon127.r8HomeMode #app .header .apLiveTicker,
+body.apNeon127.r8HomeMode #app .header .apHeaderStatus,
+body.apNeon127.r8HomeMode #app .header .apHeaderStatus7103,
+body.apNeon127.r8HomeMode #app .header .apBottomTicker,
+body.apNeon127.r8HomeMode #app .header .apTicker7104 {display:none!important}
+body.apNeon127.r8HomeMode #app .header .apHeaderActions .apProAction,
+body.apNeon127.r8HomeMode #app .header .apHeaderActions .apThemeAction,
+body.apNeon127.r8HomeMode #app .header .apHeaderActions button[title="Ayarlar"],
+body.apNeon127.r8HomeMode #app .header .apHeaderActions button[title="Kullanıcı hesabı"]{display:none!important}
+body.apNeon127.r8HomeMode #app .header .apRightStack,
+body.apNeon127.r8HomeMode #app .header .apTopRow{gap:4px!important}
+body.apNeon127.r8HomeMode #app .header .apLiveMini.clock{font-size:10px!important;padding:6px!important}
+body.apNeon127.r8HomeMode #app .header .apLiveMini.clock #apSessionElapsed,
+body.apNeon127.r8HomeMode #app .header .apLiveMini.clock em{display:none!important}
+body.apNeon127.r8HomeMode #app .header .apLiveMini.active{font-size:10px!important;padding:6px!important}
+body.apNeon127.r8HomeMode #app .header .apHeaderActions{gap:2px!important}
+body.apNeon127.r8HomeMode #app .header .apHeaderActions .apAction{width:34px!important;height:34px!important}
+.ap127-dashboard{display:flex;flex-direction:column;gap:11px;max-width:780px;margin:0 auto;padding-bottom:16px}
+.ap127-dashboard button{border:0;color:inherit;cursor:pointer;touch-action:manipulation}
+.ap127-dashboard button:active{transform:scale(.985);filter:brightness(1.18)}
+.ap127-hero,.ap127-today{border:1.5px solid #2478b9;border-radius:23px;background:linear-gradient(146deg,#092745,#051a35);box-shadow:inset 0 1px #81d8ff28,0 8px 16px #0008;overflow:hidden}
+.ap127-hero{position:relative;min-height:220px;}
+.ap127-hero-photo{position:absolute;inset:0 0 45px 0;overflow:hidden;background:linear-gradient(110deg,#062544,#124d72)}
+.ap127-hero-photo img{position:absolute;width:100%;height:100%;object-fit:cover;object-position:65% 54%;opacity:.93;filter:saturate(1.12) contrast(1.08)}
+.ap127-hero-shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,#031b3cf7 0%,#06244abc 43%,#05152d24 82%),linear-gradient(0deg,#031833 15%,transparent 63%)}
+.ap127-hero-info{position:relative;z-index:1;padding:14px 15px 51px;min-height:142px}
+.ap127-overline{display:flex;align-items:center;gap:9px;margin-right:25px;flex-wrap:wrap}
+.ap127-overline>span{font-size:9px;letter-spacing:2px;color:#75d7ff;font-weight:900}
+.ap127-overline button{font-size:10px;color:#d8f2ff;border:1px solid #438fc0;background:#164b79a8;border-radius:30px;padding:7px 10px;font-weight:700}
+.ap127-edit{position:absolute;top:10px;right:12px;border:1px solid #4d9bd3!important;border-radius:50%;width:31px;height:31px;background:#0b3966aa!important;font-size:20px}
+.ap127-hero h1{font-size:clamp(21px,5.8vw,30px);line-height:1.08;letter-spacing:-.7px;margin:13px 0 6px;color:white;text-shadow:0 3px 10px #000b}
+.ap127-hero p{font-size:11px;color:#c0e1f8;line-height:1.4;margin:0;max-width:80%}
+.ap127-addvehicle{padding:9px 14px!important;border-radius:11px;background:linear-gradient(#36aeff,#0966c6)!important;font-weight:900;font-size:12px;margin-top:12px}
+.ap127-stats{z-index:2;position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;margin:0 8px 9px;padding:7px 4px;background:#082344e9;border:1px solid #216ca8;border-radius:16px;box-shadow:0 4px 10px #0005}
+.ap127-stats button{display:flex;align-items:center;justify-content:center;gap:5px;background:none;text-align:left;padding:5px 3px;min-width:0}
+.ap127-stats button+button{border-left:1px solid #23669c}
+.ap127-stats button>span:last-child{min-width:0}
+.ap127-stats small{display:block;font-size:8px;color:#c5def2;line-height:1.2}
+.ap127-stats b{display:block;font-size:clamp(9px,2.65vw,13px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#f9fcff}
+.ap127-sticon{font-size:19px;display:grid;place-items:center;width:34px;height:34px;min-width:34px;border-radius:12px;border:1px solid #2a83db;background:linear-gradient(#0d6aa9,#04224b);box-shadow:inset 0 2px #a0deff45,0 3px 7px #0007}
+.ap127-sticon.mint{border-color:#02bf99;background:linear-gradient(#106f68,#073139)}
+.ap127-sticon.gold{border-color:#f0c34d;background:linear-gradient(#74501f,#221934)}
+.ap127-features{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+body.r118Skin #app .ap127-dashboard .ap127-feature{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;gap:3px;min-width:0;min-height:105px;padding:9px 3px 8px;border-radius:17px;background:linear-gradient(155deg,#0b3155,#051b34 65%,#04152c)!important;border:1px solid #2877b2!important;box-shadow:inset 0 1px #9edfff23,0 5px 7px #0008!important}
+.ap127-feature b{font-size:clamp(9px,2.7vw,12px);font-weight:850;color:#f9fdff;white-space:nowrap}
+.ap127-feature small{font-size:clamp(7px,2vw,9px);color:#b5d2e8;line-height:1.15;max-width:100%}
+.ap127-cube{display:grid;place-items:center;height:48px;width:48px;border-radius:15px;font-size:25px;border:1px solid #5cb9ff;box-shadow:inset 0 2px #ffffff61,inset 0 -5px 7px #00182da1,0 5px 8px #0008,0 0 12px #059cfc50;background:linear-gradient(150deg,#208bf8,#083e94)}
+.ap127-cube.green{background:linear-gradient(#1dbb99,#045755);border-color:#43ffd2}
+.ap127-cube.amber{background:linear-gradient(#e9a23e,#64421a);border-color:#ffe181}
+.ap127-cube.ice{background:linear-gradient(#62c9eb,#1c579c)}
+.ap127-cube.purple{background:linear-gradient(#c369e9,#572ba5);border-color:#d6abff}
+.ap127-cube.cyan{background:linear-gradient(#288dff,#0a356d)}
+.ap127-cube.red{background:linear-gradient(#ff5275,#9d0828);border-color:#ff8895}
+.ap127-cube.steel{background:linear-gradient(#3d6da1,#14365c);border-color:#72a2c4}
+.ap127-ad-space{min-width:0}
+body.r118Skin.apNeon127.r8HomeMode #app .ap127-ad-space .apMrecCard{
+ display:flex!important;visibility:visible!important;align-items:center;
+ margin:0!important;padding:11px 8px 13px!important;border-radius:19px!important;
+ border:1px solid #3086c4!important;background:linear-gradient(135deg,#052344,#07172e)!important;
+}
+body.r118Skin.apNeon127.r8HomeMode #app .ap127-ad-space .apMrecTitle{width:100%;color:#e9f6ff!important}
+body.r118Skin.apNeon127.r8HomeMode #app .ap127-ad-space .apMrecSlot{width:300px!important;height:250px!important;min-height:250px!important;max-width:100%!important;border:1px solid #1d6198!important;background:#061a32!important}
+body.r118Skin.apNeon127.r8HomeMode #app .ap127-ad-space .apMrecSlot>span{color:#bad2df;font-size:12px;text-align:center;padding:8px}
+.ap127-today{padding:12px 10px 10px;}
+.ap127-today-title{display:flex;align-items:center;justify-content:space-between;padding:0 3px 10px}
+.ap127-today-title>div{display:grid;grid-template-columns:30px 1fr;align-items:center;column-gap:6px}
+.ap127-today-title>div span{grid-row:span 2;color:#52c9ff;font-size:23px}
+.ap127-today-title b{font-size:18px;color:#fff;line-height:1}
+.ap127-today-title small{font-size:10px;color:#a8cfe9}
+.ap127-today-title button{background:#0a355d;border-radius:25px;padding:8px;font-size:10px;color:#82d6fa}
+.ap127-today-row{display:flex;align-items:center;width:100%;min-height:54px;padding:6px 7px;margin-top:6px;gap:9px;text-align:left;background:#072544;border:1px solid #174e78!important;border-radius:12px;box-shadow:inset 0 1px #6ec6ff15}
+.ap127-today-row i{font-style:normal;display:grid;place-items:center;width:37px;min-width:37px;height:37px;background:#68411c;border-radius:12px;font-size:20px}
+.ap127-today-row i.mint{background:#075b51}.ap127-today-row i.purple{background:#442e70}
+.ap127-today-row span{min-width:0;flex:1}
+.ap127-today-row b{display:block;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ap127-today-row small{display:block;font-size:9px;color:#b0cce4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ap127-today-row strong{font-size:9px;color:#bce8ff;max-width:110px;text-align:right}
+.ap127-bottom-note{margin:3px auto 0;text-align:center;font-size:9px;color:#719cbb}
+body.apNeon127.r8HomeMode #app .nav{border:1px solid #1d67a4!important;border-bottom:0!important;border-radius:20px 20px 0 0!important;background:linear-gradient(#082d50,#03152c)!important;box-shadow:0 -8px 18px #0009!important}
+body.apNeon127.r8HomeMode #app .nav button{font-size:9px!important}
+body.apNeon127.r8HomeMode #app .nav button i{font-size:18px!important}
+@media(max-width:375px){
+ body.apNeon127.r8HomeMode #app>main{padding:9px 8px 112px!important}
+ .ap127-features{gap:5px}
+ .ap127-cube{height:41px;width:41px;font-size:22px;border-radius:13px}
+ body.r118Skin #app .ap127-dashboard .ap127-feature{min-height:93px;padding:7px 2px 6px}
+ .ap127-sticon{width:26px;min-width:26px;height:29px;font-size:16px}
+ .ap127-stats{margin:0 5px 7px}
+}
