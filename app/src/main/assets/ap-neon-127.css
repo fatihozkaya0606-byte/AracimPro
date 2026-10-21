@@ -150,7 +150,7 @@ body.r118Skin.apNeon127.r8HomeMode #app .ap127-ad-space .apMrecTitle strong{font
 body.r118Skin.apNeon127.r8HomeMode #app .ap127-ad-space .apMrecSlot{
  box-sizing:content-box!important;
  width:320px!important;height:50px!important;min-height:50px!important;
- max-width:calc(100vw - 46px)!important;
+ max-width:100%!important;
  background:#061a32!important;border:1px solid #1d6198!important
 }
 body.r118Skin.apNeon127.r8HomeMode #app .ap127-ad-space .apMrecSlot>span{font-size:10px!important}
