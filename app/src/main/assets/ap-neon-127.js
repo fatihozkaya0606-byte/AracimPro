@@ -15,7 +15,7 @@ const icons={
  expense:'<ellipse cx="12" cy="6" rx="9" ry="3"/><path d="M3 6v6c0 2 4 4 9 4s9-2 9-4V6M3 12v6c0 2 4 4 9 4s9-2 9-4v-6"/>',
  records:'<path d="M6 2h10l4 4v16H6zM16 2v5h4M9 12h8M9 16h8M9 20h5"/>',
  value:'<path d="M3 21h19M6 17v-6M12 17V5M18 17V9"/><rect x="4" y="17" width="4" height="4" rx="1"/><rect x="10" y="17" width="4" height="4" rx="1"/><rect x="16" y="17" width="4" height="4" rx="1"/>',
- ai:'<rect x="3" y="5" width="18" height="15" rx="6"/><path d="M12 2v3M7 13h2M15 13h2M9 17h6"/><circle cx="8" cy="12" r="1"/><circle cx="16" cy="12" r="1"/>',
+ ai:'<circle cx="12" cy="12" r="7"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M7.05 7.05l-2.1-2.1m12 12 2.1 2.1M7 12c2.4-4 7.6-4 10 0M8 16c2.2 2 5.8 2 8 0"/>',
  sos:'<path d="M12 2 2 21h20z"/><path d="M12 8v6M12 18h.01"/>',
  more:'<circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/>',
  check:'<rect x="4" y="4" width="16" height="18" rx="2"/><path d="M8 2v4M16 2v4M4 10h16m-12 5 2 2 5-5"/>',
@@ -87,7 +87,7 @@ function home(){
     (!v?'<button class="ap127-addvehicle" onclick="openVehicle()">＋ Aracımı Ekle</button>':'')+
    '</div>'+
    '<div class="ap132-hero-bottom">'+
-    '<button class="ap132-health '+(score===null?'unknown':'')+'" onclick="vehicleHealthModal()" aria-label="Araç sağlık puanını gör" style="--gauge:'+gaugeColor+';--angle:'+(score===null?0:score*3.6)+'deg">'+
+    '<button class="ap132-health '+(score===null?'unknown':'')+'" onclick="'+(v?'vehicleHealthModal()':'openVehicle()')+'" aria-label="Araç sağlık puanını gör" style="--gauge:'+gaugeColor+';--angle:'+(score===null?0:score*3.6)+'deg">'+
      '<span class="ap132-health-core"><small>Araç Sağlığı</small><b>'+(score===null?'—':score)+'</b><em>'+(score===null?'Kayıt ekle':'/100')+'</em></span>'+
     '</button>'+
     '<div class="ap127-stats">'+
