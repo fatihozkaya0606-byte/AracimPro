@@ -97,6 +97,7 @@ function home(){
     '</div>'+
    '</div>'+
   '</section>'+
+  '<section class="ap127-ad-space" aria-label="AdMob 300x250 sponsorlu reklam">'+apMrecCardHtml()+'</section>'+
   '<section class="ap127-features" aria-label="Araç özellikleri">'+
    quick('service','Bakım','Hatırlatmalar',"ap127Tab('plan','maintenance')",'blue')+
    quick('fuel','Yakıt','Tüketim takibi',"ap127Tab('records','fuel')",'green')+
@@ -107,7 +108,6 @@ function home(){
    quick('sos','Yol Yardım','Acil durumlarda',"accidentAssistModal()",'red')+
    quick('more','Daha Fazla','Tüm özellikler',"go('more')",'steel')+
   '</section>'+
-  '<section class="ap127-ad-space" aria-label="AdMob 300x250 sponsorlu reklam">'+apMrecCardHtml()+'</section>'+
   '<section class="ap127-today">'+
    '<div class="ap127-today-title"><div><span>'+symbol('calendar')+'</span><b>Bugün</b><small>Senin için önemli bilgiler</small></div><button onclick="go(\'records\')">Tümünü Gör　→</button></div>'+
    '<button class="ap127-today-row" onclick="ap127Tab(\'plan\',\'maintenance\')"><i class="'+(dueUrgent?'warn':'gold')+'">'+symbol('service')+'</i><span><b>'+dueLabel+'</b><small>'+dueSub+'</small></span><strong class="'+(dueUrgent?'hot':'')+'">Hatırlat →</strong></button>'+
