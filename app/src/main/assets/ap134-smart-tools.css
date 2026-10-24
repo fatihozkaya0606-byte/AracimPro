@@ -1,0 +1,24 @@
+/* V134 lightweight addon; underlying R8 skin and AdMob containers unchanged. */
+.ap134-section{margin:10px 0 15px}
+.ap134-panel{padding:9px;border:1px solid #2676a0;border-radius:14px;background:linear-gradient(160deg,#082c49,#05192e)}
+.ap134-quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0 12px}
+.ap134-quick button{min-width:0;min-height:51px;border:1px solid #2882b8;border-radius:13px;background:linear-gradient(145deg,#0a3d65,#051c36);padding:9px 7px;color:#ebfaff;font-size:11px;font-weight:750;text-align:center;overflow-wrap:break-word}
+.ap134-quick button:active{filter:brightness(1.2)}
+.ap134-two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.ap134-two>.field{min-width:0}
+.ap134-two input,.ap134-two select{width:100%;box-sizing:border-box}
+.ap134-calc{margin:7px 0 12px;padding:12px;border:1px solid #2f8fc7;border-radius:11px;background:#0a3655;color:#eafaff}
+.ap134-calc strong{display:block;font-size:17px}
+.ap134-calc span{display:block;font-size:12px;margin-top:4px;color:#a4e9d6}
+.ap134-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.ap134-metrics>div{padding:10px;border:1px solid #205b89;border-radius:12px;background:#061b32}
+.ap134-metrics small{display:block;color:#9ac4e0;font-size:10px}
+.ap134-metrics b{display:block;color:#f2fbff;font-size:13px;margin-top:4px;overflow-wrap:anywhere}
+.ap134-series{display:grid;gap:8px;margin:12px 0}
+.ap134-series-row{display:grid;grid-template-columns:56px minmax(0,1fr) 90px;align-items:center;gap:7px}
+.ap134-series-row small{font-size:10px;color:#a8cae4}
+.ap134-series-row b{font-size:10px;text-align:right;white-space:nowrap}
+.ap134-series-rail{height:13px;border-radius:6px;background:#173c5a;overflow:hidden}
+.ap134-series-rail i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,#0c86d4,#22d9ba)}
+.ap134-change{font-size:12px;font-weight:700;margin:10px 0;color:#bdeaff}
+@media(max-width:350px){.ap134-quick{grid-template-columns:1fr}.ap134-series-row{grid-template-columns:48px minmax(0,1fr) 78px;gap:4px}.ap134-series-row b{font-size:9px}}
