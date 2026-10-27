@@ -25,6 +25,11 @@ import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
+import com.google.android.ump.ConsentInformation;
+import com.google.android.ump.ConsentRequestParameters;
+import com.google.android.ump.UserMessagingPlatform;
 
 /**
  * DEV PREVIEW: Google sample IDs exclusively, no live ad revenue.
@@ -36,11 +41,15 @@ public final class MainActivity extends Activity {
     // Google's official development/test IDs. Never ship these for monetization.
     private static final String TEST_BANNER_ID = "ca-app-pub-3940256099942544/9214589741";
     private static final String TEST_REWARDED_ID = "ca-app-pub-3940256099942544/5224354917";
+    private static final String TEST_INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712";
 
     private WebView game;
     private FrameLayout bannerContainer;
     private AdView banner;
     private RewardedAd rewarded;
+    private InterstitialAd interstitial;
+    private ConsentInformation consentInformation;
+    private boolean adsInitialized = false;
     private boolean bannerLoaded = false;
     private boolean wantsBanner = false;
     private boolean pageLoaded = false;
@@ -57,6 +66,22 @@ public final class MainActivity extends Activity {
         @JavascriptInterface
         public void showRewarded() {
             runOnUiThread(() -> showRewardedOnUi());
+        }
+
+        @JavascriptInterface
+        public void showInterstitial() {
+            runOnUiThread(() -> showInterstitialOnUi());
+        }
+
+        @JavascriptInterface
+        public void showPrivacyOptions() {
+            runOnUiThread(() -> {
+                if (consentInformation != null &&
+                        consentInformation.getPrivacyOptionsRequirementStatus()
+                          == ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED) {
+                    UserMessagingPlatform.showPrivacyOptionsForm(MainActivity.this, error -> {});
+                }
+            });
         }
     }
 
@@ -116,6 +141,62 @@ public final class MainActivity extends Activity {
                         notifyGame("onReady", "false");
                     }
                 });
+    }
+
+    private void loadInterstitial() {
+        InterstitialAd.load(this, TEST_INTERSTITIAL_ID, new AdRequest.Builder().build(),
+            new InterstitialAdLoadCallback() {
+                @Override public void onAdLoaded(InterstitialAd ad) { interstitial = ad; }
+                @Override public void onAdFailedToLoad(LoadAdError e) { interstitial = null; }
+            });
+    }
+
+    private void showInterstitialOnUi() {
+        if (interstitial == null) {
+            notifyGame("onInterstitialFailed");
+            return;
+        }
+        final InterstitialAd ad = interstitial;
+        interstitial = null;
+        ad.setFullScreenContentCallback(new FullScreenContentCallback() {
+            @Override public void onAdShowedFullScreenContent() {
+                notifyGame("onInterstitialShown");
+            }
+            @Override public void onAdDismissedFullScreenContent() {
+                notifyGame("onInterstitialClosed");
+                loadInterstitial();
+            }
+            @Override public void onAdFailedToShowFullScreenContent(AdError error) {
+                notifyGame("onInterstitialFailed");
+                loadInterstitial();
+            }
+        });
+        ad.show(this);
+    }
+
+    private void initializeAdsIfAllowed() {
+        if (adsInitialized || consentInformation == null || !consentInformation.canRequestAds()) return;
+        adsInitialized = true;
+        MobileAds.initialize(this, status -> runOnUiThread(() -> {
+            if (isFinishing() || isDestroyed()) return;
+            loadBanner();
+            loadRewarded();
+            loadInterstitial();
+        }));
+    }
+
+    private void requestConsentAndInitialize() {
+        consentInformation = UserMessagingPlatform.getConsentInformation(this);
+        ConsentRequestParameters params = new ConsentRequestParameters.Builder().build();
+        consentInformation.requestConsentInfoUpdate(
+            this, params,
+            () -> {
+                UserMessagingPlatform.loadAndShowConsentFormIfRequired(
+                    MainActivity.this, formError -> initializeAdsIfAllowed());
+                initializeAdsIfAllowed();
+            },
+            requestError -> initializeAdsIfAllowed()
+        );
     }
 
     private void showRewardedOnUi() {
@@ -189,12 +270,9 @@ public final class MainActivity extends Activity {
         setContentView(root);
         game.loadUrl("file:///android_asset/index.html");
 
-        // TEST units only; production consent must be handled before initialization.
-        MobileAds.initialize(this, status -> runOnUiThread(() -> {
-            if (isFinishing() || isDestroyed()) return;
-            loadBanner();
-            loadRewarded();
-        }));
+        // Consent is refreshed on each launch and checked before starting ad requests.
+        // All IDs in this isolated preview branch are Google test IDs.
+        requestConsentAndInitialize();
     }
 
     @Override public void onBackPressed() {
