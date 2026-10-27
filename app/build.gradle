@@ -32,8 +32,8 @@ android {
         // A public AdMob rewarded unit ID. Debug mode independently uses Google's
         // sample rewarded ad ID in MainActivity; production uses this exact unit.
         buildConfigField 'String', 'REWARDED_AD_UNIT_ID', '"ca-app-pub-7205009121067400/7362031917"'
-        versionCode 134
-        versionName '7.11.58'
+        versionCode 137
+        versionName '7.11.61'
     }
 
     signingConfigs {
@@ -97,10 +97,11 @@ dependencies {
     implementation 'org.reactivestreams:reactive-streams:1.0.4'
     // AdMob remains the primary ad SDK and preserves the same banner, MREC and interstitial units.
     implementation 'com.google.android.gms:play-services-ads:25.5.0'
-    // AppLovin demand through AdMob Mediation. Requires account mapping in AdMob UI;
-    // no independent AppLovin placements or extra ad surfaces are introduced.
-    // Google official legacy GMA adapter, compatible with play-services-ads 25.5.0.
-    implementation 'com.google.ads.mediation:applovin:13.6.4.2'
+    // Unity Ads bidding through the existing AdMob ad units. Existing banner,
+    // 300x250, interstitial and rewarded placements are unchanged.
+    // Only AdMob + Unity SDKs are included in this Play candidate.
+    implementation 'com.unity3d.ads:unity-ads:4.21.0'
+    implementation 'com.google.ads.mediation:unity:4.21.0.0'
     implementation 'com.google.android.ump:user-messaging-platform:4.0.0'
     // Keep advertising identifier dependency explicit for SDK compatibility.
     implementation 'com.google.android.gms:play-services-ads-identifier:18.2.0'
