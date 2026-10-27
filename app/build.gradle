@@ -26,6 +26,9 @@ android {
         buildConfigField "String", "MARKET_API_URL", "\"${System.getenv('MARKET_API_URL') ?: ''}\""
         buildConfigField "String", "LIVE_DATA_API_URL", "\"${System.getenv('LIVE_DATA_API_URL') ?: ''}\""
         buildConfigField 'boolean', 'ADMOB_TEST_MODE', 'false'
+        // Off in Play and ordinary debug builds. A separate non-Play test variant
+        // uses real AdMob units only on separately registered test devices.
+        buildConfigField 'boolean', 'MEDIATION_TEST_WITH_REAL_UNITS', 'false'
         // Dedicated App Open ad unit: set APP_OPEN_AD_UNIT_ID as a GitHub Actions secret.
         // Never reuse interstitial or banner IDs. Without a valid unit, live App Open stays off.
         buildConfigField 'String', 'APP_OPEN_AD_UNIT_ID', '\"' + ((System.getenv('APP_OPEN_AD_UNIT_ID') ?: '').matches('ca-app-pub-[0-9]+/[0-9]+') ? System.getenv('APP_OPEN_AD_UNIT_ID') : '') + '\"'
@@ -54,6 +57,17 @@ android {
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
             }
+        }
+        mediationTest {
+            initWith debug
+            applicationIdSuffix '.unitymediationtest'
+            versionNameSuffix '-unity-mediation-test'
+            matchingFallbacks = ['debug']
+            // Signed with Android's debug key. NEVER upload this APK to Google Play.
+            signingConfig signingConfigs.debug
+            // Production ad-unit identifiers let Ad Inspector see mediation bids.
+            // The registered test device is required for safe ad delivery.
+            buildConfigField 'boolean', 'MEDIATION_TEST_WITH_REAL_UNITS', 'true'
         }
         release {
             minifyEnabled true
