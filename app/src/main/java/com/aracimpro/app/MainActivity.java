@@ -1403,6 +1403,16 @@ private void showLaunchSplash() {
         }
     }
 
+    // Google's demo unit IDs are used in ordinary debug preview. This special
+    // one-off mediationTest APK retains DEBUG preview status, but requests through
+    // our own AdMob units so that mediation mappings can be inspected on a device
+    // registered for test ads in BOTH AdMob and the third-party network.
+    // NEVER publish/distribute the mediationTest APK broadly.
+    private boolean useGoogleDemoAdUnits() {
+        return (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
+                && !BuildConfig.MEDIATION_TEST_WITH_REAL_UNITS;
+    }
+
     // The SDK supplies the winning network for each loaded impression.
     // Store only the adapter class name (not ad content or user data) for troubleshooting.
     private void recordAdSource123(String slot, com.google.android.gms.ads.ResponseInfo info) {
@@ -1419,7 +1429,7 @@ private void showLaunchSplash() {
         try {
             final AdView banner = new AdView(this);
             banner.setAdSize(AdSize.BANNER);
-            banner.setAdUnitId((BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
+            banner.setAdUnitId(useGoogleDemoAdUnits()
                 ? "ca-app-pub-3940256099942544/6300978111"
                 : "ca-app-pub-7205009121067400/9497290996");
             banner.setAdListener(new AdListener() {
@@ -1502,7 +1512,7 @@ private void showLaunchSplash() {
         try {
             final AdView ad = new AdView(this);
             ad.setAdSize(AdSize.MEDIUM_RECTANGLE); // V132 real 300x250 in-feed rectangle
-            ad.setAdUnitId((BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
+            ad.setAdUnitId(useGoogleDemoAdUnits()
                 ? "ca-app-pub-3940256099942544/6300978111"
                 : "ca-app-pub-7205009121067400/3129664519");
             ad.setAdListener(new AdListener() {
@@ -1544,7 +1554,7 @@ private void showLaunchSplash() {
             mrecAdView = ad;
             root.addView(ad, lp);
             mrecAdLoaded = false;
-            logAdMob("mrec_request", (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
+            logAdMob("mrec_request", useGoogleDemoAdUnits()
                     ? "Google test 300x250 MREC" : "Live 300x250 MREC");
             ad.loadAd(new AdRequest.Builder().build());
         } catch (Throwable t) {
@@ -1778,7 +1788,7 @@ private void showLaunchSplash() {
     // Debug builds use Google's official test unit. Release does not request
     // test inventory and stays safely disabled until a real ID is configured.
     private String excelRewardedUnit124() {
-        if (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
+        if (useGoogleDemoAdUnits())
             return "ca-app-pub-3940256099942544/5224354917";
         return BuildConfig.REWARDED_AD_UNIT_ID;
     }
@@ -1886,7 +1896,7 @@ private void showLaunchSplash() {
             // Splash may still be visible when SDK initializes; allow preload then.
             if (interstitialLoading || !canRequestAdMobAds() || oneInterstitialClaimed.get() || oneInterstitialAd != null) return;
         }
-        final String unitId = (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
+        final String unitId = useGoogleDemoAdUnits()
                 ? "ca-app-pub-3940256099942544/1033173712"
                 : "ca-app-pub-7205009121067400/2790024214";
         interstitialLoading = true;
