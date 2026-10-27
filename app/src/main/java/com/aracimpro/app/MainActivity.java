@@ -1677,6 +1677,9 @@ private void showLaunchSplash() {
     // Only the loading screen may show an App Open ad. No full-screen ad
     // unexpectedly appears once the user has entered the app.
     private void loadAppOpenDuringSplash122() {
+        // Keep App Open disabled in the mediation-specific test package: it has
+        // no Unity mapping and could obscure actual mapped requests on launch.
+        if (BuildConfig.MEDIATION_TEST_WITH_REAL_UNITS) return;
         if (!canRequestAdMobAds() || !admobSdkReady ||
             appOpenLaunchCount122 < 3 || appOpenLoading122 ||
             appOpenShowing122 || appOpenAd122 != null ||
