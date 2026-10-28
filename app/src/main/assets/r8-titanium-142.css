@@ -1,0 +1,334 @@
+/* Aracım Pro v142 — R8 TITANIUM | Real UI skin, not a mockup.
+   3D depth is CSS-only. Real vehicle photography, live content, data, native
+   AdMob overlays and the JavaScript navigation/payment logic are untouched. */
+body.r118Skin{
+ --ti-bg:#041020;--ti-card:#0b2842;--ti-card-deep:#061b31;
+ --ti-line:#3176a0;--ti-fg:#eef9ff;--ti-muted:#a2c4dc;
+ --ti-cyan:#35c7ff;--ti-aqua:#31d5c0;--ti-gold:#e6c678;
+ --ti-surface:linear-gradient(158deg,#123955 0%,#092740 55%,#06192e 100%);
+ --ti-shadow:inset 0 1px 0 #bdeaff38,inset 0 -2px 3px #0006,0 7px 17px #0007;
+ --ti-softshadow:inset 0 1px 0 #a1ddff32,0 4px 12px #0006;
+ --ti-focus:#8ceaff;
+ --bg:var(--ti-bg);--card:var(--ti-card);--ink:var(--ti-fg);
+ --muted:var(--ti-muted);--line:var(--ti-line);
+ color-scheme:dark;
+}
+body.r118Skin #app,
+body.r118Skin #app>main{
+ color:var(--ti-fg)!important;
+}
+body.r118Skin #app>main{
+ padding-left:clamp(12px,3.4vw,20px)!important;
+ padding-right:clamp(12px,3.4vw,20px)!important;
+ padding-top:13px!important;
+ background:
+ radial-gradient(ellipse 85% 21% at 90% 0%,#1a6f9a26,transparent 75%),
+ radial-gradient(ellipse 95% 55% at 0% 65%,#0872a51b,transparent 78%),#03101e!important;
+}
+body.r118Skin #app .header.apHeader{
+ padding:11px clamp(12px,3.5vw,20px) 10px!important;
+ background:linear-gradient(135deg,#061322,#0c2942 63%,#07162b)!important;
+ border-bottom:1px solid #2a7798!important;
+ box-shadow:0 8px 20px #000a,inset 0 -1px #8ce7ff1a!important;
+ overflow:visible!important;
+}
+/* Compact, clearly separated brand and actions: never truncate the brand or
+   lose the Settings, Notifications and language controls at narrow widths. */
+body.r118Skin #app .header.apHeader .apTopRow{
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) max-content;
+ grid-template-rows:minmax(37px,auto) minmax(33px,auto);
+ column-gap:8px!important;row-gap:5px!important;
+ align-items:center!important;min-width:0!important;
+}
+body.r118Skin #app .header.apHeader .apBrandWrap{
+ grid-column:1;grid-row:1;min-width:0!important;display:flex!important;
+ align-items:center;gap:8px!important;
+}
+body.r118Skin #app .header.apHeader .apBrandMark{
+ display:block!important;width:37px!important;height:37px!important;
+ flex:0 0 37px!important;border-radius:12px!important;
+ border:1px solid #8bd9ff7a!important;
+ background:linear-gradient(145deg,#0e9ef3,#0a57a2 70%,#031e42)!important;
+ box-shadow:inset 0 1px 1px #f3fdff8c,0 3px 9px #000a,0 0 13px #239efc42!important;
+}
+body.r118Skin #app .header.apHeader .apBrandMark:before{
+ font-size:24px!important;top:0!important;
+}
+body.r118Skin #app .header.apHeader .apBrandMark:after{
+ left:6px!important;right:6px!important;bottom:6px!important;height:5px!important;
+}
+body.r118Skin #app .header.apHeader .apBrandText{
+ font-size:clamp(18px,4.8vw,22px)!important;line-height:1.1!important;
+ letter-spacing:-.6px!important;white-space:nowrap!important;color:white!important;
+ overflow:visible!important;text-overflow:clip!important;
+}
+body.r118Skin #app .header.apHeader .apBrandSub{
+ font-size:clamp(8px,2.3vw,10px)!important;
+ color:#a9cee3!important;max-width:185px!important;white-space:nowrap!important;
+ overflow:hidden!important;text-overflow:ellipsis!important;letter-spacing:0!important;
+}
+body.r118Skin #app .header.apHeader .apRightStack{display:contents!important}
+body.r118Skin #app .header.apHeader .apLiveCorner{
+ grid-column:2;grid-row:1;justify-self:end;max-width:none!important;
+ display:flex!important;align-items:center!important;flex-wrap:nowrap!important;
+ gap:4px!important;min-width:0!important;
+}
+body.r118Skin #app .header.apHeader .apLiveMini{
+ height:27px!important;border:1px solid #276383!important;
+ background:linear-gradient(150deg,#103756,#071d33)!important;
+ color:#e8f9ff!important;border-radius:999px!important;
+ box-shadow:inset 0 1px #d2f5ff22,0 3px 8px #0005!important;
+ font-size:9px!important;padding:0 7px!important;white-space:nowrap!important;
+}
+body.r118Skin #app .header.apHeader .apHeaderActions{
+ grid-column:1/-1;grid-row:2;
+ display:flex!important;justify-self:end;justify-content:flex-end!important;
+ align-items:center!important;gap:6px!important;max-width:100%!important;
+}
+body.r118Skin #app .header.apHeader .apHeaderActions .apAction{
+ width:33px!important;height:33px!important;min-width:33px!important;
+ border-radius:11px!important;flex:0 0 auto;
+ background:linear-gradient(155deg,#16466b,#07233d 80%)!important;
+ border:1px solid #3d85ad!important;
+ box-shadow:inset 0 1px #c6edff4f,inset 0 -2px #041425,0 4px 8px #0008!important;
+ color:#e9faff!important;
+}
+body.r118Skin #app .header.apHeader .apHeaderActions .apProAction{
+ width:auto!important;min-width:43px!important;padding:0 9px!important;
+ color:#ffdd87!important;-webkit-text-fill-color:#ffdd87!important;
+}
+body.r118Skin #app .header.apHeader .apHeaderActions .apAction .svgi{
+ width:18px!important;height:18px!important;
+}
+body.r118Skin #app .header.apHeader .apHeaderActions .apActionBadge{
+ font-size:9px!important;min-width:17px!important;height:17px!important;
+}
+body.r118Skin #app .header.apHeader .apUtilityRow{
+ gap:7px!important;margin-top:8px!important;padding:1px 0 3px!important;
+ overflow-x:auto!important;scrollbar-width:none;
+}
+body.r118Skin #app .header.apHeader .apUtilityRow::-webkit-scrollbar{display:none}
+body.r118Skin #app .header.apHeader .apUtilityPill{
+ flex:0 0 auto;max-width:73vw!important;border-radius:999px!important;
+ background:linear-gradient(145deg,#112f49,#071e33)!important;
+ border:1px solid #336e94!important;box-shadow:var(--ti-softshadow)!important;
+}
+body.r118Skin #app .header.apHeader .apUtilityPill span{
+ display:inline-block;max-width:55vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+body.r118Skin #app .header.apHeader .apMarketStrip7103{
+ margin-top:10px!important;border-radius:16px!important;
+ border:1px solid #2978a5!important;
+ box-shadow:inset 0 1px #dbf8ff28,0 5px 12px #0007!important;
+ background:linear-gradient(110deg,#061b31,#113d5f 65%,#071e33)!important;
+}
+body.r118Skin #app .header.apHeader .apMarketStrip7103 .apMarketLive{
+ color:#6af7bd!important;-webkit-text-fill-color:#6af7bd!important;
+}
+/* One design language across garage, service, fuel, reports, tools and settings. */
+body.r118Skin #app main .card,
+body.r118Skin #app main .row,
+body.r118Skin #app main .proPanel,
+body.r118Skin #app main .specCell,
+body.r118Skin #app main .sumCard,
+body.r118Skin #app main .ap116Card,
+body.r118Skin #app main .ap116Stats>div,
+body.r118Skin #app main .apTimelineItem,
+body.r118Skin #app main .ap134-panel,
+body.r118Skin #app main .ap134-metrics>div{
+ color:#f2faff!important;
+ background:var(--ti-surface)!important;border:1px solid #347497!important;
+ box-shadow:var(--ti-shadow)!important;
+ border-radius:17px!important;
+ min-width:0;
+}
+body.r118Skin #app main .sectionHead{gap:10px!important;min-width:0}
+body.r118Skin #app main .sectionHead h2{
+ font-size:clamp(18px,5.3vw,23px)!important;line-height:1.2!important;
+ font-weight:850!important;letter-spacing:-.45px!important;
+}
+body.r118Skin #app main h1,body.r118Skin #app main h2,body.r118Skin #app main h3{
+ text-wrap:balance;
+}
+body.r118Skin #app main .muted,body.r118Skin #app main .hint,
+body.r118Skin #app main .ap116Note,body.r118Skin #app main .ap116HealthText small{
+ color:#aecfe4!important;
+}
+body.r118Skin #app main .row{padding:12px!important;gap:10px!important}
+body.r118Skin #app main .rowIcon,
+body.r118Skin #app main .metric .ico{
+ background:linear-gradient(145deg,#17608c,#093654)!important;
+ color:#85e5ff!important;border:1px solid #4d98c0!important;
+ box-shadow:inset 0 1px #e3f8ff5a,0 4px 9px #0006!important;
+}
+body.r118Skin #app main .quick,
+body.r118Skin #app main .ap134-quick button,
+body.r118Skin #app main .apSafetyQuick button,
+body.r118Skin #app main .ap116DockScroll button,
+body.r118Skin #app main .ap116Systems button{
+ color:#f4fcff!important;border-radius:15px!important;
+ border:1px solid #3c85af!important;
+ background:linear-gradient(155deg,#17496e,#0b2946 60%,#071d33)!important;
+ box-shadow:inset 0 2px #d5efff36,inset 0 -3px #031a2d,0 5px 12px #0007!important;
+}
+body.r118Skin #app .primary,
+body.r118Skin #modalRoot .primary{
+ border-radius:14px!important;min-height:43px;
+ background:linear-gradient(165deg,#27baf8,#0775d4 58%,#07549c)!important;
+ border:1px solid #8ce5ff!important;color:#fff!important;
+ box-shadow:inset 0 2px #f2fdff86,inset 0 -3px #04478f,0 6px 12px #0008!important;
+}
+body.r118Skin #app .secondary,body.r118Skin #modalRoot .secondary{
+ border-radius:14px!important;min-height:41px;
+ background:linear-gradient(145deg,#194d70,#0b2e4e)!important;
+ color:#edfcff!important;border:1px solid #438cb7!important;
+}
+body.r118Skin #app button,body.r118Skin #modalRoot button{
+ -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+}
+body.r118Skin #app button:active,body.r118Skin #modalRoot button:active{
+ filter:brightness(1.09);transition:transform .1s,filter .1s;
+}
+body.r118Skin #app button:focus-visible,body.r118Skin #modalRoot button:focus-visible{
+ outline:2px solid var(--ti-focus)!important;outline-offset:3px!important;
+}
+/* Main vehicle hero: keep real selected car image, make controls readable and
+   the whole panel look like a premium instrument cluster rather than a poster. */
+body.r118Skin.r8HomeMode #app .n97Dashboard .n97Hero.n117Hero{
+ border-radius:23px!important;border:1px solid #43b7e7!important;
+ background:radial-gradient(ellipse at 65% 85%,#2583b36b,transparent 55%),
+ linear-gradient(150deg,#061628,#12466b 65%,#071d32)!important;
+ box-shadow:inset 0 1px #d8f7ff69,inset 0 -3px #051327,
+ 0 8px 0 #021226,0 15px 23px #000b,0 0 17px #159ff03d!important;
+ overflow:hidden!important;
+}
+body.r118Skin.r8HomeMode #app .n97Dashboard .n117Photo .n117PhotoSharp{
+ object-fit:contain!important;filter:none!important;
+}
+body.r118Skin.r8HomeMode #app .n97Dashboard .n97Hero .n97HeroCopy h1{
+ color:#fff!important;line-height:1.17!important;overflow-wrap:break-word;
+}
+body.r118Skin.r8HomeMode #app .n97Dashboard .n97Stat{
+ border-radius:16px!important;
+ box-shadow:inset 0 1px #d3f4ff42,inset 0 -3px #001b31,0 5px 11px #0008!important;
+}
+body.r118Skin.r8HomeMode #app .n97Dashboard .n97Action{
+ border-radius:15px!important;transition:transform .17s ease,filter .17s ease!important;
+}
+body.r118Skin.r8HomeMode #app .n97Dashboard .n97ActionIcon{
+ border-radius:14px!important;box-shadow:inset 0 1px #fffa,0 4px 7px #0007!important;
+}
+body.r118Skin #app .welcome7104Card{
+ padding:16px!important;border-radius:23px!important;
+ border:1px solid #46a8d8!important;
+ box-shadow:inset 0 1px #fff4,0 8px 0 #02192d,0 15px 24px #0008!important;
+}
+body.r118Skin #app .welcome7104Card .primary{font-size:14px!important}
+/* Native 300x250 ad sits inside this exact slot. Do NOT alter native dimensions,
+   slot position, or overlay callbacks: keep CSS placeholder hidden on no-fill. */
+body.r118Skin:not(.apMrecReady) #app .apMrecCard{
+ display:none!important;visibility:hidden!important;
+}
+body.r118Skin.apMrecReady #app .apMrecCard{
+ display:flex!important;visibility:visible!important;
+ margin:13px 0!important;padding:11px 8px 13px!important;
+ border:1px solid #3387b4!important;border-radius:19px!important;
+ background:linear-gradient(155deg,#0c2d4a,#061f36)!important;
+ box-shadow:inset 0 1px #d7f3ff3a,0 6px 15px #0006!important;
+}
+body.r118Skin.apMrecReady #app .apMrecSlot{
+ width:300px!important;height:250px!important;min-height:250px!important;
+ max-width:100%!important;border-radius:9px!important;
+ background:#071e34!important;border:1px solid #245877!important;
+}
+body.r118Skin #app .apMrecTitle strong{
+ font-size:12px!important;letter-spacing:.3px;color:#e4f8ff!important;
+}
+/* Bottom navigation: compact, legible, with a single softly glowing active tab.
+   Native bottom banner remains an independent Android view below the WebView. */
+body.r118Skin #app .nav{
+ --nav:69px;
+ height:69px!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;
+ gap:2px!important;padding:5px 3px 6px!important;
+ background:linear-gradient(180deg,#0c2e4b,#05182d 72%,#03101f)!important;
+ border-top:1px solid #3b90be!important;
+ box-shadow:inset 0 1px #e3f9ff29,0 -6px 15px #0009!important;
+}
+body.r118Skin #app .nav button{
+ display:flex!important;flex-direction:column;align-items:center;justify-content:center;
+ gap:2px!important;min-width:0!important;padding:4px 1px!important;
+ font-size:clamp(8px,2.3vw,10px)!important;line-height:1.15!important;
+ border-radius:13px!important;overflow:hidden;
+ white-space:normal!important;
+}
+body.r118Skin #app .nav button i{
+ line-height:1!important;font-size:20px!important;margin:0!important;
+}
+body.r118Skin #app .nav button.active{
+ color:#7fe2ff!important;background:linear-gradient(180deg,#1675a251,#0e436320)!important;
+ box-shadow:inset 0 1px #63d9ff30!important;
+ text-shadow:0 0 7px #44c6ff7a!important;
+}
+body.r118Skin #app .nav button.active i{
+ filter:drop-shadow(0 0 4px #48bfff)!important;
+ transform:none!important;
+}
+body.r118Skin #app .fab{
+ border-radius:17px!important;border:1px solid #81dcff!important;
+ background:linear-gradient(145deg,#2abcfc,#0c70db)!important;
+ box-shadow:inset 0 1px #fff8,0 7px 17px #0009!important;
+}
+/* Modals and forms share the same Titanium finish. */
+body.r118Skin #modalRoot .sheet{
+ border-radius:24px 24px 0 0!important;
+ background:linear-gradient(180deg,#0c2b46,#041625 65%)!important;
+ border:1px solid #3f8eba!important;color:#f0faff!important;
+}
+body.r118Skin #modalRoot .field label,
+body.r118Skin #modalRoot .toggle span{color:#bce1f4!important}
+body.r118Skin #modalRoot input,
+body.r118Skin #modalRoot select,
+body.r118Skin #modalRoot textarea{
+ color:#f2fbff!important;background:#0b2d48!important;
+ border:1px solid #367eaa!important;border-radius:13px!important;
+}
+body.r118Skin #modalRoot input:focus,
+body.r118Skin #modalRoot select:focus,
+body.r118Skin #modalRoot textarea:focus{
+ border-color:#6ddaff!important;outline:2px solid #39bbff44!important;
+}
+body.r118Skin #app .ap116Hero,body.r118Skin #app .ap120Hero,
+body.r118Skin #app .fullv2-banner{
+ border-color:#4498c8!important;border-radius:18px!important;
+ box-shadow:inset 0 1px #d1f4ff44,0 6px 16px #0007!important;
+}
+/* Avoid text overflows in long localized vehicle names and tiny handsets. */
+body.r118Skin #app main,body.r118Skin #app .card,
+body.r118Skin #app .rowMain,body.r118Skin #app .ap116Page{
+ min-width:0;overflow-wrap:anywhere;
+}
+@media(max-width:395px){
+ body.r118Skin #app .header.apHeader .apBrandSub{max-width:145px!important}
+ body.r118Skin #app .header.apHeader .apBrandMark{
+  width:34px!important;height:34px!important;flex-basis:34px!important;
+ }
+ body.r118Skin #app .header.apHeader .apBrandText{font-size:19px!important}
+ body.r118Skin #app .header.apHeader .apLiveMini{font-size:8px!important;padding:0 5px!important}
+ body.r118Skin #app .header.apHeader .apHeaderActions{gap:5px!important}
+ body.r118Skin.r8HomeMode #app .n97Dashboard .n97Stats{gap:6px!important}
+ body.r118Skin #app .ap116Systems{gap:6px!important}
+}
+@media(max-width:345px){
+ body.r118Skin #app .header.apHeader .apLiveMini.clock em,
+ body.r118Skin #app .header.apHeader #apSessionElapsed{display:none!important}
+ body.r118Skin #app .header.apHeader .apBrandSub{max-width:115px!important}
+ body.r118Skin #app .nav button{font-size:8px!important}
+ body.r118Skin #app .nav button i{font-size:18px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ body.r118Skin #app *,body.r118Skin #modalRoot *{
+  animation-duration:.01ms!important;transition-duration:.01ms!important;
+  scroll-behavior:auto!important;
+ }
+}
