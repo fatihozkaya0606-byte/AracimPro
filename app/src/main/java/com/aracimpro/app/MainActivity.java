@@ -197,6 +197,9 @@ public class MainActivity extends Activity {
     private boolean premiumReconnectPending = false;
     private int premiumReconnectAttempt = 0;
     private int bannerRetryAttempt = 0;
+    private boolean bannerLoading138 = false;
+    private long bannerNextTryAt138 = 0L;
+    private final Runnable bannerRetryTask138 = this::requestBottomBanner138;
     private int mrecRetryAttempt = 0;
     private int interstitialRetryAttempt = 0;
     private boolean interstitialLoading = false;
@@ -654,6 +657,13 @@ private void showLaunchSplash() {
         // Keep the intro visible for ~3.35 seconds on a ready device.
         // If the WebView is still loading, never expose an uninitialized blank screen.
         if (!splashDismissAllowed || !pageReady) return;
+        // Hold the loading screen for up to two extra seconds ONLY while a
+        // configured App Open request is pending. Never interrupt main content.
+        if (appOpenLoading122 && apPremiumSplashView != null &&
+                android.os.SystemClock.elapsedRealtime() - splashStartedAt < 5350L) {
+            mainHandler.postDelayed(this::hideLaunchSplashWhenReady, 240L);
+            return;
+        }
         // If a legitimate App Open ad is running over the loading screen, do not
         // remove the splash until the ad is dismissed.
         if (appOpenShowing122) return;
@@ -1198,6 +1208,10 @@ private void showLaunchSplash() {
                     bannerAdView = null;
                 }
                 admobBannerLoaded = false;
+                bannerLoading138 = false;
+                bannerNextTryAt138 = 0L;
+                mainHandler.removeCallbacks(bannerRetryTask138);
+                bannerRetryAttempt = 0;
                 if (bannerBackdrop129 != null) {
                     root.removeView(bannerBackdrop129);
                     bannerBackdrop129 = null;
@@ -1362,6 +1376,28 @@ private void showLaunchSplash() {
             }).setNegativeButton("Kapat", (d, w) -> {}).show();
     }
 
+    // Avoid rapid duplicate mediation requests; preserve AdMob's auto refresh.
+    private void requestBottomBanner138() {
+        mainHandler.removeCallbacks(bannerRetryTask138);
+        if (bannerAdView == null || bannerLoading138 || admobBannerLoaded ||
+                !canRequestAdMobAds() || !admobSdkReady ||
+                isFinishing() || isDestroyed()) return;
+        long waitMs = bannerNextTryAt138 - android.os.SystemClock.elapsedRealtime();
+        if (waitMs > 0L) {
+            mainHandler.postDelayed(bannerRetryTask138, waitMs);
+            return;
+        }
+        bannerLoading138 = true;
+        try {
+            bannerAdView.loadAd(new AdRequest.Builder().build());
+        } catch (Throwable t) {
+            bannerLoading138 = false;
+            bannerNextTryAt138 = android.os.SystemClock.elapsedRealtime() + 60000L;
+            logAdMob("banner_request_error", t.getClass().getSimpleName());
+            mainHandler.postDelayed(bannerRetryTask138, 60000L);
+        }
+    }
+
     private void updateAdMobBannerVisibility() {
         if (bannerAdView == null || webView == null) return;
         boolean visible = admobBannerLoaded && canRequestAdMobAds() && apPremiumSplashHidden;
@@ -1381,6 +1417,7 @@ private void showLaunchSplash() {
         // disconnect destroyed both AdViews. Recreate missing units then.
         if (admobSdkReady) {
             createAdMobBanner();
+            requestBottomBanner138();
             createMrecAd();
             loadSingleInterstitial();
             loadExcelRewardedAd124();
@@ -1425,6 +1462,9 @@ private void showLaunchSplash() {
             banner.setAdListener(new AdListener() {
                 @Override public void onAdLoaded() {
                     if (bannerAdView != banner || !canRequestAdMobAds()) return;
+                    bannerLoading138 = false;
+                    bannerNextTryAt138 = 0L;
+                    mainHandler.removeCallbacks(bannerRetryTask138);
                     admobBannerLoaded = true;
                     bannerRetryAttempt = 0;
                     logAdMob("banner_loaded", "Banner loaded through AdMob mediation");
@@ -1432,15 +1472,15 @@ private void showLaunchSplash() {
                     updateAdMobBannerVisibility();
                 }
                 @Override public void onAdFailedToLoad(LoadAdError error) {
-                    admobBannerLoaded = false;
+                    bannerLoading138 = false;
                     logAdMob("banner_failed", error == null ? "Unknown" : error.toString());
+                    // A failed automatic refresh should not erase a displayed ad.
+                    if (admobBannerLoaded) return;
                     updateAdMobBannerVisibility();
-                    final long delay = adRetryDelay(bannerRetryAttempt++);
-                    mainHandler.postDelayed(() -> {
-                        if (bannerAdView == banner && !admobBannerLoaded && canRequestAdMobAds()
-                                && !isFinishing() && !isDestroyed())
-                            banner.loadAd(new AdRequest.Builder().build());
-                    }, delay);
+                    final long delay = Math.max(30000L, adRetryDelay(bannerRetryAttempt++));
+                    bannerNextTryAt138 = android.os.SystemClock.elapsedRealtime() + delay;
+                    mainHandler.removeCallbacks(bannerRetryTask138);
+                    mainHandler.postDelayed(bannerRetryTask138, delay);
                 }
                 @Override public void onAdImpression() {
                     logAdMob("banner_impression", "AdMob banner impression");
@@ -1448,6 +1488,9 @@ private void showLaunchSplash() {
             });
             bannerAdView = banner;
             admobBannerLoaded = false;
+            bannerLoading138 = false;
+            bannerNextTryAt138 = 0L;
+            mainHandler.removeCallbacks(bannerRetryTask138);
             bannerHeightPx = 0;
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
@@ -1476,7 +1519,7 @@ private void showLaunchSplash() {
             banner.setVisibility(View.INVISIBLE);
             applyWebMargins(lastInsetLeft, lastInsetTop, lastInsetRight, lastInsetBottom);
             logAdMob("banner_request", BuildConfig.ADMOB_TEST_MODE ? "Test ad requested" : "Live ad requested");
-            banner.loadAd(new AdRequest.Builder().build());
+            requestBottomBanner138();
         } catch (Throwable t) {
             logAdMob("banner_error", t.getClass().getSimpleName());
             if (bannerAdView != null) {
@@ -1695,6 +1738,7 @@ private void showLaunchSplash() {
                     appOpenLoading122 = false;
                     appOpenAd122 = null;
                     logAdMob("app_open_failed", error == null ? "No fill" : error.toString());
+                    hideLaunchSplashWhenReady();
                 }
             });
     }
@@ -1705,7 +1749,8 @@ private void showLaunchSplash() {
             apPremiumSplashHidden || apPremiumSplashView == null ||
             // When content already finished and splash duration elapsed, the
             // ad has missed the loading window and must NOT appear late.
-            (pageReady && splashDismissAllowed) ||
+            (pageReady && splashDismissAllowed &&
+                android.os.SystemClock.elapsedRealtime() - splashStartedAt >= 5350L) ||
             oneInterstitialClaimed.get() || isFinishing() || isDestroyed()) {
             appOpenAd122 = null;
             return;
@@ -1974,6 +2019,9 @@ private void showLaunchSplash() {
     }
 
     @Override protected void onPause() {
+        if (bannerAdView != null) {
+            try { bannerAdView.pause(); } catch (Throwable ignored) {}
+        }
         mrecSlotVisible = false;
         updateMrecVisibility();
         super.onPause();
@@ -1990,7 +2038,14 @@ private void showLaunchSplash() {
         }
         if (premiumBillingReady) refreshPremiumPurchases();
         else if (!premiumReconnectPending && billingClient != null) schedulePremiumBillingReconnect();
-        if (canRequestAdMobAds()) initAdMobBanner();
+        if (canRequestAdMobAds()) {
+            initAdMobBanner();
+            if (bannerAdView != null) {
+                try { bannerAdView.resume(); } catch (Throwable ignored) {}
+            }
+            requestBottomBanner138();
+            updateAdMobBannerVisibility();
+        }
         else if (!admobConsentRequested && (premiumBillingReady || BuildConfig.DEBUG))
             requestAdMobConsentIfNeeded();
         if (webView != null) {
