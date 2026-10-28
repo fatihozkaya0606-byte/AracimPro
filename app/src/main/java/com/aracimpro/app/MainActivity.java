@@ -2144,6 +2144,10 @@ private void showLaunchSplash() {
                 backgroundedAt143 > 0L &&
                 android.os.SystemClock.elapsedRealtime() - backgroundedAt143 >= 8000L &&
                 apPremiumSplashHidden && !appOpenShowing122 &&
+                // A full-screen ad may itself pause/resume this Activity.
+                // Never create a new splash immediately after an ad is closed.
+                (appOpenLastShownAt122 <= 0L ||
+                 System.currentTimeMillis() - appOpenLastShownAt122 >= 30000L) &&
                 !excelRewardedShowing124 && !oneInterstitialClaimed.get() &&
                 !isChangingConfigurations() && canRequestAdMobAds();
         if (userReturnedToApp143) {
