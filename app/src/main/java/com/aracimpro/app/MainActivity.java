@@ -224,6 +224,7 @@ public class MainActivity extends Activity {
     // App-open is a distinct AdMob format; never show ordinary interstitials at launch.
     private AppOpenAd appOpenAd122;
     private boolean appOpenLoading122 = false;
+    private boolean appOpenAttemptFinished141 = false;
     private boolean appOpenShowing122 = false;
     private int appOpenLaunchCount122 = 0;
     private long appOpenLastShownAt122 = 0L;
@@ -312,10 +313,16 @@ public class MainActivity extends Activity {
                         this::handleSystemBack);
             } catch (Throwable ignored) {}
         }
+        // Diagnostic button is covered by splash until the app becomes usable.
+        if (BuildConfig.DEBUG) installPreviewAdDiagnostics141();
         showLaunchSplash();
-        // Check the Google Play Premium entitlement before initializing any ad SDK.
-        // A failed billing query leaves ads off rather than showing ads to a subscriber.
+        // Google Play Premium verification always gates the LIVE release.
         initPremiumBilling();
+        if (BuildConfig.DEBUG) {
+            // Only Google SAMPLE ad units in debug, never real mediated inventory.
+            requestAdMobConsentIfNeeded();
+            initAdMobBanner();
+        }
         final int fallbackTop = systemDimen("status_bar_height", dp(28));
         final int fallbackBottom = systemDimen("navigation_bar_height", dp(44));
         applyWebMargins(0, fallbackTop, 0, fallbackBottom);
@@ -410,6 +417,69 @@ public class MainActivity extends Activity {
         webView.loadUrl("https://appassets.androidplatform.net/assets/index.html");
     }
 
+
+    // Visible only in the side-by-side DEBUG APK, never in Google Play.
+    private void installPreviewAdDiagnostics141() {
+        if (!BuildConfig.DEBUG || root == null) return;
+        android.widget.Button b = new android.widget.Button(this);
+        b.setText("🧪 REKLAM TEST");
+        b.setAllCaps(false);
+        b.setTextSize(10f);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT, dp(42), Gravity.TOP | Gravity.END);
+        lp.topMargin = dp(84);
+        lp.rightMargin = dp(8);
+        root.addView(b, lp);
+        b.setOnClickListener(v -> {
+            android.content.SharedPreferences log =
+                    getSharedPreferences("aracim_admob_diagnostics", MODE_PRIVATE);
+            String report = "SDK hazır: " + admobSdkReady
+                    + "\nTest reklam izni: " + canRequestAdMobAds()
+                    + "\nAçılış sayısı: " + appOpenLaunchCount122
+                    + "\nAçılış reklamı yükleniyor: " + appOpenLoading122
+                    + "\nAçılış yüklemesi bitti: " + appOpenAttemptFinished141
+                    + "\nAçılış reklamı gösteriliyor: " + appOpenShowing122
+                    + "\nGeçiş reklamı hazır: " + oneInterstitialReady
+                    + "\nAlt banner hazır: " + admobBannerLoaded
+                    + "\nSon olay: " + log.getString("step", "Henüz yok")
+                    + "\nAçıklama: " + log.getString("result", "")
+                    + "\n\nYalnızca Google örnek reklamları kullanılır.";
+            new android.app.AlertDialog.Builder(this)
+                    .setTitle("Reklam tanılama")
+                    .setMessage(report)
+                    .setPositiveButton("Geçişi test et", (d, n) -> testInterstitial141())
+                    .setNeutralButton("Reklamları yenile", (d, n) -> {
+                        if (canRequestAdMobAds()) initAdMobBanner();
+                        android.widget.Toast.makeText(this, "Yenileme istendi",
+                                android.widget.Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("Kapat", (d, n) -> {})
+                    .show();
+        });
+    }
+
+    private void testInterstitial141() {
+        if (!BuildConfig.DEBUG) return;
+        if (!admobSdkReady) {
+            android.widget.Toast.makeText(this, "AdMob henüz hazır değil",
+                    android.widget.Toast.LENGTH_LONG).show();
+            return;
+        }
+        logAdMob("test_interstitial_requested", "Google official sample unit");
+        InterstitialAd.load(this, "ca-app-pub-3940256099942544/1033173712",
+                new AdRequest.Builder().build(), new InterstitialAdLoadCallback() {
+                    @Override public void onAdLoaded(InterstitialAd ad) {
+                        logAdMob("test_interstitial_loaded", "Sample interstitial shown");
+                        ad.show(MainActivity.this);
+                    }
+                    @Override public void onAdFailedToLoad(LoadAdError e) {
+                        logAdMob("test_interstitial_failed", String.valueOf(e));
+                        android.widget.Toast.makeText(MainActivity.this,
+                                "Geçiş yüklenemedi, hata: " + (e == null ? "?" : e.getCode()),
+                                android.widget.Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
 
     // AP V7.5.6 SPLASH HELPERS
     private void apSetAdViewsVisible(android.view.View view, boolean visible) {
@@ -660,18 +730,20 @@ private void showLaunchSplash() {
         // Hold the loading screen for up to two extra seconds ONLY while a
         // configured App Open request is pending. Never interrupt main content.
         final long elapsedOnSplash = android.os.SystemClock.elapsedRealtime() - splashStartedAt;
-        final boolean openAdEligible = appOpenLaunchCount122 >= 3 && !premiumActive &&
+        final boolean openAdEligible =
+                (BuildConfig.DEBUG || appOpenLaunchCount122 >= 2) && !premiumActive &&
                 (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE ||
                  (BuildConfig.APP_OPEN_AD_UNIT_ID != null &&
                   BuildConfig.APP_OPEN_AD_UNIT_ID.matches("ca-app-pub-[0-9]+/[0-9]+"))) &&
                 (appOpenLastShownAt122 <= 0L ||
-                 System.currentTimeMillis() - appOpenLastShownAt122 >= 5L * 60L * 1000L);
+                 (BuildConfig.DEBUG ||
+                  System.currentTimeMillis() - appOpenLastShownAt122 >= 2L * 60L * 1000L));
         // Google Play billing/UMP/SDK initialization is asynchronous.
         // Short finite grace period, without bypassing Premium or consent.
-        if (openAdEligible && apPremiumSplashView != null && elapsedOnSplash < 6500L &&
-                (appOpenLoading122 || !admobSdkReady || !premiumBillingReady ||
-                 admobConsentInfo == null)) {
-            mainHandler.postDelayed(this::hideLaunchSplashWhenReady, 240L);
+        if (openAdEligible && apPremiumSplashView != null
+                && elapsedOnSplash < 7500L && !appOpenAttemptFinished141) {
+            // Stop waiting once loading fails, succeeds or reaches a hard deadline.
+            mainHandler.postDelayed(this::hideLaunchSplashWhenReady, 200L);
             return;
         }
         // If a legitimate App Open ad is running over the loading screen, do not
@@ -1325,8 +1397,14 @@ private void showLaunchSplash() {
     private boolean canRequestAdMobAds() {
         // Google Play purchase check gates LIVE ads. Debug preview builds use
         // only Google's sample ad IDs and cannot query this Play subscription.
-        return !premiumActive && (premiumBillingReady || BuildConfig.DEBUG)
-            && admobConsentInfo != null && admobConsentInfo.canRequestAds();
+        if (premiumActive) return false;
+        if (BuildConfig.DEBUG) {
+            // Side-by-side debug package has SAMPLE ad units exclusively;
+            // a failed Play Billing/UMP connection must not hide the preview.
+            return admobConsentRequested;
+        }
+        return premiumBillingReady && admobConsentInfo != null
+                && admobConsentInfo.canRequestAds();
     }
 
     private void requestAdMobConsentIfNeeded() {
@@ -1723,15 +1801,15 @@ private void showLaunchSplash() {
     // unexpectedly appears once the user has entered the app.
     private void loadAppOpenDuringSplash122() {
         if (!canRequestAdMobAds() || !admobSdkReady ||
-            appOpenLaunchCount122 < 3 || appOpenLoading122 ||
+            (!BuildConfig.DEBUG && appOpenLaunchCount122 < 2) || appOpenLoading122 ||
             appOpenShowing122 || appOpenAd122 != null ||
             apPremiumSplashHidden || apPremiumSplashView == null ||
             isFinishing() || isDestroyed()) return;
         long now = System.currentTimeMillis();
         // Frequent launches can reuse App Open after a sane minimum interval.
         // Never show App Open again immediately after a prior full-screen ad.
-        if (appOpenLastShownAt122 > 0 &&
-            now - appOpenLastShownAt122 < 5L * 60L * 1000L) return;
+        if (!BuildConfig.DEBUG && appOpenLastShownAt122 > 0 &&
+            now - appOpenLastShownAt122 < 2L * 60L * 1000L) return;
         final String unit = (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
             ? "ca-app-pub-3940256099942544/9257395921"
             : BuildConfig.APP_OPEN_AD_UNIT_ID;
@@ -1740,16 +1818,21 @@ private void showLaunchSplash() {
             return;
         }
         appOpenLoading122 = true;
+        appOpenAttemptFinished141 = false;
+        logAdMob("app_open_request", "Loading App Open");
         AppOpenAd.load(this, unit, new AdRequest.Builder().build(),
             new AppOpenAd.AppOpenAdLoadCallback() {
                 @Override public void onAdLoaded(AppOpenAd ad) {
                     appOpenLoading122 = false;
+                    appOpenAttemptFinished141 = true;
                     if (!canRequestAdMobAds() || isFinishing() || isDestroyed()) return;
+                    logAdMob("app_open_loaded", "App Open ready");
                     appOpenAd122 = ad;
                     showAppOpenOnSplash122();
                 }
                 @Override public void onAdFailedToLoad(LoadAdError error) {
                     appOpenLoading122 = false;
+                    appOpenAttemptFinished141 = true;
                     appOpenAd122 = null;
                     logAdMob("app_open_failed", error == null ? "No fill" : error.toString());
                     hideLaunchSplashWhenReady();
@@ -1764,7 +1847,7 @@ private void showLaunchSplash() {
             // When content already finished and splash duration elapsed, the
             // ad has missed the loading window and must NOT appear late.
             (pageReady && splashDismissAllowed &&
-                android.os.SystemClock.elapsedRealtime() - splashStartedAt >= 6500L) ||
+                android.os.SystemClock.elapsedRealtime() - splashStartedAt >= 7500L) ||
             oneInterstitialClaimed.get() || isFinishing() || isDestroyed()) {
             appOpenAd122 = null;
             return;
@@ -1807,10 +1890,11 @@ private void showLaunchSplash() {
             // Only a 40-second rest after the user closes a voluntary rewarded video.
             excelRewardedShowing124 ||
             (lastExcelRewardedClosedAt125 > 0L && now - lastExcelRewardedClosedAt125 < 40000L) ||
-            now - sessionStartedAt < 30000L ||
+            now - sessionStartedAt < (BuildConfig.DEBUG ? 5000L : 15000L) ||
             now - oneInterstitialLoadedAt > 45L * 60L * 1000L ||
             (appOpenLastShownAt122 > 0 &&
-             System.currentTimeMillis() - appOpenLastShownAt122 < 180000L) ||
+             System.currentTimeMillis() - appOpenLastShownAt122 <
+                     (BuildConfig.DEBUG ? 12000L : 60000L)) ||
             isFinishing() || isDestroyed()) return;
         if (!oneInterstitialClaimed.compareAndSet(false, true)) return;
         final InterstitialAd ad = oneInterstitialAd;
@@ -1994,10 +2078,12 @@ private void showLaunchSplash() {
                 excelRewardedShowing124 ||
                 (lastExcelRewardedClosedAt125 > 0L &&
                  android.os.SystemClock.elapsedRealtime() - lastExcelRewardedClosedAt125 < 40000L) ||
-                android.os.SystemClock.elapsedRealtime() - sessionStartedAt < 60000L ||
+                android.os.SystemClock.elapsedRealtime() - sessionStartedAt <
+                        (BuildConfig.DEBUG ? 5000L : 15000L) ||
                 appOpenShowing122 ||
                 (appOpenLastShownAt122 > 0 &&
-                 System.currentTimeMillis() - appOpenLastShownAt122 < 180000L) ||
+                 System.currentTimeMillis() - appOpenLastShownAt122 <
+                         (BuildConfig.DEBUG ? 12000L : 60000L)) ||
                 android.os.SystemClock.elapsedRealtime() - oneInterstitialLoadedAt > 45 * 60 * 1000L ||
                 !canRequestAdMobAds() || !apPremiumSplashHidden ||
                 isFinishing() || isDestroyed()) return false;
@@ -2358,7 +2444,11 @@ private void showLaunchSplash() {
                 out.put("bannerSource", log.getString("bannerSource", ""));
                 out.put("mrecSource", log.getString("mrecSource", ""));
                 out.put("interstitialSource", log.getString("interstitialSource", ""));
-                out.put("mediation", "AdMob + AppLovin adapter V123; requires AdMob group mapping");
+                out.put("appOpenLoading", appOpenLoading122);
+                out.put("appOpenAttemptFinished", appOpenAttemptFinished141);
+                out.put("appOpenShowing", appOpenShowing122);
+                out.put("appOpenLaunches", appOpenLaunchCount122);
+                out.put("mediation", "AdMob + Unity; debug APK uses Google SAMPLE IDs only");
             } catch (Exception ignored) {}
             return out.toString();
         }
