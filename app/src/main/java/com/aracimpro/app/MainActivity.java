@@ -91,8 +91,6 @@ import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.FullScreenContentCallback;
-import com.google.android.gms.ads.interstitial.InterstitialAd;
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.google.android.gms.ads.appopen.AppOpenAd;
@@ -201,12 +199,9 @@ public class MainActivity extends Activity {
     private long bannerNextTryAt138 = 0L;
     private final Runnable bannerRetryTask138 = this::requestBottomBanner138;
     private int mrecRetryAttempt = 0;
-    private int interstitialRetryAttempt = 0;
-    private boolean interstitialLoading = false;
     private ConsentInformation admobConsentInfo;
-    // Single full-screen ad at an eligible, user-initiated page transition.
-    // No ad on startup, back/exit, form clicks, or while using Premium.
-    // Optional reward: one completed video grants one Excel report export.
+    // App Open is the sole automatic full-screen ad, and only during splash.
+    // Rewarded Excel videos remain optional, after a deliberate user action.
     // This never bypasses subscriptions and cannot grant cash or transferable points.
     private RewardedAd excelRewardedAd124;
     private boolean excelRewardedLoading124 = false;
@@ -215,12 +210,6 @@ public class MainActivity extends Activity {
     private long excelRewardedLoadedAt124 = 0L;
     private static final String EXCEL_REWARDS_PREFS124 = "aracim_excel_reward_124";
 
-    private volatile InterstitialAd oneInterstitialAd;
-    private volatile boolean oneInterstitialReady = false;
-    private final java.util.concurrent.atomic.AtomicBoolean oneInterstitialClaimed =
-            new java.util.concurrent.atomic.AtomicBoolean(false);
-    private volatile long oneInterstitialLoadedAt = 0L;
-    private final long sessionStartedAt = android.os.SystemClock.elapsedRealtime();
     // App-open is a distinct AdMob format; never show ordinary interstitials at launch.
     private AppOpenAd appOpenAd122;
     private boolean appOpenLoading122 = false;
@@ -659,8 +648,18 @@ private void showLaunchSplash() {
         if (!splashDismissAllowed || !pageReady) return;
         // Hold the loading screen for up to two extra seconds ONLY while a
         // configured App Open request is pending. Never interrupt main content.
-        if (appOpenLoading122 && apPremiumSplashView != null &&
-                android.os.SystemClock.elapsedRealtime() - splashStartedAt < 5350L) {
+        final long elapsedOnSplash = android.os.SystemClock.elapsedRealtime() - splashStartedAt;
+        final boolean openAdEligible = appOpenLaunchCount122 >= 3 && !premiumActive &&
+                (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE ||
+                 (BuildConfig.APP_OPEN_AD_UNIT_ID != null &&
+                  BuildConfig.APP_OPEN_AD_UNIT_ID.matches("ca-app-pub-[0-9]+/[0-9]+"))) &&
+                (appOpenLastShownAt122 <= 0L ||
+                 System.currentTimeMillis() - appOpenLastShownAt122 >= 30L * 60L * 1000L);
+        // Google Play billing/UMP/SDK initialization is asynchronous.
+        // Short finite grace period, without bypassing Premium or consent.
+        if (openAdEligible && apPremiumSplashView != null && elapsedOnSplash < 5350L &&
+                (appOpenLoading122 || !admobSdkReady || !premiumBillingReady ||
+                 admobConsentInfo == null)) {
             mainHandler.postDelayed(this::hideLaunchSplashWhenReady, 240L);
             return;
         }
@@ -1224,9 +1223,6 @@ private void showLaunchSplash() {
                 mrecAdLoaded = false;
                 mrecSlotVisible = false;
                 notifyMrecJs(false);
-                oneInterstitialAd = null;
-                oneInterstitialReady = false;
-                interstitialLoading = false;
                 excelRewardedAd124 = null;
                 excelRewardedLoading124 = false;
                 appOpenAd122 = null;
@@ -1419,7 +1415,6 @@ private void showLaunchSplash() {
             createAdMobBanner();
             requestBottomBanner138();
             createMrecAd();
-            loadSingleInterstitial();
             loadExcelRewardedAd124();
             loadAppOpenDuringSplash122();
             return;
@@ -1716,8 +1711,9 @@ private void showLaunchSplash() {
             apPremiumSplashHidden || apPremiumSplashView == null ||
             isFinishing() || isDestroyed()) return;
         long now = System.currentTimeMillis();
+        // Avoid back-to-back ads on rapid app reopen.
         if (appOpenLastShownAt122 > 0 &&
-            now - appOpenLastShownAt122 < 4L * 60L * 60L * 1000L) return;
+            now - appOpenLastShownAt122 < 30L * 60L * 1000L) return;
         final String unit = (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
             ? "ca-app-pub-3940256099942544/9257395921"
             : BuildConfig.APP_OPEN_AD_UNIT_ID;
@@ -1751,7 +1747,7 @@ private void showLaunchSplash() {
             // ad has missed the loading window and must NOT appear late.
             (pageReady && splashDismissAllowed &&
                 android.os.SystemClock.elapsedRealtime() - splashStartedAt >= 5350L) ||
-            oneInterstitialClaimed.get() || isFinishing() || isDestroyed()) {
+            isFinishing() || isDestroyed()) {
             appOpenAd122 = null;
             return;
         }
@@ -1783,41 +1779,7 @@ private void showLaunchSplash() {
         }
     }
 
-    // Vehicle-save is a completed user task, not a disruptive "Aracı Ekle"
-    // click. The same one-ad-per-session cap also applies to tab transitions.
-    private void requestInterstitialAfterVehicleSaved122() {
-        long now = android.os.SystemClock.elapsedRealtime();
-        if (!oneInterstitialReady || oneInterstitialAd == null ||
-            !canRequestAdMobAds() || !apPremiumSplashHidden ||
-            appOpenShowing122 ||
-            // Only a 40-second rest after the user closes a voluntary rewarded video.
-            excelRewardedShowing124 ||
-            (lastExcelRewardedClosedAt125 > 0L && now - lastExcelRewardedClosedAt125 < 40000L) ||
-            now - sessionStartedAt < 30000L ||
-            now - oneInterstitialLoadedAt > 45L * 60L * 1000L ||
-            (appOpenLastShownAt122 > 0 &&
-             System.currentTimeMillis() - appOpenLastShownAt122 < 180000L) ||
-            isFinishing() || isDestroyed()) return;
-        if (!oneInterstitialClaimed.compareAndSet(false, true)) return;
-        final InterstitialAd ad = oneInterstitialAd;
-        oneInterstitialAd = null;
-        oneInterstitialReady = false;
-        if (ad == null) return;
-        ad.setFullScreenContentCallback(new FullScreenContentCallback() {
-            @Override public void onAdShowedFullScreenContent() {
-                logAdMob("vehicle_saved_interstitial", "After successful new vehicle save");
-            }
-            @Override public void onAdDismissedFullScreenContent() {
-                logAdMob("vehicle_saved_interstitial_closed", "Return to the saved vehicle");
-            }
-            @Override public void onAdFailedToShowFullScreenContent(AdError error) {
-                logAdMob("vehicle_saved_interstitial_failed", String.valueOf(error));
-            }
-        });
-        try { ad.show(this); }
-        catch (Throwable t) { logAdMob("vehicle_saved_interstitial_error", t.toString()); }
-    }
-
+    // Automatic interstitial after saving a vehicle was removed in v139.
 
     // The production rewarded ad unit is supplied independently by AdMob.
     // Debug builds use Google's official test unit. Release does not request
@@ -1925,97 +1887,10 @@ private void showLaunchSplash() {
         }
     }
 
-    private void loadSingleInterstitial() {
-        if (interstitialLoading || !canRequestAdMobAds() || !apPremiumSplashHidden ||
-                oneInterstitialClaimed.get() || oneInterstitialAd != null) {
-            // Splash may still be visible when SDK initializes; allow preload then.
-            if (interstitialLoading || !canRequestAdMobAds() || oneInterstitialClaimed.get() || oneInterstitialAd != null) return;
-        }
-        final String unitId = (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
-                ? "ca-app-pub-3940256099942544/1033173712"
-                : "ca-app-pub-7205009121067400/2790024214";
-        interstitialLoading = true;
-        InterstitialAd.load(this, unitId, new AdRequest.Builder().build(),
-                new InterstitialAdLoadCallback() {
-                    @Override public void onAdLoaded(InterstitialAd ad) {
-                        interstitialLoading = false;
-                        interstitialRetryAttempt = 0;
-                        if (!canRequestAdMobAds() || oneInterstitialClaimed.get()) return;
-                        oneInterstitialAd = ad;
-                        oneInterstitialLoadedAt = android.os.SystemClock.elapsedRealtime();
-                        oneInterstitialReady = true;
-                        logAdMob("interstitial_loaded", "Full-screen ad preloaded through AdMob mediation");
-                        recordAdSource123("interstitial", ad.getResponseInfo());
-                    }
-
-                    @Override public void onAdFailedToLoad(LoadAdError error) {
-                        interstitialLoading = false;
-                        oneInterstitialAd = null;
-                        oneInterstitialReady = false;
-                        logAdMob("interstitial_failed", error == null ? "No fill" : error.toString());
-                        final long delay = adRetryDelay(interstitialRetryAttempt++);
-                        mainHandler.postDelayed(() -> {
-                            if (!oneInterstitialClaimed.get() && canRequestAdMobAds()
-                                    && !isFinishing() && !isDestroyed())
-                                loadSingleInterstitial();
-                        }, delay);
-                    }
-                });
-    }
-
-    private void finishOneInterstitialNavigation(String target) {
-        if (webView == null || isFinishing() || isDestroyed()) return;
-        webView.evaluateJavascript(
-                "window.finishOneInterstitialNavigation && window.finishOneInterstitialNavigation(" +
-                        JSONObject.quote(target) + ")", null);
-    }
-
-    // Called by a bottom-navigation click before changing screens, not by random taps.
-    // Return true only when a loaded ad will take over that navigation.
+    // Keep the navigation bridge compatible with HTML. Returning false
+    // skips a full-screen ad and allows tabs to change immediately.
     private boolean requestOneInterstitialForNavigation(String target) {
-        if (!("home".equals(target) || "garage".equals(target) ||
-              "records".equals(target) || "plan".equals(target) ||
-              "reports".equals(target) || "more".equals(target))) return false;
-        if (!oneInterstitialReady || oneInterstitialAd == null ||
-                excelRewardedShowing124 ||
-                (lastExcelRewardedClosedAt125 > 0L &&
-                 android.os.SystemClock.elapsedRealtime() - lastExcelRewardedClosedAt125 < 40000L) ||
-                android.os.SystemClock.elapsedRealtime() - sessionStartedAt < 15000L ||
-                android.os.SystemClock.elapsedRealtime() - oneInterstitialLoadedAt > 45 * 60 * 1000L ||
-                !canRequestAdMobAds() || !apPremiumSplashHidden ||
-                isFinishing() || isDestroyed()) return false;
-        if (!oneInterstitialClaimed.compareAndSet(false, true)) return false;
-        // WebView JS interfaces are invoked off the Android UI thread.
-        runOnUiThread(() -> {
-            final InterstitialAd ad = oneInterstitialAd;
-            oneInterstitialAd = null;
-            oneInterstitialReady = false;
-            if (ad == null || !canRequestAdMobAds() || !apPremiumSplashHidden ||
-                    isFinishing() || isDestroyed()) {
-                finishOneInterstitialNavigation(target);
-                return;
-            }
-            ad.setFullScreenContentCallback(new FullScreenContentCallback() {
-                @Override public void onAdShowedFullScreenContent() {
-                    logAdMob("interstitial_shown", "One full-screen ad shown in session");
-                }
-                @Override public void onAdDismissedFullScreenContent() {
-                    logAdMob("interstitial_dismissed", "Navigation continued");
-                    finishOneInterstitialNavigation(target);
-                }
-                @Override public void onAdFailedToShowFullScreenContent(AdError error) {
-                    logAdMob("interstitial_show_failed", error == null ? "Unknown" : error.toString());
-                    finishOneInterstitialNavigation(target);
-                }
-            });
-            try {
-                ad.show(this);
-            } catch (Throwable t) {
-                logAdMob("interstitial_exception", t.getClass().getSimpleName());
-                finishOneInterstitialNavigation(target);
-            }
-        });
-        return true;
+        return false;
     }
 
     @Override protected void onPause() {
@@ -2285,9 +2160,7 @@ private void showLaunchSplash() {
         }
 
         @JavascriptInterface public void showOneInterstitialAfterVehicleSaved() {
-            // Called only after a new vehicle has been successfully persisted.
-            runOnUiThread(() -> mainHandler.postDelayed(
-                MainActivity.this::requestInterstitialAfterVehicleSaved122, 700L));
+            // Compatibility hook: this release has no ordinary interstitials.
         }
 
         @JavascriptInterface public void showRewardedExcelAd() {
@@ -2332,8 +2205,8 @@ private void showLaunchSplash() {
                 out.put("mrecSlotVisible", mrecSlotVisible);
                 out.put("mrecVisible", mrecAdView != null && mrecAdView.getVisibility() == View.VISIBLE);
                 out.put("mrecLastError", log.getString("mrecLastError", ""));
-                out.put("interstitialLoaded", oneInterstitialReady);
-                out.put("interstitialClaimed", oneInterstitialClaimed.get());
+                out.put("interstitialLoaded", false);
+                out.put("interstitialClaimed", false);
                 out.put("rewardedExcelConfigured", excelRewardedUnit124().matches("ca-app-pub-[0-9]+/[0-9]+"));
                 out.put("rewardedExcelLoaded", excelRewardedAd124 != null);
                 out.put("lastEvent", log.getString("step", "Henüz olay yok"));
