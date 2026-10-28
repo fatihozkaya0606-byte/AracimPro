@@ -10,6 +10,11 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // Official Mintegral SDK Maven repository, needed by the Google
+        // Mintegral mediation adapter. Liftoff and Unity use Maven Central.
+        maven {
+            url 'https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea'
+        }
     }
 }
 rootProject.name = 'AracimPro'
