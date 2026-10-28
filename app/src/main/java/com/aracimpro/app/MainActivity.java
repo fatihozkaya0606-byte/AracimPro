@@ -1826,6 +1826,9 @@ private void showLaunchSplash() {
                     appOpenAttemptFinished141 = true;
                     if (!canRequestAdMobAds() || isFinishing() || isDestroyed()) return;
                     logAdMob("app_open_loaded", "App Open ready");
+                    // Native AdMob ResponseInfo reports the actual winning network.
+                    // A mediation adapter being packaged does NOT mean it delivered.
+                    recordAdSource123("appOpen", ad.getResponseInfo());
                     appOpenAd122 = ad;
                     showAppOpenOnSplash122();
                 }
@@ -2471,11 +2474,12 @@ private void showLaunchSplash() {
                 out.put("bannerSource", log.getString("bannerSource", ""));
                 out.put("mrecSource", log.getString("mrecSource", ""));
                 out.put("interstitialSource", log.getString("interstitialSource", ""));
+                out.put("appOpenSource", log.getString("appOpenSource", ""));
                 out.put("appOpenLoading", appOpenLoading122);
                 out.put("appOpenAttemptFinished", appOpenAttemptFinished141);
                 out.put("appOpenShowing", appOpenShowing122);
                 out.put("appOpenLaunches", appOpenLaunchCount122);
-                out.put("mediation", "AdMob + Unity; debug APK uses Google SAMPLE IDs only");
+                out.put("mediation", "AdMob + Unity + Mintegral + Liftoff Monetize adapters installed; partner account approval + AdMob mappings required. Debug uses Google SAMPLE IDs only.");
             } catch (Exception ignored) {}
             return out.toString();
         }
