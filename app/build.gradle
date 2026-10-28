@@ -28,12 +28,13 @@ android {
         buildConfigField 'boolean', 'ADMOB_TEST_MODE', 'false'
         // Dedicated App Open ad unit: set APP_OPEN_AD_UNIT_ID as a GitHub Actions secret.
         // Never reuse interstitial or banner IDs. Without a valid unit, live App Open stays off.
-        buildConfigField 'String', 'APP_OPEN_AD_UNIT_ID', '\"' + ((System.getenv('APP_OPEN_AD_UNIT_ID') ?: '').matches('ca-app-pub-[0-9]+/[0-9]+') ? System.getenv('APP_OPEN_AD_UNIT_ID') : '') + '\"'
+        // Dedicated App Open AdMob unit created in publisher console; distinct from interstitial ID.
+        buildConfigField 'String', 'APP_OPEN_AD_UNIT_ID', '"ca-app-pub-7205009121067400/2505091369"'
         // A public AdMob rewarded unit ID. Debug mode independently uses Google's
         // sample rewarded ad ID in MainActivity; production uses this exact unit.
         buildConfigField 'String', 'REWARDED_AD_UNIT_ID', '"ca-app-pub-7205009121067400/7362031917"'
-        versionCode 138
-        versionName '7.11.62'
+        versionCode 139
+        versionName '7.11.63'
     }
 
     signingConfigs {
