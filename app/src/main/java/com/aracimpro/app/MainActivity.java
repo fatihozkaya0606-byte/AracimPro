@@ -424,13 +424,15 @@ public class MainActivity extends Activity {
     private void installPreviewAdDiagnostics141() {
         if (!BuildConfig.DEBUG || root == null) return;
         android.widget.Button b = new android.widget.Button(this);
-        b.setText("🧪 REKLAM TEST");
+        b.setText("🧪 TEST");
         b.setAllCaps(false);
-        b.setTextSize(10f);
+        b.setTextSize(9f);
+        // Preview-only diagnostics must NOT obscure language, alerts or settings.
+        // Anchor below scroll content, clear of native bottom banner and tabs.
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT, dp(42), Gravity.TOP | Gravity.END);
-        lp.topMargin = dp(84);
-        lp.rightMargin = dp(8);
+                dp(74), dp(34), Gravity.BOTTOM | Gravity.END);
+        lp.bottomMargin = dp(160);
+        lp.rightMargin = dp(9);
         root.addView(b, lp);
         b.setOnClickListener(v -> {
             android.content.SharedPreferences log =
