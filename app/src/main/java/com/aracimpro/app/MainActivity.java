@@ -225,6 +225,8 @@ public class MainActivity extends Activity {
     private AppOpenAd appOpenAd122;
     private boolean appOpenLoading122 = false;
     private boolean appOpenAttemptFinished141 = false;
+    private boolean activityResumed143 = false;
+    private long backgroundedAt143 = 0L;
     private boolean appOpenShowing122 = false;
     private int appOpenLaunchCount122 = 0;
     private long appOpenLastShownAt122 = 0L;
@@ -422,13 +424,15 @@ public class MainActivity extends Activity {
     private void installPreviewAdDiagnostics141() {
         if (!BuildConfig.DEBUG || root == null) return;
         android.widget.Button b = new android.widget.Button(this);
-        b.setText("🧪 REKLAM TEST");
+        b.setText("🧪 TEST");
         b.setAllCaps(false);
-        b.setTextSize(10f);
+        b.setTextSize(9f);
+        // Preview-only diagnostics must NOT obscure language, alerts or settings.
+        // Anchor below scroll content, clear of native bottom banner and tabs.
         FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT, dp(42), Gravity.TOP | Gravity.END);
-        lp.topMargin = dp(84);
-        lp.rightMargin = dp(8);
+                dp(74), dp(34), Gravity.BOTTOM | Gravity.END);
+        lp.bottomMargin = dp(160);
+        lp.rightMargin = dp(9);
         root.addView(b, lp);
         b.setOnClickListener(v -> {
             android.content.SharedPreferences log =
@@ -730,20 +734,18 @@ private void showLaunchSplash() {
         // Hold the loading screen for up to two extra seconds ONLY while a
         // configured App Open request is pending. Never interrupt main content.
         final long elapsedOnSplash = android.os.SystemClock.elapsedRealtime() - splashStartedAt;
-        final boolean openAdEligible =
-                (BuildConfig.DEBUG || appOpenLaunchCount122 >= 2) && !premiumActive &&
+        // No custom launch-count or minute-based cooldown: request an App Open
+        // for each eligible app entry, while the loading screen is still visible.
+        // Billing and UMP remain authoritative; never fake an ad or overrun content.
+        final boolean openAdEligible = !premiumActive &&
                 (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE ||
                  (BuildConfig.APP_OPEN_AD_UNIT_ID != null &&
-                  BuildConfig.APP_OPEN_AD_UNIT_ID.matches("ca-app-pub-[0-9]+/[0-9]+"))) &&
-                (appOpenLastShownAt122 <= 0L ||
-                 (BuildConfig.DEBUG ||
-                  System.currentTimeMillis() - appOpenLastShownAt122 >= 2L * 60L * 1000L));
-        // Google Play billing/UMP/SDK initialization is asynchronous.
-        // Short finite grace period, without bypassing Premium or consent.
-        if (openAdEligible && apPremiumSplashView != null
-                && elapsedOnSplash < 7500L && !appOpenAttemptFinished141) {
-            // Stop waiting once loading fails, succeeds or reaches a hard deadline.
-            mainHandler.postDelayed(this::hideLaunchSplashWhenReady, 200L);
+                  BuildConfig.APP_OPEN_AD_UNIT_ID.matches("ca-app-pub-[0-9]+/[0-9]+")));
+        if (openAdEligible && apPremiumSplashView != null &&
+                elapsedOnSplash < 11000L && !appOpenAttemptFinished141) {
+            // Let ad SDK, purchase status and consent resolve, up to a strict cap.
+            // The splash is the only permitted App Open display surface.
+            mainHandler.postDelayed(this::hideLaunchSplashWhenReady, 150L);
             return;
         }
         // If a legitimate App Open ad is running over the loading screen, do not
@@ -1801,15 +1803,12 @@ private void showLaunchSplash() {
     // unexpectedly appears once the user has entered the app.
     private void loadAppOpenDuringSplash122() {
         if (!canRequestAdMobAds() || !admobSdkReady ||
-            (!BuildConfig.DEBUG && appOpenLaunchCount122 < 2) || appOpenLoading122 ||
+            appOpenLoading122 || appOpenAttemptFinished141 ||
             appOpenShowing122 || appOpenAd122 != null ||
             apPremiumSplashHidden || apPremiumSplashView == null ||
             isFinishing() || isDestroyed()) return;
-        long now = System.currentTimeMillis();
-        // Frequent launches can reuse App Open after a sane minimum interval.
-        // Never show App Open again immediately after a prior full-screen ad.
-        if (!BuildConfig.DEBUG && appOpenLastShownAt122 > 0 &&
-            now - appOpenLastShownAt122 < 2L * 60L * 1000L) return;
+        // No per-launch counter or artificial repeat time gate.
+        // Live ad availability and Google Play/UMP permissions still apply.
         final String unit = (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
             ? "ca-app-pub-3940256099942544/9257395921"
             : BuildConfig.APP_OPEN_AD_UNIT_ID;
@@ -1842,12 +1841,15 @@ private void showLaunchSplash() {
 
     private void showAppOpenOnSplash122() {
         final AppOpenAd ad = appOpenAd122;
+        // The SDK can load the ad before Activity.onResume. Keep that loaded
+        // instance and display it immediately after the Activity is resumed.
+        if (!activityResumed143 && ad != null) return;
         if (ad == null || !canRequestAdMobAds() || appOpenShowing122 ||
             apPremiumSplashHidden || apPremiumSplashView == null ||
             // When content already finished and splash duration elapsed, the
             // ad has missed the loading window and must NOT appear late.
             (pageReady && splashDismissAllowed &&
-                android.os.SystemClock.elapsedRealtime() - splashStartedAt >= 7500L) ||
+                android.os.SystemClock.elapsedRealtime() - splashStartedAt >= 11000L) ||
             oneInterstitialClaimed.get() || isFinishing() || isDestroyed()) {
             appOpenAd122 = null;
             return;
@@ -1860,7 +1862,7 @@ private void showLaunchSplash() {
                 getSharedPreferences("aracim_app_open", MODE_PRIVATE).edit()
                     .putLong("last_shown", appOpenLastShownAt122).apply();
                 stopLaunchEngineSound();
-                logAdMob("app_open_shown", "Only during splash, not every launch");
+                logAdMob("app_open_shown", "Startup splash: loaded App Open displayed");
             }
             @Override public void onAdDismissedFullScreenContent() {
                 appOpenShowing122 = false;
@@ -2122,6 +2124,8 @@ private void showLaunchSplash() {
     }
 
     @Override protected void onPause() {
+        activityResumed143 = false;
+        backgroundedAt143 = android.os.SystemClock.elapsedRealtime();
         if (bannerAdView != null) {
             try { bannerAdView.pause(); } catch (Throwable ignored) {}
         }
@@ -2133,6 +2137,29 @@ private void showLaunchSplash() {
 
     @Override protected void onResume() {
         super.onResume();
+        activityResumed143 = true;
+        // When the user genuinely re-enters from background, create the loading
+        // surface first. Do not interrupt billing, permissions or another ad.
+        final boolean userReturnedToApp143 = appWasBackgrounded &&
+                backgroundedAt143 > 0L &&
+                android.os.SystemClock.elapsedRealtime() - backgroundedAt143 >= 8000L &&
+                apPremiumSplashHidden && !appOpenShowing122 &&
+                // A full-screen ad may itself pause/resume this Activity.
+                // Never create a new splash immediately after an ad is closed.
+                (appOpenLastShownAt122 <= 0L ||
+                 System.currentTimeMillis() - appOpenLastShownAt122 >= 30000L) &&
+                !excelRewardedShowing124 && !oneInterstitialClaimed.get() &&
+                !isChangingConfigurations() && canRequestAdMobAds();
+        if (userReturnedToApp143) {
+            appOpenAd122 = null;
+            appOpenAttemptFinished141 = false;
+            showLaunchSplash();
+            // The WebView is still fully loaded on a warm app return.
+            pageReady = true;
+            initAdMobBanner();
+        } else if (appOpenAd122 != null) {
+            showAppOpenOnSplash122();
+        }
         if (appWasBackgrounded && pageReady && webView != null) {
             webView.postDelayed(() -> webView.evaluateJavascript("window.appShouldLock && window.appShouldLock()", null), 250);
         }

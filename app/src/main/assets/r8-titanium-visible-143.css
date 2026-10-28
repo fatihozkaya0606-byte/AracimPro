@@ -1,0 +1,102 @@
+/* R8 Titanium Edition v143 — visibly different, functional Android WebView UI.
+   No ad-unit styles or native banner geometry changed. */
+body.r118Skin #app .apTi143Pulse{
+  position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;gap:12px;
+  margin:2px 0 16px;padding:11px 13px;min-height:79px;border-radius:20px;
+  background:
+    radial-gradient(ellipse at 5% 50%,#2ecbff2b,transparent 38%),
+    linear-gradient(117deg,#061c33 6%,#12436a 53%,#073254 73%,#071a2e 100%);
+  border:1px solid #55c7f3;
+  box-shadow:inset 0 2px #c8faff4b,inset 0 -4px #01172e,0 7px 0 #010f1e,
+    0 14px 24px #0009,0 0 18px #14a9ff35;
+  color:#ecfaff;box-sizing:border-box;
+}
+body.r118Skin #app .apTi143Pulse::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(106deg,transparent 44%,#d8f9ff12 48%,transparent 56%);
+  transform:translateX(-20%);z-index:-1;
+}
+body.r118Skin #app .apTi143Lens{
+  width:53px;height:53px;flex:0 0 53px;position:relative;display:grid;place-items:center;
+  border-radius:17px;border:1px solid #74dfff;
+  background:radial-gradient(circle at 35% 22%,#4aeaffad,#197aa8 35%,#082c57 72%);
+  box-shadow:inset 0 2px #ffffffab,inset 0 -4px #03162a,0 5px 12px #000b,
+    0 0 15px #22a9ff6a;
+}
+body.r118Skin #app .apTi143Lens span{
+  font-weight:950;font-style:italic;font-size:21px;letter-spacing:-1px;
+  color:#fff;text-shadow:0 1px 5px #010f25,0 0 9px #48dbff;
+}
+body.r118Skin #app .apTi143Lens i{
+  position:absolute;width:6px;height:6px;right:6px;top:6px;border-radius:50%;
+  background:#51ffd3;box-shadow:0 0 9px #34f8ce;
+}
+body.r118Skin #app .apTi143Copy{min-width:0;flex:1;display:flex;flex-direction:column;gap:5px}
+body.r118Skin #app .apTi143Copy strong{
+  font-size:clamp(15px,4.2vw,21px);line-height:1.04;white-space:nowrap;
+  letter-spacing:.7px;font-weight:950;color:#f6fcff;
+  text-shadow:0 2px 6px #0009,0 0 11px #55caff40;
+}
+body.r118Skin #app .apTi143Copy strong em{
+  color:#6ce4f9;font-size:10px;letter-spacing:1.2px;font-style:normal;
+  vertical-align:middle;text-shadow:none;
+}
+body.r118Skin #app .apTi143Copy small{
+  color:#bbdff3;font-weight:700;letter-spacing:.35px;font-size:9.5px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+body.r118Skin #app .apTi143Launch{
+  border:1px solid #7ce5ff;flex:0 0 auto;min-width:56px;height:39px;
+  padding:7px 9px;display:flex;align-items:center;justify-content:center;gap:5px;
+  border-radius:12px;color:white!important;font-size:10px;font-weight:850;
+  background:linear-gradient(155deg,#23b8ef,#0965b0);
+  box-shadow:inset 0 1px #f0ffffa8,inset 0 -3px #034076,0 4px 9px #0009;
+}
+body.r118Skin #app .apTi143Launch .svgi{width:16px;height:16px}
+body.r118Skin #app .apTi143Launch:active{transform:translateY(2px)}
+/* Deliberately different main-card treatment: premium instrument-panel glow,
+   crisp metallic rim and compact common grid across ALL sections. */
+body.r118Skin #app main .card:not(.apMrecCard),
+body.r118Skin #app main .row,
+body.r118Skin #app main .ap116Card{
+ border-color:#3d83ac!important;
+ box-shadow:inset 0 1px #ceefff39,inset 0 -3px #00172c,0 8px 16px #0009!important;
+}
+body.r118Skin #app main .sectionHead{margin-top:18px!important}
+body.r118Skin #app main .sectionHead h2{
+ border-left:3px solid #36d3ff;padding-left:11px;
+ text-shadow:0 0 12px #31b6ff25!important;
+}
+body.r118Skin.r8HomeMode #app .n97Dashboard .n97Hero.n117Hero{
+ border-color:#5ed6fa!important;
+ box-shadow:inset 0 2px #defcff70,inset 0 -3px #02152b,
+    0 8px 0 #021327,0 16px 28px #000c,0 0 25px #1ebaff61!important;
+}
+body.r118Skin #app .header.apHeader{
+ background:linear-gradient(125deg,#031124,#092e51 67%,#07182e)!important;
+ box-shadow:inset 0 -1px #66c9ff27,0 8px 22px #000c!important;
+}
+body.r118Skin #app .header.apHeader .apBrandText b{
+ color:#4bd4ff!important;-webkit-text-fill-color:#4bd4ff!important;
+}
+body.r118Skin #app .nav button.active{
+ background:linear-gradient(160deg,#2aa5d32e,#17476a66)!important;
+ border:1px solid #64cff566!important;
+ box-shadow:inset 0 1px #bcf3ff4a,0 0 14px #0ba9fc24!important;
+}
+/* This maintains 300×250 native MREC geometry exactly. Empty cards still hidden.
+   It must not overlap the action strip or fixed native ad banner. */
+body.r118Skin:not(.apMrecReady) #app .apMrecCard{display:none!important}
+@media(max-width:390px){
+ body.r118Skin #app .apTi143Pulse{gap:9px;padding:9px 10px;min-height:70px}
+ body.r118Skin #app .apTi143Lens{width:46px;height:46px;flex-basis:46px;border-radius:13px}
+ body.r118Skin #app .apTi143Lens span{font-size:19px}
+ body.r118Skin #app .apTi143Copy strong{font-size:15px}
+ body.r118Skin #app .apTi143Copy strong em{font-size:8px;letter-spacing:.4px}
+ body.r118Skin #app .apTi143Copy small{font-size:8px}
+ body.r118Skin #app .apTi143Launch{padding:6px;min-width:35px;height:35px}
+ body.r118Skin #app .apTi143Launch span{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+ body.r118Skin #app .apTi143Pulse,body.r118Skin #app .apTi143Launch{animation:none!important;transition:none!important}
+}
