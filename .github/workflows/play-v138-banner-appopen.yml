@@ -60,37 +60,12 @@ jobs:
           APP_OPEN_AD_UNIT_ID: ${{ secrets.APP_OPEN_AD_UNIT_ID }}
         run: |
           if [ -z "$APP_OPEN_AD_UNIT_ID" ]; then
-            echo "::warning::APP_OPEN_AD_UNIT_ID is missing. The App Open splash ad will remain disabled until a dedicated AdMob App Open unit is created and configured."
-          elif ! echo "$APP_OPEN_AD_UNIT_ID" | grep -Eq '^ca-app-pub-[0-9]+/[0-9]+
-        env:
-          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
-          APP_OPEN_AD_UNIT_ID: ${{ secrets.APP_OPEN_AD_UNIT_ID }}
-          REWARDED_AD_UNIT_ID: ${{ secrets.REWARDED_AD_UNIT_ID }}
-          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
-          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
-          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
-          LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
-        run: gradle --no-daemon bundleRelease
-      - name: Verify signed bundle, mapping and native symbols exist
-        run: |
-          test -s app/build/outputs/bundle/release/app-release.aab
-          jarsigner -verify app/build/outputs/bundle/release/app-release.aab
-          test -s app/build/outputs/mapping/release/mapping.txt
-          unzip -Z1 app/build/outputs/bundle/release/app-release.aab | grep -F -q 'BUNDLE-METADATA/com.android.tools.build.debugsymbols/'
-          echo 'Confirmed: AAB contains native symbol metadata'
-          unzip -Z1 app/build/outputs/bundle/release/app-release.aab | grep -F 'BUNDLE-METADATA/com.android.tools.build.debugsymbols/'
-      - uses: actions/upload-artifact@v4
-        with:
-          name: AracimPro-v138-BannerFix-AppOpen-SIGNED-PLAY-AAB
-          path: |
-            app/build/outputs/bundle/release/app-release.aab
-            app/build/outputs/mapping/release/mapping.txt
-; then
-            echo "::error::APP_OPEN_AD_UNIT_ID has an invalid format"
+            echo "::warning::APP_OPEN_AD_UNIT_ID missing; App Open will stay disabled until a dedicated AdMob unit is configured"
+          elif ! echo "$APP_OPEN_AD_UNIT_ID" | grep -Eq '^ca-app-pub-[0-9]+/[0-9]+$'; then
+            echo "::error::Invalid App Open ID format"
             exit 1
           else
-            echo 'Dedicated App Open unit is configured'
+            echo "Dedicated App Open ID configured"
           fi
       - name: Build signed release bundle
         env:
