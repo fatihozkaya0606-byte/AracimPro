@@ -28,7 +28,7 @@ android {
         buildConfigField 'boolean', 'ADMOB_TEST_MODE', 'false'
         // Set the real AdMob Native unit ID at release build time. Never use a
         // banner/MREC/interstitial ID or a Google sample unit for production.
-        buildConfigField "String", "NATIVE_AD_UNIT_ID", "\\\"${System.getenv('NATIVE_AD_UNIT_ID') ?: ''}\\\""
+        buildConfigField "String", "NATIVE_AD_UNIT_ID", "\"${System.getenv('NATIVE_AD_UNIT_ID') ?: ''}\""
         // Dedicated App Open ad unit: set APP_OPEN_AD_UNIT_ID as a GitHub Actions secret.
         // Never reuse interstitial or banner IDs. Without a valid unit, live App Open stays off.
         // Dedicated App Open AdMob unit created in publisher console; distinct from interstitial ID.
