@@ -2015,6 +2015,18 @@ body:not(.r8HomeMode):not(.dark) .apMrecSlot{background:#e7f0f8;border-color:#c4
 <link rel="stylesheet" href="r8-titanium-142.css">
 <link rel="stylesheet" href="r8-titanium-visible-143.css">
 <link rel="stylesheet" href="r8-titanium-142.css">
+<style id="apNativeCss146">
+.apNative146{display:none;box-sizing:border-box;width:100%;min-width:0;margin:17px 0 18px;padding:9px;border-radius:21px;border:1px solid #355b79;background:linear-gradient(150deg,#092944,#102c42);box-shadow:0 9px 24px rgba(2,14,39,.18)}
+.apNativeReady146 .apNative146{display:block}
+.apNativeHeader146{display:flex;align-items:center;justify-content:space-between;padding:2px 5px 8px;color:#bfe0f8;gap:10px;font-size:11px}
+.apNativeHeader146 strong{font-size:12px}
+.apNativeHeader146 span{border:1px solid #527490;border-radius:50px;padding:3px 8px;font-size:10px}
+.apNativeSlot146{width:100%;height:242px;box-sizing:border-box;min-width:0;border-radius:15px;overflow:hidden;background:#082237}
+body:not(.dark) .apNative146{background:linear-gradient(130deg,#f1f7fd,#e8f2fc);border-color:#b2cde3}
+body:not(.dark) .apNativeHeader146{color:#183750}
+body:not(.dark) .apNativeHeader146 span{border-color:#a6c4da}
+body:not(.dark) .apNativeSlot146{background:#e4edf6}
+</style>
 </head>
 <body>
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
@@ -3073,10 +3085,83 @@ function render(){
   // Hide the native MREC before replacing WebView HTML: a stale native overlay
   // must never cover buttons while a tab is changing.
   try{if(typeof Android!=='undefined' && Android.updateMrecSlot)Android.updateMrecSlot(0,0,0,0,window.innerWidth,false)}catch(e){}
+  try{if(typeof Android!=='undefined' && Android.updateNativeAdSlot146)Android.updateNativeAdSlot146(0,0,0,0,window.innerWidth,false)}catch(e){}
   document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${titaniumControlStrip143()}${view()}</main>`+nav()+fab();
   apMrecMountOnContentPage();
-  setTimeout(apSyncMrecSlot,70);setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);setTimeout(startTickerMotion7105,420);setTimeout(showWhatsNewOnce,850);if(current==='home'){setTimeout(loadHomeWeather,350)}}
+  apNativeMount146();
+  setTimeout(apSyncMrecSlot,70);
+  setTimeout(apNativeQueueSync146,110);setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);setTimeout(startTickerMotion7105,420);setTimeout(showWhatsNewOnce,850);if(current==='home'){setTimeout(loadHomeWeather,350)}}
 function view(){if(!activeVehicle()&&current!=='garage'&&current!=='more')return welcome();return ({home:homeView,garage:garageView,records:recordsView,plan:planView,reports:reportsView,more:moreView}[current]||homeView)()}
+
+
+// V146: ONE real Android NativeAdView anchored to one visible feed slot.
+// SDK controls advertising assets, AdChoices, click handling and impressions.
+let apNativeQueued146=false, apNativeScrollingUntil146=0, apNativeScrollTimer146=0;
+let apNativeObserved146=false;
+window.apNativeAvailability146=function(ready){
+  document.body.classList.toggle('apNativeReady146',!!ready);
+  apNativeQueueSync146();
+};
+function apNativeMount146(){
+  if(current!=='garage'&&current!=='more')return;
+  try{if(isPremium())return;}catch(e){}
+  const main=document.querySelector('#app>main');
+  if(!main||main.querySelector('#apNativeSlot146'))return;
+  const card=document.createElement('section');
+  card.className='apNative146';
+  card.setAttribute('aria-label','Reklam içerikleri');
+  card.innerHTML='<div class="apNativeHeader146"><strong>Önerilen</strong><span>Reklam</span></div><div class="apNativeSlot146" id="apNativeSlot146" aria-label="AdMob reklamı"></div>';
+  let anchor;
+  if(current==='garage')anchor=main.querySelector('.list')||main.querySelector('.sectionHead');
+  else anchor=main.querySelector('.moreCatHero')||main.querySelector('.more796Top')||main.querySelector('.moreCatSearch')||main.querySelector('.moreFavGrid');
+  if(!anchor)return;
+  anchor.insertAdjacentElement('afterend',card);
+  try{if(typeof Android!=='undefined'&&Android.requestNativeAd146)Android.requestNativeAd146()}catch(e){}
+  if(!apNativeObserved146&&typeof MutationObserver!=='undefined'){
+    const modalRoot=document.getElementById('modalRoot');
+    const lockRoot=document.getElementById('lockRoot');
+    [modalRoot,lockRoot].filter(Boolean).forEach(el=>{
+      new MutationObserver(apNativeQueueSync146).observe(el,{childList:true,subtree:true});
+    });
+    apNativeObserved146=true;
+  }
+}
+function apNativeSync146(){
+  apNativeQueued146=false;
+  try{
+    if(typeof Android==='undefined'||!Android.updateNativeAdSlot146)return;
+    const slot=document.getElementById('apNativeSlot146');
+    const vw=window.innerWidth;
+    if(!slot||document.hidden||Date.now()<apNativeScrollingUntil146){
+      Android.updateNativeAdSlot146(0,0,0,0,vw,false);return;
+    }
+    const r=slot.getBoundingClientRect();
+    const overlayOpen=['modalRoot','lockRoot'].some(id=>{
+      const el=document.getElementById(id);
+      return !!(el&&el.innerHTML.trim());
+    });
+    const nav=document.querySelector('nav.nav,.nav');
+    const lower=nav?nav.getBoundingClientRect().top:window.innerHeight-83;
+    const visible=document.body.classList.contains('apNativeReady146')
+      &&!overlayOpen&&r.width>=255&&r.height>=230&&r.top>=155&&r.left>=0
+      &&r.right<=vw+1&&r.bottom<=Math.min(window.innerHeight-85,lower-12);
+    Android.updateNativeAdSlot146(r.left,r.top,r.width,r.height,vw,visible);
+  }catch(e){}
+}
+function apNativeQueueSync146(){
+  if(apNativeQueued146)return;
+  apNativeQueued146=true;
+  requestAnimationFrame(apNativeSync146);
+}
+function apNativeMarkScrolling146(){
+  apNativeScrollingUntil146=Date.now()+600;
+  try{if(typeof Android!=='undefined'&&Android.updateNativeAdSlot146)
+    Android.updateNativeAdSlot146(0,0,0,0,window.innerWidth,false)}catch(e){}
+  if(apNativeScrollTimer146)clearTimeout(apNativeScrollTimer146);
+  apNativeScrollTimer146=setTimeout(apNativeQueueSync146,670);
+}
+window.addEventListener('resize',apNativeQueueSync146,{passive:true});
+window.addEventListener('visibilitychange',apNativeQueueSync146);
 
 function apMrecCardHtml(){
   try{if(isPremium())return '';}catch(e){}
@@ -3172,6 +3257,7 @@ function apMrecQueueSync(){
   requestAnimationFrame(apSyncMrecSlot);
 }
 function apMrecMarkScrolling(){
+  apNativeMarkScrolling146();
   apMrecScrollBlockedUntil=Date.now()+520;
   if(Date.now()-apMrecLastHideAt>100){
     apMrecLastHideAt=Date.now();
