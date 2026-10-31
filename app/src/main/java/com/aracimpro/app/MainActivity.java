@@ -185,6 +185,8 @@ public class MainActivity extends Activity {
     private AdView bannerAdView;
     private View bannerBackdrop129;
     private AdView mrecAdView;
+    // v146: isolated, policy-compliant Google NativeAd in the garage/services feed.
+    private NativeFeedController146 nativeFeed146;
     private boolean mrecAdLoaded = false;
     private boolean mrecSlotVisible = false;
     private long mrecScrollHoldUntil = 0L;
@@ -305,12 +307,16 @@ public class MainActivity extends Activity {
             mrecScrollHoldUntil = android.os.SystemClock.elapsedRealtime() + 550L;
             mrecSlotVisible = false;
             updateMrecVisibility();
+            if (nativeFeed146 != null) nativeFeed146.hideForScroll();
             webView.removeCallbacks(mrecAfterScroll);
             webView.postDelayed(mrecAfterScroll, 620L);
         });
         root.addView(webView, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         setContentView(root);
+        nativeFeed146 = new NativeFeedController146(this, root, webView, mainHandler,
+                () -> canRequestAdMobAds() && admobSdkReady,
+                () -> canRequestAdMobAds() && apPremiumSplashHidden && activityResumed143);
         if (Build.VERSION.SDK_INT >= 33) {
             try {
                 getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
@@ -412,6 +418,7 @@ public class MainActivity extends Activity {
                 if (apLaunchProgressLabel != null) apLaunchProgressLabel.setText("HAZIR    %100");
                 hideLaunchSplashWhenReady();
                 if (mrecAdLoaded) notifyMrecJs(true);
+                if (nativeFeed146 != null && nativeFeed146.isLoaded()) nativeFeed146.notifyJs(true);
             }
         });
         webView.setWebChromeClient(new WebChromeClient());
@@ -1311,6 +1318,7 @@ private void showLaunchSplash() {
                 mrecAdLoaded = false;
                 mrecSlotVisible = false;
                 notifyMrecJs(false);
+                if (nativeFeed146 != null) nativeFeed146.removeAd();
                 excelRewardedAd124 = null;
                 excelRewardedLoading124 = false;
                 oneInterstitialAd = null;
@@ -1515,6 +1523,7 @@ private void showLaunchSplash() {
             createAdMobBanner();
             requestBottomBanner138();
             createMrecAd();
+            if (nativeFeed146 != null) nativeFeed146.tryLoad();
             loadSingleInterstitial();
             loadExcelRewardedAd124();
             return;
@@ -1710,7 +1719,8 @@ private void showLaunchSplash() {
             }
             // Ask WebView to remeasure after native scroll has fully settled.
             webView.evaluateJavascript(
-                    "window.apMrecQueueSync && window.apMrecQueueSync()", null);
+                    "window.apMrecQueueSync && window.apMrecQueueSync();" +
+                    "window.apNativeQueueSync146 && window.apNativeQueueSync146()", null);
         }
     };
 
@@ -2161,6 +2171,7 @@ private void showLaunchSplash() {
         }
         mrecSlotVisible = false;
         updateMrecVisibility();
+        if (nativeFeed146 != null) nativeFeed146.hide();
         super.onPause();
         appWasBackgrounded = true;
     }
@@ -2214,7 +2225,8 @@ private void showLaunchSplash() {
         if (webView != null) {
             mrecSlotVisible = false;
             webView.postDelayed(() -> webView.evaluateJavascript(
-                "window.apMrecQueueSync && window.apMrecQueueSync()", null), 500);
+                "window.apMrecQueueSync && window.apMrecQueueSync();" +
+                "window.apNativeQueueSync146 && window.apNativeQueueSync146()", null), 500);
         }
         appWasBackgrounded = false;
     }
@@ -2441,6 +2453,15 @@ private void showLaunchSplash() {
                                                          double viewportWidth, boolean visible) {
             runOnUiThread(() -> updateMrecSlotNative(
                     left, top, width, height, viewportWidth, visible));
+        }
+
+        @JavascriptInterface public void updateNativeSlot146(double left, double top,
+                                                               double width, double height,
+                                                               double viewportWidth, boolean visible) {
+            runOnUiThread(() -> {
+                if (nativeFeed146 != null) nativeFeed146.syncSlot(
+                        left, top, width, height, viewportWidth, visible);
+            });
         }
 
         @JavascriptInterface public boolean showOneInterstitialBeforeNavigation(String target) {
@@ -5101,6 +5122,7 @@ private void showLaunchSplash() {
         if(bannerAdView!=null){try{bannerAdView.destroy();}catch(Throwable ignored){} bannerAdView=null;}
         if (webView != null) webView.removeCallbacks(mrecAfterScroll);
         if(mrecAdView!=null){try{mrecAdView.destroy();}catch(Throwable ignored){} mrecAdView=null;}
+        if (nativeFeed146 != null) { nativeFeed146.destroy(); nativeFeed146 = null; }
         stopSpeedTrackingNative();
         try { if (locationManager != null && map120LocationListener != null) locationManager.removeUpdates(map120LocationListener); } catch (Throwable ignored) {}
         map120LocationListener = null;
