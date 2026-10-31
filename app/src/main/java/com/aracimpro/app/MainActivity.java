@@ -220,6 +220,9 @@ public class MainActivity extends Activity {
     private final java.util.concurrent.atomic.AtomicBoolean oneInterstitialClaimed =
             new java.util.concurrent.atomic.AtomicBoolean(false);
     private volatile long oneInterstitialLoadedAt = 0L;
+    // Frequency cap shared by the save-vehicle and bottom-navigation triggers.
+    private static final long IN_APP_INTERSTITIAL_MIN_INTERVAL_MS145 = 120000L;
+    private volatile long lastInAppInterstitialShownAt145 = 0L;
     private final long sessionStartedAt = android.os.SystemClock.elapsedRealtime();
     // App-open is a distinct AdMob format; never show ordinary interstitials at launch.
     private AppOpenAd appOpenAd122;
@@ -1887,11 +1890,20 @@ private void showLaunchSplash() {
 
     // Vehicle-save is a completed user task, not a disruptive "Aracı Ekle"
     // click. The same one-ad-per-session cap also applies to tab transitions.
+    private void releaseAndReloadInterstitial145() {
+        oneInterstitialClaimed.set(false);
+        if (!isFinishing() && !isDestroyed() && canRequestAdMobAds())
+            mainHandler.postDelayed(this::loadSingleInterstitial, 1200L);
+    }
+
     private void requestInterstitialAfterVehicleSaved122() {
         long now = android.os.SystemClock.elapsedRealtime();
         if (!oneInterstitialReady || oneInterstitialAd == null ||
             !canRequestAdMobAds() || !apPremiumSplashHidden ||
             appOpenShowing122 ||
+            oneInterstitialClaimed.get() ||
+            (lastInAppInterstitialShownAt145 > 0L &&
+             now - lastInAppInterstitialShownAt145 < IN_APP_INTERSTITIAL_MIN_INTERVAL_MS145) ||
             // Only a 40-second rest after the user closes a voluntary rewarded video.
             excelRewardedShowing124 ||
             (lastExcelRewardedClosedAt125 > 0L && now - lastExcelRewardedClosedAt125 < 40000L) ||
@@ -1905,20 +1917,26 @@ private void showLaunchSplash() {
         final InterstitialAd ad = oneInterstitialAd;
         oneInterstitialAd = null;
         oneInterstitialReady = false;
-        if (ad == null) return;
+        if (ad == null) { releaseAndReloadInterstitial145(); return; }
+        lastInAppInterstitialShownAt145 = now;
         ad.setFullScreenContentCallback(new FullScreenContentCallback() {
             @Override public void onAdShowedFullScreenContent() {
                 logAdMob("vehicle_saved_interstitial", "After successful new vehicle save");
             }
             @Override public void onAdDismissedFullScreenContent() {
                 logAdMob("vehicle_saved_interstitial_closed", "Return to the saved vehicle");
+                releaseAndReloadInterstitial145();
             }
             @Override public void onAdFailedToShowFullScreenContent(AdError error) {
                 logAdMob("vehicle_saved_interstitial_failed", String.valueOf(error));
+                releaseAndReloadInterstitial145();
             }
         });
         try { ad.show(this); }
-        catch (Throwable t) { logAdMob("vehicle_saved_interstitial_error", t.toString()); }
+        catch (Throwable t) {
+            logAdMob("vehicle_saved_interstitial_error", t.toString());
+            releaseAndReloadInterstitial145();
+        }
     }
 
 
@@ -2080,6 +2098,10 @@ private void showLaunchSplash() {
               "records".equals(target) || "plan".equals(target) ||
               "reports".equals(target) || "more".equals(target))) return false;
         if (!oneInterstitialReady || oneInterstitialAd == null ||
+                oneInterstitialClaimed.get() ||
+                (lastInAppInterstitialShownAt145 > 0L &&
+                 android.os.SystemClock.elapsedRealtime() - lastInAppInterstitialShownAt145 <
+                         IN_APP_INTERSTITIAL_MIN_INTERVAL_MS145) ||
                 excelRewardedShowing124 ||
                 (lastExcelRewardedClosedAt125 > 0L &&
                  android.os.SystemClock.elapsedRealtime() - lastExcelRewardedClosedAt125 < 40000L) ||
@@ -2093,6 +2115,7 @@ private void showLaunchSplash() {
                 !canRequestAdMobAds() || !apPremiumSplashHidden ||
                 isFinishing() || isDestroyed()) return false;
         if (!oneInterstitialClaimed.compareAndSet(false, true)) return false;
+        lastInAppInterstitialShownAt145 = android.os.SystemClock.elapsedRealtime();
         // WebView JS interfaces are invoked off the Android UI thread.
         runOnUiThread(() -> {
             final InterstitialAd ad = oneInterstitialAd;
@@ -2100,6 +2123,7 @@ private void showLaunchSplash() {
             oneInterstitialReady = false;
             if (ad == null || !canRequestAdMobAds() || !apPremiumSplashHidden ||
                     isFinishing() || isDestroyed()) {
+                releaseAndReloadInterstitial145();
                 finishOneInterstitialNavigation(target);
                 return;
             }
@@ -2109,10 +2133,12 @@ private void showLaunchSplash() {
                 }
                 @Override public void onAdDismissedFullScreenContent() {
                     logAdMob("interstitial_dismissed", "Navigation continued");
+                    releaseAndReloadInterstitial145();
                     finishOneInterstitialNavigation(target);
                 }
                 @Override public void onAdFailedToShowFullScreenContent(AdError error) {
                     logAdMob("interstitial_show_failed", error == null ? "Unknown" : error.toString());
+                    releaseAndReloadInterstitial145();
                     finishOneInterstitialNavigation(target);
                 }
             });
@@ -2120,6 +2146,7 @@ private void showLaunchSplash() {
                 ad.show(this);
             } catch (Throwable t) {
                 logAdMob("interstitial_exception", t.getClass().getSimpleName());
+                releaseAndReloadInterstitial145();
                 finishOneInterstitialNavigation(target);
             }
         });
