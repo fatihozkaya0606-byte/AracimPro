@@ -1,9 +1,9 @@
-name: Aracim Pro v145 Restored In-App Interstitial Signed AAB and Test APK
+name: Aracim Pro v146 Native Ads Signed AAB and Test APK
 
 on:
   workflow_dispatch:
   push:
-    branches: [ aracimpro-145-inapp-interstitial-reenabled ]
+    branches: [ aracimpro-146-native-feed ]
 
 jobs:
   build-release:
@@ -51,8 +51,8 @@ jobs:
           test -n "$OTOAPI_KEY" || (echo "OTOAPI_KEY secret is missing" >&2; exit 1)
       - name: Check intended release configuration
         run: |
-          grep -Fq "versionCode 145" app/build.gradle
-          grep -Fq "versionName '7.11.69'" app/build.gradle
+          grep -Fq "versionCode 146" app/build.gradle
+          grep -Fq "versionName '7.11.70'" app/build.gradle
           grep -Fq "com.google.ads.mediation:unity:4.21.0.0" app/build.gradle
           ! grep -Eq 'com.google.ads.mediation:(applovin|pangle):' app/build.gradle
           grep -Fq "com.google.ads.mediation:mintegral:17.1.81.1" app/build.gradle
@@ -68,6 +68,13 @@ jobs:
           grep -Fq "InterstitialAd.load(" app/src/main/java/com/aracimpro/app/MainActivity.java
           grep -Fq "loadSingleInterstitial()" app/src/main/java/com/aracimpro/app/MainActivity.java
           grep -Fq "releaseAndReloadInterstitial145()" app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -Fq "NATIVE_AD_UNIT_ID" app/build.gradle
+          grep -Fq "new NativeFeedController146" app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -Fq "updateNativeSlot146" app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -Fq "forNativeAd" app/src/main/java/com/aracimpro/app/NativeFeedController146.java
+          grep -Fq "setNativeAd" app/src/main/java/com/aracimpro/app/NativeFeedController146.java
+          grep -Fq "apNativeMount146()" app/src/main/assets/index.html
+          grep -Fq "apNativeQueueSync146" app/src/main/assets/index.html
           grep -Fq "IN_APP_INTERSTITIAL_MIN_INTERVAL_MS145 = 120000L" app/src/main/java/com/aracimpro/app/MainActivity.java
           grep -Fq "bottomNavTransitions >= 3" app/src/main/assets/index.html
           grep -Fq "requestBottomBanner138()" app/src/main/java/com/aracimpro/app/MainActivity.java
@@ -85,7 +92,7 @@ jobs:
           grep -Fq 'href="r8-titanium-visible-143.css"' app/src/main/assets/index.html
           grep -Fq "titaniumControlStrip143()" app/src/main/assets/index.html
           grep -Fq "apTi143Pulse" app/src/main/assets/r8-titanium-visible-143.css
-          grep -Fq "const V='7.11.69'" app/src/main/assets/index.html
+          grep -Fq "const V='7.11.70'" app/src/main/assets/index.html
           grep -Fq "body.r118Skin #app .nav" app/src/main/assets/r8-titanium-142.css
           grep -Fq "body.r118Skin:not(.apMrecReady)" app/src/main/assets/r8-titanium-142.css
           grep -Fq "body.r118Skin.r8HomeMode #app .n97Dashboard .n97Hero.n117Hero" app/src/main/assets/r8-titanium-142.css
@@ -101,6 +108,7 @@ jobs:
         env:
           OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
           APP_OPEN_AD_UNIT_ID: ${{ secrets.APP_OPEN_AD_UNIT_ID }}
+          NATIVE_AD_UNIT_ID: ${{ secrets.NATIVE_AD_UNIT_ID }}
           REWARDED_AD_UNIT_ID: ${{ secrets.REWARDED_AD_UNIT_ID }}
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
@@ -120,13 +128,13 @@ jobs:
           unzip -Z1 app/build/outputs/bundle/release/app-release.aab | grep -F 'BUNDLE-METADATA/com.android.tools.build.debugsymbols/'
       - uses: actions/upload-artifact@v4
         with:
-          name: AracimPro-v145-Mintegral-Liftoff-SIGNED-PLAY-AAB
+          name: AracimPro-v146-Native-SIGNED-PLAY-AAB
           path: |
             app/build/outputs/bundle/release/app-release.aab
             app/build/outputs/mapping/release/mapping.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: AracimPro-v145-Mediation-Test-APK-Google-Sample-Ads
+          name: AracimPro-v146-Native-Test-APK-Google-Sample-Ads
           path: app/build/outputs/apk/debug/app-debug.apk
           retention-days: 7
           if-no-files-found: error
