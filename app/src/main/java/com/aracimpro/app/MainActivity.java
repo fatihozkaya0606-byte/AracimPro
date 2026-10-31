@@ -2129,7 +2129,7 @@ private void showLaunchSplash() {
             }
             ad.setFullScreenContentCallback(new FullScreenContentCallback() {
                 @Override public void onAdShowedFullScreenContent() {
-                    logAdMob("interstitial_shown", "One full-screen ad shown in session");
+                    logAdMob("interstitial_shown", "In-app navigation interstitial displayed");
                 }
                 @Override public void onAdDismissedFullScreenContent() {
                     logAdMob("interstitial_dismissed", "Navigation continued");
@@ -2178,6 +2178,9 @@ private void showLaunchSplash() {
                 // Never create a new splash immediately after an ad is closed.
                 (appOpenLastShownAt122 <= 0L ||
                  System.currentTimeMillis() - appOpenLastShownAt122 >= 30000L) &&
+                (lastInAppInterstitialShownAt145 <= 0L ||
+                 android.os.SystemClock.elapsedRealtime() - lastInAppInterstitialShownAt145 >=
+                         IN_APP_INTERSTITIAL_MIN_INTERVAL_MS145) &&
                 !excelRewardedShowing124 && !oneInterstitialClaimed.get() &&
                 !isChangingConfigurations() && canRequestAdMobAds();
         if (userReturnedToApp143) {
