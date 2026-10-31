@@ -3008,10 +3008,15 @@ function go(k,fromBottomNav=false){
   if(!k||k===current){closeModal();return}
   if(fromBottomNav) {
     bottomNavTransitions++;
-    if(bottomNavTransitions >= 2) {
+    // Natural break only: at least three deliberate bottom-navigation changes.
+    // The native layer also enforces a 2-minute cap and keeps app-open separate.
+    if(bottomNavTransitions >= 3) {
       try {
         if(typeof Android !== 'undefined' &&
-           Android.showOneInterstitialBeforeNavigation(k)) return;
+           Android.showOneInterstitialBeforeNavigation(k)) {
+          bottomNavTransitions = 0;
+          return;
+        }
       } catch(e) {}
     }
   }
