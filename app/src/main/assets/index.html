@@ -1978,6 +1978,20 @@ body.r8HomeMode .apLiveMini.clock em{font-style:normal;opacity:.45;margin:0 1px}
 .apCameraPreview{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#050b12}.apCameraPreview img{display:block;width:100%;max-height:360px;object-fit:contain}
 @media(max-width:390px){body.r8HomeMode .apBrandSub{max-width:155px;font-size:9.4px}body.r8HomeMode .apLiveMini.clock{font-size:6.3px}.ref791-copy h1{font-size:17px!important}.apSafetyQuick button{padding:9px;column-gap:7px}}
 </style>
+<style id="ap-native-feed-146">
+/* v146: reserve space in the feed only for a loaded, consent-eligible native ad.
+   The actual creative is an Android NativeAdView centered over this region. */
+.apNativeCard146{display:none;box-sizing:border-box;width:100%;
+  margin:12px 0;padding:7px 7px;border:1px solid rgba(44,137,192,.28);
+  border-radius:20px;background:linear-gradient(148deg,#0a253c,#0d324d);
+  min-width:0;clear:both}
+body.apNativeReady146 .apNativeCard146{display:block}
+.apNativeSlot146{box-sizing:border-box;display:block;width:100%;
+  max-width:100%;height:174px;margin:0 auto;position:relative;
+  background:transparent;pointer-events:none}
+body:not(.dark) .apNativeCard146{background:linear-gradient(135deg,#f3f9ff,#e7f2fc);
+  border-color:#bedbef}
+</style>
 <style id="ap-mrec-card-71116">
 .apMrecCard{grid-column:1/-1;display:none;flex-direction:column;gap:9px;margin:12px 0;padding:13px 10px 14px;border:1px solid rgba(42,142,233,.35);border-radius:20px;background:linear-gradient(155deg,#071e35,#0b2a47);box-shadow:0 8px 25px rgba(0,40,100,.16)}
 .apMrecReady .apMrecCard{display:flex}
@@ -3075,8 +3089,101 @@ function render(){
   try{if(typeof Android!=='undefined' && Android.updateMrecSlot)Android.updateMrecSlot(0,0,0,0,window.innerWidth,false)}catch(e){}
   document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${titaniumControlStrip143()}${view()}</main>`+nav()+fab();
   apMrecMountOnContentPage();
+  apNativeMount146();
+  setTimeout(apNativeQueueSync146,95);
   setTimeout(apSyncMrecSlot,70);setTimeout(()=>applyI18n(app),0);setTimeout(apStartCornerStatus,0);setTimeout(startLiveTickerAuto,150);setTimeout(startMarketTickerAuto,260);setTimeout(startTickerMotion7105,420);setTimeout(showWhatsNewOnce,850);if(current==='home'){setTimeout(loadHomeWeather,350)}}
 function view(){if(!activeVehicle()&&current!=='garage'&&current!=='more')return welcome();return ({home:homeView,garage:garageView,records:recordsView,plan:planView,reports:reportsView,more:moreView}[current]||homeView)()}
+
+
+// v146: a genuine Android Google Mobile Ads NativeAdView, never a fabricated
+// HTML advertisement. The WebView only reserves its exact measured position.
+// SDK owns the creative assets, click handling, impressions and AdChoices.
+function apNativeCardHtml146(){
+  try{if(isPremium())return ''}catch(e){}
+  return `<section class="apNativeCard146" aria-label="Sponsorlu içerik">
+    <div class="apNativeSlot146" id="apNativeSlot146" aria-label="Reklam için ayrılan alan"></div>
+  </section>`;
+}
+function apNativeMount146(){
+  if(current!=='garage' && current!=='more')return;
+  const main=document.querySelector('#app > main');
+  if(!main || main.querySelector('#apNativeSlot146'))return;
+  const markup=apNativeCardHtml146();
+  if(!markup)return;
+  const wrapper=document.createElement('div');
+  wrapper.innerHTML=markup.trim();
+  const card=wrapper.firstElementChild;
+  if(!card)return;
+  let anchor=null;
+  if(current==='garage'){
+    anchor=main.querySelector('.list')||main.querySelector('.sectionHead');
+  }else{
+    anchor=main.querySelector('.moreFavGrid')||
+      main.querySelector('.more796Grid')||
+      main.querySelector('.moreCatGrid')||
+      main.querySelector('.moreCatHero');
+  }
+  if(anchor)anchor.insertAdjacentElement('afterend',card);
+  else main.appendChild(card);
+}
+window.apNativeAvailability146=function(ready){
+  document.body.classList.toggle('apNativeReady146',!!ready);
+  requestAnimationFrame(apNativeQueueSync146);
+};
+let apNativeFrameQueued146=false;
+let apNativeBlockedUntil146=0;
+let apNativeScrollTimer146=null;
+function apNativeQueueSync146(){
+  if(apNativeFrameQueued146)return;
+  apNativeFrameQueued146=true;
+  requestAnimationFrame(apNativeSync146);
+}
+function apNativeSync146(){
+  apNativeFrameQueued146=false;
+  try{
+    if(typeof Android==='undefined'||!Android.updateNativeSlot146)return;
+    const slot=document.getElementById('apNativeSlot146');
+    const vw=window.innerWidth;
+    if(!slot||document.hidden||Date.now()<apNativeBlockedUntil146){
+      Android.updateNativeSlot146(0,0,0,0,vw,false);
+      return;
+    }
+    const r=slot.getBoundingClientRect();
+    const overlayOpen=['modalRoot','lockRoot'].some(id=>{
+      const el=document.getElementById(id);
+      return !!(el&&el.innerHTML.trim());
+    });
+    const nav=document.querySelector('nav.nav, .nav');
+    const bottom=nav?nav.getBoundingClientRect().top:innerHeight-86;
+    const visible=document.body.classList.contains('apNativeReady146') &&
+      !overlayOpen && current!=='home' && r.width>=260 && r.height>=164 &&
+      r.left>=0 && r.right<=vw+2 && r.top>=170 &&
+      r.bottom<=Math.min(innerHeight-88,bottom-12);
+    Android.updateNativeSlot146(r.left,r.top,r.width,r.height,vw,visible);
+  }catch(e){}
+}
+function apNativeMarkScrolling146(){
+  apNativeBlockedUntil146=Date.now()+620;
+  try{
+    if(typeof Android!=='undefined'&&Android.updateNativeSlot146)
+      Android.updateNativeSlot146(0,0,0,0,window.innerWidth,false);
+  }catch(e){}
+  if(apNativeScrollTimer146)clearTimeout(apNativeScrollTimer146);
+  apNativeScrollTimer146=setTimeout(apNativeQueueSync146,670);
+}
+window.addEventListener('scroll',apNativeMarkScrolling146,{passive:true,capture:true});
+window.addEventListener('touchmove',apNativeMarkScrolling146,{passive:true,capture:true});
+window.addEventListener('resize',apNativeQueueSync146,{passive:true});
+document.addEventListener('visibilitychange',apNativeQueueSync146);
+function apNativeObserveOverlays146(){
+  if(typeof MutationObserver==='undefined')return;
+  ['modalRoot','lockRoot'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)new MutationObserver(apNativeQueueSync146)
+      .observe(el,{childList:true,subtree:true,characterData:true});
+  });
+}
+setTimeout(apNativeObserveOverlays146,110);
 
 function apMrecCardHtml(){
   try{if(isPremium())return '';}catch(e){}
