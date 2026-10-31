@@ -135,7 +135,7 @@ function spawnSpark(x,y,count=14,color='#ffe6ad'){for(let k=0;k<count;k++){let a
 function log(s){logs.unshift('Gün '+day+' • '+s);logs=logs.slice(0,15);toast(s)}
 function difficulty(type){return type==='tank'?1.8:type==='artillery'?1.28:type==='cavalry'?1.13:type==='motor'?1.45:1}
 function attackPower(u){return u.strength*difficulty(u.type)*(0.68+morale/210)*(1-u.fatigue*.08)}
-function arrival(m){let u=m.unit,to=m.to;if(!u.alive)return;u.action=null;u.x=to.x;u.y=to.y;
+function arrival(m){let u=m.unit,to=cities[m.target];if(!u.alive||!to)return;u.action=null;u.x=to.x;u.y=to.y;
  let defenders=units.filter(e=>e.alive&&e.side!==u.side&&e.city===m.target);
  if(m.kind==='move' && !defenders.length){u.city=m.target;to.side=u.side;u.fatigue+=1;log(types[u.type]+' • '+to.name+' mevzisine intikal etti');checkVictory();save();updateHUD();return}
  if(m.kind==='move'&&defenders.length){log(to.name+' düşman kontrolünde: taarruz emri gerekli');u.x=m.from.x;u.y=m.from.y;return}
