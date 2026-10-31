@@ -1,0 +1,1 @@
+Cephe Komutanı v1 — 10 bölümlü çevrimdışı oynanabilir orijinal tarihî strateji oyunu. Build: gradle :app:assembleDebug.
