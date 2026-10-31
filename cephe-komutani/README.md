@@ -1,1 +1,2 @@
-Cephe Komutanı v1 — 10 bölümlü çevrimdışı oynanabilir orijinal tarihî strateji oyunu. Build: gradle :app:assembleDebug.
+# Cephe Komutanı v2 — Harekât
+Offline playable Android strategy game. Two campaigns: 1917 Erzurum infantry/cavalry/artillery and 1942 Caucasus mechanized/tank warfare. Animated moving formations, transport paths, enemy counterattack, artillery shells, casualties, morale, supply and shifting front control. \n## Build\nRun the terrain generator before building (workflow does this): python cephe-komutani/generate_terrain.py; gradle -p cephe-komutani :app:assembleDebug.\nThe new app keeps the same package identity as game v1 and upgrades it with versionCode 2; it does not modify the Aracim Pro app.
