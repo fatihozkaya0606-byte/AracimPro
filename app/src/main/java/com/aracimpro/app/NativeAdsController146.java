@@ -45,6 +45,7 @@ final class NativeAdsController146 {
     private boolean requested, sdkReady, loading, loaded, slotVisible, disposed;
     private int retryCount;
     private long scrollUntil;
+    private final Runnable afterScroll;
 
     NativeAdsController146(Activity a, FrameLayout container, WebView webView,
                            BooleanSupplier requestGate, BooleanSupplier displayGate) {
@@ -53,6 +54,10 @@ final class NativeAdsController146 {
         web = webView;
         mayRequest = requestGate;
         mayDisplay = displayGate;
+        afterScroll = () -> {
+            if (!disposed && !activity.isDestroyed()) web.evaluateJavascript(
+                "window.apNativeQueueSync146 && window.apNativeQueueSync146()", null);
+        };
     }
 
     private int dp(float value) {
@@ -228,11 +233,6 @@ final class NativeAdsController146 {
         web.removeCallbacks(afterScroll);
         web.postDelayed(afterScroll, 660L);
     }
-
-    private final Runnable afterScroll = () -> {
-        if (!disposed && !activity.isDestroyed()) web.evaluateJavascript(
-                "window.apNativeQueueSync146 && window.apNativeQueueSync146()", null);
-    };
 
     void updateVisibility() {
         if (view == null) return;
