@@ -25,6 +25,11 @@ jobs:
           grep -Fq "versionCode 2" cephe-komutani/app/build.gradle
           grep -Fq "function tankSprite" cephe-komutani/app/src/main/assets/index.html
           grep -Fq "data:image/jpeg;base64" cephe-komutani/app/src/main/assets/index.html
+      - name: Prepare tactical terrain artwork
+        run: |
+          python -m pip install -q numpy scipy pillow
+          python cephe-komutani/generate_terrain.py
+          test -s cephe-komutani/app/src/main/assets/terrain.webp
       - name: Build test APK
         run: gradle -p cephe-komutani --no-daemon :app:assembleDebug
       - name: Verify APK
