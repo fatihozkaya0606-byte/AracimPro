@@ -24,7 +24,7 @@ public class MainActivity extends Activity {
   web.loadUrl("file:///android_asset/index.html");
  }
  @Override public void onBackPressed(){
-  if(web!=null)web.evaluateJavascript("document.getElementById('menuBtn').click()",null);
+  if(web!=null)web.evaluateJavascript("document.getElementById('info').click()",null);
   else super.onBackPressed();
  }
  @Override public void onPause(){super.onPause();if(web!=null)web.onPause();}
