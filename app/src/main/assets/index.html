@@ -3028,7 +3028,7 @@ function go(k,fromBottomNav=false){
   if(fromBottomNav) {
     bottomNavTransitions++;
     // Natural break only: at least three deliberate bottom-navigation changes.
-    // The native layer also enforces a 2-minute cap and keeps app-open separate.
+    // The native layer enforces a 60-second minimum plus natural transitions; app-open is separate.
     if(bottomNavTransitions >= 3) {
       try {
         if(typeof Android !== 'undefined' &&
@@ -3092,7 +3092,7 @@ function render(){
   // Hide the native MREC before replacing WebView HTML: a stale native overlay
   // must never cover buttons while a tab is changing.
   try{if(typeof Android!=='undefined' && Android.updateMrecSlot)Android.updateMrecSlot(0,0,0,0,window.innerWidth,false)}catch(e){}
-  document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${titaniumControlStrip143()}${view()}</main>`+nav()+fab();
+  document.body.classList.toggle('r8HomeMode',current==='home');document.body.classList.toggle('r8MoreMode',current==='more');applyTheme();applyLanguageMeta();const app=document.getElementById('app');app.innerHTML=header()+`<main>${current==='home'?titaniumControlStrip143():''}${view()}</main>`+nav()+fab();
   apMrecMountOnContentPage();
   apNativeMount146();
   setTimeout(apNativeQueueSync146,95);
