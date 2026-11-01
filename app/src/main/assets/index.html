@@ -2038,9 +2038,9 @@ body:not(.r8HomeMode):not(.dark) .apMrecSlot{background:#e7f0f8;border-color:#c4
 <style id="ap-mrec-v222-exact-slot">
 /* A 300x250 AdMob view must use an exactly matching CSS slot including its
    border. Old styles forced content-box (302x252), invalidating some geometry. */
-html body #app .apMrecSlot,
-html body.ap132 #app .apMrecSlot,
-html body.r118Skin.apMrecReady #app .apMrecSlot{
+html body #app #apMrecSlot,
+html body.ap132 #app #apMrecSlot,
+html body.r118Skin.apMrecReady #app #apMrecSlot{
  box-sizing:border-box!important;
  width:300px!important;
  height:250px!important;
@@ -3261,13 +3261,14 @@ let apMrecFrameQueued=false;
 let apMrecScrollBlockedUntil=0;
 let apMrecScrollTimer=null;
 let apMrecLastHideAt=0;
+let apMrecLastLayout223='Henüz konum ölçümü yapılmadı';
 function apSyncMrecSlot(){
   apMrecFrameQueued=false;
   try{
     if(typeof Android==='undefined'||!Android.updateMrecSlot)return;
     const slot=document.getElementById('apMrecSlot');
     const vw=window.innerWidth;
-    if(!slot || document.hidden || Date.now()<apMrecScrollBlockedUntil){
+    if(!slot || document.hidden){
       Android.updateMrecSlot(0,0,0,0,vw,false);
       return;
     }
@@ -3276,20 +3277,26 @@ function apSyncMrecSlot(){
       const e=document.getElementById(id);
       return !!(e&&e.innerHTML.trim());
     });
-    const bottomNav=document.querySelector('nav.nav, .nav');
-    const bottomLimit=bottomNav?bottomNav.getBoundingClientRect().top:window.innerHeight-86;
-    // A larger top inset prevents the advertisement from covering ticker/header.
-    const header=document.querySelector('#app > .header, #app > header, .header.apHeader');
+    const bottomNav=document.querySelector('#app > nav.nav, #app > .nav');
+    const bottomLimit=bottomNav?bottomNav.getBoundingClientRect().top:window.innerHeight;
+    const header=document.querySelector('#app > .header, #app > header');
     const headerBottom=header?header.getBoundingClientRect().bottom:0;
-    const visible=document.body.classList.contains('apMrecReady') &&
-      !overlayOpen && r.width>=299 && r.height>=249 &&
-      r.left>=0 && r.right<=vw+2 &&
-      // Respect the actual header edge, not an arbitrary 90 CSS px gate.
-      r.top>=Math.max(0,headerBottom)+4 &&
-      // Keep the full 300x250 creative clear of the bottom tab bar.
-      r.bottom<=Math.min(window.innerHeight-8,bottomLimit-6);
+    const ready=document.body.classList.contains('apMrecReady');
+    const fit=r.width>=299&&r.height>=249;
+    const horizontal=r.left>=-1&&r.right<=vw+2;
+    const vertical=r.top>=Math.max(0,headerBottom)-1 &&
+      r.bottom<=Math.min(window.innerHeight,bottomLimit)-4;
+    const visible=ready&&!overlayOpen&&fit&&horizontal&&vertical;
+    if(!overlayOpen)apMrecLastLayout223=
+      'ready='+ready+'; fit='+fit+'; horizontal='+horizontal+'; vertical='+vertical+
+      '; slot='+Math.round(r.width)+'x'+Math.round(r.height)+
+      '; top='+Math.round(r.top)+'; bottom='+Math.round(r.bottom)+
+      '; headerBottom='+Math.round(headerBottom)+'; navTop='+Math.round(bottomLimit)+
+      '; view='+vw+'x'+window.innerHeight;
     Android.updateMrecSlot(r.left,r.top,r.width,r.height,vw,visible);
-  }catch(e){}
+  }catch(e){
+    apMrecLastLayout223='JS ölçüm hatası: '+String(e&&e.message||e);
+  }
 }
 function apMrecQueueSync(){
   if(apMrecFrameQueued)return;
@@ -5406,6 +5413,7 @@ function admobAdsDiagnosticsModal(){
   line('Orta reklamın son hatası',d.mrecLastError||'Yok')+
   line('Orta reklam konum kontrolü',d.mrecPlacementReason||'Bilinmiyor')+
   line('Son uygun MREC ölçümü',d.mrecLastEligibleGeometry||'Henüz yok')+
+  line('HTML reklam ölçüm kontrolü',apMrecLastLayout223)+
   line('Native reklam yüklendi',yes(d.nativeLoaded))+
   line('Native reklam görünür',yes(d.nativeVisible))+
   line('Native reklam son durum / hata',d.nativeLastError||'Bilinmiyor')+
