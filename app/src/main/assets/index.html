@@ -3332,6 +3332,13 @@ window.addEventListener('scroll',apMrecMarkScrolling,{passive:true,capture:true}
 window.addEventListener('touchmove',apMrecMarkScrolling,{passive:true,capture:true});
 window.addEventListener('resize',apMrecMarkScrolling);
 document.addEventListener('visibilitychange',apMrecQueueSync);
+// v205: HTML/NATIVE sizes can change after a mediation refresh without a
+// scroll or resize event. Periodically remeasure the slot (NO ad requests).
+// The safety/visibility checks still forbid drawing over navigation controls.
+setInterval(()=>{
+  if(document.hidden || !document.body.classList.contains('apMrecReady'))return;
+  if(document.getElementById('apMrecSlot'))apMrecQueueSync();
+},4000);
 setTimeout(()=>{
   for(const id of ['modalRoot','lockRoot']){
     const node=document.getElementById(id);
