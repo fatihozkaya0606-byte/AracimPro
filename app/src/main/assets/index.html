@@ -1989,10 +1989,10 @@ body.apNativeReady146 .apNativeCard146{display:block}
 body.r8HomeMode #app .apNativeCard146,
 body.r8HomeMode #app .apMrecCard{width:100%;max-width:100%;clear:both}
 /* v203: compact chrome, native ad fully rendered, 300x250 unscaled */
-body.r8HomeMode #app .apNativeCard146{margin:6px 0 4px;padding:3px 5px}
-body.r8HomeMode #app .apMrecCard{margin:0 0 6px;padding:6px 6px 7px;gap:4px;border-radius:16px}
+body.r8HomeMode #app .apNativeCard146{margin:2px 0;padding:2px 4px}
+body.r8HomeMode #app .apMrecCard{margin:0 0 3px;padding:3px 4px 4px;gap:2px;border-radius:14px}
 .apNativeSlot146{box-sizing:border-box;display:block;width:100%;
-  max-width:100%;height:132px;margin:0 auto;position:relative;
+  max-width:100%;height:104px;margin:0 auto;position:relative;
   background:transparent;pointer-events:none}
 body:not(.dark) .apNativeCard146{background:linear-gradient(135deg,#f3f9ff,#e7f2fc);
   border-color:#bedbef}
@@ -3123,16 +3123,16 @@ function apNativeMount146(){
   wrapper.innerHTML=markup.trim();
   const card=wrapper.firstElementChild;
   if(!card)return;
-  let anchor=null;
+  // v206: home shows both loaded ad formats immediately below the header.
+  // Keep the dashboard and all controls in normal scroll flow, never overlay.
   if(current==='home'){
-    // v200: Immediately after the compact top control strip, so both native
-    // and the existing 300x250 MREC appear above dashboard content.
-    // Keep the MREC movement below: one ad request, never a duplicate.
-    anchor=main.querySelector('.apTi143Pulse') ||
-      main.querySelector('.ref791-hero') ||
-      main.querySelector('.welcome7104Card') ||
-      main.querySelector('.welcome7104');
-  }else if(current==='garage'){
+    main.insertBefore(card,main.firstElementChild);
+    const mrec=main.querySelector('.apMrecCard');
+    if(mrec)card.insertAdjacentElement('afterend',mrec);
+    return;
+  }
+  let anchor=null;
+  if(current==='garage'){
     anchor=main.querySelector('.list')||main.querySelector('.sectionHead');
   }else{
     anchor=main.querySelector('.moreFavGrid')||
@@ -3142,12 +3142,6 @@ function apNativeMount146(){
   }
   if(anchor)anchor.insertAdjacentElement('afterend',card);
   else main.appendChild(card);
-  if(current==='home'){
-    // Move the existing actual MREC slot (do not duplicate its ad request)
-    // directly beneath the Native slot, regardless of its legacy grid location.
-    const mrec=main.querySelector('.apMrecCard');
-    if(mrec)card.insertAdjacentElement('afterend',mrec);
-  }
 }
 window.apNativeAvailability146=function(ready){
   document.body.classList.toggle('apNativeReady146',!!ready);
@@ -3188,8 +3182,8 @@ function apNativeSync146(){
     const bottom=nav?nav.getBoundingClientRect().top:innerHeight-86;
     const visible=document.body.classList.contains('apNativeReady146') &&
       !overlayOpen && (current==='home'||current==='garage'||current==='more') &&
-      r.width>=260 && r.height>=128 &&
-      r.left>=0 && r.right<=vw+2 && r.top>=140 &&
+      r.width>=260 && r.height>=102 &&
+      r.left>=0 && r.right<=vw+2 && r.top>=90 &&
       r.bottom<=Math.min(innerHeight-72,bottom-8);
     Android.updateNativeSlot146(r.left,r.top,r.width,r.height,vw,visible);
   }catch(e){}
@@ -3307,7 +3301,7 @@ function apSyncMrecSlot(){
     // A larger top inset prevents the advertisement from covering ticker/header.
     const visible=document.body.classList.contains('apMrecReady') &&
       !overlayOpen && r.width>=299 && r.height>=249 &&
-      r.left>=0 && r.right<=vw+2 && r.top>=130 &&
+      r.left>=0 && r.right<=vw+2 && r.top>=90 &&
       // Keep padding from nav; Android also validates projected view bounds.
       r.bottom<=Math.min(window.innerHeight-70,bottomLimit-6);
     Android.updateMrecSlot(r.left,r.top,r.width,r.height,vw,visible);
