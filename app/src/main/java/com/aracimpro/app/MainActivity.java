@@ -204,6 +204,9 @@ public class MainActivity extends Activity {
     private long bannerNextTryAt138 = 0L;
     private final Runnable bannerRetryTask138 = this::requestBottomBanner138;
     private int mrecRetryAttempt = 0;
+    // v205: keep a known-good MREC visible when an AdMob auto-refresh fails.
+    // Retry with bounded backoff, never with a tight loop or a second ad view.
+    private final Runnable mrecRetryTask205 = this::retryMrecAfterFailure205;
     private int interstitialRetryAttempt = 0;
     private boolean interstitialLoading = false;
     private ConsentInformation admobConsentInfo;
@@ -1691,28 +1694,43 @@ private void showLaunchSplash() {
                     mrecAdLoaded = true;
                     mrecPlacementReason151 = "Reklam yüklendi, görünür slot ölçümü bekleniyor";
                     mrecRetryAttempt = 0;
+                    mainHandler.removeCallbacks(mrecRetryTask205);
                     logAdMob("mrec_loaded", "300x250 in-feed rectangle loaded through AdMob mediation");
                     recordAdSource123("mrec", ad.getResponseInfo());
                     getSharedPreferences("aracim_admob_diagnostics", MODE_PRIVATE).edit()
                             .putString("mrecLastError", "").apply();
                     notifyMrecJs(true);
                     updateMrecVisibility();
+                    // The native ad is positioned from an HTML slot; after a
+                    // refresh the DOM can have moved (e.g. Native feed reload).
+                    requestMrecPositionSync205();
                 }
                 @Override public void onAdFailedToLoad(LoadAdError error) {
-                    mrecAdLoaded = false;
-                    mrecPlacementReason151 = "AdMob MREC yükleme başarısız";
+                    if (ad != mrecAdView || isFinishing() || isDestroyed()) return;
+                    final boolean hadDisplayedCreative = mrecAdLoaded;
                     final String mrecError = error == null ? "Bilinmeyen hata" : error.toString();
                     logAdMob("mrec_failed", mrecError);
                     getSharedPreferences("aracim_admob_diagnostics", MODE_PRIVATE).edit()
                             .putString("mrecLastError", mrecError).apply();
-                    notifyMrecJs(false);
-                    updateMrecVisibility();
-                    final long delay = adRetryDelay(mrecRetryAttempt++);
-                    mainHandler.postDelayed(() -> {
-                        if (mrecAdView == ad && !mrecAdLoaded && canRequestAdMobAds()
-                                && !isFinishing() && !isDestroyed())
-                            ad.loadAd(new AdRequest.Builder().build());
-                    }, delay);
+                    if (!hadDisplayedCreative) {
+                        // No initial ad was ever loaded: do not reserve an empty
+                        // 300x250 card or fake a filled advertisement.
+                        mrecAdLoaded = false;
+                        mrecPlacementReason151 = "MREC doluluk yok, yeniden denenecek";
+                        notifyMrecJs(false);
+                        updateMrecVisibility();
+                    } else {
+                        // AdMob may send this callback for AUTO REFRESH too.
+                        // Do not erase our existing successful-load status or
+                        // collapse its card just because a replacement failed.
+                        // SDK alone owns whether the old creative is still drawn.
+                        mrecPlacementReason151 = "MREC yenileme başarısız, yeniden denenecek";
+                        requestMrecPositionSync205();
+                    }
+                    // At most one pending retry; no repeated rapid requests.
+                    mainHandler.removeCallbacks(mrecRetryTask205);
+                    final long delay = Math.max(30000L, adRetryDelay(mrecRetryAttempt++));
+                    mainHandler.postDelayed(mrecRetryTask205, delay);
                 }
                 @Override public void onAdImpression() {
                     logAdMob("mrec_impression", "300x250 in-feed rectangle impression");
@@ -1743,6 +1761,31 @@ private void showLaunchSplash() {
         if (webView == null || isDestroyed()) return;
         webView.evaluateJavascript("window.apMrecAvailability && window.apMrecAvailability(" +
                 (available ? "true" : "false") + ")", null);
+    }
+
+    // Re-evaluate HTML bounds without making another network request. This
+    // restores placement after native-feed refresh and dynamic page changes.
+    private void requestMrecPositionSync205() {
+        if (webView == null || isFinishing() || isDestroyed()) return;
+        webView.evaluateJavascript(
+                "window.apMrecQueueSync && window.apMrecQueueSync()", null);
+    }
+
+    private void retryMrecAfterFailure205() {
+        if (mrecAdView == null || !canRequestAdMobAds() || !admobSdkReady ||
+                isFinishing() || isDestroyed()) return;
+        // No invisible/background ad request. The next normal resume will
+        // re-run this retry if the app is not visible right now.
+        if (!activityResumed143 || !apPremiumSplashHidden) {
+            mainHandler.postDelayed(mrecRetryTask205, 15000L);
+            return;
+        }
+        try {
+            mrecAdView.loadAd(new AdRequest.Builder().build());
+        } catch (Throwable t) {
+            logAdMob("mrec_retry_exception", t.getClass().getSimpleName());
+            mainHandler.postDelayed(mrecRetryTask205, 60000L);
+        }
     }
 
     private final Runnable mrecAfterScroll = new Runnable() {
@@ -5259,6 +5302,7 @@ private void showLaunchSplash() {
         uiTranslationModelChecks.clear();
         if(bannerAdView!=null){try{bannerAdView.destroy();}catch(Throwable ignored){} bannerAdView=null;}
         if (webView != null) webView.removeCallbacks(mrecAfterScroll);
+        mainHandler.removeCallbacks(mrecRetryTask205);
         if(mrecAdView!=null){try{mrecAdView.destroy();}catch(Throwable ignored){} mrecAdView=null;}
         if (nativeFeed146 != null) { nativeFeed146.destroy(); nativeFeed146 = null; }
         stopSpeedTrackingNative();
