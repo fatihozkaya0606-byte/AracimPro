@@ -37,8 +37,8 @@ android {
         // A public AdMob rewarded unit ID. Debug mode independently uses Google's
         // sample rewarded ad ID in MainActivity; production uses this exact unit.
         buildConfigField 'String', 'REWARDED_AD_UNIT_ID', '"ca-app-pub-7205009121067400/7362031917"'
-        versionCode 203
-        versionName '7.11.83'
+        versionCode 204
+        versionName '7.11.84'
     }
 
     signingConfigs {
@@ -106,6 +106,11 @@ dependencies {
     // Yandex formats remain managed by AdMob (not separately shown).
     implementation 'com.yandex.android:mobileads:8.6.0'
     implementation 'com.yandex.ads.adapter:admob-mobileads:8.4.0.0'
+    // v204: Yandex Mobile Mediation Smart Waterfall adapter for Start.io.
+    // No direct Start.io ad calls: Yandex controls demand; AdMob remains primary.
+    // Publisher: 144184589, Start.io app: 209956112.
+    // DO NOT enable Start.io on the live Yandex placement until runtime testing.
+    implementation 'com.yandex.ads.mediation:mobileads-startapp:5.3.1.3'
     // Unity Ads bidding through the existing AdMob ad units. Existing banner,
     // 300x250, interstitial and rewarded placements are unchanged.
     // AdMob mediation: SDKs only. Network demand requires separate mapping and
