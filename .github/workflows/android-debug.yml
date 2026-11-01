@@ -3,7 +3,7 @@ name: Android Debug Build
 on:
   workflow_dispatch:
   push:
-    branches: [ main, aracimpro-115-exact-engine-catalog-all-makes, aracimpro-116-r8-interactive-studio, aracimpro-117-r8-hero-photo-polish, aracimpro-118-r8-3d-full-ui, aracimpro-119-splash-and-layout-fixes, aracimpro-120-3d-navigation-light-header, aracimpro-122-mrec-placement-app-open, aracimpro-123-admob-applovin-mediation, aracimpro-124-rewarded-excel, aracimpro-125-rewarded-addvehicle, aracimpro-126-play-versioncode, aracimpro-127-neon-admob-ui-test, aracimpro-128-horizontal-compact-test, aracimpro-129-banner-position-theme-fix, aracimpro-130-ad-view-size-alignment, aracimpro-132-premium-health-mrec-test, aracimpro-147-second-interstitial-records, aracimpro-148-native-unit-wiring, aracimpro-149-home-native-placement, aracimpro-150-live-native-id, aracimpro-151-native-placement-diagnostics, aracimpro-152-home-native-above-mrec, aracimpro-200-play-update-fix, aracimpro-201-yandex-admob-mediation ]
+    branches: [ main, aracimpro-115-exact-engine-catalog-all-makes, aracimpro-116-r8-interactive-studio, aracimpro-117-r8-hero-photo-polish, aracimpro-118-r8-3d-full-ui, aracimpro-119-splash-and-layout-fixes, aracimpro-120-3d-navigation-light-header, aracimpro-122-mrec-placement-app-open, aracimpro-123-admob-applovin-mediation, aracimpro-124-rewarded-excel, aracimpro-125-rewarded-addvehicle, aracimpro-126-play-versioncode, aracimpro-127-neon-admob-ui-test, aracimpro-128-horizontal-compact-test, aracimpro-129-banner-position-theme-fix, aracimpro-130-ad-view-size-alignment, aracimpro-132-premium-health-mrec-test, aracimpro-147-second-interstitial-records, aracimpro-148-native-unit-wiring, aracimpro-149-home-native-placement, aracimpro-150-live-native-id, aracimpro-151-native-placement-diagnostics, aracimpro-152-home-native-above-mrec, aracimpro-200-play-update-fix, aracimpro-201-yandex-admob-mediation, aracimpro-202-native-60s-visible-refresh ]
 
 jobs:
   build-debug:
@@ -54,5 +54,5 @@ jobs:
         run: gradle --no-daemon assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: AracimPro-v201-Yandex-AdMob-Test-APK
+          name: AracimPro-v202-Native-60s-Test-APK
           path: app/build/outputs/apk/debug/app-debug.apk
