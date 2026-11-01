@@ -466,6 +466,8 @@ public class MainActivity extends Activity {
                     + "\nAçılış reklamı gösteriliyor: " + appOpenShowing122
                     + "\nGeçiş reklamı hazır: " + oneInterstitialReady
                     + "\nYandex AdMob adaptörü: " + yandexAdapterInstalled201()
+                    + "\nNative 60 sn yenileme isteği: "
+                    + (nativeFeed146 == null ? 0 : nativeFeed146.getRefreshRequestCount())
                     + "\nAlt banner hazır: " + admobBannerLoaded
                     + "\nSon olay: " + log.getString("step", "Henüz yok")
                     + "\nAçıklama: " + log.getString("result", "")
@@ -2649,6 +2651,8 @@ private void showLaunchSplash() {
                 out.put("nativeLoaded", nativeFeed146 != null && nativeFeed146.isLoaded());
                 out.put("nativeVisible", nativeFeed146 != null && nativeFeed146.isVisible());
                 out.put("nativeLastError", nativeFeed146 == null ? "Native denetleyici yok" : nativeFeed146.getLastError());
+                out.put("nativeRefreshIntervalSeconds", 60);
+                out.put("nativeRefreshRequestCount", nativeFeed146 == null ? 0 : nativeFeed146.getRefreshRequestCount());
                 out.put("interstitialLoaded", oneInterstitialReady);
                 out.put("interstitialClaimed", oneInterstitialClaimed.get());
                 out.put("rewardedExcelConfigured", excelRewardedUnit124().matches("ca-app-pub-[0-9]+/[0-9]+"));
