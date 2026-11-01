@@ -31,7 +31,7 @@ final class NativeFeedController146 {
     private static final String GOOGLE_NATIVE_TEST_UNIT = "ca-app-pub-3940256099942544/2247696110";
     private static final long REFRESH_AFTER_VISIBLE_MS = 60_000L;
     private static final int WIDTH_DP = 260;
-    private static final int HEIGHT_DP = 164;
+    private static final int HEIGHT_DP = 128; // v203: compact full native asset view so MREC fits below it
     private final Activity activity;
     private final FrameLayout root;
     private final WebView web;
@@ -283,7 +283,7 @@ final class NativeFeedController146 {
 
         LinearLayout content = new LinearLayout(activity);
         content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(dp(10), dp(7), dp(9), dp(8));
+        content.setPadding(dp(9), dp(4), dp(8), dp(4));
         nv.addView(content, new FrameLayout.LayoutParams(-1, -1));
 
         LinearLayout header = new LinearLayout(activity);
@@ -303,19 +303,19 @@ final class NativeFeedController146 {
         advParams.leftMargin = dp(6);
         header.addView(advertiser, advParams);
         advertiser.setVisibility(nativeAd.getAdvertiser() == null ? View.GONE : View.VISIBLE);
-        content.addView(header, new LinearLayout.LayoutParams(-1, dp(22)));
+        content.addView(header, new LinearLayout.LayoutParams(-1, dp(20)));
 
         LinearLayout row = new LinearLayout(activity);
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setOrientation(LinearLayout.HORIZONTAL);
-        LinearLayout.LayoutParams rowLp = new LinearLayout.LayoutParams(-1, dp(78));
-        rowLp.topMargin = dp(6);
+        LinearLayout.LayoutParams rowLp = new LinearLayout.LayoutParams(-1, dp(62));
+        rowLp.topMargin = dp(3);
         content.addView(row, rowLp);
 
         ImageView icon = new ImageView(activity);
         icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        LinearLayout.LayoutParams iconLp = new LinearLayout.LayoutParams(dp(48), dp(48));
-        iconLp.rightMargin = dp(9);
+        LinearLayout.LayoutParams iconLp = new LinearLayout.LayoutParams(dp(42), dp(42));
+        iconLp.rightMargin = dp(7);
         row.addView(icon, iconLp);
         if (nativeAd.getIcon() != null && nativeAd.getIcon().getDrawable() != null) {
             icon.setImageDrawable(nativeAd.getIcon().getDrawable());
@@ -333,10 +333,10 @@ final class NativeFeedController146 {
         copy.addView(headline, new LinearLayout.LayoutParams(-1, -2));
 
         TextView body = text(nativeAd.getBody(), 10, 0xFFBCD1E0, false);
-        body.setMaxLines(2);
+        body.setMaxLines(1);
         body.setEllipsize(android.text.TextUtils.TruncateAt.END);
         LinearLayout.LayoutParams bodyLp = new LinearLayout.LayoutParams(-1, -2);
-        bodyLp.topMargin = dp(4);
+        bodyLp.topMargin = dp(2);
         copy.addView(body, bodyLp);
         body.setVisibility(nativeAd.getBody() == null ? View.GONE : View.VISIBLE);
 
@@ -352,9 +352,9 @@ final class NativeFeedController146 {
         TextView cta = text(nativeAd.getCallToAction(), 12, Color.WHITE, true);
         cta.setGravity(Gravity.CENTER);
         cta.setBackground(rounded(0xFF177EBD, 9, 0));
-        cta.setMinHeight(dp(34));
-        LinearLayout.LayoutParams ctaLp = new LinearLayout.LayoutParams(-1, dp(34));
-        ctaLp.topMargin = dp(5);
+        cta.setMinHeight(dp(30));
+        LinearLayout.LayoutParams ctaLp = new LinearLayout.LayoutParams(-1, dp(30));
+        ctaLp.topMargin = dp(3);
         content.addView(cta, ctaLp);
         cta.setVisibility(nativeAd.getCallToAction() == null ? View.GONE : View.VISIBLE);
 
