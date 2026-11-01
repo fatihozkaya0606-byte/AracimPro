@@ -37,8 +37,8 @@ android {
         // A public AdMob rewarded unit ID. Debug mode independently uses Google's
         // sample rewarded ad ID in MainActivity; production uses this exact unit.
         buildConfigField 'String', 'REWARDED_AD_UNIT_ID', '"ca-app-pub-7205009121067400/7362031917"'
-        versionCode 154
-        versionName '7.11.78'
+        versionCode 155
+        versionName '7.11.79'
     }
 
     signingConfigs {
@@ -104,6 +104,10 @@ dependencies {
     implementation 'com.google.android.gms:play-services-ads:25.5.0'
     // Direct Yandex Ads SDK: independent of AdMob mediation, initialized only after consent.
     implementation 'com.yandex.android:mobileads:8.6.0'
+    // Yandex custom event adapter for AdMob waterfall. Mapping class names:
+    // com.admob.mobileads.YandexBanner, YandexNative, YandexInterstitial, YandexRewarded.
+    // AdMob mediation remains primary; direct Yandex fallback is retired in v155.
+    implementation 'com.yandex.ads.adapter:admob-mobileads:8.4.0.0'
     // Unity Ads bidding through the existing AdMob ad units. Existing banner,
     // 300x250, interstitial and rewarded placements are unchanged.
     // AdMob mediation: SDKs only. Network demand requires separate mapping and
