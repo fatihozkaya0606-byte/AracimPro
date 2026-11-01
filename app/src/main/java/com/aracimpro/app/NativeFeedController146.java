@@ -108,9 +108,12 @@ final class NativeFeedController146 {
         try {
             new AdLoader.Builder(activity, unit)
                 .forNativeAd(newAd -> activity.runOnUiThread(() -> {
+                    if (destroyed || requestGeneration != adLoadGeneration) {
+                        newAd.destroy();
+                        return;
+                    }
                     loading = false;
-                    if (destroyed || requestGeneration != adLoadGeneration
-                            || !canLoad.getAsBoolean()) {
+                    if (!canLoad.getAsBoolean()) {
                         newAd.destroy();
                         return;
                     }
@@ -180,8 +183,8 @@ final class NativeFeedController146 {
                 .withAdListener(new AdListener() {
                     @Override public void onAdFailedToLoad(LoadAdError error) {
                         activity.runOnUiThread(() -> {
-                            loading = false;
                             if (destroyed || requestGeneration != adLoadGeneration) return;
+                            loading = false;
                             lastError = error == null
                                 ? "Native reklam yüklenemedi: bilinmeyen hata"
                                 : "Native reklam yüklenemedi, kod " + error.getCode()
