@@ -187,7 +187,7 @@ public class MainActivity extends Activity {
     private AdView mrecAdView;
     // v146: isolated, policy-compliant Google NativeAd in the garage/services feed.
     private NativeFeedController146 nativeFeed146;
-    private boolean mrecAdLoaded = false;
+    private volatile boolean mrecAdLoaded = false;
     private String mrecPlacementReason151 = "Henüz MREC isteği yapılmadı";
     // Keeps geometry diagnostics meaningful even when a settings modal
     // temporarily hides the MREC.
@@ -1800,7 +1800,12 @@ private void showLaunchSplash() {
         boolean show = mrecSlotVisible && mrecAdLoaded && canRequestAdMobAds()
                 && apPremiumSplashHidden && !isFinishing() && !isDestroyed();
         mrecAdView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
-        if (show) mrecPlacementReason151 = "300x250 reklam ekranda gösteriliyor";
+        if (show) {
+            // Keep the actual AdMob view above the WebView only when its
+            // measured slot fits entirely inside the visible document.
+            mrecAdView.bringToFront();
+            mrecPlacementReason151 = "300x250 reklam ekranda gösteriliyor";
+        }
     }
 
     private void updateMrecSlotNative(double leftCss, double topCss,
@@ -2614,6 +2619,12 @@ private void showLaunchSplash() {
 
         @JavascriptInterface public void openAdsPrivacySettings() {
             runOnUiThread(() -> openAdMobPrivacySettings());
+        }
+
+        // The WebView polls loaded state to recover from a missed early callback.
+        // This does not trigger another ad request or bypass consent/premium gates.
+        @JavascriptInterface public boolean mrecLoadedForSlot() {
+            return mrecAdLoaded;
         }
 
         @JavascriptInterface public void updateMrecSlot(double left, double top,
