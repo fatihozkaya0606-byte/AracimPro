@@ -26,9 +26,10 @@ android {
         buildConfigField "String", "MARKET_API_URL", "\"${System.getenv('MARKET_API_URL') ?: ''}\""
         buildConfigField "String", "LIVE_DATA_API_URL", "\"${System.getenv('LIVE_DATA_API_URL') ?: ''}\""
         buildConfigField 'boolean', 'ADMOB_TEST_MODE', 'false'
-        // Set the real AdMob Native unit ID at release build time. Never use a
-        // banner/MREC/interstitial ID or a Google sample unit for production.
-        buildConfigField "String", "NATIVE_AD_UNIT_ID", "\"${System.getenv('NATIVE_AD_UNIT_ID') ?: ''}\""
+        // v150: real AdMob Native unit created for Aracim Pro. Public ad unit IDs
+        // are configuration identifiers, not secrets. Do not use interstitial IDs.
+        // CI may override this value with NATIVE_AD_UNIT_ID if explicitly set.
+        buildConfigField "String", "NATIVE_AD_UNIT_ID", "\"${System.getenv('NATIVE_AD_UNIT_ID') ?: 'ca-app-pub-7205009121067400/6088628059'}\""
         // Dedicated App Open ad unit: set APP_OPEN_AD_UNIT_ID as a GitHub Actions secret.
         // Never reuse interstitial or banner IDs. Without a valid unit, live App Open stays off.
         // Dedicated App Open AdMob unit created in publisher console; distinct from interstitial ID.
@@ -36,8 +37,8 @@ android {
         // A public AdMob rewarded unit ID. Debug mode independently uses Google's
         // sample rewarded ad ID in MainActivity; production uses this exact unit.
         buildConfigField 'String', 'REWARDED_AD_UNIT_ID', '"ca-app-pub-7205009121067400/7362031917"'
-        versionCode 149
-        versionName '7.11.73'
+        versionCode 150
+        versionName '7.11.74'
     }
 
     signingConfigs {
