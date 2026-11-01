@@ -1986,6 +1986,10 @@ body.r8HomeMode .apLiveMini.clock em{font-style:normal;opacity:.45;margin:0 1px}
   border-radius:20px;background:linear-gradient(148deg,#0a253c,#0d324d);
   min-width:0;clear:both}
 body.apNativeReady146 .apNativeCard146{display:block}
+body.r8HomeMode #app .apNativeCard146,
+body.r8HomeMode #app .apMrecCard{width:100%;max-width:100%;clear:both}
+body.r8HomeMode #app .apNativeCard146{margin-bottom:16px}
+body.r8HomeMode #app .apMrecCard{margin-top:0}
 .apNativeSlot146{box-sizing:border-box;display:block;width:100%;
   max-width:100%;height:174px;margin:0 auto;position:relative;
   background:transparent;pointer-events:none}
@@ -3109,9 +3113,9 @@ function apNativeMount146(){
   if(current!=='home' && current!=='garage' && current!=='more')return;
   const main=document.querySelector('#app > main');
   if(!main || main.querySelector('#apNativeSlot146'))return;
-  // On Home, keep the sponsored unit below the vehicle hero and above the
-  // feature grid. Do not insert it into the 300x250 MREC or any clickable card.
-  if(current==='home' && !main.querySelector('.ref791-hero'))return;
+  // v152: Home has two separate real AdMob formats stacked in document flow:
+  // first NativeAdView, then the independent 300x250 MREC AdView.
+  // Never display a fabricated creative or reserve blank space on no-fill.
   const markup=apNativeCardHtml146();
   if(!markup)return;
   const wrapper=document.createElement('div');
@@ -3120,7 +3124,9 @@ function apNativeMount146(){
   if(!card)return;
   let anchor=null;
   if(current==='home'){
-    anchor=main.querySelector('.ref791-hero');
+    anchor=main.querySelector('.ref791-hero') ||
+      main.querySelector('.welcome7104Card') ||
+      main.querySelector('.welcome7104');
   }else if(current==='garage'){
     anchor=main.querySelector('.list')||main.querySelector('.sectionHead');
   }else{
@@ -3131,6 +3137,12 @@ function apNativeMount146(){
   }
   if(anchor)anchor.insertAdjacentElement('afterend',card);
   else main.appendChild(card);
+  if(current==='home'){
+    // Move the existing actual MREC slot (do not duplicate its ad request)
+    // directly beneath the Native slot, regardless of its legacy grid location.
+    const mrec=main.querySelector('.apMrecCard');
+    if(mrec)card.insertAdjacentElement('afterend',mrec);
+  }
 }
 window.apNativeAvailability146=function(ready){
   document.body.classList.toggle('apNativeReady146',!!ready);
