@@ -27,3 +27,9 @@
 -keepattributes Exceptions,InnerClasses,Signature,Deprecated,SourceFile,LineNumberTable,*Annotation*,EnclosingMethod
 -dontwarn com.startapp.**
 -dontwarn org.jetbrains.annotations.**
+
+# Yandex AdMob custom event adapters are instantiated by class name via mediation.
+-keep class com.admob.mobileads.YandexBanner { *; }
+-keep class com.admob.mobileads.YandexInterstitial { *; }
+-keep class com.admob.mobileads.YandexNative { *; }
+-keep class com.admob.mobileads.YandexRewarded { *; }
