@@ -188,6 +188,7 @@ public class MainActivity extends Activity {
     // v146: isolated, policy-compliant Google NativeAd in the garage/services feed.
     private NativeFeedController146 nativeFeed146;
     private boolean mrecAdLoaded = false;
+    private String mrecPlacementReason151 = "Henüz MREC isteği yapılmadı";
     private boolean mrecSlotVisible = false;
     private long mrecScrollHoldUntil = 0L;
     private boolean admobBannerLoaded = false;
@@ -1667,6 +1668,7 @@ private void showLaunchSplash() {
                 @Override public void onAdLoaded() {
                     if (ad != mrecAdView || !canRequestAdMobAds()) return;
                     mrecAdLoaded = true;
+                    mrecPlacementReason151 = "Reklam yüklendi, görünür slot ölçümü bekleniyor";
                     mrecRetryAttempt = 0;
                     logAdMob("mrec_loaded", "300x250 in-feed rectangle loaded through AdMob mediation");
                     recordAdSource123("mrec", ad.getResponseInfo());
@@ -1677,6 +1679,7 @@ private void showLaunchSplash() {
                 }
                 @Override public void onAdFailedToLoad(LoadAdError error) {
                     mrecAdLoaded = false;
+                    mrecPlacementReason151 = "AdMob MREC yükleme başarısız";
                     final String mrecError = error == null ? "Bilinmeyen hata" : error.toString();
                     logAdMob("mrec_failed", mrecError);
                     getSharedPreferences("aracim_admob_diagnostics", MODE_PRIVATE).edit()
@@ -1741,6 +1744,7 @@ private void showLaunchSplash() {
                 && android.os.SystemClock.elapsedRealtime() >= mrecScrollHoldUntil
                 && apPremiumSplashHidden && !isFinishing() && !isDestroyed();
         mrecAdView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
+        if (show) mrecPlacementReason151 = "300x250 reklam ekranda gösteriliyor";
     }
 
     private void updateMrecSlotNative(double leftCss, double topCss,
@@ -1753,7 +1757,9 @@ private void showLaunchSplash() {
         final int nativeWidth = dp(adWidthDp);
         final int nativeHeight = dp(adHeightDp);
         final int safetyMargin = dp(4);
-        final int navGuard = dp(88);
+        // JS checks the exact bottom navigation edge before passing visibility.
+        // The earlier 88dp Java guard could hide an otherwise fully safe slot.
+        final int navGuard = dp(12);
         boolean valid = visible && Double.isFinite(leftCss) && Double.isFinite(topCss)
                 && Double.isFinite(widthCss) && Double.isFinite(heightCss)
                 && Double.isFinite(viewportCssWidth)
@@ -1764,6 +1770,8 @@ private void showLaunchSplash() {
                 && android.os.SystemClock.elapsedRealtime() >= mrecScrollHoldUntil;
         mrecSlotVisible = false;
         if (!valid || mrecAdView == null) {
+            mrecPlacementReason151 = mrecAdView == null ? "Orta reklam nesnesi bulunamadı" :
+                    "HTML reklam alanı henüz görünür değil veya ölçümü uygun değil";
             updateMrecVisibility();
             return;
         }
@@ -1797,15 +1805,17 @@ private void showLaunchSplash() {
             && nativeLeft + nativeWidth <= slotRight + safetyMargin
             && nativeTop + nativeHeight <= slotBottom + safetyMargin
             && nativeLeft >= webLeft && nativeLeft + nativeWidth <= webRight
-            && nativeTop >= webTop + dp(96)
+            && nativeTop >= webTop + dp(24)
             && nativeTop + nativeHeight <= webBottom - navGuard;
         if (!valid) {
+            mrecPlacementReason151 = "300x250 reklam HTML alanına / WebView görünür bölgesine sığmıyor";
             updateMrecVisibility();
             return;
         }
         FrameLayout.LayoutParams lp =
             (FrameLayout.LayoutParams)mrecAdView.getLayoutParams();
         if (lp == null) {
+            mrecPlacementReason151 = "Android reklam yerleşimi hazırlanamadı";
             updateMrecVisibility();
             return;
         }
@@ -1820,6 +1830,7 @@ private void showLaunchSplash() {
             mrecAdView.setLayoutParams(lp);
         }
         mrecSlotVisible = true;
+        mrecPlacementReason151 = "HTML alanı uygun, gösterim koşulları denetleniyor";
         updateMrecVisibility();
     }
 
@@ -2614,6 +2625,10 @@ private void showLaunchSplash() {
                 out.put("mrecSlotVisible", mrecSlotVisible);
                 out.put("mrecVisible", mrecAdView != null && mrecAdView.getVisibility() == View.VISIBLE);
                 out.put("mrecLastError", log.getString("mrecLastError", ""));
+                out.put("mrecPlacementReason", mrecPlacementReason151);
+                out.put("nativeLoaded", nativeFeed146 != null && nativeFeed146.isLoaded());
+                out.put("nativeVisible", nativeFeed146 != null && nativeFeed146.isVisible());
+                out.put("nativeLastError", nativeFeed146 == null ? "Native denetleyici yok" : nativeFeed146.getLastError());
                 out.put("interstitialLoaded", oneInterstitialReady);
                 out.put("interstitialClaimed", oneInterstitialClaimed.get());
                 out.put("rewardedExcelConfigured", excelRewardedUnit124().matches("ca-app-pub-[0-9]+/[0-9]+"));
