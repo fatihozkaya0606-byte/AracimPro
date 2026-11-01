@@ -1540,7 +1540,7 @@ private void showLaunchSplash() {
         bannerAdView.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
         if (bannerBackdrop129 != null)
             bannerBackdrop129.setVisibility(visible ? View.VISIBLE : View.GONE);
-        int height = visible ? dp(62) : 0;
+        int height = visible ? dp(54) : 0;
         if (bannerHeightPx != height) {
             bannerHeightPx = height;
             applyWebMargins(lastInsetLeft, lastInsetTop, lastInsetRight, lastInsetBottom);
@@ -1636,7 +1636,7 @@ private void showLaunchSplash() {
                 FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
 
             params.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-            params.bottomMargin = lastInsetBottom + dp(6);
+            params.bottomMargin = lastInsetBottom + dp(2);
             // A theme-matched native surface around the real ad. Ad creative
             // itself is owned and styled by Google; never recolor its content.
             View adSurface = new View(this);
@@ -1648,7 +1648,7 @@ private void showLaunchSplash() {
             adSurfaceBg.setStroke(dp(1), 0xFF28648A);
             adSurface.setBackground(adSurfaceBg);
             FrameLayout.LayoutParams adSurfaceLp = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, dp(62),
+                FrameLayout.LayoutParams.MATCH_PARENT, dp(54),
                 Gravity.BOTTOM
             );
             adSurfaceLp.bottomMargin = lastInsetBottom;
@@ -1830,7 +1830,7 @@ private void showLaunchSplash() {
                 && viewportCssWidth >= 320 && pxPerCss > 0 && pxPerCss < 10
                 && widthCss >= adWidthDp - 1 && heightCss >= adHeightDp - 1
                 && leftCss >= 0 && leftCss + widthCss <= viewportCssWidth + 2
-                && topCss >= 115
+                && topCss >= 90
                 && android.os.SystemClock.elapsedRealtime() >= mrecScrollHoldUntil;
         mrecSlotVisible = false;
         if (!valid || mrecAdView == null) {
