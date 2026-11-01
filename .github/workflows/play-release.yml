@@ -3,7 +3,7 @@ name: Google Play Release AAB
 on:
   workflow_dispatch:
   push:
-    branches: [ aracimpro-play-quality-83, aracimpro-115-exact-engine-catalog-all-makes, aracimpro-121-release-polish-signed-aab, aracimpro-122-mrec-placement-app-open, aracimpro-124-rewarded-excel, aracimpro-125-rewarded-addvehicle, aracimpro-126-play-versioncode, aracimpro-131-play-neon-banner-release, aracimpro-133-premium-first-screen-mrec-play, aracimpro-134-smart-tools-play, aracimpro-147-second-interstitial-records, aracimpro-148-native-unit-wiring, aracimpro-149-home-native-placement, aracimpro-150-live-native-id ]
+    branches: [ aracimpro-play-quality-83, aracimpro-115-exact-engine-catalog-all-makes, aracimpro-121-release-polish-signed-aab, aracimpro-122-mrec-placement-app-open, aracimpro-124-rewarded-excel, aracimpro-125-rewarded-addvehicle, aracimpro-126-play-versioncode, aracimpro-131-play-neon-banner-release, aracimpro-133-premium-first-screen-mrec-play, aracimpro-134-smart-tools-play, aracimpro-147-second-interstitial-records, aracimpro-148-native-unit-wiring, aracimpro-149-home-native-placement, aracimpro-150-live-native-id, aracimpro-151-native-placement-diagnostics ]
 
 jobs:
   build-release:
@@ -60,7 +60,7 @@ jobs:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
           LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
-        run: gradle --no-daemon bundleRelease
+        run: gradle --no-daemon bundleRelease assembleDebug
       - name: Verify signed bundle, mapping and native symbols exist
         run: |
           test -s app/build/outputs/bundle/release/app-release.aab
@@ -69,6 +69,10 @@ jobs:
           unzip -Z1 app/build/outputs/bundle/release/app-release.aab | grep -F -q 'BUNDLE-METADATA/com.android.tools.build.debugsymbols/'
           echo 'Confirmed: AAB contains native symbol metadata'
           unzip -Z1 app/build/outputs/bundle/release/app-release.aab | grep -F 'BUNDLE-METADATA/com.android.tools.build.debugsymbols/'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AracimPro-v151-Test-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
       - uses: actions/upload-artifact@v4
         with:
           name: AracimPro-Play-AAB
