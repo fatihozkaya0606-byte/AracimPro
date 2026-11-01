@@ -314,23 +314,18 @@ public class MainActivity extends Activity {
         root.setBackgroundColor(0xFF04172D);
         webView = new WebView(this);
         webView.setBackgroundColor(0xFF04172D);
-        // A native AdView sits above WebView. Hide it synchronously while the
-        // document scrolls so an outdated rectangle never covers dashboard UI.
+        // Keep the loaded 300x250 MREC anchored to its visible HTML slot while scrolling.
+        // Re-measure on the next UI frame rather than hiding it for 550ms per swipe.
         webView.setOnScrollChangeListener((v, sx, sy, oldX, oldY) -> {
             if (sy == oldY && sx == oldX) return;
-            mrecScrollHoldUntil = android.os.SystemClock.elapsedRealtime() + 550L;
-            mrecSlotVisible = false;
-            updateMrecVisibility();
-            if (nativeFeed146 != null) nativeFeed146.hideForScroll();
             webView.removeCallbacks(mrecAfterScroll);
-            webView.postDelayed(mrecAfterScroll, 620L);
+            webView.post(mrecAfterScroll);
         });
         root.addView(webView, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         setContentView(root);
-        nativeFeed146 = new NativeFeedController146(this, root, webView, mainHandler,
-                () -> canRequestAdMobAds() && admobSdkReady,
-                () -> canRequestAdMobAds() && apPremiumSplashHidden && activityResumed143);
+        // Native ad removed by request. Do not create the NativeFeedController
+        // or issue native-ad requests; only the 300x250 MREC and bottom banner remain.
         if (Build.VERSION.SDK_INT >= 33) {
             try {
                 getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
@@ -1558,7 +1553,6 @@ private void showLaunchSplash() {
             createAdMobBanner();
             requestBottomBanner138();
             createMrecAd();
-            if (nativeFeed146 != null) nativeFeed146.tryLoad();
             loadSingleInterstitial();
             loadRecordInterstitial147();
             loadExcelRewardedAd124();
@@ -1791,21 +1785,16 @@ private void showLaunchSplash() {
     private final Runnable mrecAfterScroll = new Runnable() {
         @Override public void run() {
             if (webView == null || isFinishing() || isDestroyed()) return;
-            if (android.os.SystemClock.elapsedRealtime() < mrecScrollHoldUntil) {
-                webView.postDelayed(this, 180L);
-                return;
-            }
-            // Ask WebView to remeasure after native scroll has fully settled.
+            // Position sync only, not a new ad request. The safety checks in
+            // updateMrecSlotNative hide the creative if it scrolls off-screen.
             webView.evaluateJavascript(
-                    "window.apMrecQueueSync && window.apMrecQueueSync();" +
-                    "window.apNativeQueueSync146 && window.apNativeQueueSync146()", null);
+                    "window.apMrecQueueSync && window.apMrecQueueSync()", null);
         }
     };
 
     private void updateMrecVisibility() {
         if (mrecAdView == null) return;
         boolean show = mrecSlotVisible && mrecAdLoaded && canRequestAdMobAds()
-                && android.os.SystemClock.elapsedRealtime() >= mrecScrollHoldUntil
                 && apPremiumSplashHidden && !isFinishing() && !isDestroyed();
         mrecAdView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
         if (show) mrecPlacementReason151 = "300x250 reklam ekranda gösteriliyor";
@@ -1830,8 +1819,7 @@ private void showLaunchSplash() {
                 && viewportCssWidth >= 320 && pxPerCss > 0 && pxPerCss < 10
                 && widthCss >= adWidthDp - 1 && heightCss >= adHeightDp - 1
                 && leftCss >= 0 && leftCss + widthCss <= viewportCssWidth + 2
-                && topCss >= 90
-                && android.os.SystemClock.elapsedRealtime() >= mrecScrollHoldUntil;
+                && topCss >= 90;
         mrecSlotVisible = false;
         if (!valid || mrecAdView == null) {
             mrecPlacementReason151 = mrecAdView == null ? "Orta reklam nesnesi bulunamadı" :
