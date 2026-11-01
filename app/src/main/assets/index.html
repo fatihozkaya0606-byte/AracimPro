@@ -3105,9 +3105,12 @@ function apNativeCardHtml146(){
   </section>`;
 }
 function apNativeMount146(){
-  if(current!=='garage' && current!=='more')return;
+  if(current!=='home' && current!=='garage' && current!=='more')return;
   const main=document.querySelector('#app > main');
   if(!main || main.querySelector('#apNativeSlot146'))return;
+  // On Home, keep the sponsored unit below the vehicle hero and above the
+  // feature grid. Do not insert it into the 300x250 MREC or any clickable card.
+  if(current==='home' && !main.querySelector('.ref791-hero'))return;
   const markup=apNativeCardHtml146();
   if(!markup)return;
   const wrapper=document.createElement('div');
@@ -3115,7 +3118,9 @@ function apNativeMount146(){
   const card=wrapper.firstElementChild;
   if(!card)return;
   let anchor=null;
-  if(current==='garage'){
+  if(current==='home'){
+    anchor=main.querySelector('.ref791-hero');
+  }else if(current==='garage'){
     anchor=main.querySelector('.list')||main.querySelector('.sectionHead');
   }else{
     anchor=main.querySelector('.moreFavGrid')||
@@ -3156,7 +3161,8 @@ function apNativeSync146(){
     const nav=document.querySelector('nav.nav, .nav');
     const bottom=nav?nav.getBoundingClientRect().top:innerHeight-86;
     const visible=document.body.classList.contains('apNativeReady146') &&
-      !overlayOpen && current!=='home' && r.width>=260 && r.height>=164 &&
+      !overlayOpen && (current==='home'||current==='garage'||current==='more') &&
+      r.width>=260 && r.height>=164 &&
       r.left>=0 && r.right<=vw+2 && r.top>=170 &&
       r.bottom<=Math.min(innerHeight-88,bottom-12);
     Android.updateNativeSlot146(r.left,r.top,r.width,r.height,vw,visible);
