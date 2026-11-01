@@ -66,6 +66,8 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/aracim_widget_info" />
         </receiver>
+        <!-- Prevent Yandex SDK auto-init before consent / Premium is checked. -->
+        <meta-data android:name="com.yandex.mobile.ads.AUTOMATIC_SDK_INITIALIZATION" android:value="false" />
         <!-- Google Mobile Ads App ID is distinct from its banner unit ID. -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
