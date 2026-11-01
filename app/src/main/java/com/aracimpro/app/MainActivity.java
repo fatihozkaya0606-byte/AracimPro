@@ -187,8 +187,8 @@ public class MainActivity extends Activity {
     private AdView mrecAdView;
     // v146: isolated, policy-compliant Google NativeAd in the garage/services feed.
     private NativeFeedController146 nativeFeed146;
-    // v154: independent Yandex direct SDK, primary AdMob remains unchanged.
-    private volatile YandexInterstitial154 yandexInterstitial154;
+    // v155: Yandex is served through AdMob custom-event waterfall, not a
+    // separate competing full-screen ad loader. Paused groups remain inactive.
     private boolean mrecAdLoaded = false;
     private String mrecPlacementReason151 = "Henüz MREC isteği yapılmadı";
     private boolean mrecSlotVisible = false;
@@ -330,7 +330,6 @@ public class MainActivity extends Activity {
         nativeFeed146 = new NativeFeedController146(this, root, webView, mainHandler,
                 () -> canRequestAdMobAds() && admobSdkReady,
                 () -> canRequestAdMobAds() && apPremiumSplashHidden && activityResumed143);
-        yandexInterstitial154 = new YandexInterstitial154(this);
         if (Build.VERSION.SDK_INT >= 33) {
             try {
                 getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
@@ -468,6 +467,7 @@ public class MainActivity extends Activity {
                     + "\nAçılış yüklemesi bitti: " + appOpenAttemptFinished141
                     + "\nAçılış reklamı gösteriliyor: " + appOpenShowing122
                     + "\nGeçiş reklamı hazır: " + oneInterstitialReady
+                    + "\nYandex AdMob adaptörü: " + yandexAdapterInstalled155()
                     + "\nAlt banner hazır: " + admobBannerLoaded
                     + "\nSon olay: " + log.getString("step", "Henüz yok")
                     + "\nAçıklama: " + log.getString("result", "")
@@ -1414,6 +1414,20 @@ private void showLaunchSplash() {
         billingClient.launchBillingFlow(this, flowParams);
     }
 
+    // v155: diagnostics; prevent silent R8 stripping of custom-event classes.
+    private boolean yandexAdapterInstalled155() {
+        try {
+            Class.forName("com.admob.mobileads.YandexBanner");
+            Class.forName("com.admob.mobileads.YandexInterstitial");
+            Class.forName("com.admob.mobileads.YandexNative");
+            Class.forName("com.admob.mobileads.YandexRewarded");
+            return true;
+        } catch (Throwable t) {
+            android.util.Log.w("AracimYandex", "Custom event class absent", t);
+            return false;
+        }
+    }
+
     // AdMob only: Google Play Premium entitlement and UMP consent gate ad requests.
     private void logAdMob(String step, String result) {
         android.util.Log.i("AracimAdMob", step + ": " + result);
@@ -1534,8 +1548,6 @@ private void showLaunchSplash() {
         // Important: initialization can stay true after premium / Billing
         // disconnect destroyed both AdViews. Recreate missing units then.
         if (admobSdkReady) {
-            // Start Yandex only after ads are permitted (consent + Premium checks).
-            if (yandexInterstitial154 != null) yandexInterstitial154.start();
             // Prioritize App Open during the brief loading splash; banner,
             // MREC, interstitial, and optional rewarded load afterward.
             loadAppOpenDuringSplash122();
@@ -2213,53 +2225,13 @@ private void showLaunchSplash() {
                         JSONObject.quote(target) + ")", null);
     }
 
-    // A direct-SDK fallback on a natural tab transition, never a timer-triggered ad.
-    // Shares the global 60-second interstitial cap with all existing AdMob slots.
-    private boolean requestYandexInterstitialForNavigation154(String target) {
-        YandexInterstitial154 source = yandexInterstitial154;
-        final long now = android.os.SystemClock.elapsedRealtime();
-        if (source == null || !source.isReady() || !activityResumed143 ||
-                !canRequestAdMobAds() || !apPremiumSplashHidden ||
-                appOpenShowing122 || excelRewardedShowing124 ||
-                oneInterstitialClaimed.get() || recordInterstitialClaimed147.get() ||
-                now - sessionStartedAt < IN_APP_INTERSTITIAL_FIRST_ELIGIBLE_MS153 ||
-                (lastInAppInterstitialShownAt145 > 0L &&
-                  now - lastInAppInterstitialShownAt145 < IN_APP_INTERSTITIAL_MIN_INTERVAL_MS145) ||
-                (lastExcelRewardedClosedAt125 > 0L &&
-                  now - lastExcelRewardedClosedAt125 < 40000L) ||
-                (appOpenLastShownAt122 > 0L &&
-                  System.currentTimeMillis() - appOpenLastShownAt122 < 60000L) ||
-                isFinishing() || isDestroyed()) return false;
-        if (!oneInterstitialClaimed.compareAndSet(false, true)) return false;
-        runOnUiThread(() -> {
-            if (!canRequestAdMobAds() || !apPremiumSplashHidden || isFinishing() || isDestroyed()) {
-                oneInterstitialClaimed.set(false);
-                finishOneInterstitialNavigation(target);
-                return;
-            }
-            final boolean shown = source.show(() -> {
-                oneInterstitialClaimed.set(false);
-                finishOneInterstitialNavigation(target);
-            });
-            if (shown) {
-                lastInAppInterstitialShownAt145 = android.os.SystemClock.elapsedRealtime();
-                logAdMob("yandex_interstitial_show_154", "Yandex direct SDK fallback");
-            } else {
-                oneInterstitialClaimed.set(false);
-                finishOneInterstitialNavigation(target);
-            }
-        });
-        return true;
-    }
-
     // Called by a bottom-navigation click before changing screens, not by random taps.
     // Return true only when a loaded ad will take over that navigation.
     private boolean requestOneInterstitialForNavigation(String target) {
         if (!("home".equals(target) || "garage".equals(target) ||
               "records".equals(target) || "plan".equals(target) ||
               "reports".equals(target) || "more".equals(target))) return false;
-        if (!oneInterstitialReady || oneInterstitialAd == null)
-            return requestYandexInterstitialForNavigation154(target);
+        if (!oneInterstitialReady || oneInterstitialAd == null) return false;
         if (!oneInterstitialReady || oneInterstitialAd == null ||
                 oneInterstitialClaimed.get() || recordInterstitialClaimed147.get() ||
                 (lastInAppInterstitialShownAt145 > 0L &&
@@ -2663,6 +2635,7 @@ private void showLaunchSplash() {
                 out.put("consent", admobConsentInfo != null && admobConsentInfo.canRequestAds());
                 out.put("sdkInitialized", admobSdkInitialized);
                 out.put("sdkReady", admobSdkReady);
+                out.put("yandexAdapterInstalled", yandexAdapterInstalled155());
                 out.put("canRequestAds", canRequestAdMobAds());
                 out.put("testMode", BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE);
                 out.put("bannerCreated", bannerAdView != null);
@@ -5286,9 +5259,6 @@ private void showLaunchSplash() {
         if (webView != null) webView.removeCallbacks(mrecAfterScroll);
         if(mrecAdView!=null){try{mrecAdView.destroy();}catch(Throwable ignored){} mrecAdView=null;}
         if (nativeFeed146 != null) { nativeFeed146.destroy(); nativeFeed146 = null; }
-        if (yandexInterstitial154 != null) {
-            yandexInterstitial154.destroy(); yandexInterstitial154 = null;
-        }
         stopSpeedTrackingNative();
         try { if (locationManager != null && map120LocationListener != null) locationManager.removeUpdates(map120LocationListener); } catch (Throwable ignored) {}
         map120LocationListener = null;
