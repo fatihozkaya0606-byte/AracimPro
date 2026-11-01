@@ -3272,7 +3272,6 @@ function apSyncMrecSlot(){
       Android.updateMrecSlot(0,0,0,0,vw,false);
       return;
     }
-    const r=slot.getBoundingClientRect();
     const overlayOpen=['modalRoot','lockRoot'].some(id=>{
       const e=document.getElementById(id);
       return !!(e&&e.innerHTML.trim());
@@ -3289,6 +3288,8 @@ function apSyncMrecSlot(){
       ready=!!Android.mrecLoadedForSlot();
       document.body.classList.toggle('apMrecReady',ready);
     }
+    // The card can be display:none until readiness changes. Measure afterwards.
+    const r=slot.getBoundingClientRect();
     const fit=r.width>=299&&r.height>=249;
     const horizontal=r.left>=-1&&r.right<=vw+2;
     const vertical=r.top>=Math.max(0,headerBottom)-1 &&
