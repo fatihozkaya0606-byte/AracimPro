@@ -189,6 +189,9 @@ public class MainActivity extends Activity {
     private NativeFeedController146 nativeFeed146;
     private boolean mrecAdLoaded = false;
     private String mrecPlacementReason151 = "Henüz MREC isteği yapılmadı";
+    // Keeps geometry diagnostics meaningful even when a settings modal
+    // temporarily hides the MREC.
+    private String mrecLastEligibleGeometry222 = "Henüz uygun alan ölçülmedi";
     private boolean mrecSlotVisible = false;
     private long mrecScrollHoldUntil = 0L;
     private boolean admobBannerLoaded = false;
@@ -1819,7 +1822,7 @@ private void showLaunchSplash() {
                 && viewportCssWidth >= 320 && pxPerCss > 0 && pxPerCss < 10
                 && widthCss >= adWidthDp - 1 && heightCss >= adHeightDp - 1
                 && leftCss >= 0 && leftCss + widthCss <= viewportCssWidth + 2
-                && topCss >= 90;
+                && topCss >= 0;
         mrecSlotVisible = false;
         if (!valid || mrecAdView == null) {
             mrecPlacementReason151 = mrecAdView == null ? "Orta reklam nesnesi bulunamadı" :
@@ -1857,7 +1860,7 @@ private void showLaunchSplash() {
             && nativeLeft + nativeWidth <= slotRight + safetyMargin
             && nativeTop + nativeHeight <= slotBottom + safetyMargin
             && nativeLeft >= webLeft && nativeLeft + nativeWidth <= webRight
-            && nativeTop >= webTop + dp(24)
+            && nativeTop >= webTop + dp(4)
             && nativeTop + nativeHeight <= webBottom - navGuard;
         if (!valid) {
             mrecPlacementReason151 = "300x250 reklam HTML alanına / WebView görünür bölgesine sığmıyor";
@@ -1882,6 +1885,9 @@ private void showLaunchSplash() {
             mrecAdView.setLayoutParams(lp);
         }
         mrecSlotVisible = true;
+        mrecLastEligibleGeometry222 = "slot=" + widthCss + "x" + heightCss +
+                " css; top=" + topCss + "; native=(" + nativeLeft + "," +
+                nativeTop + ") size=" + nativeWidth + "x" + nativeHeight;
         mrecPlacementReason151 = "HTML alanı uygun, gösterim koşulları denetleniyor";
         updateMrecVisibility();
     }
@@ -2679,6 +2685,7 @@ private void showLaunchSplash() {
                 out.put("mrecVisible", mrecAdView != null && mrecAdView.getVisibility() == View.VISIBLE);
                 out.put("mrecLastError", log.getString("mrecLastError", ""));
                 out.put("mrecPlacementReason", mrecPlacementReason151);
+                out.put("mrecLastEligibleGeometry", mrecLastEligibleGeometry222);
                 out.put("nativeLoaded", nativeFeed146 != null && nativeFeed146.isLoaded());
                 out.put("nativeVisible", nativeFeed146 != null && nativeFeed146.isVisible());
                 out.put("nativeLastError", nativeFeed146 == null ? "Native denetleyici yok" : nativeFeed146.getLastError());
