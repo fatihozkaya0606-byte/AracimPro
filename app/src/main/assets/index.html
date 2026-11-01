@@ -3104,44 +3104,14 @@ function view(){if(!activeVehicle()&&current!=='garage'&&current!=='more')return
 // v146: a genuine Android Google Mobile Ads NativeAdView, never a fabricated
 // HTML advertisement. The WebView only reserves its exact measured position.
 // SDK owns the creative assets, click handling, impressions and AdChoices.
-function apNativeCardHtml146(){
-  try{if(isPremium())return ''}catch(e){}
-  return `<section class="apNativeCard146" aria-label="Sponsorlu içerik">
-    <div class="apNativeSlot146" id="apNativeSlot146" aria-label="Reklam için ayrılan alan"></div>
-  </section>`;
-}
+// The top Native ad and its blank card have been removed permanently.
+// Retain only the real, unscaled 300x250 AdMob MREC at the top of the home feed.
+function apNativeCardHtml146(){ return ''; }
 function apNativeMount146(){
-  if(current!=='home' && current!=='garage' && current!=='more')return;
+  if(current!=='home')return;
   const main=document.querySelector('#app > main');
-  if(!main || main.querySelector('#apNativeSlot146'))return;
-  // v152: Home has two separate real AdMob formats stacked in document flow:
-  // first NativeAdView, then the independent 300x250 MREC AdView.
-  // Never display a fabricated creative or reserve blank space on no-fill.
-  const markup=apNativeCardHtml146();
-  if(!markup)return;
-  const wrapper=document.createElement('div');
-  wrapper.innerHTML=markup.trim();
-  const card=wrapper.firstElementChild;
-  if(!card)return;
-  // v206: home shows both loaded ad formats immediately below the header.
-  // Keep the dashboard and all controls in normal scroll flow, never overlay.
-  if(current==='home'){
-    main.insertBefore(card,main.firstElementChild);
-    const mrec=main.querySelector('.apMrecCard');
-    if(mrec)card.insertAdjacentElement('afterend',mrec);
-    return;
-  }
-  let anchor=null;
-  if(current==='garage'){
-    anchor=main.querySelector('.list')||main.querySelector('.sectionHead');
-  }else{
-    anchor=main.querySelector('.moreFavGrid')||
-      main.querySelector('.more796Grid')||
-      main.querySelector('.moreCatGrid')||
-      main.querySelector('.moreCatHero');
-  }
-  if(anchor)anchor.insertAdjacentElement('afterend',card);
-  else main.appendChild(card);
+  const mrec=main&&main.querySelector('.apMrecCard');
+  if(main&&mrec&&main.firstElementChild!==mrec)main.insertBefore(mrec,main.firstElementChild);
 }
 window.apNativeAvailability146=function(ready){
   document.body.classList.toggle('apNativeReady146',!!ready);
@@ -3222,12 +3192,8 @@ window.apMrecAvailability=function(ready){
   document.body.classList.toggle('apMrecReady',!!ready);
   requestAnimationFrame(()=>{
     apMrecQueueSync();
-    apNativeQueueSync146();
   });
-  setTimeout(()=>{
-    apMrecQueueSync();
-    apNativeQueueSync146();
-  },140);
+  setTimeout(apMrecQueueSync,140);
 };
 // V104: One native AdMob medium rectangle is MOVED between tab views,
  // not duplicated or reloaded. All content remains scrollable.
@@ -3313,14 +3279,10 @@ function apMrecQueueSync(){
   requestAnimationFrame(apSyncMrecSlot);
 }
 function apMrecMarkScrolling(){
-  apMrecScrollBlockedUntil=Date.now()+520;
-  if(Date.now()-apMrecLastHideAt>100){
-    apMrecLastHideAt=Date.now();
-    try{if(typeof Android!=='undefined'&&Android.updateMrecSlot)
-      Android.updateMrecSlot(0,0,0,0,window.innerWidth,false)}catch(e){}
-  }
-  if(apMrecScrollTimer)clearTimeout(apMrecScrollTimer);
-  apMrecScrollTimer=setTimeout(apMrecQueueSync,570);
+  // Reposition in the next animation frame; never close a filled MREC
+  // simply because the user touched or scrolled the screen.
+  // apSyncMrecSlot hides it only when it actually leaves the visible feed.
+  apMrecQueueSync();
 }
 window.addEventListener('scroll',apMrecMarkScrolling,{passive:true,capture:true});
 window.addEventListener('touchmove',apMrecMarkScrolling,{passive:true,capture:true});
