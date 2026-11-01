@@ -3124,7 +3124,11 @@ function apNativeMount146(){
   if(!card)return;
   let anchor=null;
   if(current==='home'){
-    anchor=main.querySelector('.ref791-hero') ||
+    // v200: Immediately after the compact top control strip, so both native
+    // and the existing 300x250 MREC appear above dashboard content.
+    // Keep the MREC movement below: one ad request, never a duplicate.
+    anchor=main.querySelector('.apTi143Pulse') ||
+      main.querySelector('.ref791-hero') ||
       main.querySelector('.welcome7104Card') ||
       main.querySelector('.welcome7104');
   }else if(current==='garage'){
