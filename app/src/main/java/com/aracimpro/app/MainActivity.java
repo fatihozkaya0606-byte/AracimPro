@@ -223,10 +223,13 @@ public class MainActivity extends Activity {
     private final java.util.concurrent.atomic.AtomicBoolean oneInterstitialClaimed =
             new java.util.concurrent.atomic.AtomicBoolean(false);
     private volatile long oneInterstitialLoadedAt = 0L;
-    // Frequency cap shared by the save-vehicle and bottom-navigation triggers.
-    private static final long IN_APP_INTERSTITIAL_MIN_INTERVAL_MS145 = 120000L;
+    // v153: 60-second MINIMUM gap between all in-app interstitial placements.
+    // A timer never forces the ad: only a completed record/task or natural tab
+    // transition may show a ready creative, under AdMob policies.
+    private static final long IN_APP_INTERSTITIAL_MIN_INTERVAL_MS145 = 60000L;
+    private static final long IN_APP_INTERSTITIAL_FIRST_ELIGIBLE_MS153 = 60000L;
     private volatile long lastInAppInterstitialShownAt145 = 0L;
-    // A second independently loaded interstitial; the global 120s cap is shared.
+    // A second independently loaded interstitial shares this 60-second cap.
     private InterstitialAd recordInterstitialAd147;
     private boolean recordInterstitialLoading147 = false;
     private long recordInterstitialLoadedAt147 = 0L;
@@ -1922,7 +1925,7 @@ private void showLaunchSplash() {
     }
 
     // Vehicle-save is a completed user task, not a disruptive "Aracı Ekle"
-    // click. The same one-ad-per-session cap also applies to tab transitions.
+    // click. The shared time cap and ad-ready requirement apply to all placements.
     private void releaseAndReloadInterstitial145() {
         oneInterstitialClaimed.set(false);
         if (!isFinishing() && !isDestroyed() && canRequestAdMobAds())
@@ -1940,7 +1943,7 @@ private void showLaunchSplash() {
             // Only a 40-second rest after the user closes a voluntary rewarded video.
             excelRewardedShowing124 ||
             (lastExcelRewardedClosedAt125 > 0L && now - lastExcelRewardedClosedAt125 < 40000L) ||
-            now - sessionStartedAt < (BuildConfig.DEBUG ? 5000L : 15000L) ||
+            now - sessionStartedAt < IN_APP_INTERSTITIAL_FIRST_ELIGIBLE_MS153 ||
             now - oneInterstitialLoadedAt > 45L * 60L * 1000L ||
             (appOpenLastShownAt122 > 0 &&
              System.currentTimeMillis() - appOpenLastShownAt122 <
@@ -2220,7 +2223,7 @@ private void showLaunchSplash() {
                 (lastExcelRewardedClosedAt125 > 0L &&
                  android.os.SystemClock.elapsedRealtime() - lastExcelRewardedClosedAt125 < 40000L) ||
                 android.os.SystemClock.elapsedRealtime() - sessionStartedAt <
-                        (BuildConfig.DEBUG ? 5000L : 15000L) ||
+                        IN_APP_INTERSTITIAL_FIRST_ELIGIBLE_MS153 ||
                 appOpenShowing122 ||
                 (appOpenLastShownAt122 > 0 &&
                  System.currentTimeMillis() - appOpenLastShownAt122 <
