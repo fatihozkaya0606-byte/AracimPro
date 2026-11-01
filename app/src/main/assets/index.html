@@ -2035,6 +2035,20 @@ body:not(.r8HomeMode):not(.dark) .apMrecSlot{background:#e7f0f8;border-color:#c4
 <link rel="stylesheet" href="r8-titanium-142.css">
 <link rel="stylesheet" href="r8-titanium-visible-143.css">
 <link rel="stylesheet" href="r8-titanium-142.css">
+<style id="ap-mrec-v222-exact-slot">
+/* A 300x250 AdMob view must use an exactly matching CSS slot including its
+   border. Old styles forced content-box (302x252), invalidating some geometry. */
+html body #app .apMrecSlot,
+html body.ap132 #app .apMrecSlot,
+html body.r118Skin.apMrecReady #app .apMrecSlot{
+ box-sizing:border-box!important;
+ width:300px!important;
+ height:250px!important;
+ min-height:250px!important;
+ max-width:100%!important;
+ flex-shrink:0!important;
+}
+</style>
 </head>
 <body>
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
@@ -3265,11 +3279,15 @@ function apSyncMrecSlot(){
     const bottomNav=document.querySelector('nav.nav, .nav');
     const bottomLimit=bottomNav?bottomNav.getBoundingClientRect().top:window.innerHeight-86;
     // A larger top inset prevents the advertisement from covering ticker/header.
+    const header=document.querySelector('#app > .header, #app > header, .header.apHeader');
+    const headerBottom=header?header.getBoundingClientRect().bottom:0;
     const visible=document.body.classList.contains('apMrecReady') &&
       !overlayOpen && r.width>=299 && r.height>=249 &&
-      r.left>=0 && r.right<=vw+2 && r.top>=90 &&
-      // Keep padding from nav; Android also validates projected view bounds.
-      r.bottom<=Math.min(window.innerHeight-70,bottomLimit-6);
+      r.left>=0 && r.right<=vw+2 &&
+      // Respect the actual header edge, not an arbitrary 90 CSS px gate.
+      r.top>=Math.max(0,headerBottom)+4 &&
+      // Keep the full 300x250 creative clear of the bottom tab bar.
+      r.bottom<=Math.min(window.innerHeight-8,bottomLimit-6);
     Android.updateMrecSlot(r.left,r.top,r.width,r.height,vw,visible);
   }catch(e){}
 }
@@ -5387,6 +5405,7 @@ function admobAdsDiagnosticsModal(){
   line('Orta reklam görünür',yes(d.mrecVisible))+
   line('Orta reklamın son hatası',d.mrecLastError||'Yok')+
   line('Orta reklam konum kontrolü',d.mrecPlacementReason||'Bilinmiyor')+
+  line('Son uygun MREC ölçümü',d.mrecLastEligibleGeometry||'Henüz yok')+
   line('Native reklam yüklendi',yes(d.nativeLoaded))+
   line('Native reklam görünür',yes(d.nativeVisible))+
   line('Native reklam son durum / hata',d.nativeLastError||'Bilinmiyor')+
