@@ -66,7 +66,12 @@ final class NativeFeedController146 {
         if (destroyed || loading || isLoaded() || !canLoad.getAsBoolean()) return;
         String unit = (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
                 ? GOOGLE_NATIVE_TEST_UNIT : BuildConfig.NATIVE_AD_UNIT_ID;
-        if (unit == null || !unit.matches("ca-app-pub-[0-9]+/[0-9]+")) return;
+        if (unit == null || !unit.matches("ca-app-pub-[0-9]+/[0-9]+")) {
+            android.util.Log.w("AracimAdMob",
+                    "native_unit_missing: Set NATIVE_AD_UNIT_ID in GitHub Actions secrets; " +
+                    "only debug builds use the official Google test Native unit");
+            return;
+        }
         loading = true;
         try {
             new AdLoader.Builder(activity, unit)
