@@ -1826,7 +1826,9 @@ private void showLaunchSplash() {
         mrecSlotVisible = false;
         if (!valid || mrecAdView == null) {
             mrecPlacementReason151 = mrecAdView == null ? "Orta reklam nesnesi bulunamadı" :
-                    "HTML reklam alanı henüz görünür değil veya ölçümü uygun değil";
+                    "HTML sinyali="+visible+"; w="+widthCss+"; h="+heightCss+
+                    "; x="+leftCss+"; y="+topCss+"; vw="+viewportCssWidth+
+                    "; pxPerCss="+pxPerCss;
             updateMrecVisibility();
             return;
         }
@@ -1863,7 +1865,10 @@ private void showLaunchSplash() {
             && nativeTop >= webTop + dp(4)
             && nativeTop + nativeHeight <= webBottom - navGuard;
         if (!valid) {
-            mrecPlacementReason151 = "300x250 reklam HTML alanına / WebView görünür bölgesine sığmıyor";
+            mrecPlacementReason151 = "MREC native bounds: ad=("+nativeLeft+","+nativeTop+") "+
+                nativeWidth+"x"+nativeHeight+"; slot=("+slotLeft+","+slotTop+")-("+
+                slotRight+","+slotBottom+"); web=("+webLeft+","+webTop+")-("+
+                webRight+","+webBottom+");";
             updateMrecVisibility();
             return;
         }
