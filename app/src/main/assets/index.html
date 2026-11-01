@@ -3108,8 +3108,9 @@ function apNativeMount146(){
   if(current!=='home' && current!=='garage' && current!=='more')return;
   const main=document.querySelector('#app > main');
   if(!main || main.querySelector('#apNativeSlot146'))return;
-  // On Home, keep the sponsored unit below the vehicle hero and above the
-  // feature grid. Do not insert it into the 300x250 MREC or any clickable card.
+  // v151: on Home the native unit belongs directly after the compact
+  // Titanium strip; this is above the hero and feature grid, not at the
+  // bottom of the feed. Never inject the native unit over clickable buttons.
   if(current==='home' && !main.querySelector('.ref791-hero'))return;
   const markup=apNativeCardHtml146();
   if(!markup)return;
@@ -3119,7 +3120,7 @@ function apNativeMount146(){
   if(!card)return;
   let anchor=null;
   if(current==='home'){
-    anchor=main.querySelector('.ref791-hero');
+    anchor=main.querySelector('.apTi143Pulse');
   }else if(current==='garage'){
     anchor=main.querySelector('.list')||main.querySelector('.sectionHead');
   }else{
@@ -3458,6 +3459,10 @@ const fuelSpent=sum(fuels),tireCount=vf(state.tires||[]).length,d1=due[0],d2=due
 const hero=v.photo?`<img class="ref791-car" src="${v.photo}" alt="${esc(v.make+' '+v.model)}">`:`<div class="ref791-noimg">🚗 Araç fotoğrafı hazırlanıyor…</div>`;
 return `<div class="ref791">
 
+<!-- v151: the existing real 300x250 MREC sits immediately after the
+     native placement and before the vehicle hero, not below feature tiles. -->
+${apMrecCardHtml()}
+
 <section class="ref791-hero">
   ${hero}
   <div class="ref791-copy">
@@ -3493,8 +3498,6 @@ return `<div class="ref791">
       <div class="ref791-maintrow"><span class="mi">🧰</span><span><b>${esc(d2?.name||d2?.title||'Hava Filtresi')}</b><small>${d2?(d2.km<999999?Math.max(0,Math.round(d2.km))+' km kaldı':Math.max(0,Math.round(d2.days))+' gün kaldı'):'Bakım planına ekle'}</small></span></div>
     </div>
   </button>
-
-  ${apMrecCardHtml()}
 
   <button class="ref791-card" onclick="go('records');recordsTab='fuel';render()">
     <div class="ref791-head"><span class="ref791-icon">⛽</span><span><b>Yakıt Takibi</b><small>Bu ay</small></span></div>
