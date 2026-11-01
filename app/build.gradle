@@ -37,8 +37,8 @@ android {
         // A public AdMob rewarded unit ID. Debug mode independently uses Google's
         // sample rewarded ad ID in MainActivity; production uses this exact unit.
         buildConfigField 'String', 'REWARDED_AD_UNIT_ID', '"ca-app-pub-7205009121067400/7362031917"'
-        versionCode 200
-        versionName '7.11.80'
+        versionCode 201
+        versionName '7.11.81'
     }
 
     signingConfigs {
@@ -102,6 +102,10 @@ dependencies {
     implementation 'org.reactivestreams:reactive-streams:1.0.4'
     // AdMob remains the primary ad SDK and preserves the same banner, MREC and interstitial units.
     implementation 'com.google.android.gms:play-services-ads:25.5.0'
+    // v201: official Yandex Mobile Ads custom-event adapter for AdMob waterfall.
+    // Yandex formats remain managed by AdMob (not separately shown).
+    implementation 'com.yandex.android:mobileads:8.6.0'
+    implementation 'com.yandex.ads.adapter:admob-mobileads:8.4.0.0'
     // Unity Ads bidding through the existing AdMob ad units. Existing banner,
     // 300x250, interstitial and rewarded placements are unchanged.
     // AdMob mediation: SDKs only. Network demand requires separate mapping and
