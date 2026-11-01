@@ -227,6 +227,16 @@ final class NativeFeedController146 {
         copy.addView(body, bodyLp);
         body.setVisibility(nativeAd.getBody() == null ? View.GONE : View.VISIBLE);
 
+        // v155: Yandex AdMob Native custom event requires the storeView asset
+        // to expose its domain. Keep it compact but actually display it.
+        TextView store = text(nativeAd.getStore(), 9, 0xFFB5DBEC, false);
+        store.setMaxLines(1);
+        store.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        LinearLayout.LayoutParams storeLp = new LinearLayout.LayoutParams(-1, -2);
+        storeLp.topMargin = dp(2);
+        copy.addView(store, storeLp);
+        store.setVisibility(nativeAd.getStore() == null ? View.GONE : View.VISIBLE);
+
         TextView cta = text(nativeAd.getCallToAction(), 12, Color.WHITE, true);
         cta.setGravity(Gravity.CENTER);
         cta.setBackground(rounded(0xFF177EBD, 9, 0));
@@ -240,6 +250,7 @@ final class NativeFeedController146 {
         nv.setBodyView(body);
         nv.setIconView(icon);
         nv.setAdvertiserView(advertiser);
+        nv.setStoreView(store);
         nv.setCallToActionView(cta);
         // The SDK inserts its AdChoices control in the reserved top-right corner.
         // Asset clicks/impressions are exclusively handled by Google Mobile Ads.
