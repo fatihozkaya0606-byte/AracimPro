@@ -465,6 +465,7 @@ public class MainActivity extends Activity {
                     + "\nAçılış yüklemesi bitti: " + appOpenAttemptFinished141
                     + "\nAçılış reklamı gösteriliyor: " + appOpenShowing122
                     + "\nGeçiş reklamı hazır: " + oneInterstitialReady
+                    + "\nYandex AdMob adaptörü: " + yandexAdapterInstalled201()
                     + "\nAlt banner hazır: " + admobBannerLoaded
                     + "\nSon olay: " + log.getString("step", "Henüz yok")
                     + "\nAçıklama: " + log.getString("result", "")
@@ -1409,6 +1410,21 @@ private void showLaunchSplash() {
                         .build();
 
         billingClient.launchBillingFlow(this, flowParams);
+    }
+
+    // v201: confirm all four reflective Yandex AdMob custom-event classes exist.
+    // This does not itself show ads; paused AdMob groups remain inactive.
+    private boolean yandexAdapterInstalled201() {
+        try {
+            Class.forName("com.admob.mobileads.YandexBanner");
+            Class.forName("com.admob.mobileads.YandexInterstitial");
+            Class.forName("com.admob.mobileads.YandexNative");
+            Class.forName("com.admob.mobileads.YandexRewarded");
+            return true;
+        } catch (Throwable t) {
+            android.util.Log.w("AracimYandex", "AdMob custom-event adapter not installed", t);
+            return false;
+        }
     }
 
     // AdMob only: Google Play Premium entitlement and UMP consent gate ad requests.
@@ -2617,6 +2633,7 @@ private void showLaunchSplash() {
                 out.put("consent", admobConsentInfo != null && admobConsentInfo.canRequestAds());
                 out.put("sdkInitialized", admobSdkInitialized);
                 out.put("sdkReady", admobSdkReady);
+                out.put("yandexAdapterInstalled", yandexAdapterInstalled201());
                 out.put("canRequestAds", canRequestAdMobAds());
                 out.put("testMode", BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE);
                 out.put("bannerCreated", bannerAdView != null);
