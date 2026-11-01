@@ -44,6 +44,7 @@ final class NativeFeedController146 {
     private boolean destroyed;
     private long scrollBlockUntil;
     private int retryCount;
+    private String lastError = "Henüz Native reklam isteği yapılmadı";
     private final Runnable retry = this::tryLoad;
 
     NativeFeedController146(Activity activity, FrameLayout root, WebView web,
@@ -61,18 +62,22 @@ final class NativeFeedController146 {
     }
 
     boolean isLoaded() { return loaded && ad != null && view != null; }
+    boolean isVisible() { return isLoaded() && view.getVisibility() == View.VISIBLE; }
+    String getLastError() { return lastError; }
 
     void tryLoad() {
         if (destroyed || loading || isLoaded() || !canLoad.getAsBoolean()) return;
         String unit = (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
                 ? GOOGLE_NATIVE_TEST_UNIT : BuildConfig.NATIVE_AD_UNIT_ID;
         if (unit == null || !unit.matches("ca-app-pub-[0-9]+/[0-9]+")) {
+            lastError = "Native reklam birimi tanımsız/geçersiz";
             android.util.Log.w("AracimAdMob",
                     "native_unit_missing: Set NATIVE_AD_UNIT_ID in GitHub Actions secrets; " +
                     "only debug builds use the official Google test Native unit");
             return;
         }
         loading = true;
+        lastError = "Native reklam isteği gönderildi";
         try {
             new AdLoader.Builder(activity, unit)
                 .forNativeAd(newAd -> activity.runOnUiThread(() -> {
@@ -90,12 +95,14 @@ final class NativeFeedController146 {
                             dp(WIDTH_DP), dp(HEIGHT_DP), Gravity.LEFT | Gravity.TOP);
                         root.addView(view, params);
                         loaded = true;
+                        lastError = "Native reklam yüklendi";
                         retryCount = 0;
                         slotVisible = false;
                         view.setVisibility(View.INVISIBLE);
                         notifyJs(true);
                         android.util.Log.i("AracimAdMob", "native146_loaded: NativeAd received");
                     } catch (Throwable error) {
+                        lastError = "Native reklam çizim hatası: " + error.getClass().getSimpleName();
                         android.util.Log.e("AracimAdMob", "native146_render_error", error);
                         newAd.destroy();
                         ad = null;
@@ -110,6 +117,8 @@ final class NativeFeedController146 {
                         activity.runOnUiThread(() -> {
                             loading = false;
                             if (destroyed) return;
+                            lastError = error == null ? "Native reklam yüklenemedi: bilinmeyen hata" :
+                                    "Native reklam yüklenemedi, kod " + error.getCode() + ": " + error.getMessage();
                             android.util.Log.w("AracimAdMob",
                                     "native146_load_failed: " + (error == null ? "unknown" : error.toString()));
                             notifyJs(false);
@@ -122,6 +131,7 @@ final class NativeFeedController146 {
                 }).build().loadAd(new AdRequest.Builder().build());
         } catch (Throwable error) {
             loading = false;
+            lastError = "Native AdLoader hatası: " + error.getClass().getSimpleName();
             android.util.Log.e("AracimAdMob", "native146_loader_error", error);
             scheduleRetry();
         }
@@ -290,8 +300,10 @@ final class NativeFeedController146 {
                 && nativeLeft + w <= slotRight + margin
                 && nativeTop + h <= slotBottom + margin
                 && nativeLeft >= webLeft && nativeLeft + w <= webLeft + web.getWidth()
-                && nativeTop >= webTop + dp(90)
-                && nativeTop + h <= webTop + web.getHeight() - dp(86);
+                // HTML has already checked the actual header/nav positions.
+                // Do not reject a safe visible ad with a second oversized guard.
+                && nativeTop >= webTop + dp(24)
+                && nativeTop + h <= webTop + web.getHeight() - dp(12);
         if (!fits) { updateVisibility(); return; }
         FrameLayout.LayoutParams params = (FrameLayout.LayoutParams)view.getLayoutParams();
         if (params == null) { updateVisibility(); return; }

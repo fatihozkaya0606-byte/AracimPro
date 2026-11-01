@@ -1994,6 +1994,7 @@ body:not(.dark) .apNativeCard146{background:linear-gradient(135deg,#f3f9ff,#e7f2
 </style>
 <style id="ap-mrec-card-71116">
 .apMrecCard{grid-column:1/-1;display:none;flex-direction:column;gap:9px;margin:12px 0;padding:13px 10px 14px;border:1px solid rgba(42,142,233,.35);border-radius:20px;background:linear-gradient(155deg,#071e35,#0b2a47);box-shadow:0 8px 25px rgba(0,40,100,.16)}
+body:not(.apMrecReady) #app .apMrecCard{display:none!important}
 .apMrecReady .apMrecCard{display:flex}
 .apMrecTitle{display:flex;align-items:center;justify-content:space-between;padding:0 5px;color:#e2f4ff;gap:8px}
 .apMrecTitle strong{font-size:12px;letter-spacing:.2px}.apMrecTitle small{font-size:9px;color:#a8c6de;border:1px solid #426780;border-radius:999px;padding:3px 8px}
@@ -5389,6 +5390,10 @@ function admobAdsDiagnosticsModal(){
   line('Orta reklam için alan uygun',yes(d.mrecSlotVisible))+
   line('Orta reklam görünür',yes(d.mrecVisible))+
   line('Orta reklamın son hatası',d.mrecLastError||'Yok')+
+  line('Orta reklam konum kontrolü',d.mrecPlacementReason||'Bilinmiyor')+
+  line('Native reklam yüklendi',yes(d.nativeLoaded))+
+  line('Native reklam görünür',yes(d.nativeVisible))+
+  line('Native reklam son durum / hata',d.nativeLastError||'Bilinmiyor')+
   line('Tam ekran hazır',yes(d.interstitialLoaded))+
   line('Oturumda tam ekran kullanıldı',yes(d.interstitialClaimed))+
   line('Açılış tamamlandı',yes(d.splashHidden))+
