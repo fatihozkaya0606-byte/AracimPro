@@ -23,10 +23,13 @@ import com.google.android.gms.ads.nativead.NativeAdView;
 import java.util.function.BooleanSupplier;
 
 /** One real Google SDK NativeAd in a measured in-feed WebView placeholder.
- *  No fake ad text, no click interception, no impression auto-refresh.
- *  The native Android view is only visible wholly inside its visible HTML slot. */
+ *  Native ads are refreshed after at least 60 seconds of actual on-screen time;
+ *  backgrounded/hidden screens never trigger refresh requests.
+ *  No fake ad text or click interception. The Android view stays inside
+ *  its measured HTML slot. */
 final class NativeFeedController146 {
     private static final String GOOGLE_NATIVE_TEST_UNIT = "ca-app-pub-3940256099942544/2247696110";
+    private static final long REFRESH_AFTER_VISIBLE_MS = 60_000L;
     private static final int WIDTH_DP = 260;
     private static final int HEIGHT_DP = 164;
     private final Activity activity;
@@ -46,6 +49,13 @@ final class NativeFeedController146 {
     private int retryCount;
     private String lastError = "Henüz Native reklam isteği yapılmadı";
     private final Runnable retry = this::tryLoad;
+    private final Runnable refresh = this::refreshIfDue;
+    private long visibleSinceMs;
+    private long accumulatedVisibleMs;
+    private long lastLoadRequestMs;
+    private boolean refreshScheduled;
+    private int adLoadGeneration;
+    private int refreshRequests;
 
     NativeFeedController146(Activity activity, FrameLayout root, WebView web,
             Handler handler, BooleanSupplier canLoad, BooleanSupplier canShow) {
@@ -65,8 +75,22 @@ final class NativeFeedController146 {
     boolean isVisible() { return isLoaded() && view.getVisibility() == View.VISIBLE; }
     String getLastError() { return lastError; }
 
-    void tryLoad() {
-        if (destroyed || loading || isLoaded() || !canLoad.getAsBoolean()) return;
+    int getRefreshRequestCount() { return refreshRequests; }
+
+    /** Initial load. An already loaded native ad is refreshed only by the timer below. */
+    void tryLoad() { loadAd(false); }
+
+    private void loadAd(boolean refreshing) {
+        if (destroyed || loading || !canLoad.getAsBoolean()) return;
+        if (refreshing) {
+            if (!isVisible() || !canShow.getAsBoolean()
+                    || getVisibleDurationMs() < REFRESH_AFTER_VISIBLE_MS
+                    || SystemClock.elapsedRealtime() - lastLoadRequestMs < REFRESH_AFTER_VISIBLE_MS) {
+                scheduleRefresh();
+                return;
+            }
+        } else if (isLoaded()) return;
+
         String unit = (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
                 ? GOOGLE_NATIVE_TEST_UNIT : BuildConfig.NATIVE_AD_UNIT_ID;
         if (unit == null || !unit.matches("ca-app-pub-[0-9]+/[0-9]+")) {
@@ -77,52 +101,101 @@ final class NativeFeedController146 {
             return;
         }
         loading = true;
-        lastError = "Native reklam isteği gönderildi";
+        lastLoadRequestMs = SystemClock.elapsedRealtime();
+        final int requestGeneration = adLoadGeneration;
+        if (refreshing) refreshRequests++;
+        lastError = refreshing ? "Native reklam 60 saniyede yenileniyor" : "Native reklam isteği gönderildi";
         try {
             new AdLoader.Builder(activity, unit)
                 .forNativeAd(newAd -> activity.runOnUiThread(() -> {
                     loading = false;
-                    if (destroyed || !canLoad.getAsBoolean()) {
+                    if (destroyed || requestGeneration != adLoadGeneration
+                            || !canLoad.getAsBoolean()) {
                         newAd.destroy();
                         return;
                     }
+                    NativeAdView replacement = null;
                     try {
-                        if (ad != null) ad.destroy();
-                        if (view != null) root.removeView(view);
-                        ad = newAd;
-                        view = buildView(newAd);
+                        // Prepare replacement before destroying the displayed ad.
+                        replacement = buildView(newAd);
                         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                            dp(WIDTH_DP), dp(HEIGHT_DP), Gravity.LEFT | Gravity.TOP);
-                        root.addView(view, params);
+                                dp(WIDTH_DP), dp(HEIGHT_DP), Gravity.LEFT | Gravity.TOP);
+                        if (view != null) {
+                            FrameLayout.LayoutParams previousParams =
+                                    (FrameLayout.LayoutParams) view.getLayoutParams();
+                            if (previousParams != null) {
+                                params.leftMargin = previousParams.leftMargin;
+                                params.topMargin = previousParams.topMargin;
+                            }
+                        }
+                        replacement.setVisibility(View.INVISIBLE);
+                        root.addView(replacement, params);
+
+                        NativeAd previousAd = ad;
+                        NativeAdView previousView = view;
+                        ad = newAd;
+                        view = replacement;
                         loaded = true;
                         lastError = "Native reklam yüklendi";
                         retryCount = 0;
-                        slotVisible = false;
-                        view.setVisibility(View.INVISIBLE);
+
+                        // The newly rendered creative receives its own full visible 60s.
+                        visibleSinceMs = 0L;
+                        accumulatedVisibleMs = 0L;
+                        cancelRefresh();
+                        if (previousView != null) {
+                            try { root.removeView(previousView); }
+                            catch (Throwable ignored) {}
+                        }
+                        if (previousAd != null) {
+                            try { previousAd.destroy(); }
+                            catch (Throwable ignored) {}
+                        }
                         notifyJs(true);
-                        android.util.Log.i("AracimAdMob", "native146_loaded: NativeAd received");
+                        updateVisibility();
+                        android.util.Log.i("AracimAdMob", refreshing
+                                ? "native202_refreshed: replacement loaded"
+                                : "native146_loaded: NativeAd received");
                     } catch (Throwable error) {
-                        lastError = "Native reklam çizim hatası: " + error.getClass().getSimpleName();
-                        android.util.Log.e("AracimAdMob", "native146_render_error", error);
+                        lastError = "Native reklam çizim hatası: " +
+                                error.getClass().getSimpleName();
+                        android.util.Log.e("AracimAdMob", "native202_render_error", error);
+                        if (replacement != null) {
+                            try { root.removeView(replacement); }
+                            catch (Throwable ignored) {}
+                        }
                         newAd.destroy();
-                        ad = null;
-                        if (view != null) { root.removeView(view); view = null; }
-                        loaded = false;
-                        notifyJs(false);
-                        scheduleRetry();
+                        if (isLoaded()) {
+                            // Keep the earlier ad if a refresh could not be rendered.
+                            scheduleRefresh();
+                        } else {
+                            ad = null;
+                            view = null;
+                            loaded = false;
+                            notifyJs(false);
+                            scheduleRetry();
+                        }
                     }
                 }))
                 .withAdListener(new AdListener() {
                     @Override public void onAdFailedToLoad(LoadAdError error) {
                         activity.runOnUiThread(() -> {
                             loading = false;
-                            if (destroyed) return;
-                            lastError = error == null ? "Native reklam yüklenemedi: bilinmeyen hata" :
-                                    "Native reklam yüklenemedi, kod " + error.getCode() + ": " + error.getMessage();
+                            if (destroyed || requestGeneration != adLoadGeneration) return;
+                            lastError = error == null
+                                ? "Native reklam yüklenemedi: bilinmeyen hata"
+                                : "Native reklam yüklenemedi, kod " + error.getCode()
+                                + ": " + error.getMessage();
                             android.util.Log.w("AracimAdMob",
-                                    "native146_load_failed: " + (error == null ? "unknown" : error.toString()));
-                            notifyJs(false);
-                            scheduleRetry();
+                                    "native202_load_failed: " +
+                                    (error == null ? "unknown" : error.toString()));
+                            if (isLoaded()) {
+                                // A failed replacement must not blank the existing ad.
+                                scheduleRefresh();
+                            } else {
+                                notifyJs(false);
+                                scheduleRetry();
+                            }
                         });
                     }
                     @Override public void onAdImpression() {
@@ -132,8 +205,45 @@ final class NativeFeedController146 {
         } catch (Throwable error) {
             loading = false;
             lastError = "Native AdLoader hatası: " + error.getClass().getSimpleName();
-            android.util.Log.e("AracimAdMob", "native146_loader_error", error);
-            scheduleRetry();
+            android.util.Log.e("AracimAdMob", "native202_loader_error", error);
+            if (isLoaded()) scheduleRefresh();
+            else scheduleRetry();
+        }
+    }
+
+    /** Count *visible* time, not time in background, behind a different page or off-screen. */
+    private long getVisibleDurationMs() {
+        long time = accumulatedVisibleMs;
+        if (visibleSinceMs > 0L)
+            time += SystemClock.elapsedRealtime() - visibleSinceMs;
+        return time;
+    }
+
+    private void cancelRefresh() {
+        handler.removeCallbacks(refresh);
+        refreshScheduled = false;
+    }
+
+    private void scheduleRefresh() {
+        if (destroyed || loading || !isVisible() || !canShow.getAsBoolean()
+                || refreshScheduled) return;
+        long visibleRemaining = REFRESH_AFTER_VISIBLE_MS - getVisibleDurationMs();
+        long requestRemaining = REFRESH_AFTER_VISIBLE_MS
+                - (SystemClock.elapsedRealtime() - lastLoadRequestMs);
+        long delay = Math.max(1000L, Math.max(visibleRemaining, requestRemaining));
+        refreshScheduled = true;
+        handler.postDelayed(refresh, delay);
+    }
+
+    private void refreshIfDue() {
+        refreshScheduled = false;
+        if (destroyed || loading || !isVisible() || !canShow.getAsBoolean()
+                || !canLoad.getAsBoolean()) return;
+        if (getVisibleDurationMs() >= REFRESH_AFTER_VISIBLE_MS
+                && SystemClock.elapsedRealtime() - lastLoadRequestMs >= REFRESH_AFTER_VISIBLE_MS) {
+            loadAd(true);
+        } else {
+            scheduleRefresh();
         }
     }
 
@@ -327,16 +437,37 @@ final class NativeFeedController146 {
     }
 
     void updateVisibility() {
-        if (view == null) return;
+        if (view == null) {
+            pauseRefreshClock();
+            return;
+        }
         boolean display = slotVisible && isLoaded() && !destroyed
                 && canShow.getAsBoolean()
                 && SystemClock.elapsedRealtime() >= scrollBlockUntil
                 && !activity.isFinishing() && !activity.isDestroyed();
         view.setVisibility(display ? View.VISIBLE : View.INVISIBLE);
+        if (display) {
+            if (visibleSinceMs == 0L) visibleSinceMs = SystemClock.elapsedRealtime();
+            scheduleRefresh();
+        } else {
+            pauseRefreshClock();
+        }
+    }
+
+    private void pauseRefreshClock() {
+        if (visibleSinceMs > 0L) {
+            accumulatedVisibleMs += SystemClock.elapsedRealtime() - visibleSinceMs;
+            visibleSinceMs = 0L;
+        }
+        cancelRefresh();
     }
 
     void removeAd() {
         handler.removeCallbacks(retry);
+        pauseRefreshClock();
+        accumulatedVisibleMs = 0L;
+        lastLoadRequestMs = 0L;
+        adLoadGeneration++;
         loading = false;
         loaded = false;
         slotVisible = false;
