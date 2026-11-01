@@ -31,7 +31,7 @@ final class NativeFeedController146 {
     private static final String GOOGLE_NATIVE_TEST_UNIT = "ca-app-pub-3940256099942544/2247696110";
     private static final long REFRESH_AFTER_VISIBLE_MS = 60_000L;
     private static final int WIDTH_DP = 260;
-    private static final int HEIGHT_DP = 128; // v203: compact full native asset view so MREC fits below it
+    private static final int HEIGHT_DP = 102; // v206: compact horizontal NativeAdView with all registered assets
     private final Activity activity;
     private final FrameLayout root;
     private final WebView web;
@@ -308,14 +308,14 @@ final class NativeFeedController146 {
         LinearLayout row = new LinearLayout(activity);
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setOrientation(LinearLayout.HORIZONTAL);
-        LinearLayout.LayoutParams rowLp = new LinearLayout.LayoutParams(-1, dp(62));
+        LinearLayout.LayoutParams rowLp = new LinearLayout.LayoutParams(-1, dp(66));
         rowLp.topMargin = dp(3);
         content.addView(row, rowLp);
 
         ImageView icon = new ImageView(activity);
         icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        LinearLayout.LayoutParams iconLp = new LinearLayout.LayoutParams(dp(42), dp(42));
-        iconLp.rightMargin = dp(7);
+        LinearLayout.LayoutParams iconLp = new LinearLayout.LayoutParams(dp(36), dp(36));
+        iconLp.rightMargin = dp(5);
         row.addView(icon, iconLp);
         if (nativeAd.getIcon() != null && nativeAd.getIcon().getDrawable() != null) {
             icon.setImageDrawable(nativeAd.getIcon().getDrawable());
@@ -353,9 +353,11 @@ final class NativeFeedController146 {
         cta.setGravity(Gravity.CENTER);
         cta.setBackground(rounded(0xFF177EBD, 9, 0));
         cta.setMinHeight(dp(30));
-        LinearLayout.LayoutParams ctaLp = new LinearLayout.LayoutParams(-1, dp(30));
-        ctaLp.topMargin = dp(3);
-        content.addView(cta, ctaLp);
+        // The CTA shares the same horizontal row so it stays fully tappable,
+        // while the native slot uses substantially less screen height.
+        LinearLayout.LayoutParams ctaLp = new LinearLayout.LayoutParams(dp(76), dp(34));
+        ctaLp.leftMargin = dp(5);
+        row.addView(cta, ctaLp);
         cta.setVisibility(nativeAd.getCallToAction() == null ? View.GONE : View.VISIBLE);
 
         nv.setHeadlineView(headline);
