@@ -27,3 +27,11 @@
 -keepattributes Exceptions,InnerClasses,Signature,Deprecated,SourceFile,LineNumberTable,*Annotation*,EnclosingMethod
 -dontwarn com.startapp.**
 -dontwarn org.jetbrains.annotations.**
+
+# v155: Google AdMob looks up Yandex Custom Event adapter classes by string
+# names configured in the publisher's AdMob mediation groups.
+# R8 must not remove or rename these reflective adapter entry points.
+-keep class com.admob.mobileads.YandexBanner { *; }
+-keep class com.admob.mobileads.YandexInterstitial { *; }
+-keep class com.admob.mobileads.YandexNative { *; }
+-keep class com.admob.mobileads.YandexRewarded { *; }
