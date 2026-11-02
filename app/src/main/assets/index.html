@@ -5498,7 +5498,10 @@ function admobAdsDiagnosticsModal(){
   line('AdMob başlatıldı',yes(d.sdkReady))+
   line('AdMost SDK başlatıldı',yes(d.admostSdkInitialized))+
   line('AdMost durumu',d.admostSdkState||'Yok')+
-  line('AdMost bölge kimliği eşlendi',yes(d.admostZoneMapped))+
+  line('AdMost bölge kimlikleri', (d.admostZoneCount||0)+'/5')+
+  line('AdMost 5 bölge eşlendi',yes(d.admostZoneMapped))+
+  line('AdMost canlı SDK izni',yes(d.admostLiveInitAllowed))+
+  line('AdMost canlı reklam yönlendirme','Kapalı; AdMob yerleşimleri korunuyor')+
   line('Reklam isteği yapılabilir',yes(d.canRequestAds))+
   line('Test modu',yes(d.testMode))+
   line('Banner oluşturuldu',yes(d.bannerCreated))+
