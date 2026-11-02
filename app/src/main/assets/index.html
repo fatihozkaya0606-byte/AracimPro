@@ -5496,6 +5496,9 @@ function admobAdsDiagnosticsModal(){
   line('Premium doğrulaması',yes(d.premiumBillingReady))+
   line('Premium aktif',yes(d.premiumActive))+
   line('AdMob başlatıldı',yes(d.sdkReady))+
+  line('AdMost SDK başlatıldı',yes(d.admostSdkInitialized))+
+  line('AdMost durumu',d.admostSdkState||'Yok')+
+  line('AdMost bölge kimliği eşlendi',yes(d.admostZoneMapped))+
   line('Reklam isteği yapılabilir',yes(d.canRequestAds))+
   line('Test modu',yes(d.testMode))+
   line('Banner oluşturuldu',yes(d.bannerCreated))+
