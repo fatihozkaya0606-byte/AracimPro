@@ -2757,7 +2757,9 @@ private void showLaunchSplash() {
                 out.put("yandexAdapterInstalled", yandexAdapterInstalled201());
                 out.put("admostSdkInitialized", AdMostBridge229.isInitialized());
                 out.put("admostSdkState", AdMostBridge229.getState());
-                out.put("admostZoneMapped", AdMostBridge229.hasAtLeastOneZone());
+                out.put("admostZoneMapped", AdMostBridge229.hasAllExpectedZones());
+                out.put("admostZoneCount", AdMostBridge229.getMappedZoneCount());
+                out.put("admostLiveInitAllowed", AdMostBridge229.isLiveInitializationAllowed());
                 out.put("canRequestAds", canRequestAdMobAds());
                 out.put("testMode", BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE);
                 out.put("bannerCreated", bannerAdView != null);
