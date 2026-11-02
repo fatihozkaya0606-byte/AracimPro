@@ -21,6 +21,8 @@ final class AdMostBridge229 {
     private static final String TAG = "AracimAdMost";
     private static boolean started = false;
     private static volatile boolean initialized = false;
+    private static volatile boolean latestPremiumActive = false;
+    private static volatile ConsentInformation latestConsent = null;
     private static volatile String state = "SDK hazır; canlı bölge eşlemesi bekleniyor";
 
     private AdMostBridge229() {}
@@ -45,8 +47,11 @@ final class AdMostBridge229 {
     // UMP consent and Premium status may change after SDK initialization.
     // Keep AdMost's own request gate synchronized without loading any zones.
     static synchronized void updateConsent(ConsentInformation consent, boolean premiumActive) {
+        latestConsent = consent;
+        latestPremiumActive = premiumActive;
         if (!initialized) return;
-        boolean allowed = !premiumActive && consent != null && consent.canRequestAds();
+        boolean allowed = !latestPremiumActive && latestConsent != null
+                && latestConsent.canRequestAds();
         try {
             AdMost.getInstance().setCanRequestAds(allowed);
             Log.i(TAG, "Consent request gate updated: " + allowed);
@@ -57,8 +62,9 @@ final class AdMostBridge229 {
 
     static synchronized void initializeIfAllowed(
             Activity activity, ConsentInformation consent, boolean premiumActive) {
+        updateConsent(consent, premiumActive);
         if (started) {
-            updateConsent(consent, premiumActive);
+            // updateConsent already synchronized the latest request gate.
             return;
         }
         if (activity == null || activity.isFinishing() || premiumActive) return;
@@ -87,7 +93,7 @@ final class AdMostBridge229 {
             AdMost.getInstance().init(config.build(), new AdMostInitListener() {
                 @Override public void onInitCompleted() {
                     initialized = true;
-                    updateConsent(consent, premiumActive);
+                    updateConsent(latestConsent, latestPremiumActive);
                     state = "AdMost SDK hazır (" + getMappedZoneCount()
                             + "/5 bölge eşlendi; canlı reklam yönlendirmesi kapalı)";
                     Log.i(TAG, state);
