@@ -52,8 +52,11 @@ android {
         // configuration is verified. No AdMost ad loads/shows are routed yet.
         // Existing AdMob/Yandex/Unity placements stay authoritative.
         buildConfigField 'boolean', 'ADMOST_ENABLE_LIVE', (System.getenv('ADMOST_ENABLE_LIVE') ?: 'false').toBoolean().toString()
-        versionCode 229
-        versionName '7.11.96'
+        // Both explicit gates default OFF. Enable only for signed internal tests
+        // after AdMost/AdMob UMP vendor settings are independently verified.
+        buildConfigField 'boolean', 'ADMOST_ROUTE_BANNER_MREC', (System.getenv('ADMOST_ROUTE_BANNER_MREC') ?: 'false').toBoolean().toString()
+        versionCode 230
+        versionName '7.11.97'
     }
 
     signingConfigs {
