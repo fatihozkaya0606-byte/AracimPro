@@ -10,6 +10,8 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        // Official AdMost Android Maven repository (HTTPS; no insecure HTTP).
+        maven { url 'https://mvn-repo.admost.com/artifactory/amr' }
         // Official Mintegral SDK Maven repository, needed by the Google
         // Mintegral mediation adapter. Liftoff and Unity use Maven Central.
         maven {
