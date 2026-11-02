@@ -196,8 +196,22 @@ public class MainActivity extends Activity {
     private boolean adMostMrecRequested230 = false;
     private long adMostStartAt230 = 0L;
     private final Runnable adMostWait230 = this::ensureAdMostPlacements230;
-    // v146: isolated, policy-compliant Google NativeAd in the garage/services feed.
+    // v234: the ONE existing middle 300x250 slot displays a real AdMob
+    // NativeAd with MediaView (video when Google supplies video inventory).
+    // If it cannot fill within 18 seconds, the old MREC is used as backup.
     private NativeFeedController146 nativeFeed146;
+    private boolean nativeMrecFallbackUsed234 = false;
+    private final Runnable nativeMrecFallbackTask234 = () -> {
+        if (nativeFeed146 == null || nativeFeed146.isLoaded()
+                || !canRequestAdMobAds() || !admobSdkReady
+                || adMostRoutingRequested230() || isFinishing() || isDestroyed()) return;
+        nativeMrecFallbackUsed234 = true;
+        nativeFeed146.destroy();
+        nativeFeed146 = null;
+        logAdMob("native234_fallback", "Native was not ready; using original 300x250 MREC");
+        createMrecAd();
+        requestMrecPositionSync205();
+    };
     private volatile boolean mrecAdLoaded = false;
     private String mrecPlacementReason151 = "Henüz MREC isteği yapılmadı";
     // Keeps geometry diagnostics meaningful even when a settings modal
@@ -352,16 +366,14 @@ public class MainActivity extends Activity {
             if (r - l != oldR - oldL || b - t != oldB - oldT)
                 scheduleBottomBannerLayout231();
         });
-        // v232 preview only: restore Native video using Google's VIDEO demo unit.
-        // Production banner/MREC/open/interstitial ad sources are NOT changed.
-        // A release build never creates this additional preview placement.
-        if (BuildConfig.DEBUG) {
-            nativeFeed146 = new NativeFeedController146(
-                    this, root, webView, mainHandler,
-                    () -> canRequestAdMobAds() && admobSdkReady,
-                    () -> canRequestAdMobAds() && activityResumed143
-                            && apPremiumSplashHidden && !appOpenShowing122);
-        }
+        // v234: use the existing middle slot only; DEBUG gets Google's demo
+        // video, RELEASE uses the pre-existing live NativeAd unit in BuildConfig.
+        // All other ad units, Premium/UMP gates, and layout stay unchanged.
+        nativeFeed146 = new NativeFeedController146(
+                this, root, webView, mainHandler,
+                () -> canRequestAdMobAds() && admobSdkReady,
+                () -> canRequestAdMobAds() && activityResumed143
+                        && apPremiumSplashHidden && !appOpenShowing122);
         if (Build.VERSION.SDK_INT >= 33) {
             try {
                 getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
@@ -1383,6 +1395,7 @@ private void showLaunchSplash() {
                 mrecAdLoaded = false;
                 mrecSlotVisible = false;
                 notifyMrecJs(false);
+                mainHandler.removeCallbacks(nativeMrecFallbackTask234);
                 if (nativeFeed146 != null) nativeFeed146.removeAd();
                 excelRewardedAd124 = null;
                 excelRewardedLoading124 = false;
@@ -1754,12 +1767,16 @@ private void showLaunchSplash() {
             } else {
                 createAdMobBanner();
                 requestBottomBanner138();
-                // v233 debug: same existing middle 300x250 slot uses Google's
-                // official Native VIDEO sample instead of the static MREC sample.
-                // Production release keeps the original MREC and live unit ID.
-                if (!BuildConfig.DEBUG) createMrecAd();
+                // Exactly ONE medium-rectangle placement. Start Native first;
+                // the original MREC is a no-fill backup, not a second placement.
+                if (nativeFeed146 == null || nativeMrecFallbackUsed234) createMrecAd();
+                else {
+                    nativeFeed146.tryLoad();
+                    mainHandler.removeCallbacks(nativeMrecFallbackTask234);
+                    if (!nativeFeed146.isLoaded())
+                        mainHandler.postDelayed(nativeMrecFallbackTask234, 18000L);
+                }
             }
-            if (BuildConfig.DEBUG && nativeFeed146 != null) nativeFeed146.tryLoad();
             loadSingleInterstitial();
             loadRecordInterstitial147();
             loadExcelRewardedAd124();
@@ -2970,20 +2987,21 @@ private void showLaunchSplash() {
         @JavascriptInterface public boolean mrecLoadedForSlot() {
             // The middle HTML slot is shared, not duplicated. In the video
             // debug preview, its readiness comes from the Native Video ad.
-            return BuildConfig.DEBUG && nativeFeed146 != null
+            return nativeFeed146 != null
                     ? nativeFeed146.isLoaded() : mrecAdLoaded;
         }
 
         @JavascriptInterface public void updateMrecSlot(double left, double top,
                                                          double width, double height,
                                                          double viewportWidth, boolean visible) {
-            if (BuildConfig.DEBUG && nativeFeed146 != null) return;
+            if (nativeFeed146 != null) return;
             runOnUiThread(() -> updateMrecSlotNative(
                     left, top, width, height, viewportWidth, visible));
         }
 
         @JavascriptInterface public boolean nativeVideoTestEnabled232() {
-            return BuildConfig.DEBUG;
+            // Kept for compatibility with existing HTML; the extra card is gone.
+            return false;
         }
 
         @JavascriptInterface public void updateNativeSlot146(double left, double top,
@@ -5691,6 +5709,7 @@ private void showLaunchSplash() {
         mainHandler.removeCallbacks(mrecRetryTask205);
         mainHandler.removeCallbacks(billingGraceExpiry228);
         if(mrecAdView!=null){try{mrecAdView.destroy();}catch(Throwable ignored){} mrecAdView=null;}
+        mainHandler.removeCallbacks(nativeMrecFallbackTask234);
         if (nativeFeed146 != null) { nativeFeed146.destroy(); nativeFeed146 = null; }
         stopSpeedTrackingNative();
         try { if (locationManager != null && map120LocationListener != null) locationManager.removeUpdates(map120LocationListener); } catch (Throwable ignored) {}
