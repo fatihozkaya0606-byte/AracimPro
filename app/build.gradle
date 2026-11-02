@@ -37,8 +37,16 @@ android {
         // A public AdMob rewarded unit ID. Debug mode independently uses Google's
         // sample rewarded ad ID in MainActivity; production uses this exact unit.
         buildConfigField 'String', 'REWARDED_AD_UNIT_ID', '"ca-app-pub-7205009121067400/7362031917"'
-        versionCode 228
-        versionName '7.11.95'
+        // v229: AdMost Lite has its own SDK and zones. Do not change the
+        // existing live AdMob banners or send duplicate production requests.
+        buildConfigField 'String', 'ADMOST_APP_ID', '"a6afba43-47e2-4e0f-8be6-36aaac312268"'
+        buildConfigField "String", "ADMOST_BANNER_ZONE_ID", "\"${System.getenv('ADMOST_BANNER_ZONE_ID') ?: ''}\"
+        buildConfigField "String", "ADMOST_MREC_ZONE_ID", "\"${System.getenv('ADMOST_MREC_ZONE_ID') ?: ''}\"
+        buildConfigField "String", "ADMOST_INTERSTITIAL_ZONE_ID", "\"${System.getenv('ADMOST_INTERSTITIAL_ZONE_ID') ?: ''}\"
+        buildConfigField "String", "ADMOST_REWARDED_ZONE_ID", "\"${System.getenv('ADMOST_REWARDED_ZONE_ID') ?: ''}\"
+        buildConfigField 'boolean', 'ADMOST_ENABLE_LIVE', 'false'
+        versionCode 229
+        versionName '7.11.96'
     }
 
     signingConfigs {
@@ -102,6 +110,10 @@ dependencies {
     implementation 'org.reactivestreams:reactive-streams:1.0.4'
     // AdMob remains the primary ad SDK and preserves the same banner, MREC and interstitial units.
     implementation 'com.google.android.gms:play-services-ads:25.5.0'
+    // AdMost mediation is included side-by-side. No live zones are requested
+    // before account and consent mapping is verified.
+    implementation 'com.admost.sdk:amr:3.3.3'
+    implementation 'com.admost.sdk:admob-adapter:24.0.0.1.a49'
     // v201: official Yandex Mobile Ads custom-event adapter for AdMob waterfall.
     // Yandex formats remain managed by AdMob (not separately shown).
     implementation 'com.yandex.android:mobileads:8.6.0'
