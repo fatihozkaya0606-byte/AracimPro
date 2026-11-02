@@ -476,6 +476,7 @@ public class MainActivity extends Activity {
                     + "\nAçılış reklamı gösteriliyor: " + appOpenShowing122
                     + "\nGeçiş reklamı hazır: " + oneInterstitialReady
                     + "\nYandex AdMob adaptörü: " + yandexAdapterInstalled201()
+                    + "\nAdMost SDK: " + AdMostBridge229.getState()
                     + "\nNative 60 sn yenileme isteği: "
                     + (nativeFeed146 == null ? 0 : nativeFeed146.getRefreshRequestCount())
                     + "\nAlt banner hazır: " + admobBannerLoaded
@@ -1487,7 +1488,10 @@ private void showLaunchSplash() {
             admobConsentInfo.requestConsentInfoUpdate(this, params,
                 () -> UserMessagingPlatform.loadAndShowConsentFormIfRequired(this, formError -> {
                     if (formError != null) logAdMob("consent_form_error", formError.getMessage());
-                    if (canRequestAdMobAds()) initAdMobBanner();
+                    if (canRequestAdMobAds()) {
+                        initAdMobBanner();
+                        AdMostBridge229.initializeIfAllowed(this, admobConsentInfo, premiumActive);
+                    }
                     else logAdMob("consent_required", "UMP is not ready to request ads");
                     // Never circumvent a denied consent. Retry only if the form
                     // itself malfunctioned and UMP has not allowed requests.
@@ -1498,7 +1502,10 @@ private void showLaunchSplash() {
                 }),
                 requestError -> {
                     logAdMob("consent_error", requestError.getMessage());
-                    if (canRequestAdMobAds()) initAdMobBanner();
+                    if (canRequestAdMobAds()) {
+                        initAdMobBanner();
+                        AdMostBridge229.initializeIfAllowed(this, admobConsentInfo, premiumActive);
+                    }
                     else {
                         admobConsentRequested = false;
                         mainHandler.postDelayed(this::requestAdMobConsentIfNeeded, 120000L);
@@ -2745,6 +2752,9 @@ private void showLaunchSplash() {
                 out.put("sdkInitialized", admobSdkInitialized);
                 out.put("sdkReady", admobSdkReady);
                 out.put("yandexAdapterInstalled", yandexAdapterInstalled201());
+                out.put("admostSdkInitialized", AdMostBridge229.isInitialized());
+                out.put("admostSdkState", AdMostBridge229.getState());
+                out.put("admostZoneMapped", AdMostBridge229.hasAtLeastOneZone());
                 out.put("canRequestAds", canRequestAdMobAds());
                 out.put("testMode", BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE);
                 out.put("bannerCreated", bannerAdView != null);
