@@ -1738,6 +1738,9 @@ private void showLaunchSplash() {
             FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
                     dp(300), dp(250), Gravity.TOP | Gravity.LEFT);
             ad.setVisibility(View.INVISIBLE);
+            // Keep the real Android banner above the WebView's compositor.
+            // The HTML slot's exact visible bounds still gate every showing.
+            ad.setElevation(dp(12));
             mrecAdView = ad;
             root.addView(ad, lp);
             mrecAdLoaded = false;
