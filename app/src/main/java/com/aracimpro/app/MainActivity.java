@@ -1316,6 +1316,7 @@ private void showLaunchSplash() {
         }
 
         premiumActive = active;
+        AdMostBridge229.updateConsent(admobConsentInfo, premiumActive);
         nonPremiumVerified228 = !active;
         billingReconnectGrace228 = false;
         mainHandler.removeCallbacks(billingGraceExpiry228);
@@ -1488,6 +1489,7 @@ private void showLaunchSplash() {
             admobConsentInfo.requestConsentInfoUpdate(this, params,
                 () -> UserMessagingPlatform.loadAndShowConsentFormIfRequired(this, formError -> {
                     if (formError != null) logAdMob("consent_form_error", formError.getMessage());
+                    AdMostBridge229.updateConsent(admobConsentInfo, premiumActive);
                     if (canRequestAdMobAds()) {
                         initAdMobBanner();
                         AdMostBridge229.initializeIfAllowed(this, admobConsentInfo, premiumActive);
@@ -1528,6 +1530,7 @@ private void showLaunchSplash() {
                 ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED) {
             UserMessagingPlatform.showPrivacyOptionsForm(this, error -> {
                 if (error != null) logAdMob("privacy_error", error.getMessage());
+                AdMostBridge229.updateConsent(admobConsentInfo, premiumActive);
                 if (!canRequestAdMobAds()) removePremiumAds();
             });
             return;
