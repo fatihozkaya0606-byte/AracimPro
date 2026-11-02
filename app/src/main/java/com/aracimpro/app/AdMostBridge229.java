@@ -35,9 +35,26 @@ final class AdMostBridge229 {
     static boolean isInitialized() { return initialized; }
     static String getState() { return state; }
 
+    // UMP consent and Premium status may change after SDK initialization.
+    // Keep AdMost's own request gate synchronized without loading any zones.
+    static synchronized void updateConsent(ConsentInformation consent, boolean premiumActive) {
+        if (!initialized) return;
+        boolean allowed = !premiumActive && consent != null && consent.canRequestAds();
+        try {
+            AdMost.getInstance().setCanRequestAds(allowed);
+            Log.i(TAG, "Consent request gate updated: " + allowed);
+        } catch (Throwable t) {
+            Log.w(TAG, "Could not update SDK consent", t);
+        }
+    }
+
     static synchronized void initializeIfAllowed(
             Activity activity, ConsentInformation consent, boolean premiumActive) {
-        if (started || activity == null || activity.isFinishing() || premiumActive) return;
+        if (started) {
+            updateConsent(consent, premiumActive);
+            return;
+        }
+        if (activity == null || activity.isFinishing() || premiumActive) return;
         if (consent == null || !consent.canRequestAds()) {
             state = "UMP reklam izni bekleniyor";
             return;
@@ -63,6 +80,7 @@ final class AdMostBridge229 {
             AdMost.getInstance().init(config.build(), new AdMostInitListener() {
                 @Override public void onInitCompleted() {
                     initialized = true;
+                    updateConsent(consent, premiumActive);
                     state = "AdMost SDK hazır (reklam bölgesi yönlendirmesi kapalı)";
                     Log.i(TAG, state);
                 }
