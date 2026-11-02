@@ -204,6 +204,15 @@ public class MainActivity extends Activity {
     private int premiumReconnectAttempt = 0;
     private int bannerRetryAttempt = 0;
     private boolean bannerLoading138 = false;
+    // v228: retry failed automatic refresh without hiding a previously loaded creative.
+    private boolean bannerReloadPending228 = false;
+    // A brief, bounded grace after verified non-Premium billing disconnects.
+    private boolean billingReconnectGrace228 = false;
+    private boolean nonPremiumVerified228 = false;
+    private final Runnable billingGraceExpiry228 = () -> {
+        billingReconnectGrace228 = false;
+        if (!premiumBillingReady) removePremiumAds();
+    };
     private long bannerNextTryAt138 = 0L;
     private final Runnable bannerRetryTask138 = this::requestBottomBanner138;
     private int mrecRetryAttempt = 0;
@@ -1159,6 +1168,8 @@ private void showLaunchSplash() {
                 @Override public void onBillingSetupFinished(BillingResult result) {
                     premiumBillingReady = result.getResponseCode() == BillingClient.BillingResponseCode.OK;
                     if (premiumBillingReady) {
+                        billingReconnectGrace228 = false;
+                        mainHandler.removeCallbacks(billingGraceExpiry228);
                         premiumReconnectAttempt = 0;
                         queryPremiumProduct();
                         refreshPremiumPurchases();
@@ -1170,7 +1181,16 @@ private void showLaunchSplash() {
                 }
                 @Override public void onBillingServiceDisconnected() {
                     premiumBillingReady = false;
-                    removePremiumAds();
+                    // Do not destroy loaded ads immediately after a short
+                    // disconnect, but only if non-Premium status was verified.
+                    billingReconnectGrace228 = nonPremiumVerified228 && !premiumActive;
+                    mainHandler.removeCallbacks(billingGraceExpiry228);
+                    if (billingReconnectGrace228) {
+                        mainHandler.postDelayed(billingGraceExpiry228, 90000L);
+                        logAdMob("billing_reconnect_grace_228", "Verified non-Premium; reconnecting");
+                    } else {
+                        removePremiumAds();
+                    }
                     notifyPremiumJs("Google Play bağlantısı kesildi");
                     schedulePremiumBillingReconnect();
                     if (BuildConfig.DEBUG) runOnUiThread(MainActivity.this::requestAdMobConsentIfNeeded);
@@ -1295,6 +1315,9 @@ private void showLaunchSplash() {
         }
 
         premiumActive = active;
+        nonPremiumVerified228 = !active;
+        billingReconnectGrace228 = false;
+        mainHandler.removeCallbacks(billingGraceExpiry228);
         if (premiumActive) {
             removePremiumAds();
         } else {
@@ -1318,6 +1341,7 @@ private void showLaunchSplash() {
                 }
                 admobBannerLoaded = false;
                 bannerLoading138 = false;
+                bannerReloadPending228 = false;
                 bannerNextTryAt138 = 0L;
                 mainHandler.removeCallbacks(bannerRetryTask138);
                 bannerRetryAttempt = 0;
@@ -1449,8 +1473,8 @@ private void showLaunchSplash() {
             // a failed Play Billing/UMP connection must not hide the preview.
             return admobConsentRequested;
         }
-        return premiumBillingReady && admobConsentInfo != null
-                && admobConsentInfo.canRequestAds();
+        return (premiumBillingReady || billingReconnectGrace228)
+                && admobConsentInfo != null && admobConsentInfo.canRequestAds();
     }
 
     private void requestAdMobConsentIfNeeded() {
@@ -1513,7 +1537,8 @@ private void showLaunchSplash() {
     // Avoid rapid duplicate mediation requests; preserve AdMob's auto refresh.
     private void requestBottomBanner138() {
         mainHandler.removeCallbacks(bannerRetryTask138);
-        if (bannerAdView == null || bannerLoading138 || admobBannerLoaded ||
+        if (bannerAdView == null || bannerLoading138 ||
+                (admobBannerLoaded && !bannerReloadPending228) ||
                 !canRequestAdMobAds() || !admobSdkReady ||
                 isFinishing() || isDestroyed()) return;
         long waitMs = bannerNextTryAt138 - android.os.SystemClock.elapsedRealtime();
@@ -1522,10 +1547,12 @@ private void showLaunchSplash() {
             return;
         }
         bannerLoading138 = true;
+        bannerReloadPending228 = false;
         try {
             bannerAdView.loadAd(new AdRequest.Builder().build());
         } catch (Throwable t) {
             bannerLoading138 = false;
+            bannerReloadPending228 = true;
             bannerNextTryAt138 = android.os.SystemClock.elapsedRealtime() + 60000L;
             logAdMob("banner_request_error", t.getClass().getSimpleName());
             mainHandler.postDelayed(bannerRetryTask138, 60000L);
@@ -1538,7 +1565,18 @@ private void showLaunchSplash() {
         bannerAdView.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
         if (bannerBackdrop129 != null)
             bannerBackdrop129.setVisibility(visible ? View.VISIBLE : View.GONE);
-        int height = visible ? dp(54) : 0;
+        // Adaptive banner creative height varies across phone sizes.
+        AdSize bannerSize = bannerAdView.getAdSize();
+        int creativeHeight = bannerSize == null ? dp(50) : bannerSize.getHeightInPixels(this);
+        int surfaceHeight = Math.max(dp(50), creativeHeight) + dp(4);
+        int height = visible ? surfaceHeight : 0;
+        if (bannerBackdrop129 != null) {
+            android.view.ViewGroup.LayoutParams bgParams = bannerBackdrop129.getLayoutParams();
+            if (bgParams != null && bgParams.height != surfaceHeight) {
+                bgParams.height = surfaceHeight;
+                bannerBackdrop129.setLayoutParams(bgParams);
+            }
+        }
         if (bannerHeightPx != height) {
             bannerHeightPx = height;
             applyWebMargins(lastInsetLeft, lastInsetTop, lastInsetRight, lastInsetBottom);
@@ -1592,7 +1630,13 @@ private void showLaunchSplash() {
         if (!canRequestAdMobAds() || bannerAdView != null) return;
         try {
             final AdView banner = new AdView(this);
-            banner.setAdSize(AdSize.BANNER);
+            // Anchored adaptive, full-width bottom ad; never crop or scale a creative.
+            final android.util.DisplayMetrics display = getResources().getDisplayMetrics();
+            final int availablePx = root != null && root.getWidth() > 0
+                    ? root.getWidth() : display.widthPixels;
+            final int availableDp = Math.max(1, (int) Math.floor(
+                    Math.max(1, availablePx - lastInsetLeft - lastInsetRight) / display.density));
+            banner.setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, availableDp));
             banner.setAdUnitId((BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
                 ? "ca-app-pub-3940256099942544/6300978111"
                 : "ca-app-pub-7205009121067400/9497290996");
@@ -1600,9 +1644,12 @@ private void showLaunchSplash() {
                 @Override public void onAdLoaded() {
                     if (bannerAdView != banner || !canRequestAdMobAds()) return;
                     bannerLoading138 = false;
+                    bannerReloadPending228 = false;
                     bannerNextTryAt138 = 0L;
                     mainHandler.removeCallbacks(bannerRetryTask138);
                     admobBannerLoaded = true;
+                    getSharedPreferences("aracim_admob_diagnostics", MODE_PRIVATE).edit()
+                            .putString("bannerLastError", "").apply();
                     bannerRetryAttempt = 0;
                     logAdMob("banner_loaded", "Banner loaded through AdMob mediation");
                     recordAdSource123("banner", banner.getResponseInfo());
@@ -1610,11 +1657,16 @@ private void showLaunchSplash() {
                 }
                 @Override public void onAdFailedToLoad(LoadAdError error) {
                     bannerLoading138 = false;
-                    logAdMob("banner_failed", error == null ? "Unknown" : error.toString());
-                    // A failed automatic refresh should not erase a displayed ad.
-                    if (admobBannerLoaded) return;
-                    updateAdMobBannerVisibility();
-                    final long delay = Math.max(30000L, adRetryDelay(bannerRetryAttempt++));
+                    final String failure = error == null ? "Unknown" : error.toString();
+                    logAdMob("banner_failed", failure);
+                    getSharedPreferences("aracim_admob_diagnostics", MODE_PRIVATE).edit()
+                            .putString("bannerLastError", failure).apply();
+                    // Preserve the SDK's displayed creative when auto-refresh fails,
+                    // but retry the existing AdView after a safe delay.
+                    if (!admobBannerLoaded) updateAdMobBannerVisibility();
+                    bannerReloadPending228 = true;
+                    final long delay = Math.max(admobBannerLoaded ? 60000L : 30000L,
+                            adRetryDelay(bannerRetryAttempt++));
                     bannerNextTryAt138 = android.os.SystemClock.elapsedRealtime() + delay;
                     mainHandler.removeCallbacks(bannerRetryTask138);
                     mainHandler.postDelayed(bannerRetryTask138, delay);
@@ -1626,6 +1678,7 @@ private void showLaunchSplash() {
             bannerAdView = banner;
             admobBannerLoaded = false;
             bannerLoading138 = false;
+            bannerReloadPending228 = false;
             bannerNextTryAt138 = 0L;
             mainHandler.removeCallbacks(bannerRetryTask138);
             bannerHeightPx = 0;
@@ -2696,6 +2749,9 @@ private void showLaunchSplash() {
                 out.put("testMode", BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE);
                 out.put("bannerCreated", bannerAdView != null);
                 out.put("bannerLoaded", admobBannerLoaded);
+                out.put("bannerLastError", log.getString("bannerLastError", ""));
+                out.put("bannerRetryPending", bannerReloadPending228);
+                out.put("billingGrace", billingReconnectGrace228);
                 out.put("splashHidden", apPremiumSplashHidden);
                 out.put("bannerVisible", bannerAdView != null && bannerAdView.getVisibility() == View.VISIBLE);
                 out.put("mrecCreated", mrecAdView != null);
@@ -5317,6 +5373,7 @@ private void showLaunchSplash() {
         if(bannerAdView!=null){try{bannerAdView.destroy();}catch(Throwable ignored){} bannerAdView=null;}
         if (webView != null) webView.removeCallbacks(mrecAfterScroll);
         mainHandler.removeCallbacks(mrecRetryTask205);
+        mainHandler.removeCallbacks(billingGraceExpiry228);
         if(mrecAdView!=null){try{mrecAdView.destroy();}catch(Throwable ignored){} mrecAdView=null;}
         if (nativeFeed146 != null) { nativeFeed146.destroy(); nativeFeed146 = null; }
         stopSpeedTrackingNative();
