@@ -1754,7 +1754,10 @@ private void showLaunchSplash() {
             } else {
                 createAdMobBanner();
                 requestBottomBanner138();
-                createMrecAd();
+                // v233 debug: same existing middle 300x250 slot uses Google's
+                // official Native VIDEO sample instead of the static MREC sample.
+                // Production release keeps the original MREC and live unit ID.
+                if (!BuildConfig.DEBUG) createMrecAd();
             }
             if (BuildConfig.DEBUG && nativeFeed146 != null) nativeFeed146.tryLoad();
             loadSingleInterstitial();
@@ -2965,12 +2968,16 @@ private void showLaunchSplash() {
         // The WebView polls loaded state to recover from a missed early callback.
         // This does not trigger another ad request or bypass consent/premium gates.
         @JavascriptInterface public boolean mrecLoadedForSlot() {
-            return mrecAdLoaded;
+            // The middle HTML slot is shared, not duplicated. In the video
+            // debug preview, its readiness comes from the Native Video ad.
+            return BuildConfig.DEBUG && nativeFeed146 != null
+                    ? nativeFeed146.isLoaded() : mrecAdLoaded;
         }
 
         @JavascriptInterface public void updateMrecSlot(double left, double top,
                                                          double width, double height,
                                                          double viewportWidth, boolean visible) {
+            if (BuildConfig.DEBUG && nativeFeed146 != null) return;
             runOnUiThread(() -> updateMrecSlotNative(
                     left, top, width, height, viewportWidth, visible));
         }
