@@ -40,11 +40,18 @@ android {
         // v229: AdMost Lite has its own SDK and zones. Do not change the
         // existing live AdMob banners or send duplicate production requests.
         buildConfigField 'String', 'ADMOST_APP_ID', '"a6afba43-47e2-4e0f-8be6-36aaac312268"'
-        buildConfigField 'String', 'ADMOST_BANNER_ZONE_ID', '"' + (System.getenv('ADMOST_BANNER_ZONE_ID') ?: '') + '"'
-        buildConfigField 'String', 'ADMOST_MREC_ZONE_ID', '"' + (System.getenv('ADMOST_MREC_ZONE_ID') ?: '') + '"'
-        buildConfigField 'String', 'ADMOST_INTERSTITIAL_ZONE_ID', '"' + (System.getenv('ADMOST_INTERSTITIAL_ZONE_ID') ?: '') + '"'
-        buildConfigField 'String', 'ADMOST_REWARDED_ZONE_ID', '"' + (System.getenv('ADMOST_REWARDED_ZONE_ID') ?: '') + '"'
-        buildConfigField 'boolean', 'ADMOST_ENABLE_LIVE', 'false'
+        // Verified against Aracim Pro > 5 zones in AdMost Lite dashboard.
+        // Zone IDs are public ad-placement identifiers, not credentials.
+        // Each ID can be overridden in CI without modifying Java source.
+        buildConfigField 'String', 'ADMOST_APP_OPEN_ZONE_ID', '"' + (System.getenv('ADMOST_APP_OPEN_ZONE_ID') ?: 'e0fd3a95-a97c-4184-bdc5-faef72f1e0ea') + '"'
+        buildConfigField 'String', 'ADMOST_BANNER_ZONE_ID', '"' + (System.getenv('ADMOST_BANNER_ZONE_ID') ?: '006faa6a-a35a-45ad-8e59-b972f10a5097') + '"'
+        buildConfigField 'String', 'ADMOST_MREC_ZONE_ID', '"' + (System.getenv('ADMOST_MREC_ZONE_ID') ?: '9f247727-c626-4172-a92f-b574b46c2abb') + '"'
+        buildConfigField 'String', 'ADMOST_INTERSTITIAL_ZONE_ID', '"' + (System.getenv('ADMOST_INTERSTITIAL_ZONE_ID') ?: '9e46ae5b-bc48-4fbc-b1f1-559f2ae13f16') + '"'
+        buildConfigField 'String', 'ADMOST_REWARDED_ZONE_ID', '"' + (System.getenv('ADMOST_REWARDED_ZONE_ID') ?: '0f321e79-1722-44a9-b6ec-6f5a5b49e57') + '"'
+        // SDK initialisation may be enabled per build only after UMP vendor
+        // configuration is verified. No AdMost ad loads/shows are routed yet.
+        // Existing AdMob/Yandex/Unity placements stay authoritative.
+        buildConfigField 'boolean', 'ADMOST_ENABLE_LIVE', (System.getenv('ADMOST_ENABLE_LIVE') ?: 'false').toBoolean().toString()
         versionCode 229
         versionName '7.11.96'
     }
