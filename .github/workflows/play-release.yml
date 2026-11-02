@@ -3,7 +3,7 @@ name: Google Play Release AAB
 on:
   workflow_dispatch:
   push:
-    branches: [ aracimpro-play-quality-83, aracimpro-115-exact-engine-catalog-all-makes, aracimpro-121-release-polish-signed-aab, aracimpro-122-mrec-placement-app-open, aracimpro-124-rewarded-excel, aracimpro-125-rewarded-addvehicle, aracimpro-126-play-versioncode, aracimpro-131-play-neon-banner-release, aracimpro-133-premium-first-screen-mrec-play, aracimpro-134-smart-tools-play, aracimpro-147-second-interstitial-records, aracimpro-148-native-unit-wiring, aracimpro-149-home-native-placement, aracimpro-150-live-native-id, aracimpro-151-native-placement-diagnostics, aracimpro-153-interstitial-60s-play-aab, aracimpro-200-play-update-fix, aracimpro-201-yandex-admob-mediation, aracimpro-202-native-60s-visible-refresh, aracimpro-203-dual-ad-first-screen-layout, aracimpro-205-mrec-refresh-recovery, aracimpro-206-compact-ads-first-screen, aracimpro-220-play-versioncode-fix, aracimpro-221-mrec-banner-only, aracimpro-222-mrec-slot-fix, aracimpro-223-mrec-geometry-diagnostics, aracimpro-224-mrec-ready-handshake, aracimpro-225-lower-mrec-visible-slot, aracimpro-226-centered-mrec-layout, aracimpro-227-play-version-bump, aracimpro-228-banner-persistence-cross-device, aracimpro-229-admost-sdk-safe-integration ]
+    branches: [ aracimpro-play-quality-83, aracimpro-115-exact-engine-catalog-all-makes, aracimpro-121-release-polish-signed-aab, aracimpro-122-mrec-placement-app-open, aracimpro-124-rewarded-excel, aracimpro-125-rewarded-addvehicle, aracimpro-126-play-versioncode, aracimpro-131-play-neon-banner-release, aracimpro-133-premium-first-screen-mrec-play, aracimpro-134-smart-tools-play, aracimpro-147-second-interstitial-records, aracimpro-148-native-unit-wiring, aracimpro-149-home-native-placement, aracimpro-150-live-native-id, aracimpro-151-native-placement-diagnostics, aracimpro-153-interstitial-60s-play-aab, aracimpro-200-play-update-fix, aracimpro-201-yandex-admob-mediation, aracimpro-202-native-60s-visible-refresh, aracimpro-203-dual-ad-first-screen-layout, aracimpro-205-mrec-refresh-recovery, aracimpro-206-compact-ads-first-screen, aracimpro-220-play-versioncode-fix, aracimpro-221-mrec-banner-only, aracimpro-222-mrec-slot-fix, aracimpro-223-mrec-geometry-diagnostics, aracimpro-224-mrec-ready-handshake, aracimpro-225-lower-mrec-visible-slot, aracimpro-226-centered-mrec-layout, aracimpro-227-play-version-bump, aracimpro-228-banner-persistence-cross-device, aracimpro-229-admost-sdk-safe-integration, aracimpro-230-admost-banner-mrec-experiment ]
 
 jobs:
   build-release:
@@ -71,7 +71,7 @@ jobs:
           unzip -Z1 app/build/outputs/bundle/release/app-release.aab | grep -F 'BUNDLE-METADATA/com.android.tools.build.debugsymbols/'
       - uses: actions/upload-artifact@v4
         with:
-          name: AracimPro-v229-SIGNED-Play-AAB
+          name: AracimPro-v230-SIGNED-Play-AAB
           path: |
             app/build/outputs/bundle/release/app-release.aab
             app/build/outputs/mapping/release/mapping.txt
