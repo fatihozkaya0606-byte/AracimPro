@@ -352,8 +352,14 @@ public class MainActivity extends Activity {
             if (r - l != oldR - oldL || b - t != oldB - oldT)
                 scheduleBottomBannerLayout231();
         });
-        // Native ad removed by request. Do not create the NativeFeedController
-        // or issue native-ad requests; only the 300x250 MREC and bottom banner remain.
+        // v236: Native and 300x250 AdMob MREC are TWO separate ad positions,
+        // stacked below Titanium at the top of the main page. Both obey Premium,
+        // user consent, on-screen bounds and SDK impression/click policies.
+        nativeFeed146 = new NativeFeedController146(
+                this, root, webView, mainHandler,
+                () -> canRequestAdMobAds() && admobSdkReady,
+                () -> canRequestAdMobAds() && activityResumed143
+                        && apPremiumSplashHidden && !appOpenShowing122);
         if (Build.VERSION.SDK_INT >= 33) {
             try {
                 getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
@@ -1748,6 +1754,9 @@ private void showLaunchSplash() {
                 requestBottomBanner138();
                 createMrecAd();
             }
+            // Request Native independently without replacing or hiding MREC.
+            // Use the real existing Native ID in release; Google sample in debug.
+            if (nativeFeed146 != null) nativeFeed146.tryLoad();
             loadSingleInterstitial();
             loadRecordInterstitial147();
             loadExcelRewardedAd124();
