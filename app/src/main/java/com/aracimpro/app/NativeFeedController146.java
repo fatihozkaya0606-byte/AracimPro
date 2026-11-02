@@ -19,6 +19,7 @@ import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
+import com.google.android.gms.ads.nativead.MediaView;
 
 import java.util.function.BooleanSupplier;
 
@@ -28,10 +29,11 @@ import java.util.function.BooleanSupplier;
  *  No fake ad text or click interception. The Android view stays inside
  *  its measured HTML slot. */
 final class NativeFeedController146 {
-    private static final String GOOGLE_NATIVE_TEST_UNIT = "ca-app-pub-3940256099942544/2247696110";
+    // Use the official Google Native Video demo only on debug; live builds use the existing Native ID.
+    private static final String GOOGLE_NATIVE_TEST_UNIT = "ca-app-pub-3940256099942544/1044960115";
     private static final long REFRESH_AFTER_VISIBLE_MS = 60_000L;
-    private static final int WIDTH_DP = 260;
-    private static final int HEIGHT_DP = 102; // v206: compact horizontal NativeAdView with all registered assets
+    private static final int WIDTH_DP = 300;
+    private static final int HEIGHT_DP = 170; // v236 compact real Native video above the separate 300x250 MREC
     private final Activity activity;
     private final FrameLayout root;
     private final WebView web;
@@ -56,6 +58,7 @@ final class NativeFeedController146 {
     private boolean refreshScheduled;
     private int adLoadGeneration;
     private int refreshRequests;
+    private boolean lastCreativeHadVideo;
 
     NativeFeedController146(Activity activity, FrameLayout root, WebView web,
             Handler handler, BooleanSupplier canLoad, BooleanSupplier canShow) {
@@ -76,6 +79,7 @@ final class NativeFeedController146 {
     String getLastError() { return lastError; }
 
     int getRefreshRequestCount() { return refreshRequests; }
+    boolean lastCreativeHadVideo() { return lastCreativeHadVideo; }
 
     /** Initial load. An already loaded native ad is refreshed only by the timer below. */
     void tryLoad() { loadAd(false); }
@@ -139,7 +143,11 @@ final class NativeFeedController146 {
                         ad = newAd;
                         view = replacement;
                         loaded = true;
-                        lastError = "Native reklam yüklendi";
+                        lastCreativeHadVideo = newAd.getMediaContent() != null
+                                && newAd.getMediaContent().hasVideoContent();
+                        lastError = lastCreativeHadVideo ? "Native VIDEO yüklendi" : "Native görsel yüklendi";
+                        android.util.Log.i("AracimAdMob", "native232_media=" +
+                                (lastCreativeHadVideo ? "VIDEO" : "IMAGE") + " / test=" + BuildConfig.DEBUG);
                         retryCount = 0;
 
                         // The newly rendered creative receives its own full visible 60s.
@@ -276,100 +284,101 @@ final class NativeFeedController146 {
         return d;
     }
 
-    private NativeAdView buildView(NativeAd nativeAd) {
-        NativeAdView nv = new NativeAdView(activity);
-        nv.setBackground(rounded(0xFF092A45, 14, 0xFF23577A));
-        nv.setClipToPadding(false);
 
+    /** Compact Native ad (300x170dp), with a genuine 122x122dp MediaView.
+     *  Video and image creatives are selected by Google. The old 300x250
+     *  banner is a separate ad position below it, not a replacement. */
+    private NativeAdView buildView(NativeAd nativeAd) {
+        NativeAdView adView = new NativeAdView(activity);
+        adView.setBackground(rounded(0xFF092A45, 12, 0xFF23577A));
         LinearLayout content = new LinearLayout(activity);
         content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(dp(9), dp(4), dp(8), dp(4));
-        nv.addView(content, new FrameLayout.LayoutParams(-1, -1));
+        content.setPadding(dp(7), dp(5), dp(7), dp(5));
+        adView.addView(content, new FrameLayout.LayoutParams(-1, -1));
 
-        LinearLayout header = new LinearLayout(activity);
-        header.setOrientation(LinearLayout.HORIZONTAL);
-        header.setGravity(Gravity.CENTER_VERTICAL);
-        // Reserve the right corner for SDK-controlled AdChoices.
-        header.setPadding(0, 0, dp(42), 0);
+        LinearLayout head = new LinearLayout(activity);
+        head.setOrientation(LinearLayout.HORIZONTAL);
+        head.setGravity(Gravity.CENTER_VERTICAL);
+        head.setPadding(0, 0, dp(44), 0); // AdChoices clear area
         TextView attribution = text("Reklam", 10, Color.WHITE, true);
-        attribution.setMinHeight(dp(19));
-        attribution.setMinWidth(dp(42));
-        attribution.setPadding(dp(6), dp(2), dp(6), dp(2));
+        attribution.setPadding(dp(5), 0, dp(5), 0);
         attribution.setBackground(rounded(0xFF246D9B, 4, 0));
-        header.addView(attribution);
-
+        head.addView(attribution, new LinearLayout.LayoutParams(-2, dp(20)));
         TextView advertiser = text(nativeAd.getAdvertiser(), 10, 0xFFAACEE2, false);
-        LinearLayout.LayoutParams advParams = new LinearLayout.LayoutParams(0, dp(20), 1);
-        advParams.leftMargin = dp(6);
-        header.addView(advertiser, advParams);
+        LinearLayout.LayoutParams advertiserLp = new LinearLayout.LayoutParams(0, dp(20), 1);
+        advertiserLp.leftMargin = dp(7);
+        head.addView(advertiser, advertiserLp);
         advertiser.setVisibility(nativeAd.getAdvertiser() == null ? View.GONE : View.VISIBLE);
-        content.addView(header, new LinearLayout.LayoutParams(-1, dp(20)));
+        content.addView(head, new LinearLayout.LayoutParams(-1, dp(20)));
 
         LinearLayout row = new LinearLayout(activity);
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setOrientation(LinearLayout.HORIZONTAL);
-        LinearLayout.LayoutParams rowLp = new LinearLayout.LayoutParams(-1, dp(66));
+        LinearLayout.LayoutParams rowLp = new LinearLayout.LayoutParams(-1, dp(126));
         rowLp.topMargin = dp(3);
         content.addView(row, rowLp);
 
-        ImageView icon = new ImageView(activity);
-        icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
-        LinearLayout.LayoutParams iconLp = new LinearLayout.LayoutParams(dp(36), dp(36));
-        iconLp.rightMargin = dp(5);
-        row.addView(icon, iconLp);
-        if (nativeAd.getIcon() != null && nativeAd.getIcon().getDrawable() != null) {
-            icon.setImageDrawable(nativeAd.getIcon().getDrawable());
-        } else {
-            icon.setVisibility(View.GONE);
+        // >=120dp in BOTH dimensions: native video creatives are eligible.
+        MediaView media = new MediaView(activity);
+        media.setImageScaleType(ImageView.ScaleType.FIT_CENTER);
+        LinearLayout.LayoutParams mediaLp = new LinearLayout.LayoutParams(dp(122), dp(122));
+        mediaLp.rightMargin = dp(7);
+        row.addView(media, mediaLp);
+        adView.setMediaView(media);
+        if (nativeAd.getMediaContent() != null) {
+            media.setMediaContent(nativeAd.getMediaContent());
         }
 
-        LinearLayout copy = new LinearLayout(activity);
-        copy.setOrientation(LinearLayout.VERTICAL);
-        row.addView(copy, new LinearLayout.LayoutParams(0, -2, 1));
+        LinearLayout right = new LinearLayout(activity);
+        right.setOrientation(LinearLayout.VERTICAL);
+        right.setGravity(Gravity.CENTER_VERTICAL);
+        row.addView(right, new LinearLayout.LayoutParams(0, -1, 1));
 
-        TextView headline = text(nativeAd.getHeadline(), 13, Color.WHITE, true);
+        LinearLayout identity = new LinearLayout(activity);
+        identity.setOrientation(LinearLayout.HORIZONTAL);
+        identity.setGravity(Gravity.CENTER_VERTICAL);
+        right.addView(identity, new LinearLayout.LayoutParams(-1, -2));
+        ImageView icon = new ImageView(activity);
+        icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        LinearLayout.LayoutParams iconLp = new LinearLayout.LayoutParams(dp(26), dp(26));
+        iconLp.rightMargin = dp(4);
+        identity.addView(icon, iconLp);
+        if (nativeAd.getIcon() != null && nativeAd.getIcon().getDrawable() != null)
+            icon.setImageDrawable(nativeAd.getIcon().getDrawable());
+        else icon.setVisibility(View.GONE);
+
+        TextView headline = text(nativeAd.getHeadline(), 12, Color.WHITE, true);
         headline.setMaxLines(2);
         headline.setEllipsize(android.text.TextUtils.TruncateAt.END);
-        copy.addView(headline, new LinearLayout.LayoutParams(-1, -2));
+        identity.addView(headline, new LinearLayout.LayoutParams(0, -2, 1));
+        TextView description = text(nativeAd.getBody(), 10, 0xFFBCD1E0, false);
+        description.setMaxLines(2);
+        description.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        right.addView(description, new LinearLayout.LayoutParams(-1, -2));
+        description.setVisibility(nativeAd.getBody() == null ? View.GONE : View.VISIBLE);
 
-        TextView body = text(nativeAd.getBody(), 10, 0xFFBCD1E0, false);
-        body.setMaxLines(1);
-        body.setEllipsize(android.text.TextUtils.TruncateAt.END);
-        LinearLayout.LayoutParams bodyLp = new LinearLayout.LayoutParams(-1, -2);
-        bodyLp.topMargin = dp(2);
-        copy.addView(body, bodyLp);
-        body.setVisibility(nativeAd.getBody() == null ? View.GONE : View.VISIBLE);
-
-        // Yandex Native custom event requires registered storeView for domain asset.
         TextView store = text(nativeAd.getStore(), 9, 0xFFB5DBEC, false);
         store.setMaxLines(1);
         store.setEllipsize(android.text.TextUtils.TruncateAt.END);
-        LinearLayout.LayoutParams storeLp = new LinearLayout.LayoutParams(-1, -2);
-        storeLp.topMargin = dp(2);
-        copy.addView(store, storeLp);
+        right.addView(store, new LinearLayout.LayoutParams(-1, -2));
         store.setVisibility(nativeAd.getStore() == null ? View.GONE : View.VISIBLE);
 
-        TextView cta = text(nativeAd.getCallToAction(), 12, Color.WHITE, true);
+        TextView cta = text(nativeAd.getCallToAction(), 11, Color.WHITE, true);
         cta.setGravity(Gravity.CENTER);
-        cta.setBackground(rounded(0xFF177EBD, 9, 0));
-        cta.setMinHeight(dp(30));
-        // The CTA shares the same horizontal row so it stays fully tappable,
-        // while the native slot uses substantially less screen height.
-        LinearLayout.LayoutParams ctaLp = new LinearLayout.LayoutParams(dp(76), dp(34));
-        ctaLp.leftMargin = dp(5);
-        row.addView(cta, ctaLp);
+        cta.setBackground(rounded(0xFF177EBD, 7, 0));
+        LinearLayout.LayoutParams ctaLp = new LinearLayout.LayoutParams(-1, dp(31));
+        ctaLp.topMargin = dp(3);
+        right.addView(cta, ctaLp);
         cta.setVisibility(nativeAd.getCallToAction() == null ? View.GONE : View.VISIBLE);
 
-        nv.setHeadlineView(headline);
-        nv.setBodyView(body);
-        nv.setIconView(icon);
-        nv.setAdvertiserView(advertiser);
-        nv.setStoreView(store);
-        nv.setCallToActionView(cta);
-        // The SDK inserts its AdChoices control in the reserved top-right corner.
-        // Asset clicks/impressions are exclusively handled by Google Mobile Ads.
-        nv.setNativeAd(nativeAd);
-        return nv;
+        adView.setHeadlineView(headline);
+        adView.setBodyView(description);
+        adView.setIconView(icon);
+        adView.setAdvertiserView(advertiser);
+        adView.setStoreView(store);
+        adView.setCallToActionView(cta);
+        adView.setNativeAd(nativeAd);
+        return adView;
     }
 
     void notifyJs(boolean available) {
