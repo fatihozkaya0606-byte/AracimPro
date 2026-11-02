@@ -2064,6 +2064,23 @@ html body.r8HomeMode #app > main > .apMrecCard > #apMrecSlot {
   width:300px!important;height:250px!important;
   box-sizing:border-box!important;
 }
+<style id="ap-228-mrec-compact-small-screens">
+/* Keep the real 300x250 AdMob creative at native size. Compact only its
+   surrounding UI on shorter phones so more of the slot fits the viewport. */
+@media (max-height:760px) {
+  html body.r8HomeMode #app > main > .apTi143Pulse {
+    margin-bottom:2px!important;
+    min-height:64px!important;
+    padding:7px 10px!important;
+  }
+  html body.r8HomeMode #app > main > .apMrecCard,
+  html body.r8HomeMode.r118Skin.apMrecReady #app > main > .apMrecCard {
+    margin:2px 0 4px!important;
+    padding:3px 4px 4px!important;
+    gap:2px!important;
+  }
+}
+</style>
 </style>
 <style id="ap-mrec-v226-center-and-compact">
 /* Home order: Titanium, one real center MREC, then Garajım.
@@ -3383,7 +3400,11 @@ function apMrecMarkScrolling(){
 window.addEventListener('scroll',apMrecMarkScrolling,{passive:true,capture:true});
 window.addEventListener('touchmove',apMrecMarkScrolling,{passive:true,capture:true});
 window.addEventListener('resize',apMrecMarkScrolling);
+window.addEventListener('focus',apMrecQueueSync);
 document.addEventListener('visibilitychange',apMrecQueueSync);
+// Recheck after Android activity resumes or an overlay dismisses. This moves
+// only the existing loaded view, not an additional network ad request.
+window.addEventListener('pageshow',apMrecQueueSync);
 // v205: HTML/NATIVE sizes can change after a mediation refresh without a
 // scroll or resize event. Periodically remeasure the slot (NO ad requests).
 // The safety/visibility checks still forbid drawing over navigation controls.
@@ -5479,6 +5500,9 @@ function admobAdsDiagnosticsModal(){
   line('Banner oluşturuldu',yes(d.bannerCreated))+
   line('Banner yüklendi',yes(d.bannerLoaded))+
   line('Banner görünür',yes(d.bannerVisible))+
+  line('Banner son yükleme hatası',d.bannerLastError||'Yok')+
+  line('Banner yeniden yükleme planlandı',yes(d.bannerRetryPending))+
+  line('Play doğrulaması geçici bağlantı koruması',yes(d.billingGrace))+
   line('Orta reklam oluşturuldu',yes(d.mrecCreated))+
   line('Orta reklam yüklendi',yes(d.mrecLoaded))+
   line('Orta reklam için alan uygun',yes(d.mrecSlotVisible))+
