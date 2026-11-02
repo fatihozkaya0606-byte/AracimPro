@@ -25,12 +25,19 @@ final class AdMostBridge229 {
 
     private AdMostBridge229() {}
 
-    static boolean hasAtLeastOneZone() {
-        return !BuildConfig.ADMOST_BANNER_ZONE_ID.isEmpty()
-                || !BuildConfig.ADMOST_MREC_ZONE_ID.isEmpty()
-                || !BuildConfig.ADMOST_INTERSTITIAL_ZONE_ID.isEmpty()
-                || !BuildConfig.ADMOST_REWARDED_ZONE_ID.isEmpty();
+    static int getMappedZoneCount() {
+        int count = 0;
+        if (!BuildConfig.ADMOST_APP_OPEN_ZONE_ID.isEmpty()) count++;
+        if (!BuildConfig.ADMOST_BANNER_ZONE_ID.isEmpty()) count++;
+        if (!BuildConfig.ADMOST_MREC_ZONE_ID.isEmpty()) count++;
+        if (!BuildConfig.ADMOST_INTERSTITIAL_ZONE_ID.isEmpty()) count++;
+        if (!BuildConfig.ADMOST_REWARDED_ZONE_ID.isEmpty()) count++;
+        return count;
     }
+
+    static boolean hasAtLeastOneZone() { return getMappedZoneCount() > 0; }
+    static boolean hasAllExpectedZones() { return getMappedZoneCount() == 5; }
+    static boolean isLiveInitializationAllowed() { return BuildConfig.ADMOST_ENABLE_LIVE; }
 
     static boolean isInitialized() { return initialized; }
     static String getState() { return state; }
@@ -81,7 +88,8 @@ final class AdMostBridge229 {
                 @Override public void onInitCompleted() {
                     initialized = true;
                     updateConsent(consent, premiumActive);
-                    state = "AdMost SDK hazır (reklam bölgesi yönlendirmesi kapalı)";
+                    state = "AdMost SDK hazır (" + getMappedZoneCount()
+                            + "/5 bölge eşlendi; canlı reklam yönlendirmesi kapalı)";
                     Log.i(TAG, state);
                 }
                 @Override public void onInitFailed(int errorCode) {
