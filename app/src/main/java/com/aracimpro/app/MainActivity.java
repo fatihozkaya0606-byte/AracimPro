@@ -201,22 +201,7 @@ public class MainActivity extends Activity {
     // If it cannot fill within 18 seconds, the old MREC is used as backup.
     private NativeFeedController146 nativeFeed146;
     private boolean nativeMrecFallbackUsed234 = false;
-    private final Runnable nativeMrecFallbackTask234 = () -> {
-        if (nativeFeed146 == null || nativeFeed146.isLoaded()
-                || !canRequestAdMobAds() || !admobSdkReady
-                || adMostRoutingRequested230() || isFinishing() || isDestroyed()) return;
-        // Do not request the fallback in the background or behind the splash.
-        if (!activityResumed143 || !apPremiumSplashHidden) {
-            mainHandler.postDelayed(nativeMrecFallbackTask234, 7000L);
-            return;
-        }
-        nativeMrecFallbackUsed234 = true;
-        nativeFeed146.destroy();
-        nativeFeed146 = null;
-        logAdMob("native234_fallback", "Native was not ready; using original 300x250 MREC");
-        createMrecAd();
-        requestMrecPositionSync205();
-    };
+    private final Runnable nativeMrecFallbackTask234 = this::runNativeMrecFallback234;
     private volatile boolean mrecAdLoaded = false;
     private String mrecPlacementReason151 = "Henüz MREC isteği yapılmadı";
     // Keeps geometry diagnostics meaningful even when a settings modal
@@ -1757,6 +1742,23 @@ private void showLaunchSplash() {
         if (bottomBanner231.isLoaded())
             bannerStatus231 = visible ? "Yüklendi; ekran ölçümü kontrol ediliyor" : "Yüklendi; görünüm koşulları bekleniyor";
         updateBottomBannerGeometry231();
+    }
+
+    private void runNativeMrecFallback234() {
+        if (nativeFeed146 == null || nativeFeed146.isLoaded()
+                || !canRequestAdMobAds() || !admobSdkReady
+                || adMostRoutingRequested230() || isFinishing() || isDestroyed()) return;
+        // Do not request the fallback in the background or behind the splash.
+        if (!activityResumed143 || !apPremiumSplashHidden) {
+            mainHandler.postDelayed(nativeMrecFallbackTask234, 7000L);
+            return;
+        }
+        nativeMrecFallbackUsed234 = true;
+        nativeFeed146.destroy();
+        nativeFeed146 = null;
+        logAdMob("native234_fallback", "Native was not ready; using original 300x250 MREC");
+        createMrecAd();
+        requestMrecPositionSync205();
     }
 
     private void initAdMobBanner() {
