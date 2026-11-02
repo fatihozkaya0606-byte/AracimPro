@@ -72,8 +72,8 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix '.neonpreview'
-            versionNameSuffix '-admobpreview'
+            applicationIdSuffix '.videotest'
+            versionNameSuffix '-middle-video-v233'
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
             }
