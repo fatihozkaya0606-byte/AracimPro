@@ -2065,6 +2065,44 @@ html body.r8HomeMode #app > main > .apMrecCard > #apMrecSlot {
   box-sizing:border-box!important;
 }
 </style>
+<style id="ap-mrec-v226-center-and-compact">
+/* Home order: Titanium, one real center MREC, then Garajım.
+   The native ad is still the unscaled 300x250 SDK view. */
+html body.r8HomeMode #app > main {
+  padding-top:2px!important;
+}
+html body.r8HomeMode #app > main > .apTi143Pulse {
+  margin-top:0!important;
+  margin-bottom:4px!important;
+}
+html body.r8HomeMode #app > main > .apMrecCard,
+html body.r8HomeMode.r118Skin.apMrecReady #app > main > .apMrecCard {
+  margin:4px 0 6px!important;
+  padding:7px 8px 9px!important;
+  gap:5px!important;
+  transform:none!important;
+  display:flex;
+  align-items:center!important;
+  justify-content:center!important;
+}
+html body.r8HomeMode #app > main > .apMrecCard > .apMrecTitle {
+  width:100%;
+  padding:0 4px!important;
+}
+html body.r8HomeMode #app > main > .apMrecCard > #apMrecSlot {
+  box-sizing:border-box!important;
+  display:grid!important;
+  width:300px!important;
+  height:250px!important;
+  min-height:250px!important;
+  margin:0 auto!important;
+  flex-shrink:0!important;
+}
+html body.r8HomeMode #app > main > .welcome7104,
+html body.r8HomeMode #app > main > .ref791 {
+  margin-top:3px!important;
+}
+</style>
 </head>
 <body>
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
@@ -3138,10 +3176,19 @@ function view(){if(!activeVehicle()&&current!=='garage'&&current!=='more')return
 // Retain only the real, unscaled 300x250 AdMob MREC at the top of the home feed.
 function apNativeCardHtml146(){ return ''; }
 function apNativeMount146(){
+  // The removed Native ad must never reappear. Place the single real MREC
+  // AFTER Titanium, BEFORE the garage summary, with no overlay on controls.
   if(current!=='home')return;
   const main=document.querySelector('#app > main');
   const mrec=main&&main.querySelector('.apMrecCard');
-  if(main&&mrec&&main.firstElementChild!==mrec)main.insertBefore(mrec,main.firstElementChild);
+  const titanium=main&&main.querySelector(':scope > .apTi143Pulse');
+  if(!main||!mrec||!titanium)return;
+  // Make these the first two content cards in normal scrolling order:
+  // Titanium -> the centered MREC -> Garajım.
+  if(mrec.parentNode!==main||titanium.nextElementSibling!==mrec){
+    titanium.insertAdjacentElement('afterend',mrec);
+  }
+  if(typeof apMrecQueueSync==='function')requestAnimationFrame(apMrecQueueSync);
 }
 window.apNativeAvailability146=function(ready){
   document.body.classList.toggle('apNativeReady146',!!ready);
