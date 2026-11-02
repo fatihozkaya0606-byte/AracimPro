@@ -352,8 +352,16 @@ public class MainActivity extends Activity {
             if (r - l != oldR - oldL || b - t != oldB - oldT)
                 scheduleBottomBannerLayout231();
         });
-        // Native ad removed by request. Do not create the NativeFeedController
-        // or issue native-ad requests; only the 300x250 MREC and bottom banner remain.
+        // v232 preview only: restore Native video using Google's VIDEO demo unit.
+        // Production banner/MREC/open/interstitial ad sources are NOT changed.
+        // A release build never creates this additional preview placement.
+        if (BuildConfig.DEBUG) {
+            nativeFeed146 = new NativeFeedController146(
+                    this, root, webView, mainHandler,
+                    () -> canRequestAdMobAds() && admobSdkReady,
+                    () -> canRequestAdMobAds() && activityResumed143
+                            && apPremiumSplashHidden && !appOpenShowing122);
+        }
         if (Build.VERSION.SDK_INT >= 33) {
             try {
                 getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
@@ -1748,6 +1756,7 @@ private void showLaunchSplash() {
                 requestBottomBanner138();
                 createMrecAd();
             }
+            if (BuildConfig.DEBUG && nativeFeed146 != null) nativeFeed146.tryLoad();
             loadSingleInterstitial();
             loadRecordInterstitial147();
             loadExcelRewardedAd124();
@@ -2966,6 +2975,10 @@ private void showLaunchSplash() {
                     left, top, width, height, viewportWidth, visible));
         }
 
+        @JavascriptInterface public boolean nativeVideoTestEnabled232() {
+            return BuildConfig.DEBUG;
+        }
+
         @JavascriptInterface public void updateNativeSlot146(double left, double top,
                                                                double width, double height,
                                                                double viewportWidth, boolean visible) {
@@ -3057,6 +3070,7 @@ private void showLaunchSplash() {
                 out.put("mrecLastEligibleGeometry", mrecLastEligibleGeometry222);
                 out.put("nativeLoaded", nativeFeed146 != null && nativeFeed146.isLoaded());
                 out.put("nativeVisible", nativeFeed146 != null && nativeFeed146.isVisible());
+        out.put("nativeHasVideo232", nativeFeed146 != null && nativeFeed146.lastCreativeHadVideo());
                 out.put("nativeLastError", nativeFeed146 == null ? "Native denetleyici yok" : nativeFeed146.getLastError());
                 out.put("nativeRefreshIntervalSeconds", 60);
                 out.put("nativeRefreshRequestCount", nativeFeed146 == null ? 0 : nativeFeed146.getRefreshRequestCount());
