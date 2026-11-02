@@ -1135,6 +1135,15 @@ private void showLaunchSplash() {
                 bannerAdView.setLayoutParams(ap);
             }
         }
+        // AdMost uses the same anchored safe-area placement as the original
+        // AdMob banner; never overlap system navigation or the content area.
+        if(adMostBannerView230!=null) {
+            FrameLayout.LayoutParams ap=(FrameLayout.LayoutParams)adMostBannerView230.getLayoutParams();
+            if(ap!=null && ap.bottomMargin!=bottom+dp(6)) {
+                ap.bottomMargin=bottom+dp(6);
+                adMostBannerView230.setLayoutParams(ap);
+            }
+        }
         if(bannerBackdrop129!=null){
             FrameLayout.LayoutParams ap=(FrameLayout.LayoutParams)bannerBackdrop129.getLayoutParams();
             if(ap!=null && ap.bottomMargin!=bottom){
