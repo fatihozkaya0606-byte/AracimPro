@@ -185,6 +185,17 @@ public class MainActivity extends Activity {
     private AdView bannerAdView;
     private View bannerBackdrop129;
     private AdView mrecAdView;
+    // v230 opt-in: only these two placements may use AdMost. Existing AdMob
+    // ad views remain the per-slot fallback and default production path.
+    private AdMostPlacements230 adMostPlacements230;
+    private View adMostBannerView230;
+    private View adMostMrecView230;
+    private boolean adMostBannerFallback230 = false;
+    private boolean adMostMrecFallback230 = false;
+    private boolean adMostBannerRequested230 = false;
+    private boolean adMostMrecRequested230 = false;
+    private long adMostStartAt230 = 0L;
+    private final Runnable adMostWait230 = this::ensureAdMostPlacements230;
     // v146: isolated, policy-compliant Google NativeAd in the garage/services feed.
     private NativeFeedController146 nativeFeed146;
     private volatile boolean mrecAdLoaded = false;
@@ -1336,6 +1347,7 @@ private void showLaunchSplash() {
     private void removePremiumAds() {
         runOnUiThread(() -> {
             try {
+                destroyAdMostPlacements230();
                 if (bannerAdView != null) {
                     bannerAdView.destroy();
                     root.removeView(bannerAdView);
@@ -1570,6 +1582,17 @@ private void showLaunchSplash() {
     }
 
     private void updateAdMobBannerVisibility() {
+        if (adMostBannerView230 != null) {
+            boolean visible = canRequestAdMobAds() && apPremiumSplashHidden
+                    && activityResumed143;
+            adMostBannerView230.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
+            int height = visible ? dp(54) : 0;
+            if (bannerHeightPx != height) {
+                bannerHeightPx = height;
+                applyWebMargins(lastInsetLeft, lastInsetTop, lastInsetRight, lastInsetBottom);
+            }
+            return;
+        }
         if (bannerAdView == null || webView == null) return;
         boolean visible = admobBannerLoaded && canRequestAdMobAds() && apPremiumSplashHidden;
         bannerAdView.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
@@ -1601,9 +1624,13 @@ private void showLaunchSplash() {
             // Prioritize App Open during the brief loading splash; banner,
             // MREC, interstitial, and optional rewarded load afterward.
             loadAppOpenDuringSplash122();
-            createAdMobBanner();
-            requestBottomBanner138();
-            createMrecAd();
+            if (adMostRoutingRequested230()) {
+                ensureAdMostPlacements230();
+            } else {
+                createAdMobBanner();
+                requestBottomBanner138();
+                createMrecAd();
+            }
             loadSingleInterstitial();
             loadRecordInterstitial147();
             loadExcelRewardedAd124();
@@ -1623,6 +1650,138 @@ private void showLaunchSplash() {
             logAdMob("sdk_error", t.getClass().getSimpleName());
             mainHandler.postDelayed(this::initAdMobBanner, 60000L);
         }
+    }
+
+    // v230: disabled by default. Enable only in a controlled signed build
+    // after UMP vendor and AdMost Lite dashboard settings are verified.
+    // One SDK receives requests per slot; never issue simultaneous AdMob and
+    // AdMost loads for the same banner or MREC.
+    private boolean adMostRoutingRequested230() {
+        return !BuildConfig.DEBUG && !BuildConfig.ADMOB_TEST_MODE
+                && BuildConfig.ADMOST_ENABLE_LIVE
+                && BuildConfig.ADMOST_ROUTE_BANNER_MREC
+                && AdMostBridge229.hasAllExpectedZones();
+    }
+
+    private void ensureAdMostPlacements230() {
+        mainHandler.removeCallbacks(adMostWait230);
+        if (!adMostRoutingRequested230() || !canRequestAdMobAds()
+                || !admobSdkReady || isFinishing() || isDestroyed()) return;
+        if (adMostStartAt230 == 0L)
+            adMostStartAt230 = android.os.SystemClock.elapsedRealtime();
+        if (!AdMostBridge229.isInitialized()) {
+            if (android.os.SystemClock.elapsedRealtime() - adMostStartAt230 < 20000L) {
+                mainHandler.postDelayed(adMostWait230, 1000L);
+            } else {
+                logAdMob("admost_sdk_timeout", "AdMost SDK not initialized; fall back");
+                fallbackAdMostBanner230(-2);
+                fallbackAdMostMrec230(-2);
+            }
+            return;
+        }
+        if (adMostPlacements230 == null) {
+            adMostPlacements230 = new AdMostPlacements230(this,
+                    new AdMostPlacements230.Callbacks() {
+                @Override public void onLoaded(boolean isBanner, View adView, String network) {
+                    if (!canRequestAdMobAds() || !adMostRoutingRequested230()
+                            || isFinishing() || isDestroyed()
+                            || (isBanner ? adMostBannerFallback230 : adMostMrecFallback230)) return;
+                    try {
+                        if (adView.getParent() instanceof android.view.ViewGroup)
+                            ((android.view.ViewGroup) adView.getParent()).removeView(adView);
+                        if (isBanner) {
+                            if (adMostBannerView230 != null) return;
+                            adMostBannerView230 = adView;
+                            FrameLayout.LayoutParams p = new FrameLayout.LayoutParams(
+                                    FrameLayout.LayoutParams.WRAP_CONTENT,
+                                    FrameLayout.LayoutParams.WRAP_CONTENT,
+                                    Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
+                            p.bottomMargin = lastInsetBottom + dp(2);
+                            adView.setVisibility(View.INVISIBLE);
+                            root.addView(adView, p);
+                            logAdMob("admost_banner_loaded", "Network=" + network);
+                            updateAdMobBannerVisibility();
+                        } else {
+                            if (adMostMrecView230 != null) return;
+                            adMostMrecView230 = adView;
+                            FrameLayout.LayoutParams p = new FrameLayout.LayoutParams(
+                                    dp(300), dp(250), Gravity.TOP | Gravity.LEFT);
+                            adView.setVisibility(View.INVISIBLE);
+                            adView.setElevation(dp(12));
+                            root.addView(adView, p);
+                            mrecAdLoaded = true;
+                            mrecRetryAttempt = 0;
+                            mrecPlacementReason151 = "AdMost 300x250 hazır; görünür alan denetleniyor";
+                            logAdMob("admost_mrec_loaded", "Network=" + network);
+                            notifyMrecJs(true);
+                            requestMrecPositionSync205();
+                        }
+                    } catch (Throwable t) {
+                        logAdMob("admost_view_error", t.getClass().getSimpleName());
+                        if (isBanner) fallbackAdMostBanner230(-3);
+                        else fallbackAdMostMrec230(-3);
+                    }
+                }
+                @Override public void onFailed(boolean isBanner, int errorCode) {
+                    if (isBanner) fallbackAdMostBanner230(errorCode);
+                    else fallbackAdMostMrec230(errorCode);
+                }
+            });
+        }
+        if (!adMostBannerFallback230 && !adMostBannerRequested230) {
+            adMostBannerRequested230 = true;
+            adMostPlacements230.loadBanner();
+            mainHandler.postDelayed(() -> {
+                if (adMostBannerView230 == null) fallbackAdMostBanner230(-4);
+            }, 20000L);
+        }
+        if (!adMostMrecFallback230 && !adMostMrecRequested230) {
+            adMostMrecRequested230 = true;
+            adMostPlacements230.loadMrec();
+            mainHandler.postDelayed(() -> {
+                if (adMostMrecView230 == null) fallbackAdMostMrec230(-4);
+            }, 20000L);
+        }
+    }
+
+    private void fallbackAdMostBanner230(int code) {
+        if (adMostBannerFallback230 || adMostBannerView230 != null
+                || isFinishing() || isDestroyed()) return;
+        adMostBannerFallback230 = true;
+        if (adMostPlacements230 != null) adMostPlacements230.stopBanner();
+        logAdMob("admost_banner_fallback", "AdMob resumes; code=" + code);
+        if (canRequestAdMobAds() && admobSdkReady) {
+            createAdMobBanner();
+            requestBottomBanner138();
+        }
+    }
+
+    private void fallbackAdMostMrec230(int code) {
+        if (adMostMrecFallback230 || adMostMrecView230 != null
+                || isFinishing() || isDestroyed()) return;
+        adMostMrecFallback230 = true;
+        if (adMostPlacements230 != null) adMostPlacements230.stopMrec();
+        logAdMob("admost_mrec_fallback", "AdMob resumes; code=" + code);
+        if (canRequestAdMobAds() && admobSdkReady) createMrecAd();
+    }
+
+    private void destroyAdMostPlacements230() {
+        mainHandler.removeCallbacks(adMostWait230);
+        if (adMostPlacements230 != null) {
+            adMostPlacements230.destroy();
+            adMostPlacements230 = null;
+        }
+        if (root != null) {
+            if (adMostBannerView230 != null) root.removeView(adMostBannerView230);
+            if (adMostMrecView230 != null) root.removeView(adMostMrecView230);
+        }
+        adMostBannerView230 = null;
+        adMostMrecView230 = null;
+        adMostBannerFallback230 = false;
+        adMostMrecFallback230 = false;
+        adMostBannerRequested230 = false;
+        adMostMrecRequested230 = false;
+        adMostStartAt230 = 0L;
     }
 
     // The SDK supplies the winning network for each loaded impression.
@@ -1861,15 +2020,19 @@ private void showLaunchSplash() {
         }
     };
 
+    private View activeMrecView230() {
+        return adMostMrecView230 != null ? adMostMrecView230 : mrecAdView;
+    }
+
     private void updateMrecVisibility() {
-        if (mrecAdView == null) return;
+        View target = activeMrecView230();
+        if (target == null) return;
         boolean show = mrecSlotVisible && mrecAdLoaded && canRequestAdMobAds()
                 && apPremiumSplashHidden && !isFinishing() && !isDestroyed();
-        mrecAdView.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
+        target.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
         if (show) {
-            // Keep the actual AdMob view above the WebView only when its
-            // measured slot fits entirely inside the visible document.
-            mrecAdView.bringToFront();
+            // Both providers use the same measured 300x250 HTML slot.
+            target.bringToFront();
             mrecPlacementReason151 = "300x250 reklam ekranda gösteriliyor";
         }
     }
@@ -1878,6 +2041,7 @@ private void showLaunchSplash() {
                                       double widthCss, double heightCss,
                                       double viewportCssWidth, boolean visible) {
         if (webView == null || root == null || webView.getWidth() <= 0) return;
+        final View activeMrec = activeMrecView230();
         double pxPerCss = webView.getWidth() / viewportCssWidth;
         final int adWidthDp = 300;
         final int adHeightDp = 250;
@@ -1895,8 +2059,8 @@ private void showLaunchSplash() {
                 && leftCss >= 0 && leftCss + widthCss <= viewportCssWidth + 2
                 && topCss >= 0;
         mrecSlotVisible = false;
-        if (!valid || mrecAdView == null) {
-            mrecPlacementReason151 = mrecAdView == null ? "Orta reklam nesnesi bulunamadı" :
+        if (!valid || activeMrec == null) {
+            mrecPlacementReason151 = activeMrec == null ? "Orta reklam nesnesi bulunamadı" :
                     "HTML sinyali="+visible+"; w="+widthCss+"; h="+heightCss+
                     "; x="+leftCss+"; y="+topCss+"; vw="+viewportCssWidth+
                     "; pxPerCss="+pxPerCss;
@@ -1944,7 +2108,7 @@ private void showLaunchSplash() {
             return;
         }
         FrameLayout.LayoutParams lp =
-            (FrameLayout.LayoutParams)mrecAdView.getLayoutParams();
+            (FrameLayout.LayoutParams)activeMrec.getLayoutParams();
         if (lp == null) {
             mrecPlacementReason151 = "Android reklam yerleşimi hazırlanamadı";
             updateMrecVisibility();
@@ -1958,7 +2122,7 @@ private void showLaunchSplash() {
             lp.height = nativeHeight;
             lp.leftMargin = nativeLeft;
             lp.topMargin = nativeTop;
-            mrecAdView.setLayoutParams(lp);
+            activeMrec.setLayoutParams(lp);
         }
         mrecSlotVisible = true;
         mrecLastEligibleGeometry222 = "slot=" + widthCss + "x" + heightCss +
@@ -2760,6 +2924,11 @@ private void showLaunchSplash() {
                 out.put("admostZoneMapped", AdMostBridge229.hasAllExpectedZones());
                 out.put("admostZoneCount", AdMostBridge229.getMappedZoneCount());
                 out.put("admostLiveInitAllowed", AdMostBridge229.isLiveInitializationAllowed());
+                out.put("admostBannerMrecRouteEnabled", adMostRoutingRequested230());
+                out.put("admostBannerVisible", adMostBannerView230 != null && adMostBannerView230.getVisibility() == View.VISIBLE);
+                out.put("admostMrecVisible", adMostMrecView230 != null && adMostMrecView230.getVisibility() == View.VISIBLE);
+                out.put("admostBannerFallback", adMostBannerFallback230);
+                out.put("admostMrecFallback", adMostMrecFallback230);
                 out.put("canRequestAds", canRequestAdMobAds());
                 out.put("testMode", BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE);
                 out.put("bannerCreated", bannerAdView != null);
@@ -5385,6 +5554,7 @@ private void showLaunchSplash() {
         }
         uiTranslators.clear();
         uiTranslationModelChecks.clear();
+        destroyAdMostPlacements230();
         if(bannerAdView!=null){try{bannerAdView.destroy();}catch(Throwable ignored){} bannerAdView=null;}
         if (webView != null) webView.removeCallbacks(mrecAfterScroll);
         mainHandler.removeCallbacks(mrecRetryTask205);
