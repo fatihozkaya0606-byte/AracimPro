@@ -1988,11 +1988,17 @@ body.r8HomeMode .apLiveMini.clock em{font-style:normal;opacity:.45;margin:0 1px}
 body.apNativeReady146 .apNativeCard146{display:block}
 body.r8HomeMode #app .apNativeCard146,
 body.r8HomeMode #app .apMrecCard{width:100%;max-width:100%;clear:both}
-/* v203: compact chrome, native ad fully rendered, 300x250 unscaled */
-body.r8HomeMode #app .apNativeCard146{margin:2px 0;padding:2px 4px}
+/* v236: true Native ad above the separate existing 300x250 rectangle.
+   Compact chrome, 122x122 MediaView inside 300x170 Native ad. */
+body.r8HomeMode #app > main > .apNativeCard146{
+  margin:8px 0 7px!important;padding:3px 4px 4px!important;
+  border-radius:14px;grid-column:1/-1;min-width:0;max-width:100%;
+  display:none;align-items:center;justify-content:center;
+}
+body.r8HomeMode.apNativeReady146 #app > main > .apNativeCard146{display:flex!important;}
 body.r8HomeMode #app .apMrecCard{margin:0 0 3px;padding:3px 4px 4px;gap:2px;border-radius:14px}
-.apNativeSlot146{box-sizing:border-box;display:block;width:100%;
-  max-width:100%;height:104px;margin:0 auto;position:relative;
+.apNativeSlot146{box-sizing:border-box;display:block;width:300px;
+  max-width:100%;height:170px;margin:0 auto;position:relative;
   background:transparent;pointer-events:none}
 body:not(.dark) .apNativeCard146{background:linear-gradient(135deg,#f3f9ff,#e7f2fc);
   border-color:#bedbef}
@@ -3187,25 +3193,37 @@ function render(){
 function view(){if(!activeVehicle()&&current!=='garage'&&current!=='more')return welcome();return ({home:homeView,garage:garageView,records:recordsView,plan:planView,reports:reportsView,more:moreView}[current]||homeView)()}
 
 
-// v146: a genuine Android Google Mobile Ads NativeAdView, never a fabricated
-// HTML advertisement. The WebView only reserves its exact measured position.
-// SDK owns the creative assets, click handling, impressions and AdChoices.
-// The top Native ad and its blank card have been removed permanently.
-// Retain only the real, unscaled 300x250 AdMob MREC at the top of the home feed.
-function apNativeCardHtml146(){ return ''; }
+// v236: both real SDK placements are placed in the first home-screen feed:
+// Titanium -> Native Ad (300x170) -> original MREC banner (300x250) -> garage.
+// Never stack one ad view on top of another or draw over clickable controls.
+function apNativeCardHtml146(){
+  try{if(isPremium())return '';}catch(e){}
+  return '<section class="apNativeCard146" aria-label="Sponsorlu Native reklam">'+
+    '<div id="apNativeSlot146" class="apNativeSlot146"></div></section>';
+}
 function apNativeMount146(){
-  // The removed Native ad must never reappear. Place the single real MREC
-  // AFTER Titanium, BEFORE the garage summary, with no overlay on controls.
   if(current!=='home')return;
   const main=document.querySelector('#app > main');
   const mrec=main&&main.querySelector('.apMrecCard');
   const titanium=main&&main.querySelector(':scope > .apTi143Pulse');
   if(!main||!mrec||!titanium)return;
-  // Make these the first two content cards in normal scrolling order:
-  // Titanium -> the centered MREC -> Garajım.
+  // Keep the standard 300x250 AdMob rectangle unchanged and visible first.
   if(mrec.parentNode!==main||titanium.nextElementSibling!==mrec){
     titanium.insertAdjacentElement('afterend',mrec);
   }
+  const nativeHtml=apNativeCardHtml146();
+  if(nativeHtml){
+    let native=main.querySelector(':scope > .apNativeCard146');
+    if(!native){
+      const wrapper=document.createElement('div');
+      wrapper.innerHTML=nativeHtml;
+      native=wrapper.firstElementChild;
+    }
+    if(native&&native.nextElementSibling!==mrec){
+      mrec.insertAdjacentElement('beforebegin',native);
+    }
+  }
+  if(typeof apNativeQueueSync146==='function')requestAnimationFrame(apNativeQueueSync146);
   if(typeof apMrecQueueSync==='function')requestAnimationFrame(apMrecQueueSync);
 }
 window.apNativeAvailability146=function(ready){
@@ -3247,7 +3265,7 @@ function apNativeSync146(){
     const bottom=nav?nav.getBoundingClientRect().top:innerHeight-86;
     const visible=document.body.classList.contains('apNativeReady146') &&
       !overlayOpen && (current==='home'||current==='garage'||current==='more') &&
-      r.width>=260 && r.height>=102 &&
+      r.width>=300 && r.height>=170 &&
       r.left>=0 && r.right<=vw+2 && r.top>=90 &&
       r.bottom<=Math.min(innerHeight-72,bottom-8);
     Android.updateNativeSlot146(r.left,r.top,r.width,r.height,vw,visible);
