@@ -3190,57 +3190,27 @@ function render(){
 function view(){if(!activeVehicle()&&current!=='garage'&&current!=='more')return welcome();return ({home:homeView,garage:garageView,records:recordsView,plan:planView,reports:reportsView,more:moreView}[current]||homeView)()}
 
 
-// v146: a genuine Android Google Mobile Ads NativeAdView, never a fabricated
-// HTML advertisement. The WebView only reserves its exact measured position.
-// SDK owns the creative assets, click handling, impressions and AdChoices.
-// v232: DEBUG-ONLY test placement.  The original live MREC is kept unchanged.
-// The additional 300x250 preview uses Google's Native VIDEO sample unit,
-// and never requests live Native inventory in a production release.
-function apNativeCardHtml146(){
-  try{
-    if(typeof Android==='undefined'||!Android.nativeVideoTestEnabled232||
-       !Android.nativeVideoTestEnabled232()||isPremium())return '';
-  }catch(e){return ''}
-  return '<section class="apNativeCard146" aria-label="Videolu test reklamı">'+
-    '<div class="apNativeVideoCaption232">Videolu Native reklam testi • Google örnek reklamı</div>'+
-    '<div id="apNativeSlot146" class="apNativeSlot146"></div></section>';
-}
+// v233: one 300x250 middle slot. The extra native preview card has been
+// removed. In debug builds the Google Native Video test media is rendered over
+// the original #apMrecSlot, while production uses its unchanged MREC AdView.
+function apNativeCardHtml146(){return '';}
 function apNativeMount146(){
-  // The removed Native ad must never reappear. Place the single real MREC
-  // AFTER Titanium, BEFORE the garage summary, with no overlay on controls.
   if(current!=='home')return;
   const main=document.querySelector('#app > main');
   const mrec=main&&main.querySelector('.apMrecCard');
   const titanium=main&&main.querySelector(':scope > .apTi143Pulse');
   if(!main||!mrec||!titanium)return;
-  // Make these the first two content cards in normal scrolling order:
-  // Titanium -> the centered MREC -> Garajım.
   if(mrec.parentNode!==main||titanium.nextElementSibling!==mrec){
     titanium.insertAdjacentElement('afterend',mrec);
   }
   if(typeof apMrecQueueSync==='function')requestAnimationFrame(apMrecQueueSync);
-  // Place the video preview AFTER actual vehicle content, not directly next to
-  // the MREC. Never reserve an empty box until the SDK has loaded a creative.
-  if(!document.getElementById('apNativeSlot146')){
-    const adHtml=apNativeCardHtml146();
-    if(adHtml){
-      const holder=document.createElement('div');holder.innerHTML=adHtml;
-      const card=holder.firstElementChild;
-      const grid=main.querySelector('.ref791-grid');
-      if(grid){
-        const cards=grid.querySelectorAll(':scope > .ref791-card');
-        if(cards.length>=2)cards[1].insertAdjacentElement('afterend',card);
-        else grid.appendChild(card);
-      }else{
-        const welcome=main.querySelector('.welcome7104');
-        if(welcome)welcome.appendChild(card);
-      }
-    }
-  }
-  apNativeQueueSync146();
+  if(typeof apNativeQueueSync146==='function')requestAnimationFrame(apNativeQueueSync146);
 }
 window.apNativeAvailability146=function(ready){
   document.body.classList.toggle('apNativeReady146',!!ready);
+  // The original middle MREC card remains the ONLY 300x250 ad position.
+  // Its visibility in this debug preview follows the video's SDK load.
+  document.body.classList.toggle('apMrecReady',!!ready);
   requestAnimationFrame(()=>{
     apNativeQueueSync146();
     // Native changes the MREC slot position: never leave stale coordinates.
@@ -3263,7 +3233,7 @@ function apNativeSync146(){
   apNativeFrameQueued146=false;
   try{
     if(typeof Android==='undefined'||!Android.updateNativeSlot146)return;
-    const slot=document.getElementById('apNativeSlot146');
+    const slot=document.getElementById('apMrecSlot');
     const vw=window.innerWidth;
     if(!slot||document.hidden||Date.now()<apNativeBlockedUntil146){
       Android.updateNativeSlot146(0,0,0,0,vw,false);
