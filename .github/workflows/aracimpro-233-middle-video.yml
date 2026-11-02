@@ -1,0 +1,48 @@
+name: AracimPro v233 Video in Middle 300x250 Test APK
+
+on:
+  push:
+    branches:
+      - aracimpro-233-video-in-middle-slot
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-native-video-debug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Install Android SDK 36
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+      - name: Verify isolated Native VIDEO test config
+        run: |
+          grep -q '1044960115' app/src/main/java/com/aracimpro/app/NativeFeedController146.java
+          grep -q 'MediaView' app/src/main/java/com/aracimpro/app/NativeFeedController146.java
+          grep -q 'nativeVideoTestEnabled232' app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q "const slot=document.getElementById('apMrecSlot')" app/src/main/assets/index.html
+          ! grep -q 'id="apNativeSlot146"' app/src/main/assets/index.html
+          grep -q 'BuildConfig.DEBUG' app/src/main/java/com/aracimpro/app/MainActivity.java
+      - name: Build independent debug APK with official Google sample creatives
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
+          LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
+        run: gradle --no-daemon --stacktrace assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AracimPro-v233-Middle-Video-Debug-APK
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
