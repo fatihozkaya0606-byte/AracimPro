@@ -72,8 +72,8 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix '.neonpreview'
-            versionNameSuffix '-admobpreview'
+            applicationIdSuffix '.native236test'
+            versionNameSuffix '-native-mrec-banner-test'
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
             }
