@@ -2126,7 +2126,7 @@ html body.r8HomeMode #app > main > .ref791 {
 <div id="app" class="app"></div><div id="modalRoot"></div><div id="lockRoot"></div>
 <script>
 const KEY='aracim_pro_v1';
-const V='7.11.70';
+const V='7.11.98';
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const today=()=>new Date().toISOString().slice(0,10);const money=n=>new Intl.NumberFormat(apLocale(),{style:'currency',currency:apCurrency(),maximumFractionDigits:2}).format(Number(n)||0);const num=n=>(Number(n)||0).toLocaleString(apLocale());
 const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
@@ -5489,9 +5489,11 @@ function admobAdsDiagnosticsModal(){
   try{d=JSON.parse(Android.admobAdsDiagnostics()||'{}')}catch(e){toast('Reklam tanılaması açılamadı');return}
   const yes=x=>x?'Evet':'Hayır';
   const time=d.lastEventTime?new Date(d.lastEventTime).toLocaleString(apLocale()):'Henüz yok';
-  const line=(key,value)=>'<div style="padding:7px 0;border-bottom:1px solid rgba(127,127,127,.15)"><b>'+esc(key)+':</b> '+esc(String(value))+'</div>';
-  modal('AdMob Reklam Kontrolü',`<div class="form"><div class="notice">Bu sürüm gerçek AdMob banner ve 300×250 orta reklam birimlerini kullanır. Kartın görünmesi reklamın gösterildiği anlamına gelmez. Orta reklam yüklü ancak görünür değilse reklam alanını ekrana kaydırın. Reklam bulunamazsa alan gizlenir.</div><div class="card">`+
+  const line=(key,value)=>'<div style="padding:7px 0;border-bottom:1px solid rgba(127,127,127,.15);overflow-wrap:anywhere"><b>'+esc(key)+':</b> '+esc(String(value))+'</div>';
+  const modeNotice=d.testMode?'Bu APK Google örnek reklamlarını kullanır; gerçek reklam doluluğunu doğrulamaz.':'Bu sürüm gerçek AdMob reklam birimlerini kullanır. Alt banner ve orta reklam ayrı ayrı reklam alır.';
+  modal('AdMob Reklam Kontrolü',`<div class="form"><div class="notice">${esc(modeNotice)} Reklam gelmemesi ile yüklü reklamın ekran dışında kalması farklı durumlardır. Aşağıdaki alt banner durumu ve hata kaydı bu ayrımı gösterir.</div><div class="card">`+
   line('Uygulama sürümü',d.version||'?')+
+  line('Telefon / Android',d.device||'?')+
   line('Reklam izni',yes(d.consent))+
   line('Premium doğrulaması',yes(d.premiumBillingReady))+
   line('Premium aktif',yes(d.premiumActive))+
@@ -5510,7 +5512,15 @@ function admobAdsDiagnosticsModal(){
   line('Test modu',yes(d.testMode))+
   line('Banner oluşturuldu',yes(d.bannerCreated))+
   line('Banner yüklendi',yes(d.bannerLoaded))+
-  line('Banner görünür',yes(d.bannerVisible))+
+  line('Banner görünüm izni açık',yes(d.bannerVisible))+
+  line('Banner ekran sınırları içinde',yes(d.bannerOnScreen))+
+  line('Alt banner durumu',d.bannerStatus||'Henüz yok')+
+  line('Banner yanıtı bekleniyor',yes(d.bannerLoading))+
+  line('İstek bekleme süresi',(d.bannerLoadAgeSeconds||0)+' saniye')+
+  line('Yeniden denemeye kalan',(d.bannerRetrySeconds||0)+' saniye')+
+  line('Banner ölçüleri',d.bannerGeometry||'Henüz ölçülmedi')+
+  line('Son banner kaynağı',d.bannerSource||'Henüz yok')+
+  line('Son banner gösterimi',d.bannerLastImpressionTime?new Date(d.bannerLastImpressionTime).toLocaleString(apLocale()):'Henüz yok')+
   line('Banner son yükleme hatası',d.bannerLastError||'Yok')+
   line('Banner yeniden yükleme planlandı',yes(d.bannerRetryPending))+
   line('Play doğrulaması geçici bağlantı koruması',yes(d.billingGrace))+

@@ -55,8 +55,8 @@ android {
         // Both explicit gates default OFF. Enable only for signed internal tests
         // after AdMost/AdMob UMP vendor settings are independently verified.
         buildConfigField 'boolean', 'ADMOST_ROUTE_BANNER_MREC', (System.getenv('ADMOST_ROUTE_BANNER_MREC') ?: 'false').toBoolean().toString()
-        versionCode 230
-        versionName '7.11.97'
+        versionCode 231
+        versionName '7.11.98'
     }
 
     signingConfigs {
