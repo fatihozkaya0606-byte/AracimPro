@@ -28,6 +28,12 @@
 -dontwarn com.startapp.**
 -dontwarn org.jetbrains.annotations.**
 
+# ironSource Ads mediation (release builds use R8 minification).
+# Keep the SDK's reflection-dependent classes and OMID measurement classes.
+-keep class com.ironsource.** { *; }
+-keep class com.iab.omid.** { *; }
+-dontwarn com.ironsource.**
+
 # Yandex AdMob custom event adapters are instantiated by class name via mediation.
 -keep class com.admob.mobileads.YandexBanner { *; }
 -keep class com.admob.mobileads.YandexInterstitial { *; }

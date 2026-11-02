@@ -113,6 +113,10 @@ dependencies {
     // Do not request duplicate third-party ads directly from this application.
     implementation 'com.unity3d.ads:unity-ads:4.21.0'
     implementation 'com.google.ads.mediation:unity:4.21.0.0'
+    // ironSource Ads mediated by AdMob. Existing AdMob ad units and ad-loading
+    // logic stay unchanged; activate demand only after ironSource account approval
+    // and mediation mapping in AdMob. Compatible with GMA SDK 25.5.0.
+    implementation 'com.google.ads.mediation:ironsource:9.7.0.0'
     // Mintegral: official Google mediation adapter supports App Open, Banner,
     // MREC, Interstitial and Rewarded; 17.1.81.1 supports GMA 25.5.0.
     implementation 'com.google.ads.mediation:mintegral:17.1.81.1'
