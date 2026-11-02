@@ -205,6 +205,11 @@ public class MainActivity extends Activity {
         if (nativeFeed146 == null || nativeFeed146.isLoaded()
                 || !canRequestAdMobAds() || !admobSdkReady
                 || adMostRoutingRequested230() || isFinishing() || isDestroyed()) return;
+        // Do not request the fallback in the background or behind the splash.
+        if (!activityResumed143 || !apPremiumSplashHidden) {
+            mainHandler.postDelayed(nativeMrecFallbackTask234, 7000L);
+            return;
+        }
         nativeMrecFallbackUsed234 = true;
         nativeFeed146.destroy();
         nativeFeed146 = null;
