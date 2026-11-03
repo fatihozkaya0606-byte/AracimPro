@@ -82,7 +82,16 @@ jobs:
           FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
           LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
-        run: gradle --no-daemon bundleRelease assembleDebug
+        run: gradle --no-daemon --max-workers=2 bundleRelease
+      - name: Build separate side-by-side test APK
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
+          LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
+        run: gradle --no-daemon --max-workers=2 assembleDebug
       - name: Verify signed bundle, mapping and native symbols exist
         run: |
           test -s app/build/outputs/bundle/release/app-release.aab
