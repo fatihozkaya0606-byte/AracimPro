@@ -41,6 +41,7 @@ jobs:
         run: |
           grep -q 'MAX_APP_OPEN_SPLASH_HOLD_MS243' app/src/main/java/com/aracimpro/app/MainActivity.java
           grep -q 'startAdsWhenPageReady249' app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q 'BuildConfig.DEBUG || premiumBillingReady || billingReconnectGrace228' app/src/main/java/com/aracimpro/app/MainActivity.java
           grep -q 'BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE' app/src/main/java/com/aracimpro/app/MainActivity.java
           grep -q 'ca-app-pub-3940256099942544/9257395921' app/src/main/java/com/aracimpro/app/MainActivity.java
           grep -q 'splashWatchdog243' app/src/main/java/com/aracimpro/app/MainActivity.java
