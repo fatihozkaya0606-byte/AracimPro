@@ -188,6 +188,10 @@ public class MainActivity extends Activity {
 
     private WebView webView;
     private AdView bannerAdView;
+    private BannerAdRequest bottomBannerRequest242;
+    private AdLoadCallback<BannerAd> bottomBannerCallback242;
+    private BannerAdRequest mrecRequest242;
+    private AdLoadCallback<BannerAd> mrecCallback242;
     private View bannerBackdrop129;
     private AdView mrecAdView;
     // v230 opt-in: only these two placements may use AdMost. Existing AdMob
@@ -1623,7 +1627,8 @@ private void showLaunchSplash() {
         try {
             logAdMob("banner_request", (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
                     ? "Google test adaptive banner" : "Live adaptive banner: " + bannerWidthDp231 + "dp");
-            bannerAdView.loadAd(new AdRequest.Builder().build());
+            if (bottomBannerRequest242 != null && bottomBannerCallback242 != null)
+                bannerAdView.loadAd(bottomBannerRequest242, bottomBannerCallback242);
         } catch (Throwable t) {
             scheduleBottomBannerFailure231("İstek başlatılamadı: " + t.getClass().getSimpleName());
             if (!bottomBanner231.isLoaded()) destroyBottomBanner231(false);
@@ -1704,6 +1709,8 @@ private void showLaunchSplash() {
         mainHandler.removeCallbacks(bannerTimeoutTask231);
         AdView oldBanner = bannerAdView;
         bannerAdView = null; // Invalidate callbacks before destroying the SDK view.
+        bottomBannerRequest242 = null;
+        bottomBannerCallback242 = null;
         if (oldBanner != null) {
             try { root.removeView(oldBanner); oldBanner.destroy(); } catch (Throwable ignored) {}
         }
@@ -1743,7 +1750,8 @@ private void showLaunchSplash() {
         if (bannerBackdrop129 != null)
             bannerBackdrop129.setVisibility(visible ? View.VISIBLE : View.GONE);
         // Adaptive banner creative height varies across phone sizes.
-        AdSize bannerSize = bannerAdView.getAdSize();
+        AdSize bannerSize = bannerAdView.getBannerAd() == null
+                ? null : bannerAdView.getBannerAd().getAdSize();
         int creativeHeight = bannerSize == null ? dp(50) : bannerSize.getHeightInPixels(this);
         int surfaceHeight = BottomBannerPolicy.reservedHeightPx(Math.max(dp(50), creativeHeight), dp(6));
         int height = visible ? surfaceHeight : 0;
@@ -1976,19 +1984,19 @@ private void showLaunchSplash() {
         }
         try {
             final AdSize size = AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, availableDp);
-            if (AdSize.INVALID.equals(size) || size.getHeightInPixels(this) <= 0) {
+            if (size.getHeightInPixels(this) <= 0) {
                 scheduleBottomBannerFailure231("Bu pencere için geçerli banner boyutu hesaplanamadı: " + availableDp + "dp");
                 return;
             }
             final AdView banner = new AdView(this);
             bannerAdView = banner;
             bannerWidthDp231 = availableDp;
-            banner.setAdSize(size);
-            banner.setAdUnitId((BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
+            String bannerUnit242 = (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
                 ? "ca-app-pub-3940256099942544/9214589741"
-                : "ca-app-pub-7205009121067400/9497290996");
-            banner.setAdListener(new AdListener() {
-                @Override public void onAdLoaded() {
+                : "ca-app-pub-7205009121067400/9497290996";
+            bottomBannerRequest242 = new BannerAdRequest.Builder(bannerUnit242, size).build();
+            bottomBannerCallback242 = new AdLoadCallback<BannerAd>() {
+                @Override public void onAdLoaded(BannerAd loadedAd) {
                     if (bannerAdView != banner || !canRequestAdMobAds()) return;
                     bottomBanner231.adLoaded();
                     mainHandler.removeCallbacks(bannerTimeoutTask231);
@@ -1996,7 +2004,15 @@ private void showLaunchSplash() {
                     getSharedPreferences("aracim_admob_diagnostics", MODE_PRIVATE).edit()
                             .putString("bannerLastError", "").apply();
                     logAdMob("banner_loaded", "Banner loaded through AdMob mediation");
-                    recordAdSource123("banner", banner.getResponseInfo());
+                    recordAdSource123("banner", loadedAd.getResponseInfo());
+                    loadedAd.setAdEventCallback(new BannerAdEventCallback() {
+                        @Override public void onAdImpression() {
+                            if (bannerAdView != banner) return;
+                            logAdMob("banner_impression", "AdMob banner impression");
+                            getSharedPreferences("aracim_admob_diagnostics", MODE_PRIVATE).edit()
+                                    .putLong("bannerLastImpressionTime", System.currentTimeMillis()).apply();
+                        }
+                    });
                     updateAdMobBannerVisibility();
                     banner.post(MainActivity.this::updateBottomBannerGeometry231);
                 }
@@ -2005,13 +2021,7 @@ private void showLaunchSplash() {
                     scheduleBottomBannerFailure231(error == null ? "Unknown" : error.toString());
                     updateAdMobBannerVisibility();
                 }
-                @Override public void onAdImpression() {
-                    if (bannerAdView != banner) return;
-                    logAdMob("banner_impression", "AdMob banner impression");
-                    getSharedPreferences("aracim_admob_diagnostics", MODE_PRIVATE).edit()
-                            .putLong("bannerLastImpressionTime", System.currentTimeMillis()).apply();
-                }
-            });
+            };
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                     size.getWidthInPixels(this), size.getHeightInPixels(this),
                     Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
@@ -2074,19 +2084,24 @@ private void showLaunchSplash() {
         if (!canRequestAdMobAds() || mrecAdView != null || root == null) return;
         try {
             final AdView ad = new AdView(this);
-            ad.setAdSize(AdSize.MEDIUM_RECTANGLE); // V132 real 300x250 in-feed rectangle
-            ad.setAdUnitId((BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
+            String mrecUnit242 = (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
                 ? "ca-app-pub-3940256099942544/6300978111"
-                : "ca-app-pub-7205009121067400/3129664519");
-            ad.setAdListener(new AdListener() {
-                @Override public void onAdLoaded() {
+                : "ca-app-pub-7205009121067400/3129664519";
+            mrecRequest242 = new BannerAdRequest.Builder(mrecUnit242, AdSize.MEDIUM_RECTANGLE).build();
+            mrecCallback242 = new AdLoadCallback<BannerAd>() {
+                @Override public void onAdLoaded(BannerAd loadedAd) {
                     if (ad != mrecAdView || !canRequestAdMobAds()) return;
                     mrecAdLoaded = true;
                     mrecPlacementReason151 = "Reklam yüklendi, görünür slot ölçümü bekleniyor";
                     mrecRetryAttempt = 0;
                     mainHandler.removeCallbacks(mrecRetryTask205);
                     logAdMob("mrec_loaded", "300x250 in-feed rectangle loaded through AdMob mediation");
-                    recordAdSource123("mrec", ad.getResponseInfo());
+                    recordAdSource123("mrec", loadedAd.getResponseInfo());
+                    loadedAd.setAdEventCallback(new BannerAdEventCallback() {
+                        @Override public void onAdImpression() {
+                            logAdMob("mrec_impression", "300x250 in-feed rectangle impression");
+                        }
+                    });
                     getSharedPreferences("aracim_admob_diagnostics", MODE_PRIVATE).edit()
                             .putString("mrecLastError", "").apply();
                     notifyMrecJs(true);
@@ -2122,10 +2137,7 @@ private void showLaunchSplash() {
                     final long delay = Math.max(30000L, adRetryDelay(mrecRetryAttempt++));
                     mainHandler.postDelayed(mrecRetryTask205, delay);
                 }
-                @Override public void onAdImpression() {
-                    logAdMob("mrec_impression", "300x250 in-feed rectangle impression");
-                }
-            });
+            };
             // Never mix 50dp creative with a 250dp container or vice versa.
             // Native view and HTML placeholder are exactly 300x250.
             FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
@@ -2139,7 +2151,7 @@ private void showLaunchSplash() {
             mrecAdLoaded = false;
             logAdMob("mrec_request", (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE)
                     ? "Google test 300x250 MREC" : "Live 300x250 MREC");
-            ad.loadAd(new AdRequest.Builder().build());
+            ad.loadAd(mrecRequest242, mrecCallback242);
         } catch (Throwable t) {
             logAdMob("mrec_error", t.getClass().getSimpleName());
             try {
@@ -2174,7 +2186,8 @@ private void showLaunchSplash() {
             return;
         }
         try {
-            mrecAdView.loadAd(new AdRequest.Builder().build());
+            if (mrecRequest242 != null && mrecCallback242 != null)
+                mrecAdView.loadAd(mrecRequest242, mrecCallback242);
         } catch (Throwable t) {
             logAdMob("mrec_retry_exception", t.getClass().getSimpleName());
             mainHandler.postDelayed(mrecRetryTask205, 60000L);
@@ -2746,7 +2759,7 @@ private void showLaunchSplash() {
         updateAdMobBannerVisibility();
         backgroundedAt143 = android.os.SystemClock.elapsedRealtime();
         if (bannerAdView != null) {
-            try { bannerAdView.pause(); } catch (Throwable ignored) {}
+            // Next-Gen AdView has no pause(); lifecycle-driven visibility is handled above.
         }
         mrecSlotVisible = false;
         updateMrecVisibility();
@@ -2795,7 +2808,7 @@ private void showLaunchSplash() {
         if (canRequestAdMobAds()) {
             initAdMobBanner();
             if (bannerAdView != null) {
-                try { bannerAdView.resume(); } catch (Throwable ignored) {}
+                // Next-Gen AdView has no resume(); loading resumes through requestBottomBanner138.
             }
             requestBottomBanner138();
             updateAdMobBannerVisibility();
