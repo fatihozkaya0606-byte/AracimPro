@@ -39,9 +39,17 @@ final class BottomBannerPolicy {
 
     long requestFailed(long now) {
         loading = false;
-        retryPending = true;
         startedAt = -1L;
-        long delay = Math.max(loaded ? 60_000L : 30_000L,
+        if (loaded) {
+            // An automatic SDK refresh failed after a successful impression.
+            // Do not schedule a competing application-driven loadAd call.
+            retryPending = false;
+            nextTryAt = 0L;
+            failures = 0;
+            return 0L;
+        }
+        retryPending = true;
+        long delay = Math.max(30_000L,
                 RETRY_DELAYS_MS[Math.min(failures, RETRY_DELAYS_MS.length - 1)]);
         failures = Math.min(failures + 1, RETRY_DELAYS_MS.length);
         nextTryAt = now + delay;
