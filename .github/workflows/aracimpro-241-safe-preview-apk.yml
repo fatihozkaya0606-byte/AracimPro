@@ -1,0 +1,81 @@
+name: Aracim Pro v241 safe full-app preview APK (TEST ONLY)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ aracimpro-241-gma-nextgen-compatibility-test ]
+    paths: [ '.github/workflows/aracimpro-241-safe-preview-apk.yml' ]
+
+jobs:
+  build-safe-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Install Android SDK and NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" "ndk;27.2.12479018"
+      - name: Verify current banner safety and cutout fixes
+        run: |
+          bash tools/test-bottom-banner.sh
+          grep -q 'LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS' app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q 'android:windowLayoutInDisplayCutoutMode' app/src/main/res/values-v30/styles.xml
+          grep -q 'play-services-ads:25.5.0' app/build.gradle
+          grep -q "applicationIdSuffix '.neonpreview'" app/build.gradle
+          echo "Safe full-app preview uses existing Google SDK with sample test units."
+      - name: Restore existing signing key for consistently updatable preview
+        env:
+          PLAY_UPLOAD_KEYSTORE_B64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_B64 }}
+          STORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+        run: |
+          if [ -n "$PLAY_UPLOAD_KEYSTORE_B64" ]; then
+            echo "$PLAY_UPLOAD_KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/upload-key.jks"
+            cat > keystore.properties <<EOF2
+          storeFile=$RUNNER_TEMP/upload-key.jks
+          storePassword=$STORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF2
+          else
+            echo "No upload signing key; Gradle default debug key will be used."
+          fi
+      - name: Build real Aracim Pro test APK, installed alongside Play app
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
+          LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
+        run: gradle --no-daemon --max-workers=2 :app:assembleDebug
+      - name: Verify preview package and change artifact filename
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -s "$APK"
+          jar tf "$APK" | grep -q 'classes.dex'
+          mkdir -p out
+          cp "$APK" out/AracimPro-v241-TEST-APK.apk
+          sha256sum out/AracimPro-v241-TEST-APK.apk > out/checksum.sha256
+          echo "TEST APK ONLY — does NOT use Next-Gen SDK yet" > out/README-TEST.txt
+          echo "Installed alongside Play app with .neonpreview package suffix." >> out/README-TEST.txt
+          echo "Google's sample AdMob units are used in debug mode. No real ad revenue." >> out/README-TEST.txt
+          echo "Android screen layout / R8 source fixes under examination; Play warning 2 not yet resolved." >> out/README-TEST.txt
+          echo "This is not approved or uploaded to Google Play." >> out/README-TEST.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AracimPro-v241-SAFE-TEST-APK-PLAY-UNCHANGED
+          path: out/
+          if-no-files-found: error
+          retention-days: 30
