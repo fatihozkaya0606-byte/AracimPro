@@ -32,3 +32,5 @@ dependencyResolutionManagement {
 }
 rootProject.name = 'AracimPro'
 include ':app'
+// Isolated Next-Gen SDK migration smoke-test library. Production app does not depend on it.
+include ':nextgen-ads'
