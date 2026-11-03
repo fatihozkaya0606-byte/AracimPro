@@ -198,6 +198,9 @@ public class MainActivity extends Activity {
     private final Runnable adMostWait230 = this::ensureAdMostPlacements230;
     // v146: isolated, policy-compliant Google NativeAd in the garage/services feed.
     private NativeFeedController146 nativeFeed146;
+    // v237: Native video takes the existing middle 300x250 slot when available.
+    // Static Native creatives never replace the regular MREC fallback.
+    private MiddleVideoNative237 middleVideo237;
     private volatile boolean mrecAdLoaded = false;
     private String mrecPlacementReason151 = "Henüz MREC isteği yapılmadı";
     // Keeps geometry diagnostics meaningful even when a settings modal
@@ -360,6 +363,9 @@ public class MainActivity extends Activity {
                 () -> canRequestAdMobAds() && admobSdkReady,
                 () -> canRequestAdMobAds() && activityResumed143
                         && apPremiumSplashHidden && !appOpenShowing122);
+        middleVideo237 = new MiddleVideoNative237(
+                this, root, mainHandler,
+                () -> canRequestAdMobAds() && admobSdkReady);
         if (Build.VERSION.SDK_INT >= 33) {
             try {
                 getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
@@ -1378,6 +1384,7 @@ private void showLaunchSplash() {
                     root.removeView(mrecAdView);
                     mrecAdView = null;
                 }
+                if (middleVideo237 != null) middleVideo237.clear();
                 mrecAdLoaded = false;
                 mrecSlotVisible = false;
                 notifyMrecJs(false);
@@ -1752,7 +1759,7 @@ private void showLaunchSplash() {
             } else {
                 createAdMobBanner();
                 requestBottomBanner138();
-                createMrecAd();
+                requestMiddleVideoFirst237();
             }
             // Request Native independently without replacing or hiding MREC.
             // Use the real existing Native ID in release; Google sample in debug.
@@ -2004,6 +2011,30 @@ private void showLaunchSplash() {
         }
     }
 
+    // The middle Native player uses the Google SDK MediaView (not a custom
+    // video overlay). Only real video content may take over the 300x250 slot.
+    // If the request is static, fails or times out, the original MREC is loaded.
+    private void requestMiddleVideoFirst237() {
+        if (!canRequestAdMobAds() || !admobSdkReady || middleVideo237 == null
+                || mrecAdView != null || adMostRoutingRequested230()) return;
+        middleVideo237.request(
+                () -> {
+                    mrecAdLoaded = true;
+                    mrecRetryAttempt = 0;
+                    mrecPlacementReason151 = "Orta alanda SDK Native video hazır";
+                    getSharedPreferences("aracim_admob_diagnostics", MODE_PRIVATE)
+                            .edit().putString("mrecSource", middleVideo237.getAdapterName()).apply();
+                    logAdMob("middle_video237_loaded", middleVideo237.getLastStatus());
+                    notifyMrecJs(true);
+                    updateMrecVisibility();
+                    requestMrecPositionSync205();
+                },
+                () -> {
+                    logAdMob("middle_video237_fallback", middleVideo237.getLastStatus());
+                    createMrecAd();
+                });
+    }
+
     // Native 300×250 AdMob medium rectangle anchored to a dedicated WebView
     // placeholder. This is a real AdView, not a fake web ad or an overlay
     // obstructing interface controls. Premium and UMP rules also apply.
@@ -2129,7 +2160,10 @@ private void showLaunchSplash() {
     };
 
     private View activeMrecView230() {
-        return adMostMrecView230 != null ? adMostMrecView230 : mrecAdView;
+        if (adMostMrecView230 != null) return adMostMrecView230;
+        if (middleVideo237 != null && middleVideo237.isLoaded())
+            return middleVideo237.getView();
+        return mrecAdView;
     }
 
     private void updateMrecVisibility() {
@@ -3057,10 +3091,12 @@ private void showLaunchSplash() {
                 out.put("billingGrace", billingReconnectGrace228);
                 out.put("splashHidden", apPremiumSplashHidden);
                 out.put("bannerVisible", bannerAdView != null && bannerAdView.getVisibility() == View.VISIBLE);
-                out.put("mrecCreated", mrecAdView != null);
+                out.put("mrecCreated", activeMrecView230() != null);
+                out.put("middleVideo237Loaded", middleVideo237 != null && middleVideo237.isLoaded());
+                out.put("middleVideo237Status", middleVideo237 == null ? "Denetleyici yok" : middleVideo237.getLastStatus());
                 out.put("mrecLoaded", mrecAdLoaded);
                 out.put("mrecSlotVisible", mrecSlotVisible);
-                out.put("mrecVisible", mrecAdView != null && mrecAdView.getVisibility() == View.VISIBLE);
+                out.put("mrecVisible", activeMrecView230() != null && activeMrecView230().getVisibility() == View.VISIBLE);
                 out.put("mrecLastError", log.getString("mrecLastError", ""));
                 out.put("mrecPlacementReason", mrecPlacementReason151);
                 out.put("mrecLastEligibleGeometry", mrecLastEligibleGeometry222);
@@ -5680,6 +5716,7 @@ private void showLaunchSplash() {
         mainHandler.removeCallbacks(billingGraceExpiry228);
         if(mrecAdView!=null){try{mrecAdView.destroy();}catch(Throwable ignored){} mrecAdView=null;}
         if (nativeFeed146 != null) { nativeFeed146.destroy(); nativeFeed146 = null; }
+        if (middleVideo237 != null) { middleVideo237.destroy(); middleVideo237 = null; }
         stopSpeedTrackingNative();
         try { if (locationManager != null && map120LocationListener != null) locationManager.removeUpdates(map120LocationListener); } catch (Throwable ignored) {}
         map120LocationListener = null;
