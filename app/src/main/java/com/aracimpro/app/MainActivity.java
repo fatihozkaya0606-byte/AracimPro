@@ -83,19 +83,24 @@ import com.android.billingclient.api.QueryPurchasesParams;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.FullScreenContentCallback;
-import com.google.android.gms.ads.rewarded.RewardedAd;
-import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
-import com.google.android.gms.ads.appopen.AppOpenAd;
-import com.google.android.gms.ads.interstitial.InterstitialAd;
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
+import com.google.android.libraries.ads.mobile.sdk.MobileAds;
+import com.google.android.libraries.ads.mobile.sdk.initialization.InitializationConfig;
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest;
+import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback;
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError;
+import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError;
+import com.google.android.libraries.ads.mobile.sdk.common.ResponseInfo;
+import com.google.android.libraries.ads.mobile.sdk.banner.AdSize;
+import com.google.android.libraries.ads.mobile.sdk.banner.AdView;
+import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd;
+import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdRequest;
+import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdEventCallback;
+import com.google.android.libraries.ads.mobile.sdk.appopen.AppOpenAd;
+import com.google.android.libraries.ads.mobile.sdk.appopen.AppOpenAdEventCallback;
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd;
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAdEventCallback;
+import com.google.android.libraries.ads.mobile.sdk.rewarded.RewardedAd;
+import com.google.android.libraries.ads.mobile.sdk.rewarded.RewardedAdEventCallback;
 import com.google.android.ump.ConsentInformation;
 import com.google.android.ump.ConsentRequestParameters;
 import com.google.android.ump.UserMessagingPlatform;
@@ -544,8 +549,9 @@ public class MainActivity extends Activity {
             return;
         }
         logAdMob("test_interstitial_requested", "Google official sample unit");
-        InterstitialAd.load(this, "ca-app-pub-3940256099942544/1033173712",
-                new AdRequest.Builder().build(), new InterstitialAdLoadCallback() {
+        InterstitialAd.load(
+                new AdRequest.Builder("ca-app-pub-3940256099942544/1033173712").build(),
+                new AdLoadCallback<InterstitialAd>() {
                     @Override public void onAdLoaded(InterstitialAd ad) {
                         logAdMob("test_interstitial_loaded", "Sample interstitial shown");
                         ad.show(MainActivity.this);
@@ -1784,11 +1790,26 @@ private void showLaunchSplash() {
         admobSdkInitialized = true;
         logAdMob("sdk_initializing", "Google Mobile Ads SDK initializing");
         try {
-            MobileAds.initialize(this, status -> runOnUiThread(() -> {
-                admobSdkReady = true;
-                logAdMob("sdk_ready", "Google Mobile Ads initialized");
-                if (canRequestAdMobAds()) initAdMobBanner();
-            }));
+            // Next-Gen SDK must initialize off main thread. UMP consent is
+            // obtained before this path and mediation adapters initialize here.
+            new Thread(() -> {
+                try {
+                    MobileAds.initialize(getApplicationContext(),
+                            new InitializationConfig.Builder(
+                                    "ca-app-pub-7205009121067400~4069879501").build(),
+                            status -> runOnUiThread(() -> {
+                                admobSdkReady = true;
+                                logAdMob("sdk_ready", "Next-Gen Ads and mediation initialized");
+                                if (canRequestAdMobAds()) initAdMobBanner();
+                            }));
+                } catch (Throwable error) {
+                    runOnUiThread(() -> {
+                        admobSdkInitialized = false;
+                        logAdMob("sdk_error", error.getClass().getSimpleName());
+                        mainHandler.postDelayed(this::initAdMobBanner, 60000L);
+                    });
+                }
+            }, "aracim-nextgen-init").start();
         } catch (Throwable t) {
             admobSdkInitialized = false;
             logAdMob("sdk_error", t.getClass().getSimpleName());
@@ -1930,7 +1951,7 @@ private void showLaunchSplash() {
 
     // The SDK supplies the winning network for each loaded impression.
     // Store only the adapter class name (not ad content or user data) for troubleshooting.
-    private void recordAdSource123(String slot, com.google.android.gms.ads.ResponseInfo info) {
+    private void recordAdSource123(String slot, ResponseInfo info) {
         try {
             String adapter = info == null ? "unknown" : info.getMediationAdapterClassName();
             if (adapter == null || adapter.trim().isEmpty()) adapter = "unknown";
@@ -2305,8 +2326,8 @@ private void showLaunchSplash() {
         appOpenLoading122 = true;
         appOpenAttemptFinished141 = false;
         logAdMob("app_open_request", "Loading App Open");
-        AppOpenAd.load(this, unit, new AdRequest.Builder().build(),
-            new AppOpenAd.AppOpenAdLoadCallback() {
+        AppOpenAd.load(new AdRequest.Builder(unit).build(),
+            new AdLoadCallback<AppOpenAd>() {
                 @Override public void onAdLoaded(AppOpenAd ad) {
                     appOpenLoading122 = false;
                     appOpenAttemptFinished141 = true;
@@ -2346,7 +2367,7 @@ private void showLaunchSplash() {
         }
         appOpenAd122 = null;
         appOpenShowing122 = true;
-        ad.setFullScreenContentCallback(new FullScreenContentCallback() {
+        ad.setAdEventCallback(new AppOpenAdEventCallback() {
             @Override public void onAdShowedFullScreenContent() {
                 appOpenLastShownAt122 = System.currentTimeMillis();
                 getSharedPreferences("aracim_app_open", MODE_PRIVATE).edit()
@@ -2358,7 +2379,7 @@ private void showLaunchSplash() {
                 appOpenShowing122 = false;
                 hideLaunchSplashWhenReady();
             }
-            @Override public void onAdFailedToShowFullScreenContent(AdError error) {
+            @Override public void onAdFailedToShowFullScreenContent(FullScreenContentError error) {
                 appOpenShowing122 = false;
                 logAdMob("app_open_show_failed", String.valueOf(error));
                 hideLaunchSplashWhenReady();
@@ -2403,7 +2424,7 @@ private void showLaunchSplash() {
         oneInterstitialReady = false;
         if (ad == null) { releaseAndReloadInterstitial145(); return; }
         lastInAppInterstitialShownAt145 = now;
-        ad.setFullScreenContentCallback(new FullScreenContentCallback() {
+        ad.setAdEventCallback(new InterstitialAdEventCallback() {
             @Override public void onAdShowedFullScreenContent() {
                 logAdMob("vehicle_saved_interstitial", "After successful new vehicle save");
             }
@@ -2411,7 +2432,7 @@ private void showLaunchSplash() {
                 logAdMob("vehicle_saved_interstitial_closed", "Return to the saved vehicle");
                 releaseAndReloadInterstitial145();
             }
-            @Override public void onAdFailedToShowFullScreenContent(AdError error) {
+            @Override public void onAdFailedToShowFullScreenContent(FullScreenContentError error) {
                 logAdMob("vehicle_saved_interstitial_failed", String.valueOf(error));
                 releaseAndReloadInterstitial145();
             }
@@ -2440,7 +2461,7 @@ private void showLaunchSplash() {
         final String unit = excelRewardedUnit124();
         if (unit == null || !unit.matches("ca-app-pub-[0-9]+/[0-9]+")) return;
         excelRewardedLoading124 = true;
-        RewardedAd.load(this, unit, new AdRequest.Builder().build(), new RewardedAdLoadCallback() {
+        RewardedAd.load(new AdRequest.Builder(unit).build(), new AdLoadCallback<RewardedAd>() {
             @Override public void onAdLoaded(RewardedAd ad) {
                 excelRewardedLoading124 = false;
                 if (!canRequestAdMobAds() || isFinishing() || isDestroyed()) return;
@@ -2499,7 +2520,7 @@ private void showLaunchSplash() {
                 grantExcelReportCredit124();
             }
         };
-        ad.setFullScreenContentCallback(new FullScreenContentCallback() {
+        ad.setAdEventCallback(new RewardedAdEventCallback() {
             @Override public void onAdShowedFullScreenContent() {
                 logAdMob("rewarded_excel_shown", "Optional Excel report reward from Add Vehicle");
             }
@@ -2511,7 +2532,7 @@ private void showLaunchSplash() {
                 if (!earned.get()) notifyExcelRewardJs124("not_earned");
                 mainHandler.postDelayed(() -> loadExcelRewardedAd124(), 1500L);
             }
-            @Override public void onAdFailedToShowFullScreenContent(AdError error) {
+            @Override public void onAdFailedToShowFullScreenContent(FullScreenContentError error) {
                 excelRewardedShowing124 = false;
                 notifyExcelRewardJs124("unavailable");
                 logAdMob("rewarded_excel_show_failed", String.valueOf(error));
@@ -2540,8 +2561,8 @@ private void showLaunchSplash() {
                 ? "ca-app-pub-3940256099942544/1033173712"
                 : "ca-app-pub-7205009121067400/2790024214";
         interstitialLoading = true;
-        InterstitialAd.load(this, unitId, new AdRequest.Builder().build(),
-                new InterstitialAdLoadCallback() {
+        InterstitialAd.load(new AdRequest.Builder(unitId).build(),
+                new AdLoadCallback<InterstitialAd>() {
                     @Override public void onAdLoaded(InterstitialAd ad) {
                         interstitialLoading = false;
                         interstitialRetryAttempt = 0;
@@ -2578,8 +2599,8 @@ private void showLaunchSplash() {
                 ? "ca-app-pub-3940256099942544/1033173712"
                 : "ca-app-pub-7205009121067400/2790024214";
         recordInterstitialLoading147 = true;
-        InterstitialAd.load(this, unit, new AdRequest.Builder().build(),
-                new InterstitialAdLoadCallback() {
+        InterstitialAd.load(new AdRequest.Builder(unit).build(),
+                new AdLoadCallback<InterstitialAd>() {
                     @Override public void onAdLoaded(InterstitialAd ad) {
                         recordInterstitialLoading147 = false;
                         recordInterstitialRetry147 = 0;
@@ -2627,7 +2648,7 @@ private void showLaunchSplash() {
         final InterstitialAd ad = recordInterstitialAd147;
         recordInterstitialAd147 = null;
         lastInAppInterstitialShownAt145 = now;
-        ad.setFullScreenContentCallback(new FullScreenContentCallback() {
+        ad.setAdEventCallback(new InterstitialAdEventCallback() {
             private void finish() {
                 recordInterstitialClaimed147.set(false);
                 mainHandler.postDelayed(() -> loadRecordInterstitial147(), 1200L);
@@ -2636,7 +2657,7 @@ private void showLaunchSplash() {
                 logAdMob("record_interstitial_shown_147", type);
             }
             @Override public void onAdDismissedFullScreenContent() { finish(); }
-            @Override public void onAdFailedToShowFullScreenContent(AdError error) {
+            @Override public void onAdFailedToShowFullScreenContent(FullScreenContentError error) {
                 logAdMob("record_interstitial_show_failed_147", String.valueOf(error));
                 finish();
             }
@@ -2692,7 +2713,7 @@ private void showLaunchSplash() {
                 finishOneInterstitialNavigation(target);
                 return;
             }
-            ad.setFullScreenContentCallback(new FullScreenContentCallback() {
+            ad.setAdEventCallback(new InterstitialAdEventCallback() {
                 @Override public void onAdShowedFullScreenContent() {
                     logAdMob("interstitial_shown", "In-app navigation interstitial displayed");
                 }
@@ -2701,7 +2722,7 @@ private void showLaunchSplash() {
                     releaseAndReloadInterstitial145();
                     finishOneInterstitialNavigation(target);
                 }
-                @Override public void onAdFailedToShowFullScreenContent(AdError error) {
+                @Override public void onAdFailedToShowFullScreenContent(FullScreenContentError error) {
                     logAdMob("interstitial_show_failed", error == null ? "Unknown" : error.toString());
                     releaseAndReloadInterstitial145();
                     finishOneInterstitialNavigation(target);
