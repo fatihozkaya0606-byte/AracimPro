@@ -1,0 +1,77 @@
+name: Aracim Pro v241 GMA Next-Gen Dependency Compatibility (NO RELEASE)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ aracimpro-241-gma-nextgen-compatibility-test ]
+
+jobs:
+  nextgen-compile-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Install Android SDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+      - name: Prepare temporary GMA Next-Gen SDK dependency (CI only)
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("app/build.gradle")
+          src = p.read_text()
+          legacy = "implementation 'com.google.android.gms:play-services-ads:25.5.0'"
+          replacement = "implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.6.0'"
+          assert src.count(legacy) == 1, "Unexpected legacy SDK dependency; audit before changing"
+          assert src.count("dependencies {") == 1, "Unexpected Gradle structure"
+          src = src.replace(legacy, replacement)
+          exclusions = """// COMPATIBILITY TEST ONLY: keep all mediation SDKs but exclude duplicate Legacy Ads.
+          configurations.configureEach {
+              exclude group: 'com.google.android.gms', module: 'play-services-ads'
+              exclude group: 'com.google.android.gms', module: 'play-services-ads-lite'
+          }
+
+          """
+          src = src.replace("dependencies {", exclusions + "dependencies {", 1)
+          p.write_text(src)
+          print("Changed dependency only in temporary CI checkout; production branch unchanged.")
+          print("AdMob/Yandex/Unity/Mintegral/Liftoff/AdMost dependencies remain declared.")
+          PY
+      - name: Compile Java with Next-Gen SDK (do not package)
+        id: compile
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          gradle --no-daemon --max-workers=2 :app:compileDebugJavaWithJavac 2>&1 | tee nextgen-compile.log
+      - name: Summarize compatibility and preserve compile log
+        if: always()
+        shell: bash
+        run: |
+          echo "# GMA Next-Gen 1.6.0 / Aracim Pro compatibility smoke test" > nextgen-summary.md
+          echo "Production version remains v239 / 7.12.4, untouched." >> nextgen-summary.md
+          echo "No APK, AAB, Play upload or ad request was made." >> nextgen-summary.md
+          echo "Compile outcome: ${{ steps.compile.outcome }}" >> nextgen-summary.md
+          if [ -f nextgen-compile.log ]; then
+            grep -E 'error:|FAILURE:|BUILD SUCCESSFUL|BUILD FAILED|Could not|duplicate class' nextgen-compile.log | tail -60 >> nextgen-summary.md || true
+          fi
+          cat nextgen-summary.md
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: AracimPro-v241-NextGen-Compile-Diagnostics-NO-APK-NO-AAB
+          path: |
+            nextgen-compile.log
+            nextgen-summary.md
+          if-no-files-found: warn
+      - name: Mark incompatible compile as failure, not as a successful migration
+        if: steps.compile.outcome != 'success'
+        run: exit 1
