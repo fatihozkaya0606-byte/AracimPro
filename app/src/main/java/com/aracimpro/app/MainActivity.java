@@ -486,6 +486,10 @@ public class MainActivity extends Activity {
             @Override public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 pageReady = true;
+                // v249: WebView must be usable before LIVE UMP/Next-Gen Ads
+                // may initialize. Still permit App Open on the loading splash
+                // when eligible, but no Native/validator until it is gone.
+                startAdsWhenPageReady249();
                 if (apLaunchProgressBar != null) apLaunchProgressBar.setProgress(100);
                 if (apLaunchProgressLabel != null) apLaunchProgressLabel.setText("HAZIR    %100");
                 hideLaunchSplashWhenReady();
@@ -883,6 +887,19 @@ private void showLaunchSplash() {
                         webView.reload();
                     }
                 });
+    }
+
+    private void startAdsWhenPageReady249() {
+        if (!pageReady || isFinishing() || isDestroyed()) return;
+        logAdMob("webview_ready_249", "Start consent/Ads after content, not during initial rendering");
+        // v244 test build remains unchanged: sample ads initialize after
+        // splash teardown. LIVE billing/consent gating stays authoritative.
+        if (BuildConfig.DEBUG) return;
+        if (premiumActive) return;
+        if (premiumBillingReady || billingReconnectGrace228) {
+            if (!admobConsentRequested) requestAdMobConsentIfNeeded();
+            if (canRequestAdMobAds()) initAdMobBanner();
+        }
     }
 
     private void startDebugAdsAfterPage244() {
@@ -1630,10 +1647,11 @@ private void showLaunchSplash() {
     }
 
     private void requestAdMobConsentIfNeeded() {
-        // Consent UI also must not interrupt the debug startup page.
-        // For live release, preserve the original UMP/premium prerequisites.
+        // v249: Never show consent UIs while the HOME WebView is still
+        // navigating. For DEBUG, preserve v244's stronger splash gate.
+        if (!pageReady) return;
         if (BuildConfig.DEBUG &&
-                (!pageReady || !apPremiumSplashHidden || apPremiumSplashView != null))
+                (!apPremiumSplashHidden || apPremiumSplashView != null))
             return;
         if (premiumActive || (!premiumBillingReady && !BuildConfig.DEBUG)
                 || admobConsentRequested || isFinishing() || isDestroyed()) return;
@@ -1877,10 +1895,12 @@ private void showLaunchSplash() {
     }
 
     private void initAdMobBanner() {
-        // v244 diagnostic: exclude ALL Google Next-Gen ad side effects from
-        // initial WebView navigation and splash. Production keeps App Open.
+        // v249: Never initialize SDK, create overlays or load Native BEFORE
+        // the HOME WebView reports ready. Production App Open still gets its
+        // initial loading-splash window after UMP and Billing consent.
+        if (!pageReady) return;
         if (BuildConfig.DEBUG &&
-                (!pageReady || !apPremiumSplashHidden || apPremiumSplashView != null))
+                (!apPremiumSplashHidden || apPremiumSplashView != null))
             return;
         if (!canRequestAdMobAds() || isFinishing() || isDestroyed()) return;
         // Important: initialization can stay true after premium / Billing
