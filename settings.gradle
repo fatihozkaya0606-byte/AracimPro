@@ -1,4 +1,15 @@
 pluginManagement {
+    // R8 9.4.14: verified with an isolated CI analyzer build.
+    // Third-party AdMob/Yandex/Unity/Liftoff/Mintegral dependencies stay intact.
+    buildscript {
+        repositories {
+            google()
+            mavenCentral()
+        }
+        dependencies {
+            classpath 'com.android.tools:r8:9.4.14'
+        }
+    }
     repositories {
         google()
         mavenCentral()
