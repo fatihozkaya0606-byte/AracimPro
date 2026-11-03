@@ -22,7 +22,13 @@ jobs:
         with:
           gradle-version: '8.9'
       - name: Install Android 35
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+        shell: bash
+        run: |
+          SDKROOT="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          SDKMGR="$(find "$SDKROOT/cmdline-tools" -type f -name sdkmanager | sort -r | head -n1)"
+          if [ -z "$SDKMGR" ]; then echo "Android SDK command-line tools unavailable"; exit 1; fi
+          yes | "$SDKMGR" --licenses >/dev/null || true
+          "$SDKMGR" "platforms;android-35" "build-tools;35.0.0"
       - name: Build Piyasa Atlas APK
         working-directory: PiyasaAtlas
         run: gradle :app:assembleDebug --no-daemon --stacktrace
