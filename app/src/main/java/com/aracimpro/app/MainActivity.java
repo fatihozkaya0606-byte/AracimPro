@@ -1961,7 +1961,7 @@ private void showLaunchSplash() {
     // Store only the adapter class name (not ad content or user data) for troubleshooting.
     private void recordAdSource123(String slot, ResponseInfo info) {
         try {
-            String adapter = info == null ? "unknown" : info.getMediationAdapterClassName();
+            String adapter = info == null ? "unknown" : info.getAdapterClassName();
             if (adapter == null || adapter.trim().isEmpty()) adapter = "unknown";
             getSharedPreferences("aracim_admob_diagnostics", MODE_PRIVATE).edit()
                 .putString(slot + "Source", adapter).apply();
