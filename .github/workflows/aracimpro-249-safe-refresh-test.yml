@@ -1,0 +1,68 @@
+name: AracimPro v249 no forced refresh DEBUG APK
+
+on:
+  push:
+    branches: [ aracimpro-249-no-forced-refresh ]
+  workflow_dispatch:
+
+jobs:
+  build-test-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Install Android SDK and NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" "ndk;27.2.12479018"
+      - name: Verify banner recovery policy and native manual-refresh removal
+        run: |
+          set -euo pipefail
+          bash tools/test-bottom-banner.sh
+          grep -q 'if (refreshing) return;' app/src/main/java/com/aracimpro/app/NativeFeedController146.java
+          grep -q 'if (mrecAdLoaded || mrecAdView == null' app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q 'SDK owns refresh after a successful load' app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q 'if (loaded)' app/src/main/java/com/aracimpro/app/BottomBannerPolicy.java
+          grep -q "applicationIdSuffix '.neonpreview'" app/build.gradle
+      - name: Build separate debug test APK using Google sample ads
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
+          LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
+        run: |
+          set -o pipefail
+          gradle --no-daemon --max-workers=2 :app:assembleDebug 2>&1 | tee v249-build.log
+      - name: Verify APK and preserve test artifact only
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --min-sdk-version 24 "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | tee v249-package.txt
+          grep -q "package: name='com.aracimpro.app.neonpreview'" v249-package.txt
+          mkdir -p out
+          cp "$APK" out/AracimPro-v249-NoForcedRefresh-TEST.apk
+          sha256sum out/AracimPro-v249-NoForcedRefresh-TEST.apk > out/checksum.sha256
+          echo "Debug-only side-by-side APK. Google sample ads, not live revenue. No Play deployment. Test on device before shipping." > out/README.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: AracimPro-v249-NoForcedRefresh-TestAPK-NO-PLAY
+          path: |
+            out/
+            v249-build.log
+            v249-package.txt
+          if-no-files-found: ignore
+          retention-days: 30
