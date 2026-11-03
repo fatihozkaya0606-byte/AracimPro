@@ -1,0 +1,63 @@
+name: AracimPro v249 Live Startup Safe - Compile and R8 (NO PLAY RELEASE)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ aracimpro-249-release-home-first-appopen-safe ]
+    paths: [ '.github/workflows/aracimpro-249-live-startup-r8.yml' ]
+
+jobs:
+  verify-live-startup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Android SDK and NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "ndk;27.2.12479018"
+      - name: Guard current ads, consent, App Open and v244 tested startup
+        run: |
+          set -eu
+          FILE=app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q 'startAdsWhenPageReady249();' "$FILE"
+          grep -q 'if (!pageReady) return;' "$FILE"
+          grep -q 'startDebugAdsAfterPage244();' "$FILE"
+          grep -q 'loadAppOpenDuringSplash122();' "$FILE"
+          grep -q 'MAX_APP_OPEN_SPLASH_HOLD_MS243' "$FILE"
+          grep -q 'showWebViewRetryDialog244()' "$FILE"
+          grep -q 'LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS' "$FILE"
+          grep -q 'com.google.android.libraries.ads.mobile.sdk' "$FILE"
+          grep -q "ads-mobile-sdk:1.6.0" app/build.gradle
+          grep -q 'com.google.ads.mediation:mintegral:17.1.91.0' app/build.gradle
+          grep -q 'com.yandex.ads.adapter:admob-mobileads' app/build.gradle
+          grep -q 'com.google.ads.mediation:unity' app/build.gradle
+          grep -q 'com.google.ads.mediation:vungle' app/build.gradle
+          grep -q 'com.admost.sdk:admob-adapter' app/build.gradle
+          bash tools/test-bottom-banner.sh
+      - name: Compile entire debug and release Java source
+        run: gradle --no-daemon --max-workers=2 :app:compileDebugJavaWithJavac :app:compileReleaseJavaWithJavac
+      - name: Minify real release code with R8 (NO APK / AAB)
+        shell: bash
+        run: |
+          set -o pipefail
+          gradle --no-daemon --max-workers=2 :app:minifyReleaseWithR8 2>&1 | tee v249-r8.log
+          test -s app/build/outputs/mapping/release/mapping.txt
+          python3 tools/check-r8-v239.py
+      - name: Save diagnostics only (never upload production bundle)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AracimPro-v249-LIVE-STARTUP-R8-REPORT-NO-APK
+          path: |
+            v249-r8.log
+            app/build/outputs/r8-report/summary.txt
+          if-no-files-found: ignore
+          retention-days: 14
