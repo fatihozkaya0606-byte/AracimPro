@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [ aracimpro-243-nextgen-full-app-migration-test ]
-    paths: [ '.github/workflows/aracimpro-243-nextgen-test-apk.yml' ]
+    paths: [ '.github/workflows/aracimpro-243-splash-test-apk.yml' ]
 
 jobs:
   build-test-apk:
