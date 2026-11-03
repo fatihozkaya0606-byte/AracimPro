@@ -13,13 +13,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.webkit.WebView;
 
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdLoader;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.nativead.NativeAd;
-import com.google.android.gms.ads.nativead.NativeAdView;
-import com.google.android.gms.ads.nativead.MediaView;
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView;
+import com.google.android.libraries.ads.mobile.sdk.nativead.MediaView;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdLoader;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdRequest;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdLoaderCallback;
 
 import java.util.function.BooleanSupplier;
 
@@ -110,8 +110,12 @@ final class NativeFeedController146 {
         if (refreshing) refreshRequests++;
         lastError = refreshing ? "Native reklam 60 saniyede yenileniyor" : "Native reklam isteği gönderildi";
         try {
-            new AdLoader.Builder(activity, unit)
-                .forNativeAd(newAd -> activity.runOnUiThread(() -> {
+            NativeAdLoader.load(
+                new NativeAdRequest.Builder(unit,
+                        java.util.Collections.singletonList(NativeAd.NativeAdType.NATIVE)).build(),
+                new NativeAdLoaderCallback() {
+                    @Override public void onNativeAdLoaded(NativeAd newAd) {
+                        activity.runOnUiThread(() -> {
                     if (destroyed || requestGeneration != adLoadGeneration) {
                         newAd.destroy();
                         return;
@@ -144,7 +148,7 @@ final class NativeFeedController146 {
                         view = replacement;
                         loaded = true;
                         lastCreativeHadVideo = newAd.getMediaContent() != null
-                                && newAd.getMediaContent().hasVideoContent();
+                                && newAd.getMediaContent().getHasVideoContent();
                         lastError = lastCreativeHadVideo ? "Native VIDEO yüklendi" : "Native görsel yüklendi";
                         android.util.Log.i("AracimAdMob", "native232_media=" +
                                 (lastCreativeHadVideo ? "VIDEO" : "IMAGE") + " / test=" + BuildConfig.DEBUG);
@@ -187,8 +191,8 @@ final class NativeFeedController146 {
                             scheduleRetry();
                         }
                     }
-                }))
-                .withAdListener(new AdListener() {
+                        });
+                    }
                     @Override public void onAdFailedToLoad(LoadAdError error) {
                         activity.runOnUiThread(() -> {
                             if (destroyed || requestGeneration != adLoadGeneration) return;
@@ -209,10 +213,7 @@ final class NativeFeedController146 {
                             }
                         });
                     }
-                    @Override public void onAdImpression() {
-                        android.util.Log.i("AracimAdMob", "native146_impression: real SDK impression");
-                    }
-                }).build().loadAd(new AdRequest.Builder().build());
+                });
         } catch (Throwable error) {
             loading = false;
             lastError = "Native AdLoader hatası: " + error.getClass().getSimpleName();
@@ -320,14 +321,9 @@ final class NativeFeedController146 {
 
         // >=120dp in BOTH dimensions: native video creatives are eligible.
         MediaView media = new MediaView(activity);
-        media.setImageScaleType(ImageView.ScaleType.FIT_CENTER);
         LinearLayout.LayoutParams mediaLp = new LinearLayout.LayoutParams(dp(122), dp(122));
         mediaLp.rightMargin = dp(7);
         row.addView(media, mediaLp);
-        adView.setMediaView(media);
-        if (nativeAd.getMediaContent() != null) {
-            media.setMediaContent(nativeAd.getMediaContent());
-        }
 
         LinearLayout right = new LinearLayout(activity);
         right.setOrientation(LinearLayout.VERTICAL);
@@ -374,10 +370,8 @@ final class NativeFeedController146 {
         adView.setHeadlineView(headline);
         adView.setBodyView(description);
         adView.setIconView(icon);
-        adView.setAdvertiserView(advertiser);
-        adView.setStoreView(store);
         adView.setCallToActionView(cta);
-        adView.setNativeAd(nativeAd);
+        adView.registerNativeAd(nativeAd, media);
         return adView;
     }
 
