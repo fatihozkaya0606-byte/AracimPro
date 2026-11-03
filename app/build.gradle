@@ -59,8 +59,8 @@ android {
         // Both explicit gates default OFF. Enable only for signed internal tests
         // after AdMost/AdMob UMP vendor settings are independently verified.
         buildConfigField 'boolean', 'ADMOST_ROUTE_BANNER_MREC', (System.getenv('ADMOST_ROUTE_BANNER_MREC') ?: 'false').toBoolean().toString()
-        versionCode 238
-        versionName '7.12.3'
+        versionCode 239
+        versionName '7.12.4'
     }
 
     signingConfigs {
@@ -77,7 +77,7 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix '.neonpreview'
-            versionNameSuffix '-video238preview'
+            versionNameSuffix '-r8v239preview'
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
             }
