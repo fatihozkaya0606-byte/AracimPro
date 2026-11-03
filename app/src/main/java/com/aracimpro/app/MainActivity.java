@@ -327,9 +327,20 @@ public class MainActivity extends Activity {
         appOpenLastShownAt122 = openPrefs122.getLong("last_shown", 0L);
         openPrefs122.edit().putInt("opens", appOpenLaunchCount122).apply();
         installLocalCrashRecorder();
-        // Use the platform's edge-to-edge window handling without calling
-        // WindowCompat.enableEdgeToEdge(), whose legacy implementations can
-        // set deprecated system-bar colors and cutout flags.
+        // Play Console Android 15/16 edge-to-edge compatibility:
+        // On Android 11+ explicitly use ALWAYS (never SHORT_EDGES) for the
+        // Activity cutout policy before enabling edge-to-edge drawing.
+        // The insets listener below reserves status/navigation/cutout/IME
+        // safe areas for the WebView and the persistent bottom ad banner.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowManager.LayoutParams windowParams = getWindow().getAttributes();
+            if (windowParams.layoutInDisplayCutoutMode
+                    != WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS) {
+                windowParams.layoutInDisplayCutoutMode =
+                        WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS;
+                getWindow().setAttributes(windowParams);
+            }
+        }
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         androidx.core.view.WindowInsetsControllerCompat barsController =
                 WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
