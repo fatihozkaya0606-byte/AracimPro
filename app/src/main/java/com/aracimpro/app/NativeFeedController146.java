@@ -24,8 +24,8 @@ import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdLoaderCallba
 import java.util.function.BooleanSupplier;
 
 /** One real Google SDK NativeAd in a measured in-feed WebView placeholder.
- *  Native ads are refreshed after at least 60 seconds of actual on-screen time;
- *  backgrounded/hidden screens never trigger refresh requests.
+ *  A loaded Native ad is not periodically re-requested by the app.
+ *  Initial no-fill retries are retained; there is no app-driven auto-refresh.
  *  No fake ad text or click interception. The Android view stays inside
  *  its measured HTML slot. */
 final class NativeFeedController146 {
@@ -85,6 +85,8 @@ final class NativeFeedController146 {
     void tryLoad() { loadAd(false); }
 
     private void loadAd(boolean refreshing) {
+        // Prevent manual refresh requests even if a stale callback reaches here.
+        if (refreshing) return;
         if (destroyed || loading || !canLoad.getAsBoolean()) return;
         if (refreshing) {
             if (!isVisible() || !canShow.getAsBoolean()
@@ -237,26 +239,13 @@ final class NativeFeedController146 {
     }
 
     private void scheduleRefresh() {
-        if (destroyed || loading || !isVisible() || !canShow.getAsBoolean()
-                || refreshScheduled) return;
-        long visibleRemaining = REFRESH_AFTER_VISIBLE_MS - getVisibleDurationMs();
-        long requestRemaining = REFRESH_AFTER_VISIBLE_MS
-                - (SystemClock.elapsedRealtime() - lastLoadRequestMs);
-        long delay = Math.max(1000L, Math.max(visibleRemaining, requestRemaining));
-        refreshScheduled = true;
-        handler.postDelayed(refresh, delay);
+        // Loaded Native creative stays in place; do not schedule manual refresh.
+        cancelRefresh();
     }
 
     private void refreshIfDue() {
+        // Ignore previously scheduled callbacks, if any.
         refreshScheduled = false;
-        if (destroyed || loading || !isVisible() || !canShow.getAsBoolean()
-                || !canLoad.getAsBoolean()) return;
-        if (getVisibleDurationMs() >= REFRESH_AFTER_VISIBLE_MS
-                && SystemClock.elapsedRealtime() - lastLoadRequestMs >= REFRESH_AFTER_VISIBLE_MS) {
-            loadAd(true);
-        } else {
-            scheduleRefresh();
-        }
     }
 
     private void scheduleRetry() {
