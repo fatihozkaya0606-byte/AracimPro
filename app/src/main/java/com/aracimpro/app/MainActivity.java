@@ -309,6 +309,11 @@ public class MainActivity extends Activity {
     private View launchSplash;
     private long splashStartedAt = 0L;
     private volatile boolean splashDismissAllowed = false;
+    // v243: an SDK callback must never hold the full-screen intro forever.
+    private static final long MAX_APP_OPEN_SPLASH_HOLD_MS243 = 15000L;
+    private static final long WEBVIEW_RECOVERY_CHECK_MS243 = 17000L;
+    private boolean webViewRecoveryAttempted243 = false;
+    private final Runnable splashWatchdog243 = this::recoverStalledSplash243;
     private android.widget.ProgressBar apLaunchProgressBar;
     private android.widget.TextView apLaunchProgressLabel;
     private android.widget.LinearLayout apLaunchBrand;
@@ -619,6 +624,9 @@ private void showLaunchSplash() {
         splashStartedAt = android.os.SystemClock.elapsedRealtime();
         splashDismissAllowed = false;
         pageReady = false;
+        webViewRecoveryAttempted243 = false;
+        mainHandler.removeCallbacks(splashWatchdog243);
+        mainHandler.postDelayed(splashWatchdog243, WEBVIEW_RECOVERY_CHECK_MS243);
         startLaunchEngineSound();
 
         final android.view.ViewGroup root = findViewById(android.R.id.content);
@@ -811,6 +819,43 @@ private void showLaunchSplash() {
         }
     }
 
+    private void recoverStalledSplash243() {
+        if (apPremiumSplashView == null || apPremiumSplashHidden
+                || isFinishing() || isDestroyed()) return;
+        long elapsed = android.os.SystemClock.elapsedRealtime() - splashStartedAt;
+        if (elapsed < WEBVIEW_RECOVERY_CHECK_MS243) {
+            mainHandler.postDelayed(splashWatchdog243,
+                    WEBVIEW_RECOVERY_CHECK_MS243 - elapsed);
+            return;
+        }
+        if (pageReady) {
+            splashDismissAllowed = true;
+            hideLaunchSplashWhenReady();
+            return;
+        }
+        if (webView == null || webViewRecoveryAttempted243) return;
+        webViewRecoveryAttempted243 = true;
+        // A stalled WebView callback can leave a fully painted web page
+        // underneath an eternal splash. Verify actual document readiness
+        // before marking the page ready; never falsely claim success.
+        webView.evaluateJavascript(
+                "(function(){return document.readyState;})()",
+                state -> {
+                    if (apPremiumSplashView == null || isFinishing() || isDestroyed()) return;
+                    if ("\\\"complete\\\"".equals(state) ||
+                            "\\\"interactive\\\"".equals(state)) {
+                        pageReady = true;
+                        splashDismissAllowed = true;
+                        logAdMob("splash_webview_recovered_243", String.valueOf(state));
+                        hideLaunchSplashWhenReady();
+                    } else {
+                        // No blank page: retry the local assets WebView once.
+                        logAdMob("splash_webview_retry_243", String.valueOf(state));
+                        webView.reload();
+                    }
+                });
+    }
+
     private void hideLaunchSplashWhenReady() {
         // Keep the intro visible for ~3.35 seconds on a ready device.
         // If the WebView is still loading, never expose an uninitialized blank screen.
@@ -834,8 +879,20 @@ private void showLaunchSplash() {
         }
         // If a legitimate App Open ad is running over the loading screen, do not
         // remove the splash until the ad is dismissed.
-        if (appOpenShowing122) return;
+        if (appOpenShowing122 && elapsedOnSplash < MAX_APP_OPEN_SPLASH_HOLD_MS243) {
+            mainHandler.postDelayed(this::hideLaunchSplashWhenReady, 200L);
+            return;
+        }
+        // An SDK/App Open fullscreen callback may be lost. Do not keep the
+        // underlying app hidden indefinitely. The actual fullscreen ad, if
+        // still present, stays in front until the user dismisses it.
+        if (appOpenShowing122) {
+            logAdMob("app_open_splash_watchdog_243",
+                    "Splash cap reached: clearing stale showing gate");
+            appOpenShowing122 = false;
+        }
         if (apPremiumSplashHidden) return;
+        mainHandler.removeCallbacks(splashWatchdog243);
         apPremiumSplashHidden = true;
         if (apLaunchProgressTick != null)
             apPremiumSplashHandler.removeCallbacks(apLaunchProgressTick);
@@ -849,6 +906,7 @@ private void showLaunchSplash() {
         if (splash == null) {
             stopLaunchEngineSound();
             if (root != null) apSetAdViewsVisible(root, true);
+            if (canRequestAdMobAds() && admobSdkReady) initAdMobBanner();
             return;
         }
 
@@ -865,6 +923,9 @@ private void showLaunchSplash() {
             apLaunchBrand = null;
             apLaunchProgressTick = null;
             if (root != null) apSetAdViewsVisible(root, true);
+            // Defer Native validator/video, banners, and other ad formats
+            // until the real WebView has replaced the splash.
+            if (canRequestAdMobAds() && admobSdkReady) initAdMobBanner();
         }).start();
 
     }
@@ -1779,6 +1840,9 @@ private void showLaunchSplash() {
             // Prioritize App Open during the brief loading splash; banner,
             // MREC, interstitial, and optional rewarded load afterward.
             loadAppOpenDuringSplash122();
+            // Critical v243 fix: Native video and its debug validator must not
+            // create modal UI on top of the App Open loading surface.
+            if (!apPremiumSplashHidden || apPremiumSplashView != null) return;
             if (adMostRoutingRequested230()) {
                 ensureAdMostPlacements230();
             } else {
