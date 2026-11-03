@@ -3,7 +3,7 @@ name: AracimPro v243 splash recovery TEST APK (NO PLAY RELEASE)
 on:
   workflow_dispatch:
   push:
-    branches: [ aracimpro-243-nextgen-full-app-migration-test ]
+    branches: [ aracimpro-243-nextgen-splash-unblock ]
     paths: [ '.github/workflows/aracimpro-243-splash-test-apk.yml' ]
 
 jobs:
