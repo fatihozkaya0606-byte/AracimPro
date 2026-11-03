@@ -146,8 +146,8 @@ dependencies {
     implementation 'com.unity3d.ads:unity-ads:4.21.0'
     implementation 'com.google.ads.mediation:unity:4.21.0.0'
     // Mintegral: official Google mediation adapter supports App Open, Banner,
-    // MREC, Interstitial and Rewarded; 17.1.81.1 supports GMA 25.5.0.
-    implementation 'com.google.ads.mediation:mintegral:17.1.81.1'
+    // MREC, Interstitial and Rewarded; 17.1.91.0 is verified with Next-Gen GMA 1.6.0 and Mintegral SDK 17.1.91.
+    implementation 'com.google.ads.mediation:mintegral:17.1.91.0'
     // Liftoff Monetize (formerly Vungle): Google mediation adapter for the
     // same formats; 7.7.9.0 is tested against GMA 25.5.0.
     implementation 'com.google.ads.mediation:vungle:7.7.9.0'
