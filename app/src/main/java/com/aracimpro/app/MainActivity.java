@@ -486,6 +486,7 @@ public class MainActivity extends Activity {
             @Override public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 pageReady = true;
+                logAdMob("v244_baseline_webview_ready", "webview page finished");
                 if (apLaunchProgressBar != null) apLaunchProgressBar.setProgress(100);
                 if (apLaunchProgressLabel != null) apLaunchProgressLabel.setText("HAZIR    %100");
                 hideLaunchSplashWhenReady();
@@ -961,6 +962,7 @@ private void showLaunchSplash() {
             apLaunchBrand = null;
             apLaunchProgressTick = null;
             if (root != null) apSetAdViewsVisible(root, true);
+            logAdMob("v244_baseline_splash_closed", "splash removed and home visible");
             // Native ads and their test validators never compete with intro.
             startDebugAdsAfterPage244();
             if (!BuildConfig.DEBUG && canRequestAdMobAds() && admobSdkReady)
