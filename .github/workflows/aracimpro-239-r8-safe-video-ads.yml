@@ -1,0 +1,113 @@
+name: Aracim Pro v239 Safe R8 Optimization + Video Ads
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ aracimpro-239-r8-audit-safe-optimization ]
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Verify bottom banner recovery and sizing
+        run: bash tools/test-bottom-banner.sh
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Install Android SDK and NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" "ndk;27.2.12479018"
+          test -x "$ANDROID_HOME/ndk/27.2.12479018/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-objcopy"
+      - name: Restore upload key
+        env:
+          PLAY_UPLOAD_KEYSTORE_B64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_B64 }}
+        run: |
+          if [ -z "$PLAY_UPLOAD_KEYSTORE_B64" ]; then
+            echo "PLAY_UPLOAD_KEYSTORE_B64 secret is missing" >&2
+            exit 1
+          fi
+          echo "$PLAY_UPLOAD_KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/upload-key.jks"
+      - name: Create signing properties
+        env:
+          STORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+        run: |
+          cat > keystore.properties <<EOF2
+          storeFile=$RUNNER_TEMP/upload-key.jks
+          storePassword=$STORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF2
+      - name: Verify OtoAPI secret
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+        run: |
+          test -n "$OTOAPI_KEY" || (echo "OTOAPI_KEY secret is missing" >&2; exit 1)
+      - name: Verify three distinct ad placements and video-safe Native size
+        run: |
+          grep -q 'versionCode 239' app/build.gradle
+          grep -q "versionName '7.12.4'" app/build.gradle
+          grep -q 'nativeFeed146 = new NativeFeedController146' app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q 'nativeFeed146.tryLoad()' app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q 'requestMiddleVideoFirst237();' app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q 'createMrecAd();' app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q 'MiddleVideoNative237' app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q '1726333916' app/build.gradle
+          grep -q 'hasVideoContent()' app/src/main/java/com/aracimpro/app/MiddleVideoNative237.java
+          grep -q 'setStartMuted(true)' app/src/main/java/com/aracimpro/app/MiddleVideoNative237.java
+          grep -q 'useMrecFallback.run()' app/src/main/java/com/aracimpro/app/MiddleVideoNative237.java
+          grep -q 'AdSize.MEDIUM_RECTANGLE' app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q 'requestBottomBanner138();' app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q 'adView.setMediaView(media)' app/src/main/java/com/aracimpro/app/NativeFeedController146.java
+          grep -q 'dp(122), dp(122)' app/src/main/java/com/aracimpro/app/NativeFeedController146.java
+          grep -q 'mrec.insertAdjacentElement' app/src/main/assets/index.html
+          grep -q 'apNativeSlot146' app/src/main/assets/index.html
+          echo 'Middle video-first Native/MREC fallback, upper Native and bottom banner preserved.'
+      - name: Build signed release bundle
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          APP_OPEN_AD_UNIT_ID: ${{ secrets.APP_OPEN_AD_UNIT_ID }}
+          REWARDED_AD_UNIT_ID: ${{ secrets.REWARDED_AD_UNIT_ID }}
+          NATIVE_AD_UNIT_ID: ${{ secrets.NATIVE_AD_UNIT_ID }}
+          MIDDLE_VIDEO_NATIVE_AD_UNIT_ID: ${{ secrets.MIDDLE_VIDEO_NATIVE_AD_UNIT_ID }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
+          LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
+        run: gradle --no-daemon --max-workers=2 bundleRelease
+      - name: Build separate side-by-side test APK
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
+          LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
+        run: gradle --no-daemon --max-workers=2 assembleDebug
+      - name: Verify signed bundle, mapping and native symbols exist
+        run: |
+          test -s app/build/outputs/bundle/release/app-release.aab
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          jarsigner -verify app/build/outputs/bundle/release/app-release.aab
+          python3 tools/check-r8-v239.py
+          test -s app/build/outputs/mapping/release/mapping.txt
+            app/build/outputs/r8-report/summary.txt
+          unzip -Z1 app/build/outputs/bundle/release/app-release.aab | grep -F -q 'BUNDLE-METADATA/com.android.tools.build.debugsymbols/'
+          echo 'Confirmed: AAB contains native symbol metadata'
+          unzip -Z1 app/build/outputs/bundle/release/app-release.aab | grep -F 'BUNDLE-METADATA/com.android.tools.build.debugsymbols/'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AracimPro-v239-R8Safe-VideoAds-SIGNED-AAB-and-TestAPK
+          path: |
+            app/build/outputs/bundle/release/app-release.aab
+            app/build/outputs/apk/debug/app-debug.apk
+            app/build/outputs/mapping/release/mapping.txt
