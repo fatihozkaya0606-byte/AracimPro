@@ -1750,7 +1750,9 @@ private void showLaunchSplash() {
                 .putString("bannerLastError", failure).apply();
         logAdMob("banner_failed", failure);
         mainHandler.removeCallbacks(bannerRetryTask138);
-        mainHandler.postDelayed(bannerRetryTask138, delay);
+        // Retry only an initial no-fill; SDK owns refresh after a successful load.
+        if (bottomBanner231.isRetryPending())
+            mainHandler.postDelayed(bannerRetryTask138, delay);
     }
 
     private void checkBottomBannerTimeout231() {
@@ -2242,13 +2244,16 @@ private void showLaunchSplash() {
                         // Do not erase our existing successful-load status or
                         // collapse its card just because a replacement failed.
                         // SDK alone owns whether the old creative is still drawn.
-                        mrecPlacementReason151 = "MREC yenileme başarısız, yeniden denenecek";
+                        mrecPlacementReason151 = "MREC SDK yenilemesi başarısız; uygulama tekrar istemiyor";
                         requestMrecPositionSync205();
                     }
-                    // At most one pending retry; no repeated rapid requests.
+                    // Never compete with SDK auto-refresh after a successful MREC.
+                    // Keep the backoff retry only for the first request's no-fill.
                     mainHandler.removeCallbacks(mrecRetryTask205);
-                    final long delay = Math.max(30000L, adRetryDelay(mrecRetryAttempt++));
-                    mainHandler.postDelayed(mrecRetryTask205, delay);
+                    if (!hadDisplayedCreative) {
+                        final long delay = Math.max(30000L, adRetryDelay(mrecRetryAttempt++));
+                        mainHandler.postDelayed(mrecRetryTask205, delay);
+                    }
                 }
             };
             // Never mix 50dp creative with a 250dp container or vice versa.
@@ -2290,7 +2295,7 @@ private void showLaunchSplash() {
     }
 
     private void retryMrecAfterFailure205() {
-        if (mrecAdView == null || !canRequestAdMobAds() || !admobSdkReady ||
+        if (mrecAdLoaded || mrecAdView == null || !canRequestAdMobAds() || !admobSdkReady ||
                 isFinishing() || isDestroyed()) return;
         // No invisible/background ad request. The next normal resume will
         // re-run this retry if the app is not visible right now.
