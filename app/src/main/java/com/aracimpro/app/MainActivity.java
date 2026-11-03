@@ -894,7 +894,9 @@ private void showLaunchSplash() {
         logAdMob("webview_ready_249", "Start consent/Ads after content, not during initial rendering");
         // v244 test build remains unchanged: sample ads initialize after
         // splash teardown. LIVE billing/consent gating stays authoritative.
-        if (BuildConfig.DEBUG) return;
+        // v250 SIDE-BY-SIDE sample only: allow DEBUG Google sample App Open
+        // request once the home WebView is ready, while splash remains present.
+        // No real AdMob unit can be used in a DEBUG preview.
         if (premiumActive) return;
         if (premiumBillingReady || billingReconnectGrace228) {
             if (!admobConsentRequested) requestAdMobConsentIfNeeded();
@@ -920,12 +922,11 @@ private void showLaunchSplash() {
         // No custom launch-count or minute-based cooldown: request an App Open
         // for each eligible app entry, while the loading screen is still visible.
         // Billing and UMP remain authoritative; never fake an ad or overrun content.
-        final boolean openAdEligible = !BuildConfig.DEBUG && !premiumActive &&
-                (BuildConfig.ADMOB_TEST_MODE ||
+        final boolean openAdEligible = !premiumActive &&
+                (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE ||
                  (BuildConfig.APP_OPEN_AD_UNIT_ID != null &&
                   BuildConfig.APP_OPEN_AD_UNIT_ID.matches("ca-app-pub-[0-9]+/[0-9]+")));
-        if (openAdEligible && !BuildConfig.DEBUG &&
-                apPremiumSplashView != null &&
+        if (openAdEligible && apPremiumSplashView != null &&
                 elapsedOnSplash < 11000L && !appOpenAttemptFinished141) {
             // Let ad SDK, purchase status and consent resolve, up to a strict cap.
             // The splash is the only permitted App Open display surface.
@@ -1650,9 +1651,8 @@ private void showLaunchSplash() {
         // v249: Never show consent UIs while the HOME WebView is still
         // navigating. For DEBUG, preserve v244's stronger splash gate.
         if (!pageReady) return;
-        if (BuildConfig.DEBUG &&
-                (!apPremiumSplashHidden || apPremiumSplashView != null))
-            return;
+        // Test-only: UMP may finish during the loading splash AFTER home paint.
+        // This is necessary to test real App Open callbacks with sample IDs.
         if (premiumActive || (!premiumBillingReady && !BuildConfig.DEBUG)
                 || admobConsentRequested || isFinishing() || isDestroyed()) return;
         admobConsentRequested = true;
@@ -1895,13 +1895,10 @@ private void showLaunchSplash() {
     }
 
     private void initAdMobBanner() {
-        // v249: Never initialize SDK, create overlays or load Native BEFORE
-        // the HOME WebView reports ready. Production App Open still gets its
-        // initial loading-splash window after UMP and Billing consent.
+        // v250: Both DEBUG and LIVE may initialize *after* HOME WebView is ready.
+        // Only dedicated App Open requests run during the remaining splash.
+        // Native/MREC/Banner are deferred by the existing splash guard below.
         if (!pageReady) return;
-        if (BuildConfig.DEBUG &&
-                (!apPremiumSplashHidden || apPremiumSplashView != null))
-            return;
         if (!canRequestAdMobAds() || isFinishing() || isDestroyed()) return;
         // Important: initialization can stay true after premium / Billing
         // disconnect destroyed both AdViews. Recreate missing units then.
