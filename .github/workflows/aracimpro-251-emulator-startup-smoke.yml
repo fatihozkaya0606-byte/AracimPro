@@ -4,12 +4,12 @@ on:
   workflow_dispatch:
   push:
     branches: [ aracimpro-251-nonblocking-startup-runtime-smoke ]
-    paths: [ '.github/workflows/aracimpro-251-emulator-startup-smoke.yml' ]
+    paths: [ '.github/workflows/aracimpro-251-emulator-startup-smoke.yml', 'tools/run-android15-v251-smoke.sh' ]
 
 jobs:
   android-15-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v5
