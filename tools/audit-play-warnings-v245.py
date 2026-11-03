@@ -99,12 +99,13 @@ try:
                 # is intentionally conservative: confirm a found site manually
                 # with full method data before claiming the Play notice is solved.
                 if re.search(r"(?:const/4|const/16|const)\s+[^,]+,\s*(?:#int\s+)?(?:1\b|0x1\b|\+1\b)", context):
-                    possible_short_edges.append(item)
+                    possible_short_edges.append((item, context[-1100:]))
 
         note("   DEX cutoutMode field writes: " + str(len(cutout_writes)))
         note("   DEX sites potentially assigning SHORT_EDGES=1: " + str(len(possible_short_edges)))
-        for dex, cls, method in possible_short_edges[:25]:
+        for (dex, cls, method), disasm in possible_short_edges[:25]:
             note("   INVESTIGATE: " + dex + " / " + cls + " / " + method)
+            note("   Surrounding DEX instructions:\\n" + disasm)
         note("   Legacy GMA overlay label occurrences: " + str(len(legacy_overlay)))
         # Don't declare the Play deprecated-API notice resolved solely on an
         # absence of signatures; Play uses its own static detector.
