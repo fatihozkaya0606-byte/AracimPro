@@ -10,15 +10,14 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdLoader;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.VideoOptions;
-import com.google.android.gms.ads.nativead.MediaView;
-import com.google.android.gms.ads.nativead.NativeAd;
-import com.google.android.gms.ads.nativead.NativeAdOptions;
-import com.google.android.gms.ads.nativead.NativeAdView;
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError;
+import com.google.android.libraries.ads.mobile.sdk.common.VideoOptions;
+import com.google.android.libraries.ads.mobile.sdk.nativead.MediaView;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdLoader;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdRequest;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdLoaderCallback;
 
 import java.util.function.BooleanSupplier;
 
@@ -102,17 +101,19 @@ final class MiddleVideoNative237 {
         try {
             VideoOptions videoOptions = new VideoOptions.Builder()
                     .setStartMuted(true).build();
-            NativeAdOptions nativeOptions = new NativeAdOptions.Builder()
+            NativeAdRequest nativeRequest = new NativeAdRequest.Builder(unit,
+                    java.util.Collections.singletonList(NativeAd.NativeAdType.NATIVE))
                     .setVideoOptions(videoOptions).build();
-            new AdLoader.Builder(activity, unit)
-                    .forNativeAd(loadedAd -> activity.runOnUiThread(() -> {
+            NativeAdLoader.load(nativeRequest, new NativeAdLoaderCallback() {
+                    @Override public void onNativeAdLoaded(NativeAd loadedAd) {
+                        activity.runOnUiThread(() -> {
                         if (destroyed || generation != requestGeneration
                                 || decided || !canRequest.getAsBoolean()) {
                             loadedAd.destroy();
                             return;
                         }
                         if (loadedAd.getMediaContent() == null
-                                || !loadedAd.getMediaContent().hasVideoContent()) {
+                                || !loadedAd.getMediaContent().getHasVideoContent()) {
                             loadedAd.destroy();
                             lastStatus = "Native kreatif görsel; MREC yedeğine geçildi";
                             fallback(requestGeneration, useMrecFallback);
@@ -136,10 +137,9 @@ final class MiddleVideoNative237 {
                             lastStatus = "Native video çizim hatası: " + e.getClass().getSimpleName();
                             fallback(requestGeneration, useMrecFallback);
                         }
-                    }))
-                    .withNativeAdOptions(nativeOptions)
-                    .withAdListener(new AdListener() {
-                        @Override public void onAdFailedToLoad(LoadAdError error) {
+                        });
+                    }
+                    @Override public void onAdFailedToLoad(LoadAdError error) {
                             activity.runOnUiThread(() -> {
                                 if (destroyed || generation != requestGeneration || decided) return;
                                 lastStatus = "Native video doluluk yok ("
@@ -147,12 +147,7 @@ final class MiddleVideoNative237 {
                                 fallback(requestGeneration, useMrecFallback);
                             });
                         }
-                        @Override public void onAdImpression() {
-                            android.util.Log.i("AracimAdMob",
-                                    "middle_video237_impression: SDK");
-                        }
-                    })
-                    .build().loadAd(new AdRequest.Builder().build());
+            });
         } catch (Throwable e) {
             lastStatus = "Native video istek hatası: " + e.getClass().getSimpleName();
             fallback(requestGeneration, useMrecFallback);
@@ -190,8 +185,6 @@ final class MiddleVideoNative237 {
         MediaView media = new MediaView(activity);
         // 290x162dp: large enough for the SDK's real native video content.
         body.addView(media, new LinearLayout.LayoutParams(-1, dp(162)));
-        nativeView.setMediaView(media);
-        media.setMediaContent(loadedAd.getMediaContent());
 
         LinearLayout footer = new LinearLayout(activity);
         footer.setGravity(Gravity.CENTER_VERTICAL);
@@ -228,7 +221,7 @@ final class MiddleVideoNative237 {
             nativeView.setCallToActionView(cta);
         }
 
-        nativeView.setNativeAd(loadedAd);
+        nativeView.registerNativeAd(loadedAd, media);
         return nativeView;
     }
 
