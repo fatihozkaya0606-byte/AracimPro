@@ -1,0 +1,34 @@
+name: AracimPro v241 isolated Next-Gen banner MREC compile (NO RELEASE)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ aracimpro-241-gma-nextgen-compatibility-test ]
+    paths: [ '.github/workflows/aracimpro-241-nextgen-banner-compile.yml', 'nextgen-ads/**', 'settings.gradle', 'build.gradle' ]
+
+jobs:
+  compile-nextgen-module:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Install Android SDK 36
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+      - name: Compile isolated Next-Gen API banner and 300x250 controller
+        run: gradle --no-daemon --max-workers=2 :nextgen-ads:compileDebugJavaWithJavac
+      - name: Verify no production Ads SDK or app code changed on this branch
+        run: |
+          grep -q "implementation 'com.google.android.gms:play-services-ads:25.5.0'" app/build.gradle
+          grep -q "implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.6.0'" nextgen-ads/build.gradle
+          grep -q 'AdSize.MEDIUM_RECTANGLE' nextgen-ads/src/main/java/com/aracimpro/nextgenads/NextGenBannerSlots241.java
+          grep -q 'BannerAdRequest.Builder' nextgen-ads/src/main/java/com/aracimpro/nextgenads/NextGenBannerSlots241.java
+          echo "Isolated banner and MREC component compiled. No APK/AAB or release."
