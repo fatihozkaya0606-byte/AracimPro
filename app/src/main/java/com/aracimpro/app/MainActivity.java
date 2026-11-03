@@ -898,7 +898,7 @@ private void showLaunchSplash() {
         // request once the home WebView is ready, while splash remains present.
         // No real AdMob unit can be used in a DEBUG preview.
         if (premiumActive) return;
-        if (premiumBillingReady || billingReconnectGrace228) {
+        if (BuildConfig.DEBUG || premiumBillingReady || billingReconnectGrace228) {
             if (!admobConsentRequested) requestAdMobConsentIfNeeded();
             if (canRequestAdMobAds()) initAdMobBanner();
         }
