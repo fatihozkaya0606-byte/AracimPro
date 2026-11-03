@@ -50,7 +50,7 @@ jobs:
           grep -q "com.google.ads.mediation:mintegral" app/build.gradle
           grep -q "com.google.ads.mediation:vungle" app/build.gradle
           grep -q "com.admost.sdk:admob-adapter" app/build.gradle
-          grep -q "com.github.bumptech.glide:glide:5.0.9" app/build.gradle
+          grep -q "com.github.bumptech.glide:glide:5.0.7" app/build.gradle
           bash tools/test-bottom-banner.sh
       - name: Build optimized internal release AAB for bytecode analysis ONLY
         shell: bash
