@@ -31,9 +31,9 @@ android {
         // CI may override this value with NATIVE_AD_UNIT_ID if explicitly set.
         buildConfigField "String", "NATIVE_AD_UNIT_ID", "\"${System.getenv('NATIVE_AD_UNIT_ID') ?: 'ca-app-pub-7205009121067400/6088628059'}\""
         // v237: optionally configure a separate Native unit for the middle video.
-        // Until a new AdMob Native unit is issued, reuse the verified native unit.
+        // Dedicated AdMob Native unit set to VIDEO-only in AdMob dashboard.
         // Debug always uses Google's dedicated Native VIDEO sample ad ID.
-        buildConfigField "String", "MIDDLE_VIDEO_NATIVE_AD_UNIT_ID", "\"${System.getenv('MIDDLE_VIDEO_NATIVE_AD_UNIT_ID') ?: (System.getenv('NATIVE_AD_UNIT_ID') ?: 'ca-app-pub-7205009121067400/6088628059')}\""
+        buildConfigField 'String', 'MIDDLE_VIDEO_NATIVE_AD_UNIT_ID', '"ca-app-pub-7205009121067400/1726333916"'
         // Dedicated App Open ad unit: set APP_OPEN_AD_UNIT_ID as a GitHub Actions secret.
         // Never reuse interstitial or banner IDs. Without a valid unit, live App Open stays off.
         // Dedicated App Open AdMob unit created in publisher console; distinct from interstitial ID.
@@ -59,8 +59,8 @@ android {
         // Both explicit gates default OFF. Enable only for signed internal tests
         // after AdMost/AdMob UMP vendor settings are independently verified.
         buildConfigField 'boolean', 'ADMOST_ROUTE_BANNER_MREC', (System.getenv('ADMOST_ROUTE_BANNER_MREC') ?: 'false').toBoolean().toString()
-        versionCode 237
-        versionName '7.12.2'
+        versionCode 238
+        versionName '7.12.3'
     }
 
     signingConfigs {
@@ -77,7 +77,7 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix '.neonpreview'
-            versionNameSuffix '-video237preview'
+            versionNameSuffix '-video238preview'
             if (keystorePropertiesFile.exists()) {
                 signingConfig signingConfigs.release
             }
