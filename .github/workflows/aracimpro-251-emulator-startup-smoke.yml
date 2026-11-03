@@ -1,0 +1,133 @@
+name: AracimPro v251 REAL Android 15 Startup Smoke Test (NO PLAY)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ aracimpro-251-nonblocking-startup-runtime-smoke ]
+    paths: [ '.github/workflows/aracimpro-251-emulator-startup-smoke.yml' ]
+
+jobs:
+  android-15-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Install Android SDK 36 and NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "ndk;27.2.12479018"
+      - name: Check actual root cause patch and keep the known-good v244 behavior
+        run: |
+          set -eu
+          FILE=app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q 'splash_closed251' "$FILE"
+          grep -q 'startLiveAdsAfterSplash251' "$FILE"
+          grep -q 'startDebugAdsAfterPage244' "$FILE"
+          grep -q 'showWebViewRetryDialog244' "$FILE"
+          ! grep -q 'elapsedOnSplash < 11000L && !appOpenAttemptFinished141' "$FILE"
+          grep -q 'LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS' "$FILE"
+          grep -q 'com.google.ads.mediation:mintegral:17.1.91.0' app/build.gradle
+          grep -q 'com.yandex.ads.adapter:admob-mobileads' app/build.gradle
+          grep -q 'com.google.ads.mediation:unity' app/build.gradle
+          grep -q 'com.google.ads.mediation:vungle' app/build.gradle
+          bash tools/test-bottom-banner.sh
+      - name: Use existing upload key for upgrade-compatible debug preview
+        env:
+          PLAY_UPLOAD_KEYSTORE_B64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_B64 }}
+          STORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+        run: |
+          if [ -n "$PLAY_UPLOAD_KEYSTORE_B64" ]; then
+            echo "$PLAY_UPLOAD_KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/upload-key.jks"
+            cat > keystore.properties <<EOF2
+          storeFile=$RUNNER_TEMP/upload-key.jks
+          storePassword=$STORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF2
+          fi
+      - name: Package v251 sample-ads TEST APK
+        shell: bash
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
+          LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
+        run: |
+          set -o pipefail
+          gradle --no-daemon --max-workers=2 :app:assembleDebug 2>&1 | tee v251-build.log
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --min-sdk-version 24 "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | grep -q "package: name='com.aracimpro.app.neonpreview'"
+      - name: Enable hardware acceleration (if hosted runner exposes KVM)
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+      - name: Android 15 emulator - verify three real cold starts reach HOME
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          ram-size: 3072M
+          heap-size: 512M
+          disk-size: 6000M
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: |
+            set -e
+            mkdir -p out
+            adb install -r app/build/outputs/apk/debug/app-debug.apk
+            adb shell pm clear com.aracimpro.app.neonpreview
+            for trial in 1 2 3; do
+              echo "=== Cold start ${trial} ===" | tee -a out/v251-smoke-summary.txt
+              adb shell am force-stop com.aracimpro.app.neonpreview || true
+              adb logcat -c
+              adb shell am start -n com.aracimpro.app.neonpreview/com.aracimpro.app.MainActivity
+              success=0
+              for attempt in $(seq 1 50); do
+                if adb logcat -d -s AracimAdMob:I '*:S' | grep -q 'splash_closed251'; then
+                  if adb logcat -d -s AracimAdMob:I '*:S' | grep -q 'webview_ready_249'; then
+                    success=1
+                    break
+                  fi
+                fi
+                sleep 1
+              done
+              adb logcat -d -v time > "out/v251-android15-run${trial}.log"
+              if [ "$success" -ne 1 ]; then
+                echo "FAIL: HOME not ready and/or splash still present at 50s on run ${trial}" | tee -a out/v251-smoke-summary.txt
+                exit 1
+              fi
+              echo "PASS: HOME WebView loaded and splash closed on run ${trial}" | tee -a out/v251-smoke-summary.txt
+              adb shell dumpsys activity activities | grep -E 'mResumedActivity|topResumedActivity' | head -2 | tee -a out/v251-smoke-summary.txt || true
+            done
+            adb shell screencap -p /sdcard/v251-final.png
+            adb pull /sdcard/v251-final.png out/v251-final-android15.png
+      - name: Upload TEST APK only with smoke result; NEVER publish to Play
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: AracimPro-v251-ANDROID15-SMOKE-TEST-APK-NO-PLAY
+          path: |
+            app/build/outputs/apk/debug/app-debug.apk
+            v251-build.log
+            out/v251-smoke-summary.txt
+            out/v251-android15-run1.log
+            out/v251-android15-run2.log
+            out/v251-android15-run3.log
+            out/v251-final-android15.png
+          if-no-files-found: ignore
+          retention-days: 14
