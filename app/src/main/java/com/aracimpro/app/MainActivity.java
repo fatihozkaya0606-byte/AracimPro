@@ -842,8 +842,8 @@ private void showLaunchSplash() {
                 "(function(){return document.readyState;})()",
                 state -> {
                     if (apPremiumSplashView == null || isFinishing() || isDestroyed()) return;
-                    if ("\\\"complete\\\"".equals(state) ||
-                            "\\\"interactive\\\"".equals(state)) {
+                    if (state != null &&
+                            (state.contains("complete") || state.contains("interactive"))) {
                         pageReady = true;
                         splashDismissAllowed = true;
                         logAdMob("splash_webview_recovered_243", String.valueOf(state));
