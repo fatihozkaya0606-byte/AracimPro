@@ -2,8 +2,6 @@ name: Aracim Pro v241 GMA Next-Gen Dependency Compatibility (NO RELEASE)
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ aracimpro-241-gma-nextgen-compatibility-test ]
 
 jobs:
   nextgen-compile-check:
