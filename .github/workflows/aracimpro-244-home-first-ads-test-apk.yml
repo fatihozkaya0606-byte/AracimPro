@@ -1,0 +1,106 @@
+name: AracimPro v244 home-first ads TEST APK (NO PLAY RELEASE)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ aracimpro-244-ads-after-home-launch-isolation ]
+    paths: [ '.github/workflows/aracimpro-244-home-first-ads-test-apk.yml' ]
+
+jobs:
+  build-test-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Install Android SDK 36 and NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" "ndk;27.2.12479018"
+      - name: Verify new SDK, original ad units and UMP, and separate test install
+        run: |
+          set -e
+          bash tools/test-bottom-banner.sh
+          grep -q "ads-mobile-sdk:1.6.0" app/build.gradle
+          ! grep -q "implementation 'com.google.android.gms:play-services-ads:" app/build.gradle
+          grep -q "applicationIdSuffix '.neonpreview'" app/build.gradle
+          grep -q 'ADMOB_TEST_MODE' app/build.gradle
+          grep -q 'com.google.android.ump:user-messaging-platform' app/build.gradle
+          grep -q 'com.yandex.ads.adapter:admob-mobileads' app/build.gradle
+          grep -q 'com.google.ads.mediation:unity' app/build.gradle
+          grep -q 'com.google.ads.mediation:mintegral' app/build.gradle
+          grep -q 'com.google.ads.mediation:vungle' app/build.gradle
+          grep -q 'LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS' app/src/main/java/com/aracimpro/app/MainActivity.java
+      - name: Check v244 splash repair and no premature native validator
+        run: |
+          grep -q 'MAX_APP_OPEN_SPLASH_HOLD_MS243' app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q 'splashWatchdog243' app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q 'if (!apPremiumSplashHidden || apPremiumSplashView != null) return;' app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q 'startDebugAdsAfterPage244' app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q 'showWebViewRetryDialog244' app/src/main/java/com/aracimpro/app/MainActivity.java
+      - name: Restore existing stable preview signing key where available
+        env:
+          PLAY_UPLOAD_KEYSTORE_B64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_B64 }}
+          STORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+        run: |
+          if [ -n "$PLAY_UPLOAD_KEYSTORE_B64" ]; then
+            echo "$PLAY_UPLOAD_KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/upload-key.jks"
+            cat > keystore.properties <<EOF2
+          storeFile=$RUNNER_TEMP/upload-key.jks
+          storePassword=$STORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF2
+          fi
+      - name: Compile, dex, sign and package entire Aracim Pro Next-Gen debug TEST
+        shell: bash
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
+          LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
+        run: |
+          set -o pipefail
+          gradle --no-daemon --max-workers=2 :app:assembleDebug 2>&1 | tee v244-test-build.log
+      - name: Verify APK, signature and separate package ID, store SHA-256
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --min-sdk-version 24 "$APK"
+          "$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging "$APK" | tee v244-aapt-badging.txt
+          grep -q "package: name='com.aracimpro.app.neonpreview'" v244-aapt-badging.txt
+          mkdir -p out
+          cp "$APK" out/AracimPro-v244-NextGen-TEST.apk
+          sha256sum out/AracimPro-v244-NextGen-TEST.apk > out/checksum.sha256
+          cat > out/README.txt <<EOF2
+          Aracim Pro v244 TEST APK
+          Separate debug preview (com.aracimpro.app.neonpreview)
+          Experimental Next-Gen Mobile Ads SDK 1.6.0: debug ads start AFTER page renders, warm-return splash bypassed.
+          Official Google sample ads in DEBUG. Do not expect revenue.
+          Preserves original Play-installed app; never uploads to Play.
+          Main app compiled and previous v242 R8 passed; ad fill and mediation still
+          REQUIRE physical device tests. Play Console warnings NOT yet verified.
+          EOF2
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: AracimPro-v244-NEXTGEN-TEST-APK-NO-PLAY
+          path: |
+            out/
+            v244-aapt-badging.txt
+            v244-test-build.log
+          if-no-files-found: ignore
+          retention-days: 30
