@@ -1,0 +1,68 @@
+name: AracimPro v244 Known-Good Baseline - Android 15 Emulator (COMPARE ONLY)
+on:
+  workflow_dispatch:
+  push:
+    branches: [ aracimpro-244-baseline-emulator-compare ]
+    paths: [ '.github/workflows/aracimpro-244-baseline-android15-compare.yml' ]
+jobs:
+  baseline-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Android SDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "ndk;27.2.12479018"
+      - name: Ensure no v251 App Open changes leaked into stable baseline
+        run: |
+          test -f tools/v244-baseline-emulator.sh
+          grep -q 'v244_baseline_webview_ready' app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q 'v244_baseline_splash_closed' app/src/main/java/com/aracimpro/app/MainActivity.java
+          grep -q "ads-mobile-sdk:1.6.0" app/build.gradle
+      - name: Build known-good v244 test APK with only diagnostic logs
+        shell: bash
+        env:
+          OTOAPI_KEY: ${{ secrets.OTOAPI_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          MARKET_API_URL: ${{ secrets.MARKET_API_URL }}
+          LIVE_DATA_API_URL: ${{ secrets.LIVE_DATA_API_URL }}
+        run: |
+          set -o pipefail
+          gradle --no-daemon --max-workers=2 :app:assembleDebug 2>&1 | tee v244-baseline-build.log
+      - name: Emulator KVM
+        run: |
+          if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm; fi
+      - name: Baseline Android15 app launch
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          ram-size: 3072M
+          heap-size: 512M
+          disk-size: 6000M
+          disable-animations: false
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: bash tools/v244-baseline-emulator.sh
+      - name: Preserve baseline app runtime evidence, never upload to Play
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v244-known-good-android15-baseline-smoke-only
+          path: |
+            out/
+            v244-baseline-build.log
+          if-no-files-found: ignore
+          retention-days: 14
