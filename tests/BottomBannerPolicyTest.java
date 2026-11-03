@@ -27,12 +27,11 @@ public final class BottomBannerPolicyTest {
 
         retry = state.requestFailed(200_000); // SDK auto-refresh failure
         check(state.isLoaded(), "Refresh failure must retain the previous creative");
-        check(retry >= 60_000, "A refresh retry must respect the minimum interval");
-        check(!state.canRequest(200_001), "Repeated lifecycle events must not bypass refresh backoff");
-        state.requestStarted(200_000 + retry);
+        check(retry == 0L, "SDK auto-refresh must not schedule an extra manual request");
+        check(!state.isRetryPending(), "No retry may remain after a successful load");
+        check(!state.canRequest(999_999), "Resume/layout must not reload an already shown banner");
         check(!state.initialLoadTimedOut(999_999), "Timeout must not destroy a retained creative");
-        state.adLoaded();
-        check(state.failureCount() == 0 && !state.isRetryPending(), "Success clears retry history");
+        check(state.failureCount() == 0, "SDK-only refresh must not increase app retry failures");
 
         state.viewRemoved(); // e.g. split-screen width changes
         check(state.canRequest(1_000_000), "A resized view must be able to load a matching ad");
