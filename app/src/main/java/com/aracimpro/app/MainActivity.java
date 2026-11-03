@@ -403,11 +403,9 @@ public class MainActivity extends Activity {
         showLaunchSplash();
         // Google Play Premium verification always gates the LIVE release.
         initPremiumBilling();
-        if (BuildConfig.DEBUG) {
-            // Only Google SAMPLE ad units in debug, never real mediated inventory.
-            requestAdMobConsentIfNeeded();
-            initAdMobBanner();
-        }
+        // v244 TEST: do NOT initialize consent, Next-Gen SDK or Native ads
+        // while WebView is first rendering. The live release behavior is
+        // unchanged. Debug ad requests begin only after a usable home screen.
         final int fallbackTop = systemDimen("status_bar_height", dp(28));
         final int fallbackBottom = systemDimen("navigation_bar_height", dp(44));
         applyWebMargins(0, fallbackTop, 0, fallbackBottom);
@@ -819,6 +817,30 @@ private void showLaunchSplash() {
         }
     }
 
+    private boolean webViewRetryDialogShown244 = false;
+
+    private void showWebViewRetryDialog244() {
+        if (webViewRetryDialogShown244 || apPremiumSplashView == null ||
+                isFinishing() || isDestroyed()) return;
+        webViewRetryDialogShown244 = true;
+        logAdMob("webview_stalled_244", "Home UI not ready after retry");
+        new android.app.AlertDialog.Builder(this)
+            .setTitle("Aracım Pro açılışı tamamlanamadı")
+            .setMessage("Uygulamanın ana ekranı yüklenemedi. Bu test sürümünde yeniden dene.")
+            .setCancelable(false)
+            .setPositiveButton("Tekrar dene", (dialog, which) -> {
+                webViewRetryDialogShown244 = false;
+                webViewRecoveryAttempted243 = false;
+                if (webView != null && !isFinishing() && !isDestroyed()) {
+                    webView.reload();
+                    mainHandler.removeCallbacks(splashWatchdog243);
+                    mainHandler.postDelayed(splashWatchdog243, 10000L);
+                }
+            })
+            .setNegativeButton("Kapat", (dialog, which) -> finish())
+            .show();
+    }
+
     private void recoverStalledSplash243() {
         if (apPremiumSplashView == null || apPremiumSplashHidden
                 || isFinishing() || isDestroyed()) return;
@@ -833,8 +855,15 @@ private void showLaunchSplash() {
             hideLaunchSplashWhenReady();
             return;
         }
-        if (webView == null || webViewRecoveryAttempted243) return;
+        if (webView == null) return;
+        if (webViewRecoveryAttempted243) {
+            showWebViewRetryDialog244();
+            return;
+        }
         webViewRecoveryAttempted243 = true;
+        // A WebView JS callback may never arrive if the renderer has frozen.
+        // Always schedule a second, bounded recovery check.
+        mainHandler.postDelayed(splashWatchdog243, 10000L);
         // A stalled WebView callback can leave a fully painted web page
         // underneath an eternal splash. Verify actual document readiness
         // before marking the page ready; never falsely claim success.
@@ -856,6 +885,14 @@ private void showLaunchSplash() {
                 });
     }
 
+    private void startDebugAdsAfterPage244() {
+        if (!BuildConfig.DEBUG || !pageReady || !apPremiumSplashHidden ||
+                apPremiumSplashView != null || isFinishing() || isDestroyed()) return;
+        logAdMob("debug_home_ready_244", "WebView and splash complete; start ads");
+        requestAdMobConsentIfNeeded();
+        if (canRequestAdMobAds() && admobSdkReady) initAdMobBanner();
+    }
+
     private void hideLaunchSplashWhenReady() {
         // Keep the intro visible for ~3.35 seconds on a ready device.
         // If the WebView is still loading, never expose an uninitialized blank screen.
@@ -866,11 +903,12 @@ private void showLaunchSplash() {
         // No custom launch-count or minute-based cooldown: request an App Open
         // for each eligible app entry, while the loading screen is still visible.
         // Billing and UMP remain authoritative; never fake an ad or overrun content.
-        final boolean openAdEligible = !premiumActive &&
-                (BuildConfig.DEBUG || BuildConfig.ADMOB_TEST_MODE ||
+        final boolean openAdEligible = !BuildConfig.DEBUG && !premiumActive &&
+                (BuildConfig.ADMOB_TEST_MODE ||
                  (BuildConfig.APP_OPEN_AD_UNIT_ID != null &&
                   BuildConfig.APP_OPEN_AD_UNIT_ID.matches("ca-app-pub-[0-9]+/[0-9]+")));
-        if (openAdEligible && apPremiumSplashView != null &&
+        if (openAdEligible && !BuildConfig.DEBUG &&
+                apPremiumSplashView != null &&
                 elapsedOnSplash < 11000L && !appOpenAttemptFinished141) {
             // Let ad SDK, purchase status and consent resolve, up to a strict cap.
             // The splash is the only permitted App Open display surface.
@@ -906,7 +944,7 @@ private void showLaunchSplash() {
         if (splash == null) {
             stopLaunchEngineSound();
             if (root != null) apSetAdViewsVisible(root, true);
-            if (canRequestAdMobAds() && admobSdkReady) initAdMobBanner();
+            startDebugAdsAfterPage244();
             return;
         }
 
@@ -923,9 +961,10 @@ private void showLaunchSplash() {
             apLaunchBrand = null;
             apLaunchProgressTick = null;
             if (root != null) apSetAdViewsVisible(root, true);
-            // Defer Native validator/video, banners, and other ad formats
-            // until the real WebView has replaced the splash.
-            if (canRequestAdMobAds() && admobSdkReady) initAdMobBanner();
+            // Native ads and their test validators never compete with intro.
+            startDebugAdsAfterPage244();
+            if (!BuildConfig.DEBUG && canRequestAdMobAds() && admobSdkReady)
+                initAdMobBanner();
         }).start();
 
     }
@@ -1591,6 +1630,11 @@ private void showLaunchSplash() {
     }
 
     private void requestAdMobConsentIfNeeded() {
+        // Consent UI also must not interrupt the debug startup page.
+        // For live release, preserve the original UMP/premium prerequisites.
+        if (BuildConfig.DEBUG &&
+                (!pageReady || !apPremiumSplashHidden || apPremiumSplashView != null))
+            return;
         if (premiumActive || (!premiumBillingReady && !BuildConfig.DEBUG)
                 || admobConsentRequested || isFinishing() || isDestroyed()) return;
         admobConsentRequested = true;
@@ -1833,6 +1877,11 @@ private void showLaunchSplash() {
     }
 
     private void initAdMobBanner() {
+        // v244 diagnostic: exclude ALL Google Next-Gen ad side effects from
+        // initial WebView navigation and splash. Production keeps App Open.
+        if (BuildConfig.DEBUG &&
+                (!pageReady || !apPremiumSplashHidden || apPremiumSplashView != null))
+            return;
         if (!canRequestAdMobAds() || isFinishing() || isDestroyed()) return;
         // Important: initialization can stay true after premium / Billing
         // disconnect destroyed both AdViews. Recreate missing units then.
@@ -2837,8 +2886,10 @@ private void showLaunchSplash() {
         activityResumed143 = true;
         // When the user genuinely re-enters from background, create the loading
         // surface first. Do not interrupt billing, permissions or another ad.
-        final boolean userReturnedToApp143 = appWasBackgrounded &&
-                backgroundedAt143 > 0L &&
+        // v244 debug isolates startup. Do not reopen a splash on every
+        // warm return while evaluating Next-Gen SDK lifecycle behavior.
+        final boolean userReturnedToApp143 = !BuildConfig.DEBUG &&
+                appWasBackgrounded && backgroundedAt143 > 0L &&
                 android.os.SystemClock.elapsedRealtime() - backgroundedAt143 >= 8000L &&
                 apPremiumSplashHidden && !appOpenShowing122 &&
                 // A full-screen ad may itself pause/resume this Activity.
