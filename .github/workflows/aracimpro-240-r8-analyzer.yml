@@ -2,8 +2,6 @@ name: Aracim Pro v240 R8 Configuration Analyzer (NO RELEASE)
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ aracimpro-240-play-console-3-issues-diagnostics ]
 
 jobs:
   build-release:
@@ -77,6 +75,9 @@ jobs:
           from pathlib import Path
           p=Path("settings.gradle")
           s=p.read_text()
+          if "com.android.tools:r8:9.4.14" in s:
+              print("Current branch already uses the verified R8 diagnostic version")
+              raise SystemExit(0)
           anchor="pluginManagement {"
           assert s.count(anchor)==1
           s=s.replace(anchor, """pluginManagement {
