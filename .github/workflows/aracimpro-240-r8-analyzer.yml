@@ -81,6 +81,7 @@ jobs:
           assert s.count(anchor)==1
           s=s.replace(anchor, """pluginManagement {
               buildscript {
+                  repositories { google(); mavenCentral() }
                   dependencies { classpath("com.android.tools:r8:9.4.14") }
               }
           """, 1)
