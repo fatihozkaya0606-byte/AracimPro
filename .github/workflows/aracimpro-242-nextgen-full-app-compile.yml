@@ -4,7 +4,12 @@ on:
   workflow_dispatch:
   push:
     branches: [ aracimpro-242-nextgen-full-app-migration-test ]
-    paths: [ '.github/workflows/aracimpro-242-nextgen-full-app-compile.yml' ]
+    paths:
+      - '.github/workflows/aracimpro-242-nextgen-full-app-compile.yml'
+      - 'app/src/main/java/com/aracimpro/app/MainActivity.java'
+      - 'app/src/main/java/com/aracimpro/app/NativeFeedController146.java'
+      - 'app/src/main/java/com/aracimpro/app/MiddleVideoNative237.java'
+      - 'app/build.gradle'
 
 jobs:
   compile-app-nextgen:
