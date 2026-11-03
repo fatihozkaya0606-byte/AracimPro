@@ -132,6 +132,15 @@ dependencies {
     // Yandex formats remain managed by AdMob (not separately shown).
     implementation 'com.yandex.android:mobileads:8.6.0'
     implementation 'com.yandex.ads.adapter:admob-mobileads:8.4.0.0'
+    // TEST BRANCH ONLY: official Start.io AdMob custom-event adapter for
+    // the existing 300x250 MREC waterfall. The AdMob ad unit and existing
+    // Yandex/Unity/AdMob paths are unchanged; do not enable live demand until
+    // GMA 25.5 compatibility, UMP consent and startup checks pass.
+    // Adapter 3.1.1 was built for GMA 24.x; keep the app's explicit 25.5.0
+    // rather than resolving an older transitive Google Mobile Ads artifact.
+    implementation('io.start:admob-mediation:3.1.1') {
+        exclude group: 'com.google.android.gms', module: 'play-services-ads'
+    }
     // Unity Ads bidding through the existing AdMob ad units. Existing banner,
     // 300x250, interstitial and rewarded placements are unchanged.
     // AdMob mediation: SDKs only. Network demand requires separate mapping and
