@@ -70,7 +70,7 @@ final class MiddleVideoNative237 {
     String getAdapterName() {
         try {
             if (ad == null || ad.getResponseInfo() == null) return "unknown";
-            String adapter = ad.getResponseInfo().getMediationAdapterClassName();
+            String adapter = ad.getResponseInfo().getAdapterClassName();
             return adapter == null ? "unknown" : adapter;
         } catch (Throwable ignored) {
             return "unknown";
