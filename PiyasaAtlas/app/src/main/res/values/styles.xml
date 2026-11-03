@@ -1,0 +1,1 @@
+<resources><style name="AtlasTheme" parent="android:style/Theme.Material.NoActionBar"><item name="android:windowBackground">#06101B</item><item name="android:statusBarColor">#06101B</item><item name="android:navigationBarColor">#06101B</item><item name="android:windowLightStatusBar">false</item></style></resources>
