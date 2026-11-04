@@ -5,6 +5,11 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Aracım Pro — Yakıt ve Araç Masrafı Hesaplama</title>
 <meta name="description" content="Aracım Pro: yakıt masrafınızı, kilometre başına maliyetinizi ve yıllık araç giderlerinizi saniyeler içinde ücretsiz hesaplayın.">
+<link rel="canonical" href="https://fatihozkaya0606-byte.github.io/AracimPro/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Aracım Pro – Yakıt ve Araç Gideri Hesaplama">
+<meta property="og:description" content="Ücretsiz yakıt ve yıllık araç gideri hesaplayıcıları; araç bakımı için pratik rehberler.">
+<meta property="og:url" content="https://fatihozkaya0606-byte.github.io/AracimPro/">
 <meta name="theme-color" content="#07162a"><meta name="robots" content="index,follow">
 <style>
 :root{color-scheme:dark;--bg:#061426;--card:#10233b;--line:#294057;--ink:#f2f7ff;--muted:#b1c3d7;--accent:#3cd6bd;--blue:#468ff6}
@@ -417,6 +422,22 @@ input{max-width:100%}
 .slider-pause{appearance:none;border:1px solid #7fd5c688;color:#c4fff1;background:#103448d9;border-radius:10px;height:30px;min-width:32px;display:inline-grid;place-items:center;font-size:14px;cursor:pointer;margin-right:6px;padding:0 6px}
 .slider-pause:focus-visible{outline:3px solid #fff;outline-offset:2px}
 .slider-pause:hover{background:#1a576b}
+
+/* Original guides and site transparency navigation */
+.learning-section{padding:60px 0;background:#071929}
+.learning-heading{display:flex;justify-content:space-between;align-items:end;gap:22px;margin:7px 0 25px}
+.learning-heading h2{margin:0}
+.learning-heading p{max-width:440px;font-size:14px;color:#abc1d3;margin:0}
+.learning-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}
+.learning-card{min-width:0;text-decoration:none;color:#f8fbff;background:linear-gradient(130deg,#123148,#0d243a);border:1px solid #304b64;padding:22px;border-radius:17px;display:flex;flex-direction:column;gap:12px;transition:transform .2s,border-color .2s}
+.learning-card:hover{transform:translateY(-3px);border-color:#54d8c0}
+.learning-card:focus-visible{outline:3px solid #5af9dc;outline-offset:3px}
+.learning-icon{color:#70ecd5;font-size:11px;font-weight:850;letter-spacing:1px}
+.learning-card strong{font-size:19px;line-height:1.35}
+.learning-card>span:nth-of-type(2){font-size:14px;color:#bfd0de}
+.learning-card em{color:#6cf2d3;font-size:13px;font-style:normal;font-weight:850;margin-top:auto}
+.footer-links a:hover{text-decoration:underline;color:#85f9e2}
+@media(max-width:740px){.learning-section{padding:35px 0}.learning-heading{display:block;margin-bottom:17px}.learning-heading h2{margin:7px 0;font-size:28px}.learning-grid{grid-template-columns:1fr;gap:10px}.learning-card{padding:18px;gap:8px}.learning-card strong{font-size:18px}.footer-links{line-height:2}}
 </style></head><body>
 <header><nav><a class="logo" href="#basla"><span class="brand-icon" aria-hidden="true">A</span> Aracım<span>Pro</span></a><div class="navlinks"><a href="#araclar">Araçlar</a><a href="#araclar" data-tab="yakit">Yakıt</a><a href="#araclar" data-tab="gider">Gider</a></div></nav></header>
 <main id="basla">
@@ -521,6 +542,18 @@ input{max-width:100%}
     <div class="after-tools"><div><span class="after-tag">PRATİK • HIZLI • ÜCRETSİZ</span><strong>Gereksiz menüler yok. Aracına dair önemli hesaplar burada.</strong></div><a href="#sorular">Merak edilenler <span aria-hidden="true">↗</span></a></div>
   </div>
 </section>
+
+<section class="learning-section" id="rehberler">
+  <div class="wrap">
+    <span class="label">ARACIM PRO REHBERLERİ</span>
+    <div class="learning-heading"><h2>Aracını daha iyi tanı.</h2><p>Yakıt ve araç masrafları hakkında günlük hayatta işe yarayan kısa rehberler.</p></div>
+    <div class="learning-grid">
+      <a class="learning-card" href="yakit-tuketimi-rehberi.html"><span class="learning-icon">01 / YAKIT</span><strong>100 km'de yakıt tüketimi nasıl hesaplanır?</strong><span>Formül, 450 km örneği ve gerçek tüketimi ölçmenin yolları</span><em>Rehberi oku ↗</em></a>
+      <a class="learning-card" href="arac-giderleri-rehberi.html"><span class="learning-icon">02 / BÜTÇE</span><strong>Yıllık araç masrafları nasıl planlanır?</strong><span>Yakıt, MTV, kasko, bakım ve diğer giderler için örnek bütçe</span><em>Rehberi oku ↗</em></a>
+      <a class="learning-card" href="arac-bakim-kontrol-listesi.html"><span class="learning-icon">03 / BAKIM</span><strong>Pratik araç bakım kontrol listesi</strong><span>Lastik, yağ, fren, muayene ve servis takibi için kontrol noktaları</span><em>Rehberi oku ↗</em></a>
+    </div>
+  </div>
+</section>
 <section class="trust-section" id="rehber"><div class="wrap">
   <div class="trust-grid">
    <div><span class="label">NEDEN ARACIM PRO?</span><h2>Her kuruşun hesabı sende.</h2><p>Günlük yolculuktan yıllık araç bütçene kadar en çok ihtiyaç duyduğun hesapları tek ekranda bir araya getirdik.</p></div>
@@ -533,7 +566,7 @@ input{max-width:100%}
 <details class="card" style="margin-top:12px"><summary><b>Bilgilerim kaydediliyor mu?</b></summary><p>Bu ilk sürümde hesaplar cihazınızda yapılır; formlarda girdiğiniz bilgileri sunucuya göndermiyoruz. İleride reklam veya analiz eklenirse bu açıklama güncellenecektir.</p></details>
 </div></section>
 </main>
-<footer><div class="foot"><div><a class="footer-brand" href="#basla">Aracım<span>Pro</span> Web</a><p>Aracını tanı, giderini yönet. © 2026</p></div><div class="footer-links"><a href="#araclar">Hesaplayıcılar</a><a href="#rehber">Hakkımızda</a><a href="#sorular">SSS</a></div></div><p class="footer-notice">Bu site, ücretsiz araç hesaplama araçları sunan bir ön sürümdür. Gerçek fiyat sorgulaması ve reklam gösterimi içermez.</p></footer>
+<footer><div class="foot"><div><a class="footer-brand" href="#basla">Aracım<span>Pro</span> Web</a><p>Aracını tanı, giderini yönet. © 2026</p></div><div class="footer-links"><a href="#araclar">Hesaplayıcılar</a><a href="#rehberler">Rehberler</a><a href="hakkimizda.html">Hakkımızda</a><a href="gizlilik-politikasi.html">Gizlilik politikası</a><a href="iletisim.html">İletişim</a></div></div><p class="footer-notice">Bağımsız, ücretsiz araç hesaplama ve bilgilendirme platformu. Fiyat örnekleri güncel resmi veri değildir; bu sürümde reklam yayını yoktur.</p></footer>
 <script>
 'use strict';
 const format=(n,d=2)=>Number.isFinite(n)?n.toLocaleString('tr-TR',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
