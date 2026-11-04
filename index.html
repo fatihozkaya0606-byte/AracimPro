@@ -318,6 +318,43 @@ footer{padding:35px 24px 27px}
   .tool-tab span:not(.tab-symbol){white-space:nowrap}
   .calc-note{font-size:13px}
 }
+
+/* v6: remove screenshot-observed blank edge and shorten oversized mobile sections */
+.hero-grid > *{min-width:0}
+.hero-visual{max-width:none;width:100%}
+.hero-photo{object-position:52% center}
+.hero-copy{max-width:100%}
+.tools-area{scroll-margin-top:74px}
+input{max-width:100%}
+@media(min-width:741px) and (max-width:1100px){
+  .hero-visual{max-width:none;width:100%;min-height:390px}
+  .hero-grid{grid-template-columns:minmax(0,1fr)}
+  .input-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .trust-grid{grid-template-columns:1fr}
+  .trust-points{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .trust-points>div{min-width:0}
+  .tools-area{padding:44px 0 32px}
+  .trust-section{padding:40px 0}
+  #sorular{padding:38px 0}
+  .after-tools{margin-top:12px}
+}
+@media(pointer:coarse) and (min-width:741px) and (max-width:1100px){
+  .hero-visual{max-width:none}
+  .input-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .field label{min-height:26px}
+}
+@media(max-width:740px){
+  .hero-visual{width:100%;max-width:100%;min-height:275px}
+  .tools-area{padding:32px 0 22px}
+  .hero{padding-bottom:33px}
+  .trust-section{padding:32px 0}
+  #sorular{padding:30px 0}
+  .trust-points{grid-template-columns:minmax(0,1fr)}
+  .input-grid{grid-template-columns:minmax(0,1fr)}
+  .tool-heading{margin-bottom:13px}
+  .tool-heading h2{margin-bottom:5px}
+  .after-tools{margin-top:10px}
+}
 </style></head><body>
 <header><nav><a class="logo" href="#basla"><span class="brand-icon" aria-hidden="true">A</span> Aracım<span>Pro</span></a><div class="navlinks"><a href="#araclar">Araçlar</a><a href="#araclar" data-tab="yakit">Yakıt</a><a href="#araclar" data-tab="gider">Gider</a></div></nav></header>
 <main id="basla">
