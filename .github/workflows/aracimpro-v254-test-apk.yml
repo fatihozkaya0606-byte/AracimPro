@@ -1,0 +1,65 @@
+name: AracimPro v254 Side-by-side Test APK
+
+on:
+  push:
+    branches: [ aracimpro-254-startup-recovery-hotfix ]
+    paths:
+      - '.github/workflows/aracimpro-v254-test-apk.yml'
+  workflow_dispatch:
+
+jobs:
+  test-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Install Android SDK and prerequisites
+        run: |
+          set -euo pipefail
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" "ndk;27.2.12479018"
+      - name: Confirm side-by-side debug configuration (sample ads only)
+        run: |
+          set -euo pipefail
+          grep -q "versionCode 254" app/build.gradle
+          grep -q "applicationIdSuffix '.neonpreview'" app/build.gradle
+          grep -q "versionNameSuffix '-r8v239preview'" app/build.gradle
+          grep -q 'startupRecovery254' app/src/main/java/com/aracimpro/app/MainActivity.java
+      - name: Build installable side-by-side debug APK
+        run: |
+          set -o pipefail
+          gradle --no-daemon --max-workers=2 :app:assembleDebug 2>&1 | tee v254-apk-build.log
+      - name: Validate and copy test APK
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          unzip -t "$APK" > /dev/null
+          mkdir -p out
+          cp "$APK" out/AracimPro-v254-7.12.6-TEST.apk
+          sha256sum "out/AracimPro-v254-7.12.6-TEST.apk" > out/SHA256.txt
+          cat > out/README.txt <<EOF
+          Aracim Pro 7.12.6 v254 side-by-side Android DEBUG APK.
+          Installs as com.aracimpro.app.neonpreview, so original Aracim Pro stays installed.
+          DEBUG build uses Google's sample ad unit IDs, not publisher paid live ads.
+          This APK is signed with the CI debug key, for temporary testing only.
+          Existing production app data is NOT migrated to the preview package.
+          Do not distribute to Google Play production. Inspect runtime on a real device.
+          EOF
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: AracimPro-v254-7.12.6-Test-APK
+          path: |
+            out/
+            v254-apk-build.log
+          if-no-files-found: ignore
+          retention-days: 10
