@@ -1742,7 +1742,7 @@ private void showLaunchSplash() {
         if (BuildConfig.DEBUG &&
                 (!pageReady || !apPremiumSplashHidden || apPremiumSplashView != null))
             return;
-        if (premiumActive || (!premiumBillingReady && !BuildConfig.DEBUG)
+        if (startupRecovery254 || premiumActive || (!premiumBillingReady && !BuildConfig.DEBUG)
                 || admobConsentRequested || isFinishing() || isDestroyed()) return;
         admobConsentRequested = true;
         try {
