@@ -486,6 +486,13 @@ footer nav.footer-links{display:flex;min-height:0;padding:0;margin:0;background:
  .extra-card h3{font-size:19px}
  .extra-card p{font-size:13px}
 }
+
+/* Tap-to-select controls across all homepage calculators */
+.home-quick-pick{cursor:pointer;appearance:auto;width:100%;min-height:53px;border:1px solid #39556d;border-radius:12px;background:#071b2e;color:#f8ffff;padding:12px;font-size:16px;font-weight:700}
+.home-quick-pick:focus-visible{outline:2px solid #54e2cc;outline-offset:2px}
+.home-quick-pick+input:not([hidden]){display:block;margin-top:9px;border-color:#4ab9ac}
+input[hidden]{display:none!important}
+@media(max-width:740px){.home-quick-pick{font-size:16px;min-height:54px}}
 </style></head><body>
 <header><nav><a class="logo" href="#basla"><span class="brand-icon" aria-hidden="true">A</span> Aracım<span>Pro</span></a><div class="navlinks"><a href="#araclar">Araçlar</a><a href="mtv-hesaplama.html">MTV</a><a href="arac-karsilastirma.html">Karşılaştır</a></div></nav></header>
 <main id="basla">
@@ -555,10 +562,10 @@ footer nav.footer-links{display:flex;min-height:0;padding:0;margin:0;background:
       <div class="tool-panel" id="yakit" role="tabpanel" aria-labelledby="tab-yakit">
         <div class="panel-intro"><div><span class="panel-eyebrow">YOLCULUK HESAPLAMA</span><h3>Yakıt maliyeti</h3><p>Yolculuğuna ne kadar yakıt ve para ayırman gerektiğini öğren.</p></div><span class="live-indicator"><i></i> Anlık hesaplama</span></div>
         <div class="input-grid">
-          <div class="field"><label for="km">Tek yön mesafe <small>km</small></label><input id="km" inputmode="decimal" type="number" min="0" step="1" value="450"></div>
-          <div class="field"><label for="l100">Ortalama tüketim <small>L / 100 km</small></label><input id="l100" inputmode="decimal" type="number" min="0" step="0.1" value="7.2"></div>
-          <div class="field"><label for="price">Litre fiyatı <small>TL</small></label><input id="price" inputmode="decimal" type="number" min="0" step="0.01" value="50"></div>
-          <div class="field"><label for="persons">Yolcu paylaşımı <small>kişi</small></label><input id="persons" inputmode="numeric" type="number" min="1" max="100" step="1" value="1"></div>
+          <div class="field"><label for="kmChoice">Tek yön mesafe <small>km</small></label><select class="home-quick-pick" id="kmChoice" data-input="km" aria-label="Hazır seçeneklerden değer seç"><option value="10">10 km</option><option value="25">25 km</option><option value="50">50 km</option><option value="100">100 km</option><option value="150">150 km</option><option value="200">200 km</option><option value="300">300 km</option><option value="450" selected>450 km</option><option value="500">500 km</option><option value="750">750 km</option><option value="1000">1.000 km</option><option value="1500">1.500 km</option><option value="__other__">Başka değer gir…</option></select><input hidden aria-label="Özel değer" id="km" inputmode="decimal" type="number" min="0" step="1" value="450"></div>
+          <div class="field"><label for="l100Choice">Ortalama tüketim <small>L / 100 km</small></label><select class="home-quick-pick" id="l100Choice" data-input="l100" aria-label="Hazır seçeneklerden değer seç"><option value="3.5">3,5 L/100 km</option><option value="4">4 L/100 km</option><option value="4.5">4,5 L/100 km</option><option value="5">5 L/100 km</option><option value="5.5">5,5 L/100 km</option><option value="6">6 L/100 km</option><option value="6.5">6,5 L/100 km</option><option value="7">7 L/100 km</option><option value="7.2" selected>7,2 L/100 km</option><option value="7.5">7,5 L/100 km</option><option value="8">8 L/100 km</option><option value="8.5">8,5 L/100 km</option><option value="9">9 L/100 km</option><option value="10">10 L/100 km</option><option value="12">12 L/100 km</option><option value="__other__">Başka değer gir…</option></select><input hidden aria-label="Özel değer" id="l100" inputmode="decimal" type="number" min="0" step="0.1" value="7.2"></div>
+          <div class="field"><label for="priceChoice">Litre fiyatı <small>TL</small></label><select class="home-quick-pick" id="priceChoice" data-input="price" aria-label="Hazır seçeneklerden değer seç"><option value="35">35 TL/L</option><option value="40">40 TL/L</option><option value="45">45 TL/L</option><option value="50" selected>50 TL/L</option><option value="55">55 TL/L</option><option value="60">60 TL/L</option><option value="65">65 TL/L</option><option value="70">70 TL/L</option><option value="75">75 TL/L</option><option value="80">80 TL/L</option><option value="__other__">Başka değer gir…</option></select><input hidden aria-label="Özel değer" id="price" inputmode="decimal" type="number" min="0" step="0.01" value="50"></div>
+          <div class="field"><label for="personsChoice">Yolcu paylaşımı <small>kişi</small></label><select class="home-quick-pick" id="personsChoice" data-input="persons" aria-label="Hazır seçeneklerden değer seç"><option value="1" selected>1 kişi</option><option value="2">2 kişi</option><option value="3">3 kişi</option><option value="4">4 kişi</option><option value="5">5 kişi</option><option value="6">6 kişi</option><option value="7">7 kişi</option><option value="8">8 kişi</option><option value="__other__">Başka değer gir…</option></select><input hidden aria-label="Özel değer" id="persons" inputmode="numeric" type="number" min="1" max="100" step="1" value="1"></div>
         </div>
         <label class="switch-row" for="roundTrip"><input id="roundTrip" type="checkbox"><span class="switch-track" aria-hidden="true"></span><span>Gidiş-dönüş hesapla</span></label>
         <div class="metrics"><div class="metric metric-primary"><small>TOPLAM YOL MALİYETİ</small><strong id="sum">1.620,00 TL</strong><span>Hesaplanan tahmini harcama</span></div><div class="metric"><small>GEREKEN YAKIT</small><strong id="litres">32,40 L</strong></div><div class="metric"><small>KİLOMETRE BAŞINA</small><strong id="per">3,60 TL</strong></div><div class="metric"><small>KİŞİ BAŞINA</small><strong id="share">1.620,00 TL</strong></div></div>
@@ -567,11 +574,11 @@ footer nav.footer-links{display:flex;min-height:0;padding:0;margin:0;background:
       <div class="tool-panel" id="gider" role="tabpanel" aria-labelledby="tab-gider" hidden>
         <div class="panel-intro"><div><span class="panel-eyebrow">BÜTÇE PLANLAMA</span><h3>Yıllık araç giderleri</h3><p>Bütün masraflarını tek ekranda gör, aylık bütçeni kolayca oluştur.</p></div></div>
         <div class="input-grid">
-          <div class="field"><label for="f">Yıllık yakıt <small>TL</small></label><input id="f" inputmode="decimal" type="number" min="0" value="48000"></div>
-          <div class="field"><label for="ins">Sigorta + kasko <small>TL</small></label><input id="ins" inputmode="decimal" type="number" min="0" value="22000"></div>
-          <div class="field"><label for="mtv">Motorlu taşıtlar vergisi <small>TL</small></label><input id="mtv" inputmode="decimal" type="number" min="0" value="5000"></div>
-          <div class="field"><label for="maint">Bakım ve onarım <small>TL</small></label><input id="maint" inputmode="decimal" type="number" min="0" value="8000"></div>
-          <div class="field"><label for="other">Diğer giderler <small>TL</small></label><input id="other" inputmode="decimal" type="number" min="0" value="3000"></div>
+          <div class="field"><label for="fChoice">Yıllık yakıt <small>TL</small></label><select class="home-quick-pick" id="fChoice" data-input="f" aria-label="Hazır seçeneklerden değer seç"><option value="0">0 TL</option><option value="12000">12.000 TL</option><option value="24000">24.000 TL</option><option value="36000">36.000 TL</option><option value="48000" selected>48.000 TL</option><option value="60000">60.000 TL</option><option value="75000">75.000 TL</option><option value="90000">90.000 TL</option><option value="120000">120.000 TL</option><option value="__other__">Başka değer gir…</option></select><input hidden aria-label="Özel değer" id="f" inputmode="decimal" type="number" min="0" value="48000"></div>
+          <div class="field"><label for="insChoice">Sigorta + kasko <small>TL</small></label><select class="home-quick-pick" id="insChoice" data-input="ins" aria-label="Hazır seçeneklerden değer seç"><option value="0">0 TL</option><option value="10000">10.000 TL</option><option value="15000">15.000 TL</option><option value="20000">20.000 TL</option><option value="22000" selected>22.000 TL</option><option value="25000">25.000 TL</option><option value="30000">30.000 TL</option><option value="40000">40.000 TL</option><option value="50000">50.000 TL</option><option value="60000">60.000 TL</option><option value="__other__">Başka değer gir…</option></select><input hidden aria-label="Özel değer" id="ins" inputmode="decimal" type="number" min="0" value="22000"></div>
+          <div class="field"><label for="mtvChoice">Motorlu taşıtlar vergisi <small>TL</small></label><select class="home-quick-pick" id="mtvChoice" data-input="mtv" aria-label="Hazır seçeneklerden değer seç"><option value="0">0 TL</option><option value="2500">2.500 TL</option><option value="3000">3.000 TL</option><option value="5000" selected>5.000 TL</option><option value="7500">7.500 TL</option><option value="10000">10.000 TL</option><option value="15000">15.000 TL</option><option value="25000">25.000 TL</option><option value="50000">50.000 TL</option><option value="__other__">Başka değer gir…</option></select><input hidden aria-label="Özel değer" id="mtv" inputmode="decimal" type="number" min="0" value="5000"></div>
+          <div class="field"><label for="maintChoice">Bakım ve onarım <small>TL</small></label><select class="home-quick-pick" id="maintChoice" data-input="maint" aria-label="Hazır seçeneklerden değer seç"><option value="0">0 TL</option><option value="3000">3.000 TL</option><option value="5000">5.000 TL</option><option value="8000" selected>8.000 TL</option><option value="10000">10.000 TL</option><option value="15000">15.000 TL</option><option value="20000">20.000 TL</option><option value="30000">30.000 TL</option><option value="__other__">Başka değer gir…</option></select><input hidden aria-label="Özel değer" id="maint" inputmode="decimal" type="number" min="0" value="8000"></div>
+          <div class="field"><label for="otherChoice">Diğer giderler <small>TL</small></label><select class="home-quick-pick" id="otherChoice" data-input="other" aria-label="Hazır seçeneklerden değer seç"><option value="0">0 TL</option><option value="1000">1.000 TL</option><option value="2000">2.000 TL</option><option value="3000" selected>3.000 TL</option><option value="5000">5.000 TL</option><option value="10000">10.000 TL</option><option value="15000">15.000 TL</option><option value="20000">20.000 TL</option><option value="__other__">Başka değer gir…</option></select><input hidden aria-label="Özel değer" id="other" inputmode="decimal" type="number" min="0" value="3000"></div>
         </div>
         <div class="metrics"><div class="metric metric-primary"><small>TAHMİNİ YILLIK TOPLAM</small><strong id="yearly">86.000 TL</strong><span>Girdiğin rakamların toplamı</span></div><div class="metric"><small>AYLIK ORTALAMA</small><strong id="monthly">7.166,67 TL</strong></div><div class="metric"><small>GÜNLÜK ORTALAMA</small><strong id="daily">235,62 TL</strong></div></div>
         <p class="calc-note">Bunlar örnek giderlerdir. Araç değer kaybı ve varsa kredi/finansman maliyetleri dahil değildir. Vergi veya sigorta için resmi fiyat sorgulaması yapılmaz.</p>
@@ -706,6 +713,22 @@ function selectTab(tab,focus=false){
   document.querySelectorAll('.tool-panel').forEach(panel=>{panel.hidden=panel.id!==tab});
 }
 document.querySelectorAll('input').forEach(el=>{el.addEventListener('input',calculate);el.addEventListener('change',calculate)});
+function updateQuickPick(select,focus=false){
+  const input=document.getElementById(select.dataset.input);
+  if(!input)return;
+  const manual=select.value==='__other__';
+  input.hidden=!manual;
+  if(!manual)input.value=select.value;
+  else if(focus)input.focus();
+}
+document.querySelectorAll('.home-quick-pick').forEach(select=>{
+  updateQuickPick(select);
+  select.addEventListener('change',()=>{
+    updateQuickPick(select,true);
+    calculate();
+  });
+});
+
 document.querySelectorAll('[data-tab]').forEach(el=>{
   el.addEventListener('click',()=>selectTab(el.dataset.tab));
 });
