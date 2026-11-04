@@ -59,8 +59,8 @@ android {
         // Both explicit gates default OFF. Enable only for signed internal tests
         // after AdMost/AdMob UMP vendor settings are independently verified.
         buildConfigField 'boolean', 'ADMOST_ROUTE_BANNER_MREC', (System.getenv('ADMOST_ROUTE_BANNER_MREC') ?: 'false').toBoolean().toString()
-        versionCode 255
-        versionName '7.12.7'
+        versionCode 256
+        versionName '7.12.8'
     }
 
     signingConfigs {
@@ -147,7 +147,10 @@ dependencies {
     implementation 'com.google.ads.mediation:unity:4.21.0.0'
     // Mintegral: official Google mediation adapter supports App Open, Banner,
     // MREC, Interstitial and Rewarded; 17.1.91.0 is verified with Next-Gen GMA 1.6.0 and Mintegral SDK 17.1.91.
-    implementation 'com.google.ads.mediation:mintegral:17.1.91.0'
+    // v256 R8 experiment: Mintegral partnership was rejected, so its all-class
+    // keep rule currently costs thousands of names. Exclude only this inactive
+    // adapter; AdMob, Yandex, Unity, Liftoff, and AdMost remain unchanged.
+    // implementation 'com.google.ads.mediation:mintegral:17.1.91.0'
     // Liftoff Monetize (formerly Vungle): Google mediation adapter for the
     // same formats; 7.7.9.0 is tested against GMA 25.5.0.
     implementation 'com.google.ads.mediation:vungle:7.7.9.0'
