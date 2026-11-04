@@ -355,6 +355,62 @@ input{max-width:100%}
   .tool-heading h2{margin-bottom:5px}
   .after-tools{margin-top:10px}
 }
+
+/* v7: Real interactive auto-sliding vehicle information cards */
+.hero-carousel{position:relative;overflow:hidden;isolation:isolate;background:#071321;min-height:415px}
+.hero-carousel:after{display:none}
+.slider-track{position:absolute;inset:0;display:flex;height:100%;width:100%;transition:transform .72s cubic-bezier(.22,.61,.36,1);will-change:transform}
+.hero-slide{position:relative;flex:0 0 100%;min-width:100%;height:100%;overflow:hidden;background:#081d31}
+.hero-slide .hero-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% center;filter:brightness(1.04) saturate(1.08)}
+.hero-slide:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#061426ed 0%,#07172ec7 43%,#06142614 82%),linear-gradient(0deg,#061324aa,transparent 67%);pointer-events:none;z-index:1}
+.slide-content{position:absolute;z-index:2;left:34px;right:45px;bottom:40px;max-width:370px;text-align:left}
+.slide-kicker{display:block;font-weight:850;letter-spacing:1.2px;font-size:11px;color:#83f5de;margin-bottom:12px}
+.slide-content h2{font-size:clamp(26px,3.3vw,36px);letter-spacing:-.8px;line-height:1.16;color:#fff;margin:0 0 11px;text-shadow:0 2px 16px #0008}
+.slide-content p{font-size:14px;line-height:1.5;color:#d4e4ef;margin:0 0 17px;max-width:320px}
+.slide-cta{display:inline-flex;gap:13px;align-items:center;justify-content:space-between;border:1px solid #73e5d4a8;background:#40d7bd;color:#062135;padding:10px 14px;border-radius:9px;font-weight:850;font-size:13px;box-shadow:0 6px 22px #0005}
+.slide-cta:hover{background:#81f2dc}
+.slide-cta:focus-visible,.slider-arrow:focus-visible,.slider-dot:focus-visible{outline:3px solid white;outline-offset:3px}
+.slider-topline{position:absolute;top:20px;left:28px;z-index:3;font-size:10px;font-weight:850;letter-spacing:1.15px;color:#d4f6ed;background:#061a28b9;border:1px solid #52787c8f;border-radius:30px;padding:7px 12px;backdrop-filter:blur(8px)}
+.slide-live-dot{display:inline-block;width:6px;height:6px;border-radius:100%;background:#5cf5cf;margin-right:7px;box-shadow:0 0 9px #58f2cf}
+.slider-arrow{position:absolute;z-index:4;top:50%;transform:translateY(-50%);appearance:none;border:1px solid #cce0ed6b;border-radius:12px;background:#091b2cc9;color:white;display:grid;place-items:center;width:39px;height:52px;cursor:pointer;font-size:34px;line-height:1;transition:background .15s}
+.slider-prev{left:9px}.slider-next{right:9px}
+.slider-arrow:hover{background:#14566a}
+.slider-controls{position:absolute;z-index:4;right:24px;bottom:18px;display:flex;gap:5px;align-items:center;border-radius:24px;background:#071626ad;padding:7px 9px}
+.slider-dot{border:0;background:transparent;padding:9px 4px;display:grid;place-items:center;cursor:pointer}
+.slider-dot span{display:block;width:21px;height:4px;border-radius:99px;background:#b3ced195;transition:background .2s,width .2s}
+.slider-dot.is-current span{width:31px;background:#74f1d9}
+@media(min-width:741px) and (max-width:1100px){
+  .hero-carousel{min-height:410px;max-width:none}
+  .slide-content{left:46px;bottom:38px;max-width:420px}
+  .slide-content h2{font-size:37px}
+  .slide-content p{font-size:17px}
+  .slide-cta{font-size:16px;padding:12px 17px}
+}
+@media(max-width:740px){
+  .hero-carousel{min-height:315px;max-width:100%}
+  .hero-slide .hero-photo{object-position:56% center;filter:brightness(1.10) saturate(1.03)}
+  .hero-slide:after{background:linear-gradient(90deg,#061324da 0%,#07142785 59%,#07142710 94%),linear-gradient(0deg,#061524d9 0%,transparent 75%)}
+  .slider-topline{left:14px;top:12px;padding:5px 9px;font-size:9px}
+  .slide-content{left:21px;right:45px;bottom:32px;max-width:280px}
+  .slide-kicker{font-size:10px;margin-bottom:7px}
+  .slide-content h2{font-size:clamp(22px,5.3vw,28px);margin-bottom:7px}
+  .slide-content p{font-size:12px;max-width:250px;line-height:1.42;margin-bottom:12px}
+  .slide-cta{font-size:12px;padding:9px 11px}
+  .slider-arrow{top:44%;height:40px;width:29px;font-size:27px;border-radius:9px}
+  .slider-prev{left:4px}.slider-next{right:4px}
+  .slider-controls{right:11px;bottom:9px;padding:5px 7px}
+  .slider-dot span{width:13px;height:4px}
+  .slider-dot.is-current span{width:22px}
+}
+@media(max-width:380px){
+  .hero-carousel{min-height:305px}
+  .slide-content{left:17px;right:39px;bottom:27px}
+  .slide-content h2{font-size:21px}
+  .slide-content p{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){
+  .slider-track{transition:none!important}
+}
 </style></head><body>
 <header><nav><a class="logo" href="#basla"><span class="brand-icon" aria-hidden="true">A</span> Aracım<span>Pro</span></a><div class="navlinks"><a href="#araclar">Araçlar</a><a href="#araclar" data-tab="yakit">Yakıt</a><a href="#araclar" data-tab="gider">Gider</a></div></nav></header>
 <main id="basla">
@@ -367,10 +423,44 @@ input{max-width:100%}
 <div class="actions"><a class="btn" href="#araclar" data-tab="yakit">Yakıtı hesapla <span aria-hidden="true">↗</span></a><a class="btn secondary" href="#araclar" data-tab="gider">Giderleri incele</a></div>
 <div class="hero-highlights"><span>✓ Ücretsiz hesaplama</span><span>✓ Üyelik gerekmez</span><span>✓ Mobil uyumlu</span></div>
 </div>
-<div class="hero-visual">
-<img class="hero-photo" src="https://images.unsplash.com/photo-1760713170685-b67abc3be5ad?auto=format&amp;fit=crop&amp;w=1400&amp;q=83" alt="Profesyonel stüdyoda çekilmiş koyu mavi SUV otomobil fotoğrafı" decoding="async" fetchpriority="high">
-<div class="hero-shine"></div>
-<div class="visual-caption"><span class="caption-eyebrow">ARACIM PRO / WEB</span><strong>Yolculuğun kontrolü sende.</strong><span>AKILLI HESAPLAMA • KOLAY KULLANIM</span></div>
+<div class="hero-visual hero-carousel" id="bilgi-kartlari" role="region" aria-roledescription="karusel" aria-label="Aracım Pro bilgilendirme kartları">
+  <div class="slider-track" id="sliderTrack">
+    <article class="hero-slide" role="group" aria-roledescription="slayt" aria-label="1 / 3: Yakıt hesaplama" aria-hidden="false">
+      <img class="hero-photo" src="https://images.unsplash.com/photo-1760713170685-b67abc3be5ad?auto=format&amp;fit=crop&amp;w=1250&amp;q=82" alt="Stüdyo ışıkları altında lacivert Volkswagen SUV" decoding="async" fetchpriority="high">
+      <div class="slide-content">
+        <span class="slide-kicker">01 / 03 • YAKIT ANALİZİ</span>
+        <h2>Yola çıkmadan<br>masrafını öğren.</h2>
+        <p>Mesafe ve tüketimi gir; yolculuk maliyetini saniyeler içinde hesapla.</p>
+        <a class="slide-cta" href="#araclar" data-tab="yakit">Yakıt hesabını aç <span aria-hidden="true">↗</span></a>
+      </div>
+    </article>
+    <article class="hero-slide" role="group" aria-roledescription="slayt" aria-label="2 / 3: Yıllık araç giderleri" aria-hidden="true">
+      <img class="hero-photo" src="https://images.unsplash.com/photo-1722385640799-4ee84eb90038?auto=format&amp;fit=crop&amp;w=1250&amp;q=82" alt="Koyu stüdyoda siyah Genesis GV70 SUV" decoding="async" loading="lazy">
+      <div class="slide-content">
+        <span class="slide-kicker">02 / 03 • BÜTÇE PLANI</span>
+        <h2>Yıllık araç giderlerini<br>tek yerden yönet.</h2>
+        <p>Yakıt, MTV, sigorta ve bakım harcamalarını tek hesapta topla.</p>
+        <a class="slide-cta" href="#araclar" data-tab="gider" tabindex="-1">Yıllık gideri hesapla <span aria-hidden="true">↗</span></a>
+      </div>
+    </article>
+    <article class="hero-slide" role="group" aria-roledescription="slayt" aria-label="3 / 3: Araç bakım rehberi" aria-hidden="true">
+      <img class="hero-photo" src="https://images.unsplash.com/photo-1750830331454-86df5c088ca7?auto=format&amp;fit=crop&amp;w=1250&amp;q=82" alt="Stüdyo ışığında gümüş rengi elektrikli Genesis GV60 SUV" decoding="async" loading="lazy">
+      <div class="slide-content">
+        <span class="slide-kicker">03 / 03 • BAKIM REHBERİ</span>
+        <h2>Aracın için önemli<br>kontrolleri unutma.</h2>
+        <p>Lastik, yağ, fren ve periyodik bakım için pratik kontrol rehberi.</p>
+        <a class="slide-cta" href="#araclar" data-tab="bakim" tabindex="-1">Bakım rehberine git <span aria-hidden="true">↗</span></a>
+      </div>
+    </article>
+  </div>
+  <div class="slider-topline"><span class="slide-live-dot"></span> ARACIM PRO • BİLGİ KARTLARI</div>
+  <button class="slider-arrow slider-prev" id="slidePrev" type="button" aria-label="Önceki bilgi kartı">‹</button>
+  <button class="slider-arrow slider-next" id="slideNext" type="button" aria-label="Sonraki bilgi kartı">›</button>
+  <div class="slider-controls" role="group" aria-label="Kayan kart seçimi">
+    <button class="slider-dot is-current" type="button" data-slide="0" aria-label="1. karta git" aria-pressed="true"><span></span></button>
+    <button class="slider-dot" type="button" data-slide="1" aria-label="2. karta git" aria-pressed="false"><span></span></button>
+    <button class="slider-dot" type="button" data-slide="2" aria-label="3. karta git" aria-pressed="false"><span></span></button>
+  </div>
 </div>
 </div></div>
 
@@ -479,5 +569,47 @@ document.querySelectorAll('.tool-tab').forEach(btn=>btn.addEventListener('keydow
   selectTab(tabs[next],true);
 }));
 calculate();
+
+/* Vehicle information carousel: automatic, touch-friendly, keyboard-accessible */
+(function initVehicleSlider(){
+  const carousel=document.getElementById('bilgi-kartlari');
+  const track=document.getElementById('sliderTrack');
+  if(!carousel||!track)return;
+  const slides=Array.from(track.querySelectorAll('.hero-slide'));
+  const dots=Array.from(carousel.querySelectorAll('.slider-dot'));
+  let currentSlide=0, timer=null, touchX=0, touchY=0;
+  const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function setSlide(index){
+    currentSlide=(index+slides.length)%slides.length;
+    track.style.transform='translateX(-'+(currentSlide*100)+'%)';
+    slides.forEach((slide,i)=>{
+      const active=i===currentSlide;
+      slide.setAttribute('aria-hidden',String(!active));
+      slide.querySelectorAll('a').forEach(link=>link.tabIndex=active?0:-1);
+    });
+    dots.forEach((dot,i)=>{dot.classList.toggle('is-current',i===currentSlide);dot.setAttribute('aria-pressed',String(i===currentSlide));});
+  }
+  function stop(){if(timer!==null){window.clearInterval(timer);timer=null;}}
+  function start(){
+    stop();
+    if(!reduceMotion&&!document.hidden)timer=window.setInterval(()=>setSlide(currentSlide+1),5800);
+  }
+  carousel.querySelector('#slidePrev').addEventListener('click',()=>{setSlide(currentSlide-1);start();});
+  carousel.querySelector('#slideNext').addEventListener('click',()=>{setSlide(currentSlide+1);start();});
+  dots.forEach((dot,index)=>dot.addEventListener('click',()=>{setSlide(index);start();}));
+  carousel.addEventListener('mouseenter',stop);
+  carousel.addEventListener('mouseleave',start);
+  carousel.addEventListener('focusin',stop);
+  carousel.addEventListener('focusout',e=>{if(!carousel.contains(e.relatedTarget))start();});
+  document.addEventListener('visibilitychange',()=>document.hidden?stop():start());
+  carousel.addEventListener('touchstart',e=>{touchX=e.changedTouches[0].clientX;touchY=e.changedTouches[0].clientY;stop();},{passive:true});
+  carousel.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-touchX;
+    const dy=e.changedTouches[0].clientY-touchY;
+    if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.1)setSlide(currentSlide+(dx<0?1:-1));
+    start();
+  },{passive:true});
+  setSlide(0);start();
+})();
 </script>
 </body></html>
