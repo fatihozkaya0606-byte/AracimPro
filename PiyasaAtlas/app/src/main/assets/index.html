@@ -140,6 +140,14 @@
 .pro-action{background:#173b54;color:#badcf7;border:1px solid #3b607e;padding:10px 13px;border-radius:10px;font-size:11px}
 .light .pro-section,.light .pro-stat,.light .pro-link{background:#fff;color:#24384d}
 @media(max-width:350px){.pro-link{font-size:9px}.pro-link b{font-size:14px}}
+
+/* v0.10: Real OHLC in cryptocurrency detail, honest metadata for source-limited assets */
+#detailChart{border:1px solid #28465e;background:#0b2034;border-radius:14px;overflow:hidden;min-height:190px;}
+#detailChart svg{display:block;width:100%;height:auto;}
+#detailChart .empty-graph{border:0;min-height:183px;display:flex;align-items:center;justify-content:center;padding:19px;}
+.atlas-detail-heading{font-size:13px;color:#d6e9fa}
+.sheet-body .metric-row .metric .n{font-size:13px;white-space:normal;word-break:break-word;}
+.sheet-body .data-info{line-height:1.8}
 </style></head><body>
 <div class="app">
  <div class="top"><div class="brand"><div class="symbol">∿</div><div><div class="brand-name">Piyasa <b>Atlas</b></div><div class="brand-sub">PREMIUM MARKETS</div></div></div><div class="top-actions"><button class="circle" id="themeBtn" aria-label="Tema değiştir">☾</button><button class="circle" id="refreshBtn" aria-label="Verileri yenile">↻</button></div></div>
@@ -430,7 +438,158 @@ function scheduleRender(){if(renderTick)return;renderTick=setTimeout(()=>{render
 function navigate(p){page=p;render();window.scrollTo({top:0,behavior:'smooth'});if(p==='charts')setTimeout(proLoadCandles,0);if(p==='funds')setTimeout(()=>proLoadFund(proFundCode),0);}
 function closeSheet(){$('#sheet').classList.remove('open');$('#sheetContent').innerHTML='';render();}
 function sheet(content){$('#sheetContent').innerHTML=content;$('#sheet').classList.add('open');}
-function detail(k){k=safeKey(k);selected=k;const a=ASSETS[k],m=meta[k],pct=change(k),st=status(k);const info=`<div class="data-info"><span class="badge-source">${st[0]}</span><span>Son kaynak zamanı: ${m?fmtTime(m.ts):'—'}</span></div>`;sheet(`<span class="eyebrow">${a.code} · ${a.source}</span><div class="detail-title-icon">${assetIcon(k)}<h2>${a.name}</h2></div><div class="detail-price">${fmt(prices[k],a.unit)}</div><div class="subtitle ${pct==null?'':pct>=0?'up':'down'}">${pct==null?'Değişim verisi henüz yok':(pct>0?'+':'')+formatN(pct)+'% (son 24 saat)'}</div>${info}${Number.isFinite(m?.sell)?`<div class="metric-row" style="margin-top:12px"><div class="metric"><div class="l">Alış</div><div class="n">${fmt(m.buy,a.unit)}</div></div><div class="metric"><div class="l">Satış</div><div class="n">${fmt(m.sell,a.unit)}</div></div></div>`:''}<div class="range" id="detailRanges" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:17px">${[['5D','5 dk'],['1S','1 sa'],['1G','1 gün'],['7G','7 gün']].map(([t,n])=>`<button class="${range===t?'chosen':''}" data-drange="${t}">${n}</button>`).join('')}</div><div id="detailChart">${chartSvg(k)}</div><div class="metric-row"><div class="metric"><div class="l">24s En yüksek</div><div class="n">${fmt(m?.high,a.unit)}</div></div><div class="metric"><div class="l">24s En düşük</div><div class="n">${fmt(m?.low,a.unit)}</div></div><div class="metric"><div class="l">24s Hacim</div><div class="n">${formatN(m?.volume,0)}</div></div></div><div class="hintbox">${esc(sourceTime(k))}. Fiyat grafiği uygulama açıldıktan sonra kaydedilen gerçek verileri içerir; geçmiş veriler henüz sağlayıcıdan indirilmiyor.</div><div class="actionrow"><button class="wide-btn" id="detailFav">${favs.has(k)?'★ Favorilerden çıkar':'☆ Favorilere ekle'}</button><button class="wide-btn secondary" id="detailAlert">🔔 Alarm kur</button></div>`);$('#detailFav').onclick=()=>{toggleStar(k);detail(k)};$('#detailAlert').onclick=()=>alertForm(k);$$('[data-drange]').forEach(b=>b.onclick=()=>{range=b.dataset.drange;detail(k)});}
+
+/* v0.10: A tapped asset must open its own real, labeled data rather than the generic chart. */
+let atlasDetailPeriod='1h',atlasDetailRequest=null,atlasDetailFetchTimer=0;
+const atlasDetailCache={},atlasDetailPeriods=['1m','5m','1h','1d'];
+function atlasDetailSample(k){
+ const a=ASSETS[k],hours=24,now=Date.now();
+ return (hist[k]||[]).filter(p=>Array.isArray(p)&&Number.isFinite(p[0])&&Number.isFinite(p[1])&&p[0]>now-hours*3600000).sort((x,y)=>x[0]-y[0]);
+}
+function atlasDetailObservedStats(k){
+ const p=atlasDetailSample(k);if(p.length<2)return null;
+ return {max:Math.max(...p.map(x=>x[1])),min:Math.min(...p.map(x=>x[1])),length:p.length};
+}
+function atlasDetailLocalBars(k){
+ const p=atlasDetailSample(k);
+ const per={'1m':60000,'5m':300000,'1h':3600000,'1d':86400000}[atlasDetailPeriod]||60000;
+ const groups=[];
+ for(const [t,v] of p){
+  const bucket=Math.floor(t/per)*per;
+  const last=groups.at(-1);
+  if(last&&last.t===bucket){last.h=Math.max(last.h,v);last.l=Math.min(last.l,v);last.c=v;}
+  else groups.push({t:bucket,o:v,h:v,l:v,c:v,v:0});
+ }
+ return groups;
+}
+function atlasDetailCandleRows(k,interval=atlasDetailPeriod){
+ return atlasDetailCache[k+':'+interval]?.rows||null;
+}
+function atlasDetailCryptoStats(k){
+ const m=meta[k]||{};
+ if(m.high>0&&m.low>0&&Number.isFinite(m.volume))
+  return {high:m.high,low:m.low,volume:m.volume,source:'Binance 24 saatlik akış'};
+ const rows=atlasDetailCandleRows(k,'1h')||[];
+ const today=rows.filter(r=>r.t>=Date.now()-24*3600000&&r.t<=Date.now());
+ if(today.length<2)return null;
+ return {high:Math.max(...today.map(r=>r.h)),low:Math.min(...today.map(r=>r.l)),volume:today.reduce((s,r)=>s+r.v*r.c,0),source:'Binance 1 saatlik mumlardan · yaklaşık USDT hacmi'};
+}
+function atlasDetailContent(k){
+ const a=ASSETS[k],m=meta[k]||{},isCrypto=!!a.pair;
+ const pct=change(k),st=status(k),obs=atlasDetailObservedStats(k);
+ const baseSource=esc(sourceTime(k));
+ const rows=isCrypto?atlasDetailCandleRows(k):null;
+ const sampleBars=isCrypto?null:atlasDetailLocalBars(k);
+ const cryptoStats=isCrypto?atlasDetailCryptoStats(k):null;
+ const graph=isCrypto?(rows&&rows.length>=8?proCandleSvg(rows):'<div class="empty-graph">'+(atlasDetailRequest?.key===k&&atlasDetailRequest?.interval===atlasDetailPeriod?'Binance gerçek mum grafiği yükleniyor…':'Gerçek Binance mum verileri bekleniyor. İnternet bağlantınızı kontrol edin veya yenileyin.')+'</div>'):
+  (sampleBars.length>=8&&new Set(sampleBars.map(x=>x.c)).size>1?proCandleSvg(sampleBars):'<div class="empty-graph">Bu varlık için kaynaktan geçmiş mum (OHLC) alınamıyor. Uygulama açıkken toplanan fiyatlardan grafik oluşması için yeterli farklı zamanlı kayıt henüz yok.</div>');
+ const headline=isCrypto?'Binance geçmiş OHLC mumları':'Cihazda gözlenen fiyatlardan türetilen grafik';
+ const subline=isCrypto?'Mumlar, alış/satış işlemleri ve hacim Binance verisinden alınır. Mum kapanmadan son değeri değişebilir.':'Bu grafik gerçek piyasa OHLC geçmişi değildir; cihazda gözlenen fiyatlardan oluşturulur. Kaynağın günlük yüksek/düşük ve işlem hacmi bu uygulamaya sağlanmıyor.';
+ const highest=isCrypto?cryptoStats?.high:obs?.max,lowest=isCrypto?cryptoStats?.low:obs?.min;
+ const highLabel=isCrypto?'24s En yüksek':'Son 24s gözlenen en yüksek';
+ const lowLabel=isCrypto?'24s En düşük':'Son 24s gözlenen en düşük';
+ const metric=(label,value)=>'<div class="metric"><div class="l">'+label+'</div><div class="n">'+value+'</div></div>';
+ const highText=Number.isFinite(highest)?fmt(highest,a.unit):'Veri bekleniyor';
+ const lowText=Number.isFinite(lowest)?fmt(lowest,a.unit):'Veri bekleniyor';
+ const volText=isCrypto?(Number.isFinite(cryptoStats?.volume)?formatN(cryptoStats.volume,2)+' USDT':'Veri bekleniyor'):'Kaynak sunmuyor';
+ const rangeButtons=atlasDetailPeriods.map(v=>'<button data-atlas-detail-period="'+v+'" class="'+(atlasDetailPeriod===v?'chosen':'')+'">'+({'1m':'1 dk','5m':'5 dk','1h':'1 sa','1d':'1 gün'}[v])+'</button>').join('');
+ const closeButtons='<div class="actionrow"><button class="wide-btn" id="detailFav">'+(favs.has(k)?'★ Favorilerden çıkar':'☆ Favorilere ekle')+'</button><button class="wide-btn secondary" id="detailAlert">🔔 Alarm kur</button></div>';
+ const quoteRow=(Number.isFinite(m.buy)||Number.isFinite(m.sell))?'<div class="metric-row" style="margin-top:12px;grid-template-columns:repeat(2,minmax(0,1fr))">'+metric('Alış',fmt(m.buy,a.unit))+metric('Satış',fmt(m.sell,a.unit))+'</div>':'';
+ return '<span class="eyebrow">'+esc(a.code)+' · '+esc(a.source)+'</span>'+
+  '<div class="detail-title-icon">'+assetIcon(k)+'<h2>'+esc(a.name)+'</h2></div>'+
+  '<div class="detail-price" id="detailPrice">'+fmt(prices[k],a.unit)+'</div>'+
+  '<div class="subtitle '+(pct==null?'':pct>=0?'up':'down')+'">'+(pct==null?'Değişim verisi yok':(pct>0?'+':'')+formatN(pct)+'% (kaynağın verdiği değişim)')+'</div>'+
+  '<div class="data-info"><span class="badge-source">'+esc(st[0])+'</span><span id="detailSourceTime">Son kaynak zamanı: '+(m.ts?fmtTime(m.ts):'—')+'</span></div>'+
+  quoteRow+
+  '<div class="atlas-detail-heading" style="font-weight:800;margin:19px 0 7px">'+headline+'</div>'+
+  '<div class="range" id="detailRanges" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 15px">'+rangeButtons+'</div>'+
+  '<div class="atlas-chartholder" id="detailChart" style="min-height:185px">'+graph+'</div>'+
+  '<div class="atlas-legend" style="font-size:10px;margin:9px 2px 13px">'+(isCrypto?'Yükseliş · Düşüş · SMA 10/20 · Hacim':'Fiyat gözlemleri · hacim yok')+'</div>'+
+  '<div class="metric-row" style="grid-template-columns:repeat(2,minmax(0,1fr));gap:7px">'+
+  metric(highLabel,'<span id="detailHigh">'+highText+'</span>')+
+  metric(lowLabel,'<span id="detailLow">'+lowText+'</span>')+
+  '</div><div class="metric-row" style="grid-template-columns:1fr;margin-top:7px">'+metric(isCrypto?'24s Hacim (USDT)':'İşlem hacmi','<span id="detailVolume">'+volText+'</span>')+'</div>'+
+  '<div class="hintbox">'+subline+'<div style="margin-top:8px" id="detailProvider">'+baseSource+'</div></div>'+
+  '<div class="actionrow"><button class="wide-btn secondary" id="detailReload">↻ Grafiği yenile</button>'+(isCrypto?'<button class="wide-btn secondary" id="detailProChart">▥ Profesyonel grafik</button>':'')+'</div>'+closeButtons;
+}
+function atlasDetailUpdate(k){
+ if(!$('#sheet')?.classList.contains('open')||selected!==k)return;
+ const a=ASSETS[k],m=meta[k]||{},isCrypto=!!a.pair;
+ const $p=$('#detailPrice'),$t=$('#detailSourceTime'),$pr=$('#detailProvider');
+ if($p)$p.textContent=fmt(prices[k],a.unit);
+ if($t)$t.textContent='Son kaynak zamanı: '+(m.ts?fmtTime(m.ts):'—');
+ if($pr)$pr.textContent=sourceTime(k);
+ const rows=isCrypto?atlasDetailCandleRows(k):atlasDetailLocalBars(k),holder=$('#detailChart');
+ if(holder){
+  if(rows?.length>=8&&(isCrypto||new Set(rows.map(x=>x.c)).size>1)){
+   const version=k+':'+atlasDetailPeriod+':'+rows.length+':'+rows.at(-1).c;
+   if(holder.dataset.version!==version){holder.innerHTML=proCandleSvg(rows);holder.dataset.version=version;}
+  }else if(!isCrypto)holder.innerHTML='<div class="empty-graph">Henüz yeterli farklı zamanlı fiyat verisi yok. Uygulama fiyatları kaydettikçe bu alan dolacak; geçmiş mum verisi kaynaktan gelmiyor.</div>';
+ }
+ const stats=isCrypto?atlasDetailCryptoStats(k):atlasDetailObservedStats(k);
+ const highest=isCrypto?stats?.high:stats?.max,lowest=isCrypto?stats?.low:stats?.min;
+ if($('#detailHigh'))$('#detailHigh').textContent=Number.isFinite(highest)?fmt(highest,a.unit):'Veri bekleniyor';
+ if($('#detailLow'))$('#detailLow').textContent=Number.isFinite(lowest)?fmt(lowest,a.unit):'Veri bekleniyor';
+ if($('#detailVolume'))$('#detailVolume').textContent=isCrypto?(Number.isFinite(stats?.volume)?formatN(stats.volume,2)+' USDT':'Veri bekleniyor'):'Kaynak sunmuyor';
+}
+function atlasDetailGetCandles(k,interval=atlasDetailPeriod,force=false){
+ const a=ASSETS[k];if(!a?.pair)return;
+ const cacheKey=k+':'+interval,cached=atlasDetailCache[cacheKey],now=Date.now();
+ if(cached?.rows?.length>=8&&!force&&now-cached.checkedAt<90000){atlasDetailUpdate(k);return;}
+ if(atlasDetailRequest?.key===k&&atlasDetailRequest?.interval===interval)return;
+ clearTimeout(atlasDetailFetchTimer);
+ atlasDetailRequest={key:k,interval};
+ const symbol=a.pair.toUpperCase();
+ atlasDetailFetchTimer=setTimeout(()=>{
+  if(atlasDetailRequest?.key===k&&atlasDetailRequest?.interval===interval){
+   atlasDetailRequest=null;
+   if($('#detailChart')&&selected===k)$('#detailChart').innerHTML='<div class="empty-graph">Geçmiş mum verisi alınamadı. Bağlantıyı kontrol edip yeniden deneyin.</div>';
+  }
+ },15500);
+ try{
+  if(window.AtlasBridge?.requestKlines)window.AtlasBridge.requestKlines(symbol,interval);
+  else getJson('https://data-api.binance.vision/api/v3/klines?symbol='+symbol+'&interval='+interval+'&limit=95').then(rows=>window.onProCandles({symbol,interval,rows}),()=>window.onProCandles({symbol,interval,error:'No market data'}));
+ }catch(e){window.onProCandles({symbol,interval,error:'Request failed'});}
+}
+function detail(k){
+ k=safeKey(k);selected=k;
+ sheet(atlasDetailContent(k));
+ $('#detailFav').onclick=()=>{toggleStar(k);detail(k)};
+ $('#detailAlert').onclick=()=>alertForm(k);
+ $('#detailReload').onclick=()=>{if(ASSETS[k].pair)atlasDetailGetCandles(k,atlasDetailPeriod,true);else atlasDetailUpdate(k)};
+ const pro=$('#detailProChart');
+ if(pro)pro.onclick=()=>{closeSheet();proCandleKey=k;proCandleInterval=atlasDetailPeriod;proCandleRows=[];proCandleFetched=0;navigate('charts');proLoadCandles(true);};
+ if(ASSETS[k].pair)setTimeout(()=>atlasDetailGetCandles(k),0);
+}
+document.addEventListener('click',ev=>{
+ const btn=ev.target.closest('[data-atlas-detail-period]');if(!btn)return;
+ if(!$('#sheet')?.classList.contains('open'))return;
+ const interval=btn.dataset.atlasDetailPeriod;if(!atlasDetailPeriods.includes(interval))return;
+ atlasDetailPeriod=interval;
+ $$('.range [data-atlas-detail-period]').forEach(el=>el.classList.toggle('chosen',el.dataset.atlasDetailPeriod===interval));
+ const holder=$('#detailChart');if(holder){holder.dataset.version='';holder.innerHTML='<div class="empty-graph">Grafik güncelleniyor…</div>';}
+ if(ASSETS[selected]?.pair)atlasDetailGetCandles(selected,interval);
+ else atlasDetailUpdate(selected);
+});
+const atlasPreviousProCandles=window.onProCandles;
+window.onProCandles=function(payload){
+ try{atlasPreviousProCandles(payload);}catch(e){console.warn('Chart view callback failed',e);}
+ const req=atlasDetailRequest;
+ if(!req||!payload||payload.symbol!==ASSETS[req.key]?.pair?.toUpperCase()||payload.interval!==req.interval)return;
+ clearTimeout(atlasDetailFetchTimer);atlasDetailRequest=null;
+ if(!payload.error&&Array.isArray(payload.rows)){
+  const rows=payload.rows.map(r=>({t:Number(r[0]),o:Number(r[1]),h:Number(r[2]),l:Number(r[3]),c:Number(r[4]),v:Number(r[5])}))
+   .filter(r=>Number.isFinite(r.t)&&r.t>0&&r.o>0&&r.h>=Math.max(r.o,r.c)&&r.l<=Math.min(r.o,r.c)&&r.v>=0)
+   .sort((a,b)=>a.t-b.t);
+  if(rows.length>=8)atlasDetailCache[req.key+':'+req.interval]={rows,checkedAt:Date.now()};
+ }
+ if($('#sheet')?.classList.contains('open')&&selected===req.key&&atlasDetailPeriod===req.interval){
+  atlasDetailUpdate(req.key);
+  if(!atlasDetailCache[req.key+':'+req.interval]&&$('#detailChart'))$('#detailChart').innerHTML='<div class="empty-graph">Bu zaman diliminin gerçek mum verileri alınamadı. Daha sonra yeniden deneyin.</div>';
+ }
+};
+setInterval(()=>{if($('#sheet')?.classList.contains('open')&&ASSETS[selected]&&!$('#tradeAsset'))atlasDetailUpdate(selected)},4000);
+
 function toggleStar(k){if(favs.has(k))favs.delete(k);else favs.add(k);save('favs',[...favs]);if(!$('#sheet').classList.contains('open'))render();}
 function tradeForm(){const options=Object.entries(ASSETS).filter(([k,a])=>a.mode!=='licensed').map(([k,a])=>`<option value="${k}">${a.name}</option>`).join('');sheet(`<span class="eyebrow">PORTFÖYÜM</span><h2>Yatırım kaydı ekle</h2><div class="field"><label>Varlık</label><select id="tradeAsset">${options}</select></div><div class="formrow"><div class="field"><label>Adet / miktar</label><input id="tradeQty" type="number" inputmode="decimal" min="0.00000001" step="any" placeholder="Örn. 0,5"></div><div class="field"><label>Birim maliyeti (TL)</label><input id="tradeCost" type="number" inputmode="decimal" min="0" step="any" placeholder="Örn. 2500"></div></div><div class="hintbox">Maliyet para birimi TL'dir. Döviz/kripto alımındaki gerçek TL maliyetini gir. Kayıtlar cihazında tutulur, banka hesabından veri çekilmez.</div><div class="actionrow"><button class="wide-btn" id="saveTrade">Kaydet</button></div>`);$('#saveTrade').onclick=()=>{const key=$('#tradeAsset').value,qty=Number($('#tradeQty').value),cost=Number($('#tradeCost').value);if(!ASSETS[key]||!Number.isFinite(qty)||qty<=0||!Number.isFinite(cost)||cost<0){toast('Geçerli miktar ve TL birim maliyeti gir.');return;}trades.push({key,qty,cost,ts:Date.now()});save('trades',trades);closeSheet();navigate('portfolio');toast('Yatırım kaydı eklendi.');};}
 function alertForm(defaultKey='btc'){const options=Object.entries(ASSETS).filter(([k,a])=>a.mode!=='licensed').map(([k,a])=>`<option ${k===defaultKey?'selected':''} value="${k}">${a.name}</option>`).join('');sheet(`<span class="eyebrow">AKILLI TAKİP</span><h2>Yeni fiyat alarmı</h2><div class="field"><label>Varlık</label><select id="alertAsset">${options}</select></div><div class="field"><label>Koşul</label><select id="alertDir"><option value="above">Hedefin üzerine çıkarsa</option><option value="below">Hedefin altına düşerse</option></select></div><div class="field"><label>Hedef fiyat (varlığın kendi para biriminde)</label><input id="alertTarget" type="number" step="any" min="0.0000001" placeholder="Hedef fiyat"></div><div class="hintbox">Bu ön izleme açıkken fiyat değişimleri izlenir. Telefon kapalıyken bildirim için ayrı Android arka plan servisi gerekir.</div><div class="actionrow"><button id="saveAlert" class="wide-btn">Alarmı kur</button></div>`);$('#saveAlert').onclick=()=>{const key=$('#alertAsset').value,direction=$('#alertDir').value,target=Number($('#alertTarget').value);if(!ASSETS[key]||!Number.isFinite(target)||target<=0)return toast('Geçerli hedef fiyat gir.');alerts.push({key,target,direction,done:false,ts:Date.now()});save('alerts',alerts);closeSheet();navigate('alerts');toast('Fiyat alarmı kuruldu.');};}
