@@ -144,8 +144,128 @@ input{font-size:16px}
 .logo{font-size:17px}
 .brand-icon{width:29px;height:29px}
 }
+
+/* Aracim Pro mobile-first product interface v4 */
+:root{--bg:#06111e;--card:#11263d;--line:#284157;--accent:#57e2ca;--ink:#f5f8ff;--muted:#afc2d5}
+html{scroll-padding-top:72px}
+body{font-size:16px;line-height:1.55}
+header{background:#081522f2}
+nav{min-height:63px}
+.hero{padding:38px 0 48px}
+.hero .lead{font-size:17px}
+.hero-visual{min-height:350px}
+.hero-photo{filter:brightness(1.35) saturate(1.05)}
+.hero-visual:after{background:linear-gradient(180deg,transparent 53%,#07192edd 100%)}
+.tools-area{padding:66px 0 50px;background:linear-gradient(180deg,#081827,#06111e)}
+.tool-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:20px}
+.tool-heading h2{font-size:clamp(29px,3.8vw,40px);margin:8px 0 7px}
+.tool-heading .sectionlead{margin:0;color:var(--muted)}
+.tool-free{white-space:nowrap;border-radius:999px;background:#103d3d;color:#75e5ca;font-size:11px;letter-spacing:.5px;font-weight:800;padding:10px 16px}
+.tool-shell{overflow:hidden;border-radius:23px;background:#10243a;border:1px solid #30485f;box-shadow:0 20px 50px #0003}
+.tool-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:#081827;padding:10px;gap:10px;border-bottom:1px solid #243f55}
+.tool-tab{appearance:none;min-height:55px;display:flex;gap:10px;align-items:center;justify-content:center;background:transparent;border:1px solid transparent;border-radius:12px;color:#a9bacd;font:inherit;font-weight:800;font-size:15px;cursor:pointer}
+.tool-tab.is-active{background:#173c4c;color:#7cf5d8;border-color:#347d7e;box-shadow:0 3px 20px #0003}
+.tool-tab:focus-visible{outline:3px solid #79ffe0;outline-offset:1px}
+.tab-symbol{font-size:20px}
+.tool-panel{padding:29px}
+.tool-panel[hidden]{display:none!important}
+.panel-intro{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:23px}
+.panel-eyebrow{letter-spacing:1.4px;color:#76e2d0;font-size:12px;font-weight:850}
+.panel-intro h3{font-size:26px;line-height:1.2;margin:7px 0 7px;letter-spacing:-.7px}
+.panel-intro p{color:var(--muted);font-size:15px;margin:0}
+.live-indicator{white-space:nowrap;color:#95e7cd;font-size:12px;font-weight:750}
+.live-indicator i{display:inline-block;width:6px;height:6px;background:#56e5c3;border-radius:50%;margin-right:6px}
+.input-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.field label{font-size:14px;color:#e4edf6;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.field label small{color:#96afc5;font-size:11px;white-space:nowrap}
+.field input{width:100%;min-height:52px;border-radius:12px;border:1px solid #39556d;background:#071b2e;color:#fbffff;font:700 18px/1.2 system-ui,-apple-system,"Segoe UI",sans-serif;padding:13px 14px}
+.field input:focus{outline:2px solid #59e8cc;outline-offset:1px}
+.switch-row{display:flex;align-items:center;gap:12px;padding:16px 1px 18px;margin:0;font-size:14px;font-weight:700;cursor:pointer;color:#deedf6}
+.switch-row input{position:absolute;opacity:0;pointer-events:none;width:1px;height:1px}
+.switch-track{position:relative;width:43px;height:25px;border:1px solid #55738a;border-radius:20px;background:#28445d;transition:background .15s;flex:none}
+.switch-track:after{content:"";position:absolute;top:3px;left:3px;width:17px;height:17px;border-radius:100%;background:#e3ecf5;transition:transform .15s}
+.switch-row input:checked+.switch-track{background:#23a68f}
+.switch-row input:checked+.switch-track:after{transform:translateX(18px)}
+.switch-row input:focus-visible+.switch-track{outline:3px solid #57e2ca;outline-offset:3px}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:8px}
+.metric{border:1px solid #2c5266;border-radius:15px;padding:17px;background:#08243a;min-width:0}
+.metric-primary{grid-column:1/-1;background:linear-gradient(105deg,#104e55,#12334d);border-color:#318379;padding:23px}
+.metric small{display:block;font-size:11px;font-weight:800;letter-spacing:.8px;color:#b3cadb}
+.metric strong{font-size:clamp(22px,2.7vw,30px);font-variant-numeric:tabular-nums;color:#62f2d5;letter-spacing:-.7px;line-height:1.35;display:block;margin:8px 0 2px;overflow-wrap:anywhere}
+.metric-primary strong{font-size:clamp(32px,4.5vw,44px);color:#a0ffe9}
+.metric span{font-size:12px;color:#b0c9d5}
+.calc-note{font-size:12px;color:#aabed0;margin:18px 2px 0;line-height:1.7}
+.checklist{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.check-item{display:flex;gap:14px;padding:17px;border:1px solid #2f485f;border-radius:14px;background:#0a1d30}
+.checkmark{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:12px;background:#123a45;color:#73e4c9;font-weight:850}
+.check-item b{font-size:15px}
+.check-item p{font-size:13px;color:var(--muted);margin:4px 0 0}
+.after-tools{margin-top:18px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 22px;border:1px solid #214052;border-radius:15px;background:#0a2030}
+.after-tools>div{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.after-tag{font-size:10px;color:#77dec8;font-weight:800;letter-spacing:.5px}
+.after-tools strong{font-size:13px;font-weight:650;color:#b6ccda}
+.after-tools a{white-space:nowrap;font-size:13px;color:#8af0d5;font-weight:750}
+.trust-section{background:#081b2b;padding:65px 0}
+.trust-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center}
+.trust-grid h2{margin-top:12px}
+.trust-grid p{color:var(--muted)}
+.trust-points{display:grid;gap:12px}
+.trust-points>div{display:flex;align-items:start;flex-direction:column;gap:2px;background:#102b41;border:1px solid #2d4961;border-radius:12px;padding:13px 17px}
+.trust-points b{font-size:14px;color:#dcf8f3}
+.trust-points span{font-size:13px;color:#9fb6cb}
+#sorular details{background:#10283f;border-radius:14px}
+#sorular summary{cursor:pointer;font-size:15px}
+#sorular details p{font-size:14px;line-height:1.6}
+footer{padding:35px 24px 27px}
+.foot{align-items:flex-start}
+.footer-brand{font-weight:850;font-size:20px;color:#fff}
+.footer-brand span{color:#62e7ce}
+.foot p{font-size:13px;color:#a2b6c9}
+.footer-links{display:flex;flex-wrap:wrap;gap:15px;font-size:13px}
+.footer-notice{text-align:center;max-width:1100px;margin:20px auto 0;color:#849ab0;font-size:12px}
+@media(min-width:850px){.hero-grid{grid-template-columns:1fr 1.04fr}}
+@media(max-width:740px){
+  .hero{padding:28px 0 32px}
+  .hero h1{margin:15px 0}
+  .hero-visual{min-height:258px}
+  .hero-photo{object-position:53% center}
+  .hero .lead{font-size:15px}
+  .tool-heading{align-items:flex-start}
+  .tool-free{display:none}
+  .tools-area{padding:37px 0 30px}
+  .tool-heading h2{font-size:29px}
+  .tool-tabs{padding:7px;gap:5px}
+  .tool-tab{min-height:52px;font-size:13px;gap:6px;padding:8px 4px}
+  .tab-symbol{font-size:18px}
+  .tool-panel{padding:18px 14px}
+  .panel-intro{margin-bottom:19px}
+  .panel-intro h3{font-size:24px}
+  .panel-intro p{font-size:14px}
+  .live-indicator{display:none}
+  .input-grid{gap:12px}
+  .field label{display:block;font-size:13px;line-height:1.35}
+  .field label small{display:block;margin-top:3px}
+  .field input{font-size:17px;min-height:50px}
+  .metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .metric{padding:13px}
+  .metric-primary{padding:17px}
+  .metric strong{font-size:clamp(18px,5vw,25px)}
+  .metric-primary strong{font-size:clamp(29px,7vw,38px)}
+  .checklist{grid-template-columns:1fr;gap:10px}
+  .after-tools{flex-direction:column;align-items:flex-start;padding:15px}
+  .trust-section{padding:42px 0}
+  .trust-grid{grid-template-columns:1fr;gap:17px}
+  .trust-points{gap:9px}
+  .trust-points>div{padding:12px 15px}
+}
+@media(max-width:365px){
+ .tool-tab{font-size:12px}
+ .tool-panel{padding:15px 10px}
+ .field input{padding:10px}
+ .panel-intro h3{font-size:22px}
+}
 </style></head><body>
-<header><nav><a class="logo" href="#basla"><span class="brand-icon" aria-hidden="true">A</span> Aracım<span>Pro</span></a><div class="navlinks"><a href="#araclar">Araçlar</a><a href="#yakit">Yakıt</a><a href="#gider">Giderler</a></div></nav></header>
+<header><nav><a class="logo" href="#basla"><span class="brand-icon" aria-hidden="true">A</span> Aracım<span>Pro</span></a><div class="navlinks"><a href="#araclar">Araçlar</a><a href="#araclar" data-tab="yakit">Yakıt</a><a href="#araclar" data-tab="gider">Gider</a></div></nav></header>
 <main id="basla">
 
 <div class="hero"><div class="wrap hero-grid">
@@ -153,7 +273,7 @@ input{font-size:16px}
 <span class="eyebrow"><span class="dot"></span> AKILLI ARAÇ ASİSTANI</span>
 <h1>Aracını tanı.<br><em>Masrafını yönet.</em></h1>
 <p class="lead">Yakıt maliyeti, yıllık giderler ve araç bakımı tek platformda. Sade, hızlı ve tamamen ücretsiz hesaplama araçları.</p>
-<div class="actions"><a class="btn" href="#yakit">Yakıtı hesapla <span aria-hidden="true">↗</span></a><a class="btn secondary" href="#gider">Giderleri incele</a></div>
+<div class="actions"><a class="btn" href="#araclar" data-tab="yakit">Yakıtı hesapla <span aria-hidden="true">↗</span></a><a class="btn secondary" href="#araclar" data-tab="gider">Giderleri incele</a></div>
 <div class="hero-highlights"><span>✓ Ücretsiz hesaplama</span><span>✓ Üyelik gerekmez</span><span>✓ Mobil uyumlu</span></div>
 </div>
 <div class="hero-visual">
@@ -162,45 +282,111 @@ input{font-size:16px}
 <div class="visual-caption"><span class="caption-eyebrow">ARACIM PRO / WEB</span><strong>Yolculuğun kontrolü sende.</strong><span>AKILLI HESAPLAMA • KOLAY KULLANIM</span></div>
 </div>
 </div></div>
-<section id="araclar"><div class="wrap"><div class="label">Araçlarımız</div><h2>Her yolculuğa hazırlıklı ol</h2><p class="sectionlead">Güncel litre fiyatını kendin girerek kolayca hesaplama yap.</p><div class="cards">
-<a class="card" href="#yakit"><span class="feature-icon" aria-hidden="true">01</span><strong>Yakıt hesaplama →</strong><p>Mesafe, tüketim ve litre fiyatına göre yol maliyetini bul.</p></a>
-<a class="card" href="#gider"><span class="feature-icon" aria-hidden="true">02</span><strong>Yıllık araç giderleri →</strong><p>Yakıt, sigorta, vergi ve bakım masrafını tek tabloda gör.</p></a>
-<a class="card" href="#rehber"><span class="feature-icon" aria-hidden="true">03</span><strong>Araç bakım rehberi →</strong><p>Düzenli bakım ve bütçe planlaması için temel ipuçları.</p></a>
-</div></div></section>
-<section class="alt" id="yakit"><div class="wrap"><div class="label">Hızlı hesaplama</div><h2>Yakıt maliyeti hesapla</h2><p class="sectionlead">Örnek değerler hazır. Kendi aracına göre değiştirdiğinde sonuçlar anında güncellenir.</p>
-<div class="calc"><div class="fields"><div><label for="km">Gidilecek mesafe (km)</label><input id="km" type="number" min="0" step="1" value="450" inputmode="decimal"></div>
-<div><label for="l100">Ortalama tüketim (L/100 km)</label><input id="l100" type="number" min="0" step="0.1" value="7.2" inputmode="decimal"></div>
-<div><label for="price">Yakıt litre fiyatı (TL)</label><input id="price" type="number" min="0" step="0.01" value="50" inputmode="decimal"></div></div>
-<div class="results" aria-live="polite"><div class="result"><small>Toplam yakıt</small><strong id="litres">32,4 L</strong></div><div class="result"><small>Yol maliyeti</small><strong id="sum">1.620 TL</strong></div><div class="result"><small>Km başına maliyet</small><strong id="per">3,60 TL</strong></div></div>
-<div class="hint">Hesaplama: Mesafe × (L/100 km) ÷ 100 × litre fiyatı. Gösterilen 50 TL örnek değerdir; canlı yakıt fiyatı değildir.</div>
-</div></div></section>
-<section id="gider"><div class="wrap"><div class="label">Bütçe planı</div><h2>Yıllık araç giderlerini hesapla</h2><p class="sectionlead">Yıllık tutarlarınızı TL cinsinden girin; toplam ve aylık ortalama otomatik hesaplansın.</p>
-<div class="calc"><div class="grid2">
-<div><label for="f">Yıllık yakıt (TL)</label><input id="f" type="number" min="0" value="48000" inputmode="decimal"></div>
-<div><label for="ins">Yıllık sigorta ve kasko (TL)</label><input id="ins" type="number" min="0" value="22000" inputmode="decimal"></div>
-<div><label for="mtv">Yıllık MTV (TL)</label><input id="mtv" type="number" min="0" value="5000" inputmode="decimal"></div>
-<div><label for="maint">Yıllık bakım (TL)</label><input id="maint" type="number" min="0" value="8000" inputmode="decimal"></div>
-<div><label for="other">Diğer giderler (TL)</label><input id="other" type="number" min="0" value="3000" inputmode="decimal"></div>
-</div><div class="results" aria-live="polite"><div class="result"><small>Yıllık toplam</small><strong id="yearly">86.000 TL</strong></div><div class="result"><small>Aylık ortalama</small><strong id="monthly">7.166,67 TL</strong></div><div class="result"><small>Günlük ortalama</small><strong id="daily">235,62 TL</strong></div></div>
-<div class="hint">Bu hesap değer kaybını ve finansman maliyetlerini ayrıca içermez. Buradaki rakamlar sadece örnektir.</div>
-</div></div></section>
-<section class="alt" id="rehber"><div class="wrap"><div class="label">Faydalı bilgiler</div><h2>Araç bakımında neleri takip etmeli?</h2><div class="cards">
-<div class="card"><strong>Lastikler</strong><p>Basıncı ve diş derinliğini düzenli kontrol et. Yanlış basınç yakıt tüketimini ve sürüş güvenliğini etkiler.</p></div>
-<div class="card"><strong>Yağ ve filtreler</strong><p>Değişim aralığını aracın üretici bakım programına göre takip et. Tek bir kilometre aralığı her araca uygun değildir.</p></div>
-<div class="card"><strong>Yıllık bütçe</strong><p>Sigorta, vergi ve periyodik bakım için önceden bütçe ayır. Beklenmedik onarımlar için de pay bırak.</p></div>
-</div></div></section>
-<section><div class="wrap"><div class="label">Aracım Pro Web</div><h2>Sık sorulan sorular</h2>
+
+<section class="tools-area" id="araclar">
+  <div class="wrap">
+    <div class="tool-heading">
+      <div><span class="label">ARACIM PRO ARAÇLAR</span><h2>Hesaplamak artık çok kolay.</h2><p class="sectionlead">Bir araç seç, değerleri gir, sonucunu anında gör. Ücretsiz ve üyeliksiz.</p></div>
+      <span class="tool-free">ÜCRETSİZ ARAÇLAR</span>
+    </div>
+    <div class="tool-shell">
+      <div class="tool-tabs" role="tablist" aria-label="Araç hesaplayıcıları">
+        <button class="tool-tab is-active" type="button" role="tab" aria-selected="true" aria-controls="yakit" id="tab-yakit" data-tab="yakit"><span class="tab-symbol">⛽</span><span>Yakıt</span></button>
+        <button class="tool-tab" type="button" role="tab" aria-selected="false" aria-controls="gider" id="tab-gider" data-tab="gider"><span class="tab-symbol">▤</span><span>Yıllık Gider</span></button>
+        <button class="tool-tab" type="button" role="tab" aria-selected="false" aria-controls="bakim" id="tab-bakim" data-tab="bakim"><span class="tab-symbol">⚙</span><span>Bakım</span></button>
+      </div>
+      <div class="tool-panel" id="yakit" role="tabpanel" aria-labelledby="tab-yakit">
+        <div class="panel-intro"><div><span class="panel-eyebrow">YOLCULUK HESAPLAMA</span><h3>Yakıt maliyeti</h3><p>Yolculuğuna ne kadar yakıt ve para ayırman gerektiğini öğren.</p></div><span class="live-indicator"><i></i> Anlık hesaplama</span></div>
+        <div class="input-grid">
+          <div class="field"><label for="km">Tek yön mesafe <small>km</small></label><input id="km" inputmode="decimal" type="number" min="0" step="1" value="450"></div>
+          <div class="field"><label for="l100">Ortalama tüketim <small>L / 100 km</small></label><input id="l100" inputmode="decimal" type="number" min="0" step="0.1" value="7.2"></div>
+          <div class="field"><label for="price">Litre fiyatı <small>TL</small></label><input id="price" inputmode="decimal" type="number" min="0" step="0.01" value="50"></div>
+          <div class="field"><label for="persons">Yolcu paylaşımı <small>kişi</small></label><input id="persons" inputmode="numeric" type="number" min="1" max="100" step="1" value="1"></div>
+        </div>
+        <label class="switch-row" for="roundTrip"><input id="roundTrip" type="checkbox"><span class="switch-track" aria-hidden="true"></span><span>Gidiş-dönüş hesapla</span></label>
+        <div class="metrics"><div class="metric metric-primary"><small>TOPLAM YOL MALİYETİ</small><strong id="sum">1.620,00 TL</strong><span>Hesaplanan tahmini harcama</span></div><div class="metric"><small>GEREKEN YAKIT</small><strong id="litres">32,40 L</strong></div><div class="metric"><small>KİLOMETRE BAŞINA</small><strong id="per">3,60 TL</strong></div><div class="metric"><small>KİŞİ BAŞINA</small><strong id="share">1.620,00 TL</strong></div></div>
+        <p class="calc-note">Hesaplama tahminidir. Litre fiyatı örnek olarak 50 TL girilmiştir; canlı pompa fiyatı değildir. Gerçek tüketim sürüş koşullarına göre değişebilir.</p>
+      </div>
+      <div class="tool-panel" id="gider" role="tabpanel" aria-labelledby="tab-gider" hidden>
+        <div class="panel-intro"><div><span class="panel-eyebrow">BÜTÇE PLANLAMA</span><h3>Yıllık araç giderleri</h3><p>Bütün masraflarını tek ekranda gör, aylık bütçeni kolayca oluştur.</p></div></div>
+        <div class="input-grid">
+          <div class="field"><label for="f">Yıllık yakıt <small>TL</small></label><input id="f" inputmode="decimal" type="number" min="0" value="48000"></div>
+          <div class="field"><label for="ins">Sigorta + kasko <small>TL</small></label><input id="ins" inputmode="decimal" type="number" min="0" value="22000"></div>
+          <div class="field"><label for="mtv">Motorlu taşıtlar vergisi <small>TL</small></label><input id="mtv" inputmode="decimal" type="number" min="0" value="5000"></div>
+          <div class="field"><label for="maint">Bakım ve onarım <small>TL</small></label><input id="maint" inputmode="decimal" type="number" min="0" value="8000"></div>
+          <div class="field"><label for="other">Diğer giderler <small>TL</small></label><input id="other" inputmode="decimal" type="number" min="0" value="3000"></div>
+        </div>
+        <div class="metrics"><div class="metric metric-primary"><small>TAHMİNİ YILLIK TOPLAM</small><strong id="yearly">86.000 TL</strong><span>Girdiğin rakamların toplamı</span></div><div class="metric"><small>AYLIK ORTALAMA</small><strong id="monthly">7.166,67 TL</strong></div><div class="metric"><small>GÜNLÜK ORTALAMA</small><strong id="daily">235,62 TL</strong></div></div>
+        <p class="calc-note">Bunlar örnek giderlerdir. Araç değer kaybı ve varsa kredi/finansman maliyetleri dahil değildir. Vergi veya sigorta için resmi fiyat sorgulaması yapılmaz.</p>
+      </div>
+      <div class="tool-panel" id="bakim" role="tabpanel" aria-labelledby="tab-bakim" hidden>
+        <div class="panel-intro"><div><span class="panel-eyebrow">BAKIM REHBERİ</span><h3>Aracını uzun ömürlü kullan</h3><p>Periyodik kontroller için kısa ve pratik bir başlangıç listesi.</p></div></div>
+        <div class="checklist">
+          <div class="check-item"><span class="checkmark">01</span><div><b>Lastik ve basınç kontrolü</b><p>Lastiklerin basıncını ve diş derinliğini araç üreticisinin tavsiyelerine göre düzenli kontrol et.</p></div></div>
+          <div class="check-item"><span class="checkmark">02</span><div><b>Motor yağı ve filtreler</b><p>Yağ, filtre ve diğer sarf malzemelerinin değişim zamanını aracının bakım kitapçığından takip et.</p></div></div>
+          <div class="check-item"><span class="checkmark">03</span><div><b>Fren ve sıvı seviyeleri</b><p>Fren sistemini, soğutma sıvısını ve diğer kritik sıvıları güvenli şekilde kontrol ettir.</p></div></div>
+          <div class="check-item"><span class="checkmark">04</span><div><b>Muayene, sigorta ve vergi</b><p>Geçerlilik ve ödeme tarihleri için resmi kayıtları takip et; gecikmeleri önle.</p></div></div>
+        </div>
+        <p class="calc-note">Buradaki bilgiler genel amaçlıdır; aracının marka ve modeline özel bakım programının yerine geçmez.</p>
+      </div>
+    </div>
+    <div class="after-tools"><div><span class="after-tag">PRATİK • HIZLI • ÜCRETSİZ</span><strong>Gereksiz menüler yok. Aracına dair önemli hesaplar burada.</strong></div><a href="#sorular">Merak edilenler <span aria-hidden="true">↗</span></a></div>
+  </div>
+</section>
+<section class="trust-section" id="rehber"><div class="wrap">
+  <div class="trust-grid">
+   <div><span class="label">NEDEN ARACIM PRO?</span><h2>Her kuruşun hesabı sende.</h2><p>Günlük yolculuktan yıllık araç bütçene kadar en çok ihtiyaç duyduğun hesapları tek ekranda bir araya getirdik.</p></div>
+   <div class="trust-points"><div><b>01 / Tam kontrol</b><span>Değerleri sen girersin, hesabı anında görürsün.</span></div><div><b>02 / Telefonuna uygun</b><span>Mobilde rahat kullanım için hazırlanmış sade arayüz.</span></div><div><b>03 / Gizliliğe saygılı</b><span>Girilen hesaplama değerleri bu sürümde sunucuya gönderilmez.</span></div></div>
+  </div>
+</div></section>
+<section id="sorular"><div class="wrap"><div class="label">YARDIM MERKEZİ</div><h2>Sık sorulan sorular</h2>
 <details class="card"><summary><b>Bu hesaplamalar ücretsiz mi?</b></summary><p>Evet, bu sayfadaki hesaplayıcılar ücretsizdir.</p></details>
 <details class="card" style="margin-top:12px"><summary><b>Hesaplamalar gerçek fiyatları otomatik çekiyor mu?</b></summary><p>Hayır. Güncel pompa fiyatını ve kendi giderlerinizi manuel girmeniz gerekir.</p></details>
 <details class="card" style="margin-top:12px"><summary><b>Bilgilerim kaydediliyor mu?</b></summary><p>Bu ilk sürümde hesaplar cihazınızda yapılır; formlarda girdiğiniz bilgileri sunucuya göndermiyoruz. İleride reklam veya analiz eklenirse bu açıklama güncellenecektir.</p></details>
 </div></section>
 </main>
-<footer><div class="foot"><div>© 2026 <b>Aracım Pro Web</b> · Ücretsiz araç hesaplama</div><div>Bu sürüm bir ön yayındır; reklam gösterilmez.</div></div></footer>
+<footer><div class="foot"><div><a class="footer-brand" href="#basla">Aracım<span>Pro</span> Web</a><p>Aracını tanı, giderini yönet. © 2026</p></div><div class="footer-links"><a href="#araclar">Hesaplayıcılar</a><a href="#rehber">Hakkımızda</a><a href="#sorular">SSS</a></div></div><p class="footer-notice">Bu site, ücretsiz araç hesaplama araçları sunan bir ön sürümdür. Gerçek fiyat sorgulaması ve reklam gösterimi içermez.</p></footer>
 <script>
-const fmt=(n,d=2)=>Number.isFinite(n)?n.toLocaleString('tr-TR',{maximumFractionDigits:d,minimumFractionDigits:d}):'—';
-const money=(n,d=2)=>fmt(n,d)+' TL';
-function value(id){const n=Number(document.getElementById(id).value);return Number.isFinite(n)?Math.max(0,n):0}
-function calculate(){const litres=value('km')*value('l100')/100;const total=litres*value('price');document.getElementById('litres').textContent=fmt(litres,2)+' L';document.getElementById('sum').textContent=money(total);document.getElementById('per').textContent=money(value('km')?total/value('km'):0);const yearly=['f','ins','mtv','maint','other'].reduce((s,id)=>s+value(id),0);document.getElementById('yearly').textContent=money(yearly,0);document.getElementById('monthly').textContent=money(yearly/12);document.getElementById('daily').textContent=money(yearly/365)}
-document.querySelectorAll('input').forEach(e=>e.addEventListener('input',calculate));calculate();
+'use strict';
+const format=(n,d=2)=>Number.isFinite(n)?n.toLocaleString('tr-TR',{minimumFractionDigits:d,maximumFractionDigits:d}):'—';
+const money=(n,d=2)=>format(n,d)+' TL';
+const val=id=>{const el=document.getElementById(id);if(!el)return 0;const n=Number(el.value);return Number.isFinite(n)?Math.max(0,n):0};
+function calculate(){
+  const dist=val('km')*(document.getElementById('roundTrip').checked?2:1);
+  const litres=dist*val('l100')/100;
+  const total=litres*val('price');
+  const people=Math.max(1,Math.floor(val('persons')));
+  document.getElementById('sum').textContent=money(total);
+  document.getElementById('litres').textContent=format(litres)+' L';
+  document.getElementById('per').textContent=money(dist?total/dist:0);
+  document.getElementById('share').textContent=money(total/people);
+  const yearly=['f','ins','mtv','maint','other'].reduce((acc,id)=>acc+val(id),0);
+  document.getElementById('yearly').textContent=money(yearly,0);
+  document.getElementById('monthly').textContent=money(yearly/12);
+  document.getElementById('daily').textContent=money(yearly/365);
+}
+function selectTab(tab,focus=false){
+  if(!['yakit','gider','bakim'].includes(tab))return;
+  document.querySelectorAll('.tool-tab').forEach(btn=>{
+    const selected=btn.dataset.tab===tab;
+    btn.classList.toggle('is-active',selected);
+    btn.setAttribute('aria-selected',String(selected));
+    btn.tabIndex=selected?0:-1;
+    if(selected&&focus)btn.focus();
+  });
+  document.querySelectorAll('.tool-panel').forEach(panel=>{panel.hidden=panel.id!==tab});
+}
+document.querySelectorAll('input').forEach(el=>{el.addEventListener('input',calculate);el.addEventListener('change',calculate)});
+document.querySelectorAll('[data-tab]').forEach(el=>{
+  el.addEventListener('click',()=>selectTab(el.dataset.tab));
+});
+document.querySelectorAll('.tool-tab').forEach(btn=>btn.addEventListener('keydown',e=>{
+  if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;
+  e.preventDefault();
+  const tabs=['yakit','gider','bakim'];const idx=tabs.indexOf(btn.dataset.tab);
+  const next=e.key==='Home'?0:e.key==='End'?2:(idx+(e.key==='ArrowRight'?1:2))%3;
+  selectTab(tabs[next],true);
+}));
+calculate();
 </script>
 </body></html>
