@@ -70,6 +70,7 @@ footer a{display:inline-block;margin:2px 9px}
 .vehicle-search{padding:0 20px 8px}
 .vehicle-search label{font-size:12px}
 .vehicle-search input{min-height:52px}
+.vehicle-context{padding:0 20px;margin:0 0 8px;font-size:12px;line-height:1.5;color:#9edaca}
 .vehicle-alphabet{padding:8px 15px;display:flex;align-items:center;gap:5px;overflow-x:auto;border-bottom:1px solid #2a4b63;scrollbar-width:thin}
 .vehicle-letter{flex:none;border:1px solid #335b6b;background:#17334a;color:#bde7e1;font-size:12px;border-radius:8px;min-width:34px;height:34px;font-weight:750}
 .vehicle-letter.selected{background:#49d8bb;color:#062536}
@@ -107,8 +108,8 @@ footer a{display:inline-block;margin:2px 9px}
 <div class="navlinks"><a href="./">Ana sayfa</a><a href="mtv-hesaplama.html">MTV</a><a href="arac-karsilastirma.html">Karşılaştır</a><a href="./#bilgi-merkezi">Rehber</a></div></nav></header>
 <main class="container">
 <span class="eyebrow">ARAÇLARI KARŞILAŞTIR</span><h1>Hangi otomobilin yıllık gideri daha düşük?</h1>
-<p class="subtitle">Araç seçimi artık Sahibinden tarzında adım adım yapılıyor: <b>Marka → Model → Seri/Kasa → Paket → Yıl.</b> Her aşamada arama yapabilir ve eksik seçenekleri kendin yazabilirsin.</p>
-<div class="note"><b>Genişletilmiş araç kataloğu:</b> 118 marka ve 1.939 model listelendi. Seri/kasa ve donanım bilgileri özellikle yaygın araçlarda derlenmiştir; tüm üretim yılları ve paketler için eksiksiz resmî katalog değildir. Seçtiğin araç fiyat, tüketim veya vergiyi otomatik doldurmaz; karşılaştırma masraflarını ayrıca belirtmen gerekir.</div>
+<p class="subtitle">Araç seçimi artık Sahibinden tarzında adım adım yapılıyor: <b>Marka → Model → Kasa / nesil → Motor → Donanım → Model yılı.</b> Her aşamada arama yapabilir ve eksik seçenekleri kendin yazabilirsin.</p>
+<div class="note"><b>Genişletilmiş araç kataloğu:</b> 118 marka ve 1.939 model listelendi. Seri/kasa, motor ve donanım bilgileri özellikle yaygın araçlarda derlenmiştir; tüm üretim yılları ve paketler için eksiksiz resmî katalog değildir. Seçtiğin araç fiyat, tüketim veya vergiyi otomatik doldurmaz; karşılaştırma masraflarını ayrıca belirtmen gerekir.</div>
 <p class="mini" id="catalogInfo">Araç kataloğu yükleniyor…</p>
 <div class="panel">
 <div class="fields">
@@ -122,9 +123,9 @@ footer a{display:inline-block;margin:2px 9px}
   <div class="catalog-grid">
     <div class="field"><label for="aBrandPick">1. Marka</label><button class="catalog-pick" type="button" id="aBrandPick" data-car="a" data-stage="brand"><span class="catalog-value">Marka seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
     <div class="field"><label for="aModelPick">2. Model</label><button class="catalog-pick" type="button" id="aModelPick" data-car="a" data-stage="model" disabled><span class="catalog-value">Önce marka seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
-    <div class="field"><label for="aSeriesPick">3. Seri / kasa</label><button class="catalog-pick" type="button" id="aSeriesPick" data-car="a" data-stage="series" disabled><span class="catalog-value">Önce model seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
-    <div class="field"><label for="aTrimPick">4. Paket / versiyon</label><button class="catalog-pick" type="button" id="aTrimPick" data-car="a" data-stage="trim" disabled><span class="catalog-value">Önce seri seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
-    <div class="field"><label for="aYearPick">5. Model yılı</label><button class="catalog-pick" type="button" id="aYearPick" data-car="a" data-stage="year" disabled><span class="catalog-value">Önce paket seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
+    <div class="field"><label for="aSeriesPick">3. Kasa / nesil</label><button class="catalog-pick" type="button" id="aSeriesPick" data-car="a" data-stage="series" disabled><span class="catalog-value">Önce model seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
+    <div class="field"><label for="aEnginePick">4. Motor / yakıt</label><button class="catalog-pick" type="button" id="aEnginePick" data-car="a" data-stage="engine" disabled><span class="catalog-value">Önce kasa seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div><div class="field"><label for="aTrimPick">5. Paket / versiyon</label><button class="catalog-pick" type="button" id="aTrimPick" data-car="a" data-stage="trim" disabled><span class="catalog-value">Önce seri seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
+    <div class="field"><label for="aYearPick">6. Model yılı</label><button class="catalog-pick" type="button" id="aYearPick" data-car="a" data-stage="year" disabled><span class="catalog-value">Önce paket seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
   </div>
   <div class="catalog-selected" id="aSelected" aria-live="polite">Araç seçimi yapılmadı.</div>
 </div><input type="hidden" id="aName" value="Araç A"><div class="fields">
@@ -142,9 +143,9 @@ footer a{display:inline-block;margin:2px 9px}
   <div class="catalog-grid">
     <div class="field"><label for="bBrandPick">1. Marka</label><button class="catalog-pick" type="button" id="bBrandPick" data-car="b" data-stage="brand"><span class="catalog-value">Marka seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
     <div class="field"><label for="bModelPick">2. Model</label><button class="catalog-pick" type="button" id="bModelPick" data-car="b" data-stage="model" disabled><span class="catalog-value">Önce marka seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
-    <div class="field"><label for="bSeriesPick">3. Seri / kasa</label><button class="catalog-pick" type="button" id="bSeriesPick" data-car="b" data-stage="series" disabled><span class="catalog-value">Önce model seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
-    <div class="field"><label for="bTrimPick">4. Paket / versiyon</label><button class="catalog-pick" type="button" id="bTrimPick" data-car="b" data-stage="trim" disabled><span class="catalog-value">Önce seri seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
-    <div class="field"><label for="bYearPick">5. Model yılı</label><button class="catalog-pick" type="button" id="bYearPick" data-car="b" data-stage="year" disabled><span class="catalog-value">Önce paket seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
+    <div class="field"><label for="bSeriesPick">3. Kasa / nesil</label><button class="catalog-pick" type="button" id="bSeriesPick" data-car="b" data-stage="series" disabled><span class="catalog-value">Önce model seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
+    <div class="field"><label for="bEnginePick">4. Motor / yakıt</label><button class="catalog-pick" type="button" id="bEnginePick" data-car="b" data-stage="engine" disabled><span class="catalog-value">Önce kasa seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div><div class="field"><label for="bTrimPick">5. Paket / versiyon</label><button class="catalog-pick" type="button" id="bTrimPick" data-car="b" data-stage="trim" disabled><span class="catalog-value">Önce seri seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
+    <div class="field"><label for="bYearPick">6. Model yılı</label><button class="catalog-pick" type="button" id="bYearPick" data-car="b" data-stage="year" disabled><span class="catalog-value">Önce paket seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
   </div>
   <div class="catalog-selected" id="bSelected" aria-live="polite">Araç seçimi yapılmadı.</div>
 </div><input type="hidden" id="bName" value="Araç B"><div class="fields">
@@ -178,7 +179,7 @@ footer a{display:inline-block;margin:2px 9px}
       <label for="vehicleSearchInput">Arama</label>
       <input type="search" id="vehicleSearchInput" autocomplete="off" placeholder="A-Z marka veya model ara…" aria-controls="vehicleOptionList">
     </div>
-    <div class="vehicle-alphabet" id="vehicleAlphabet" aria-label="Harf seçimi"></div>
+    <p class="vehicle-context" id="vehicleContext"></p><div class="vehicle-alphabet" id="vehicleAlphabet" aria-label="Harf seçimi"></div>
     <div class="vehicle-count" id="vehicleOptionCount"></div>
     <div class="vehicle-options" id="vehicleOptionList" role="listbox" aria-label="Araç seçim seçenekleri"></div>
     <form class="vehicle-custom" id="vehicleCustomForm" hidden>
@@ -230,22 +231,39 @@ function syncQuickPick(picker,focus=false){
 const catalog=window.ARACIM_VEHICLES||{brands:{},series:{},trims:{}};
 const brandNames=Object.keys(catalog.brands||{}).sort((a,b)=>a.localeCompare(b,"tr"));
 const carState={
- a:{brand:"",model:"",series:"",trim:"",year:""},
- b:{brand:"",model:"",series:"",trim:"",year:""}
+ a:{brand:"",model:"",series:"",engine:"",trim:"",year:""},
+ b:{brand:"",model:"",series:"",engine:"",trim:"",year:""}
 };
-const stages=["brand","model","series","trim","year"];
-const stageLabels={brand:"Marka",model:"Model",series:"Seri / kasa",trim:"Paket / versiyon",year:"Model yılı"};
+const stages=["brand","model","series","engine","trim","year"];
+const stageLabels={brand:"Marka",model:"Model",series:"Kasa / nesil",engine:"Motor / yakıt",trim:"Paket / versiyon",year:"Model yılı"};
 const dialog=el("vehicleDialog"),search=el("vehicleSearchInput");
 let activeCar="a",activeStage="brand",activeLetter="",focusReturn=null;
 function normalizeText(str){return String(str).replace(/İ/g,"I").replace(/ı/g,"i").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();}
+function friendlySeries(brand,model,value){
+ if(!value||value==="Seri belirtilmedi")return value;
+ const match=value.match(/^(.*?)\s*\((\d{4})(?:[–-](\d{4})|\+)\)$/);
+ if(!match)return model+" • "+value;
+ const code=match[1].trim(),years=match[2]+(match[3]?"–"+match[3]:" ve sonrası");
+ const elantGen={"HD":"4. nesil","MD/UD":"5. nesil","AD":"6. nesil","CN7":"7. nesil"};
+ const gen=brand==="Hyundai"&&model==="Elantra"?elantGen[code]:null;
+ return years+" • "+model+(gen?" ("+gen+", "+code+" kasa)":" ("+code+" kasa/seri)");
+}
+function modelYearOptions(series){
+ let earliest=1950,latest=2026;
+ const match=series.match(/\((\d{4})(?:[–-](\d{4})|\+)\)/);
+ if(match){earliest=Math.max(1950,Number(match[1]));latest=match[2]?Math.min(2026,Number(match[2])):2026;}
+ if(earliest>latest)return [];
+ return Array.from({length:latest-earliest+1},(_,i)=>String(latest-i));
+}
 function catalogOptions(car,stage){
  const st=carState[car],custom={value:"__custom__",label:"Listede yok — kendim yazacağım",special:true};
  const item=val=>({value:val,label:val,special:false});
  if(stage==="brand")return brandNames.map(item).concat([custom]);
  if(stage==="model")return (catalog.brands[st.brand]||[]).map(item).concat([custom]);
- if(stage==="series")return (catalog.series[st.brand+"|"+st.model]||[]).map(item).concat([item("Seri belirtilmedi"),custom]);
+ if(stage==="series")return (catalog.series[st.brand+"|"+st.model]||[]).map(val=>({value:val,label:friendlySeries(st.brand,st.model,val),special:false})).concat([item("Seri belirtilmedi"),custom]);
+ if(stage==="engine")return (catalog.engines?.[st.brand+"|"+st.model+"|"+st.series]||[]).map(item).concat([item("Motor belirtilmedi"),custom]);
  if(stage==="trim")return (catalog.trims[st.brand]||[]).map(item).concat([item("Paket belirtilmedi"),custom]);
- if(stage==="year")return Array.from({length:2026-1950+1},(_,i)=>String(2026-i)).map(item);
+ if(stage==="year")return modelYearOptions(st.series).map(item).concat([custom]);
  return [];
 }
 const getButton=(car,stage)=>el(car+stage[0].toUpperCase()+stage.slice(1)+"Pick");
@@ -255,9 +273,9 @@ function refreshCar(car){
   const stage=stages[i],btn=getButton(car,stage);
   const enabled=i===0||Boolean(st[stages[i-1]]);
   btn.disabled=!enabled;
-  btn.querySelector(".catalog-value").textContent=st[stage]||(!enabled?"Önce "+stageLabels[stages[i-1]].toLowerCase()+" seç":stageLabels[stage]+" seç");
+  btn.querySelector(".catalog-value").textContent=(stage==="series"&&st[stage]?friendlySeries(st.brand,st.model,st[stage]):st[stage])||(!enabled?"Önce "+stageLabels[stages[i-1]].toLowerCase()+" seç":stageLabels[stage]+" seç");
  }
- const entries=[st.brand,st.model,st.series,st.trim,st.year].filter(x=>x&&!x.includes("belirtilmedi"));
+ const entries=[st.brand,st.model,st.series?friendlySeries(st.brand,st.model,st.series):"",st.engine,st.trim,st.year].filter(x=>x&&!x.includes("belirtilmedi"));
  const name=entries.join(" ");
  el(car+"Name").value=name||"Araç "+car.toUpperCase();
  el(car+"Selected").textContent=entries.length?"Seçilen araç: "+name:"Araç seçimi yapılmadı.";
@@ -272,7 +290,9 @@ function openDialog(car,stage,button){
  if(!catalog.brands||!Object.keys(catalog.brands).length){window.alert("Araç kataloğu henüz yüklenmedi. Sayfayı yenileyin.");return;}
  activeCar=car;activeStage=stage;activeLetter="";
  focusReturn=button;
- el("vehicleDialogTitle").textContent=stageLabels[stage]+" seç";
+ const selected=carState[car];
+ el("vehicleDialogTitle").textContent=stage==="series"?selected.brand+" "+selected.model+" — Kasa / nesil":stageLabels[stage]+" seç";
+ el("vehicleContext").textContent=stage==="series"?"HD, MD/UD, AD ve CN7 gibi ifadeler kasa kodlarıdır. Doğru nesli yıl aralığına göre seç.":stage==="engine"?"Listelenen motorlar örneklerdir. Aracının ruhsatındaki motoru esas al.":stage==="trim"?"Paket seçenekleri model yılına göre değişebilir.":"";
  el("vehicleDialogKicker").textContent=(car==="a"?"ARAÇ A":"ARAÇ B")+" • A-Z KATALOG";
  search.value="";
  search.placeholder=stageLabels[stage]+" ara…";
@@ -281,7 +301,8 @@ function openDialog(car,stage,button){
  dialog.hidden=false;
  document.body.style.overflow="hidden";
  renderOptions();
- search.focus();
+ if(window.matchMedia("(pointer:fine)").matches)search.focus();
+ else el("vehicleDialogClose").focus();
 }
 function alphabet(){
  const bar=el("vehicleAlphabet");bar.replaceChildren();
