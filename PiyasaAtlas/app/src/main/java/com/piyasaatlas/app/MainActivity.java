@@ -8,6 +8,12 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.WebResourceRequest;
+import android.net.Uri;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.io.ByteArrayOutputStream;
+import org.json.JSONObject;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
@@ -30,7 +36,17 @@ public final class MainActivity extends Activity {
         st.setAllowUniversalAccessFromFileURLs(false);
         st.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         web.setWebChromeClient(new WebChromeClient());
-        web.setWebViewClient(new WebViewClient());
+        web.setWebViewClient(new WebViewClient() {
+            @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                Uri uri = request.getUrl();
+                String host = uri.getHost();
+                if ("appassets.androidplatform.net".equals(host)) return false;
+                if ("https".equals(uri.getScheme()) || "http".equals(uri.getScheme())) {
+                    try { startActivity(new Intent(Intent.ACTION_VIEW, uri)); } catch (Exception ignored) {}
+                }
+                return true;
+            }
+        });
         web.addJavascriptInterface(new AtlasBridge(), "AtlasBridge");
         try (InputStream is = getAssets().open("index.html")) {
             String content = new String(is.readAllBytes(), StandardCharsets.UTF_8);
@@ -39,7 +55,33 @@ public final class MainActivity extends Activity {
             web.loadDataWithBaseURL(null, "<html><body style='background:#06101b;color:white'>Arayüz yüklenemedi</body></html>", "text/html", "UTF-8", null);
         }
     }
+    private void toWeb(String js) {
+        WebView current=web;
+        if(current!=null) runOnUiThread(() -> { if(web==current) current.evaluateJavascript(js,null); });
+    }
     public final class AtlasBridge {
+        @JavascriptInterface public void requestTruncgil() {
+            new Thread(() -> {
+                HttpURLConnection c=null;
+                try {
+                    URL url=new URL("https://finans.truncgil.com/v4/today.json");
+                    c=(HttpURLConnection)url.openConnection();
+                    c.setConnectTimeout(8000);c.setReadTimeout(8000);
+                    c.setRequestProperty("Accept","application/json");
+                    c.setRequestProperty("User-Agent","PiyasaAtlas/0.3 Android");
+                    c.setUseCaches(false);
+                    if(c.getResponseCode()!=200) throw new Exception("HTTP "+c.getResponseCode());
+                    try(InputStream in=c.getInputStream();ByteArrayOutputStream buffer=new ByteArrayOutputStream()){
+                        byte[] b=new byte[8192];int n;int total=0;
+                        while((n=in.read(b))!=-1){total+=n;if(total>200000)throw new Exception("Unexpected response size");buffer.write(b,0,n);}
+                        JSONObject json=new JSONObject(buffer.toString("UTF-8"));
+                        toWeb("window.onTruncgilResponse && window.onTruncgilResponse("+json.toString()+")");
+                    }
+                }catch(Exception error){
+                    toWeb("window.onTruncgilError && window.onTruncgilError('Piyasa servisi erişilemiyor')");
+                }finally{if(c!=null)c.disconnect();}
+            },"atlas-markets").start();
+        }
         @JavascriptInterface public void shareCsv(String csv) {
             runOnUiThread(() -> {
                 Intent i = new Intent(Intent.ACTION_SEND);
