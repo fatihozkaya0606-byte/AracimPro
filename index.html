@@ -465,8 +465,29 @@ footer nav.footer-links{display:flex;min-height:0;padding:0;margin:0;background:
  .footer-links{justify-content:flex-start;gap:12px}
  footer nav.footer-links{flex-wrap:wrap}
 }
+
+/* new calculation tools */
+.extra-tools{background:#091d2c;padding:62px 0}
+.extra-tools h2{margin:10px 0 12px}
+.extra-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.extra-card{display:flex;align-items:flex-start;gap:18px;border:1px solid #336170;border-radius:19px;padding:24px;background:linear-gradient(130deg,#173c4b,#0b273a);color:#f3faff;text-decoration:none;transition:transform .2s,border-color .2s}
+.extra-card:hover{transform:translateY(-3px);border-color:#77f4d9}
+.extra-card:focus-visible{outline:3px solid #7ef6de;outline-offset:3px}
+.extra-icon{width:51px;height:51px;border-radius:15px;display:grid;place-items:center;flex-shrink:0;font-size:26px;font-weight:800;background:#1a6865;color:#8afbe0}
+.extra-tag{font-size:10px;color:#7ae7d2;font-weight:900;letter-spacing:1.1px}
+.extra-card h3{font-size:22px;letter-spacing:-.35px;margin:8px 0}
+.extra-card p{color:#bad2df;font-size:14px;line-height:1.65;margin:0 0 16px}
+.extra-link{color:#88f5dc;font-size:14px;font-weight:800}
+@media(max-width:740px){
+ .extra-tools{padding:38px 0}
+ .extra-grid{grid-template-columns:1fr;gap:11px}
+ .extra-card{padding:18px;gap:13px}
+ .extra-icon{width:42px;height:42px;font-size:22px}
+ .extra-card h3{font-size:19px}
+ .extra-card p{font-size:13px}
+}
 </style></head><body>
-<header><nav><a class="logo" href="#basla"><span class="brand-icon" aria-hidden="true">A</span> Aracım<span>Pro</span></a><div class="navlinks"><a href="#araclar">Araçlar</a><a href="#araclar" data-tab="yakit">Yakıt</a><a href="#araclar" data-tab="gider">Gider</a></div></nav></header>
+<header><nav><a class="logo" href="#basla"><span class="brand-icon" aria-hidden="true">A</span> Aracım<span>Pro</span></a><div class="navlinks"><a href="#araclar">Araçlar</a><a href="mtv-hesaplama.html">MTV</a><a href="arac-karsilastirma.html">Karşılaştır</a></div></nav></header>
 <main id="basla">
 
 <div class="hero"><div class="wrap hero-grid">
@@ -580,6 +601,27 @@ footer nav.footer-links{display:flex;min-height:0;padding:0;margin:0;background:
       <a class="learning-card" href="arac-bakim-kontrol-listesi.html"><span class="learning-icon">03 / BAKIM</span><strong>Pratik araç bakım kontrol listesi</strong><span>Lastik, yağ, fren, muayene ve servis takibi için kontrol noktaları</span><em>Rehberi oku ↗</em></a>
     </div>
   </div>
+</section>
+<section class="extra-tools" id="yeni-hesaplayicilar">
+ <div class="wrap">
+   <span class="label">YENİ HESAPLAMA ARAÇLARI</span>
+   <h2>Araç vergisini ve satın alma bütçeni hesapla.</h2>
+   <p class="sectionlead">2026 vergi tarifesi ve kendi maliyet bilgilerinle daha bilinçli karar ver.</p>
+   <div class="extra-grid">
+    <a class="extra-card" href="mtv-hesaplama.html">
+      <span class="extra-icon" aria-hidden="true">₺</span>
+      <div><span class="extra-tag">2026 RESMÎ TARİFE</span><h3>MTV hesaplama</h3>
+      <p>Model yılı, motor hacmi ve tescil bilgilerine göre yıllık MTV tutarını hesapla.</p>
+      <span class="extra-link">MTV hesapla <span aria-hidden="true">↗</span></span></div>
+    </a>
+    <a class="extra-card" href="arac-karsilastirma.html">
+      <span class="extra-icon" aria-hidden="true">↔</span>
+      <div><span class="extra-tag">İKİ ARAÇ · TEK EKRAN</span><h3>Araç karşılaştırma</h3>
+      <p>Yakıt, bakım, sigorta, MTV ve satın alma bedeline göre masraf farkını gör.</p>
+      <span class="extra-link">Araçları karşılaştır <span aria-hidden="true">↗</span></span></div>
+    </a>
+   </div>
+ </div>
 </section>
 <section class="knowledge" id="bilgi-merkezi">
 <div class="wrap">
