@@ -237,7 +237,7 @@ const stages=["brand","model","series","trim","year"];
 const stageLabels={brand:"Marka",model:"Model",series:"Seri / kasa",trim:"Paket / versiyon",year:"Model yılı"};
 const dialog=el("vehicleDialog"),search=el("vehicleSearchInput");
 let activeCar="a",activeStage="brand",activeLetter="",focusReturn=null;
-function normalizeText(str){return String(str).replace(/İ/g,"I").replace(/ı/g,"i").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase("tr");}
+function normalizeText(str){return String(str).replace(/İ/g,"I").replace(/ı/g,"i").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();}
 function catalogOptions(car,stage){
  const st=carState[car],custom={value:"__custom__",label:"Listede yok — kendim yazacağım",special:true};
  const item=val=>({value:val,label:val,special:false});
@@ -306,7 +306,7 @@ function renderOptions(){
   const match=!q||normalizeText(option.label).includes(q)||option.special;
   return match&&(!activeLetter||option.special||option.value[0].toLocaleUpperCase("tr")===activeLetter);
  });
- el("vehicleOptionCount").textContent=(all.length-1)+" seçenek • "+filtered.length+" gösteriliyor";
+ el("vehicleOptionCount").textContent=(all.filter(o=>!o.special).length)+" seçenek • "+filtered.length+" gösteriliyor";
  if(!filtered.length){const p=document.createElement("p");p.className="vehicle-options-empty";p.textContent="Aradığın seçenek bulunamadı. Listede yok seçeneğini kullanabilirsin.";list.appendChild(p);}
  for(const item of filtered){
   const btn=document.createElement("button");
@@ -348,5 +348,5 @@ document.querySelectorAll(".quick-select").forEach(picker=>{
 document.querySelectorAll("input,select").forEach(x=>{x.addEventListener("input",updateComparison);x.addEventListener("change",updateComparison)});
 updateComparison();
 </script>
-<footer>© 2026 Aracım Pro Web · <a href="hakkimizda.html">Hakkımızda</a><a href="gizlilik-politikasi.html">Gizlilik</a><a href="iletisim.html">İletişim</a></footer>
+<footer>© 2026 Aracım Pro Web · <a href="catalog-license.txt">Araç veri kaynağı ve lisans</a> · <a href="hakkimizda.html">Hakkımızda</a><a href="gizlilik-politikasi.html">Gizlilik</a><a href="iletisim.html">İletişim</a></footer>
 </body></html>
