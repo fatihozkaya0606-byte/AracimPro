@@ -46,6 +46,27 @@
 .light .hero-scene .hero-scene-cap{background:#224c75;color:#e2f4ff}
 @media(max-width:365px){.hero{min-height:395px}.hero-stage{height:236px}.hero-scene h1{font-size:26px}.hero-ornament{right:-22px;opacity:.18}}
 @media(prefers-reduced-motion:reduce){.ticker-track,.hero-ornament .hero-trace{animation:none!important}.tickerline{overflow:auto}.hero-scene{transition:none}}
+
+/* Piyasa Atlas v0.5 — compact animated premium banner */
+.hero{height:206px!important;min-height:0!important;margin:9px 14px 11px!important;padding:12px 15px 10px!important;border-radius:19px!important;display:flex;flex-direction:column;justify-content:space-between}
+.hero:before{width:150px;height:150px;top:-97px;right:-44px;box-shadow:0 0 0 23px #81b8ed08,0 0 0 49px #81b8ed06}
+.hero .micro{min-height:18px}.hero .eyebrow{font-size:8.2px;letter-spacing:1.6px}.hero .pro{font-size:8px;padding:5px 7px}
+.hero-stage{flex:1;min-height:0!important;height:auto!important;margin-top:3px;overflow:hidden}
+.hero-scene{display:flex;flex-direction:column;justify-content:center;align-items:flex-start}
+.hero-scene h1{font-size:21px!important;letter-spacing:-.7px;margin:3px 0 5px!important;line-height:1.06!important;max-width:270px}
+.hero-scene p{font-size:10px!important;line-height:1.35!important;margin:0 0 6px!important;max-width:270px}
+.hero-scene .hero-scene-cap{font-size:8px;padding:4px 7px;margin-top:1px;gap:5px}
+.hero-ornament{width:145px;height:85px;right:-26px;bottom:2px;opacity:.20}
+.hero-bottom{flex:none}.hero .hero-dots{margin:3px 0 5px;gap:6px}.hero-dot{width:6px;height:6px}.hero-dot.active{width:19px}
+.hero .status-row{display:flex;flex-wrap:nowrap;gap:5px;overflow:hidden}
+.hero .status-row .stat-pill{font-size:8px;padding:5px 6px;white-space:nowrap;flex-shrink:0}
+.hero .status-row .stat-pill:nth-child(2){display:none}
+.hero-progress{height:2px;width:100%;border-radius:3px;margin:4px 0 1px;background:#6b8ead38;overflow:hidden}
+.hero-progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,#55d5ff,#f9cd76);border-radius:3px;transform:translateZ(0)}
+/* The Android system can disable CSS animations. JS drives both motions. */
+.ticker-track{animation:none!important;transition:none!important;transform:translate3d(0,0,0);will-change:transform}
+.tickerline{overflow:hidden!important;touch-action:pan-y}
+@media(max-width:365px){.hero{height:209px!important}.hero-scene h1{font-size:20px!important}.hero-scene p{font-size:9.6px!important}}
 </style></head><body>
 <div class="app">
  <div class="top"><div class="brand"><div class="symbol">∿</div><div><div class="brand-name">Piyasa <b>Atlas</b></div><div class="brand-sub">PREMIUM MARKETS</div></div></div><div class="top-actions"><button class="circle" id="themeBtn" aria-label="Tema değiştir">☾</button><button class="circle" id="refreshBtn" aria-label="Verileri yenile">↻</button></div></div>
@@ -62,6 +83,7 @@
     <svg class="hero-ornament" viewBox="0 0 205 112" aria-hidden="true"><path class="hero-grid" d="M0 25 H205 M0 55 H205 M0 85 H205 M30 0 V112 M85 0 V112 M140 0 V112 M190 0 V112"/><path class="hero-trace" d="M0 90 L24 67 L43 75 L66 37 L87 51 L109 26 L132 58 L155 17 L179 33 L205 9"/></svg>
    </div>
    <div class="hero-bottom">
+    <div class="hero-progress" aria-hidden="true"><span id="heroProgressBar"></span></div>
     <div class="hero-dots" role="group" aria-label="Tanıtım slaytları"><button class="hero-dot active" data-hero-dot="0" aria-label="Tanıtım 1" aria-current="true"></button><button class="hero-dot" data-hero-dot="1" aria-label="Tanıtım 2"></button><button class="hero-dot" data-hero-dot="2" aria-label="Tanıtım 3"></button><button class="hero-dot" data-hero-dot="3" aria-label="Tanıtım 4"></button></div>
     <div class="status-row"><div class="stat-pill"><i class="dot" id="wsDot"></i><span id="wsStatus">Kripto bağlanıyor</span></div><div class="stat-pill"><i class="dot warn"></i> Metaller ~30 sn</div><div class="stat-pill" id="marketStatusBadge">TL fiyatları · sorgu ~10 sn</div></div>
    </div>
@@ -129,13 +151,35 @@ function renderAlerts(){return `<div class="section-head"><h2>Fiyat alarmlarım<
 function renderSettings(){return `<div class="section-head"><h2>Veriler ve ayarlar</h2></div><div class="panel"><h3>Veri durumu</h3><div class="kvrow"><span>Kripto (WebSocket)</span><b id="wsSettings">${wsConnected?'BAĞLI · ~1 sn':'Bağlanıyor / kapalı'}</b></div><div class="kvrow"><span>Kıymetli metaller</span><b>~30 sn · Gold API</b></div><div class="kvrow"><span>Döviz</span><b>Trunçgil · kaynak zamanı / günlük yedek</b></div><div class="kvrow"><span>Gram altın / TL</span><b>Trunçgil GRA alış/satış (varsa)</b></div><div class="kvrow"><span>BIST 100</span><b>Trunçgil XU100 referansı · gecikme olabilir</b></div><div class="hintbox warning">Türkiye döviz, gram altın ve XU100 kaynağı yalnızca ekran açıkken 10 saniyede bir kontrol edilir; kaynağın gerçek fiyat güncellemesi ve BIST gecikmesi farklı olabilir. BIST verisi test amaçlı referanstır. Google Play’de yeniden dağıtım için veri lisansı gerekir.</div><div class="actionrow"><button class="wide-btn secondary" id="fullRefresh">Verileri yenile</button><button class="wide-btn secondary" id="toggleTheme">Açık/koyu tema</button></div></div><div class="panel"><h3>Veri hakları ve lisans</h3><div class="subtitle">Borsa İstanbul, Nasdaq ve bazı emtia fiyatları için gösterim/yeniden dağıtım izni alınmalıdır. Bu sürüm lisanssız veriye gerçek fiyat atamaz. Kripto: Binance açık piyasa akışı. Altın/emtia: Gold API. Döviz: Frankfurter kaynak günü. Kaynakların kullanım şartları, yayın öncesi tekrar kontrol edilmelidir.</div></div><div class="panel"><h3>Yerel kayıtlar</h3><div class="subtitle">Favoriler, fiyat geçmişi, portföy işlemleri ve alarmlar tarayıcında veya uygulamanın yerel verisinde saklanır; hesap eşitlemesi henüz yok.</div><div class="actionrow"><button class="wide-btn secondary" id="clearHistory">Grafik önbelleğini temizle</button></div></div><p class="privacy">Yatırım tavsiyesi değildir. Gerçek emir ve işlem özelliği bulunmaz. Uygulama sürümü 0.2 ön izleme.</p>`;}
 function render(){if(page==='home'){ $('#sectionMain').classList.remove('hide');$('#secondary').classList.add('hide');renderHome();}else{$('#sectionMain').classList.add('hide');$('#secondary').classList.remove('hide');const s=$('#secondary');if(page==='markets')s.innerHTML=renderMarkets();else if(page==='portfolio')s.innerHTML=renderPortfolio();else if(page==='alerts')s.innerHTML=renderAlerts();else s.innerHTML=renderSettings();}bindNav();renderTicker();}
 const ATLAS_TICKER_KEYS=['btc','eth','sol','usd','eur','gold','gold22','bist','xau','silvergram'];
-let heroSlide=0;
+let heroSlide=0,heroSlideChangedAt=Date.now();
+let atlasTickerTimer=0,atlasTickerOffset=0,atlasTickerPreviousAt=0;
+function startAtlasTicker(){
+ if(atlasTickerTimer)return;
+ atlasTickerPreviousAt=performance.now();
+ atlasTickerTimer=setInterval(()=>{
+  const track=$('#tickerline .ticker-track');
+  const pack=track?.querySelector('.ticker-pack');
+  const now=performance.now();
+  const dt=Math.max(0,Math.min(100,now-atlasTickerPreviousAt));
+  atlasTickerPreviousAt=now;
+  if(!track||!pack||document.visibilityState!=='visible')return;
+  const width=pack.getBoundingClientRect().width;
+  if(width<=0)return;
+  atlasTickerOffset=(atlasTickerOffset+dt*0.045)%width;
+  track.style.transform='translate3d('+(-atlasTickerOffset).toFixed(2)+'px,0,0)';
+ },33);
+}
+function animateHeroIndicator(){
+ const progress=$('#heroProgressBar');
+ if(progress&&page==='home')progress.style.width=(Math.min(100,(Date.now()-heroSlideChangedAt)/3800*100))+'%';
+}
+
 function setHeroSlide(n){
- heroSlide=((n%4)+4)%4;
+ heroSlide=((n%4)+4)%4;heroSlideChangedAt=Date.now();animateHeroIndicator();
  $$('.hero-scene').forEach((el,i)=>{const active=i===heroSlide;el.classList.toggle('is-active',active);el.setAttribute('aria-hidden',String(!active))});
  $$('.hero-dot').forEach((el,i)=>{const active=i===heroSlide;el.classList.toggle('active',active);el.setAttribute('aria-current',String(active))});
 }
-function advanceHero(){if(document.visibilityState==='visible'&&page==='home'&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches)setHeroSlide(heroSlide+1)}
+function advanceHero(){if(document.visibilityState==='visible'&&page==='home'&&Date.now()-heroSlideChangedAt>=3800)setHeroSlide(heroSlide+1)}
 function renderTicker(){
  const wrap=$('#tickerline');if(!wrap)return;
  if(!wrap.querySelector('.ticker-track')){
@@ -167,7 +211,7 @@ function noteMarketCheck(success){
  const now=Date.now();marketLastCheckedAt=now;
  if(success){marketFailureCount=0;marketNextAllowedAt=now+MARKET_CHECK_MS;}
  else{marketFailureCount=Math.min(marketFailureCount+1,6);marketNextAllowedAt=now+Math.min(5*60*1000,MARKET_CHECK_MS*Math.pow(2,marketFailureCount));}
- const mark=$('#marketStatusBadge');if(mark)mark.textContent=success?'TL fiyatları · sorgu 10 sn':`TL fiyatları · yeniden deneme ${Math.max(10,Math.round((marketNextAllowedAt-now)/1000))} sn`;
+ const mark=$('#marketStatusBadge');if(mark)mark.textContent=success?'TL kontrol '+fmtTime(now)+' · 10 sn':`TL kaynağı · tekrar ${Math.max(10,Math.round((marketNextAllowedAt-now)/1000))} sn`;
 }
 function marketJson(){
  if(marketRequest)return marketRequest;
@@ -240,7 +284,7 @@ async function refreshAll(force=false){
  updateStatus();render();
 }
 function exportCsv(){const line=['Varlık;Miktar;Birim maliyet TL;Tarih',...trades.map(x=>[ASSETS[x.key]?.name||x.key,x.qty,x.cost,new Date(x.ts).toISOString()].join(';'))].join('\r\n');if(window.AtlasBridge&&typeof window.AtlasBridge.shareCsv==='function'){window.AtlasBridge.shareCsv(line);return;}const data=new Blob(['\ufeff'+line],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(data),a=document.createElement('a');a.href=url;a.download='PiyasaAtlas-Portfoy.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-function init(){if(settings.theme==='light')document.body.classList.add('light');$('#today').textContent=new Date().toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});$('#clock').textContent=fmtTime(Date.now());render();refreshAll(true);setInterval(()=>{$('#clock').textContent=fmtTime(Date.now());if(document.visibilityState==='visible')updateStatus();},1000);setInterval(()=>{if(document.visibilityState==='visible')refreshAll(false);},2500);setInterval(advanceHero,4700);setInterval(()=>save('history',hist),20000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshAll(false);else{if(ws){ws.onclose=null;ws.close();wsConnected=false;}}});window.addEventListener('beforeunload',()=>save('history',hist));}
+function init(){if(settings.theme==='light')document.body.classList.add('light');$('#today').textContent=new Date().toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});$('#clock').textContent=fmtTime(Date.now());render();refreshAll(true);setInterval(()=>{$('#clock').textContent=fmtTime(Date.now());if(document.visibilityState==='visible')updateStatus();},1000);setInterval(()=>{if(document.visibilityState==='visible')refreshAll(false);},2500);startAtlasTicker();setInterval(()=>{advanceHero();animateHeroIndicator()},125);setInterval(()=>save('history',hist),20000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshAll(false);else{if(ws){ws.onclose=null;ws.close();wsConnected=false;}}});window.addEventListener('beforeunload',()=>save('history',hist));}
 // Event delegation ensures dynamically rendered screens remain interactive.
 document.addEventListener('click',ev=>{const t=ev.target;const heroDot=t.closest('[data-hero-dot]');if(heroDot){setHeroSlide(Number(heroDot.dataset.heroDot));return;}const close=t.closest('#sheetClose');if(close){closeSheet();return;}if(t.id==='sheet'){closeSheet();return;}const star=t.closest('[data-star]');if(star){ev.stopPropagation();toggleStar(star.dataset.star);return;}const detailBtn=t.closest('[data-detail]');if(detailBtn){detail(detailBtn.dataset.detail);return;}const nav=t.closest('[data-nav]');if(nav){navigate(nav.dataset.nav);return;}const fil=t.closest('[data-filter]');if(fil){category=fil.dataset.filter;$$('[data-filter]').forEach(b=>b.classList.toggle('active',b===fil));renderHome();return;}const cat=t.closest('[data-cat]');if(cat){category=cat.dataset.cat;render();return;}const ran=t.closest('[data-range]');if(ran){range=ran.dataset.range;$$('[data-range]').forEach(b=>b.classList.toggle('selected',b===ran));renderHome();return;}if(t.closest('#themeBtn')||t.closest('#toggleTheme')){document.body.classList.toggle('light');settings.theme=document.body.classList.contains('light')?'light':'dark';save('settings',settings);return;}if(t.closest('#refreshBtn')||t.closest('#updateBtn')||t.closest('#fullRefresh')){refreshAll(true);toast('Veri kaynakları yeniden kontrol ediliyor.');return;}if(t.closest('#viewAllBtn')||t.closest('#chartAssetBtn')){category='all';navigate('markets');return;}if(t.closest('#favoritesBtn')){category='all';marketsOnlyFav=true;navigate('markets');return;}if(t.closest('#portfolioBtn')){navigate('portfolio');return;}if(t.closest('#addTrade')){tradeForm();return;}if(t.closest('#addAlert')){alertForm();return;}if(t.closest('#onlyFav')){marketsOnlyFav=!marketsOnlyFav;render();return;}if(t.closest('#exportCsv')){exportCsv();return;}if(t.closest('#clearHistory')){if(confirm('Kaydedilmiş gerçek fiyat grafiği örnekleri silinsin mi?')){Object.keys(hist).forEach(k=>delete hist[k]);save('history',hist);render();toast('Grafik önbelleği temizlendi.');}return;}if(t.closest('#notifyBtn')){if(typeof Notification==='undefined'){toast('Bildirim API bu ortamda desteklenmiyor.');return;}Notification.requestPermission().then(p=>toast(p==='granted'?'Bildirim izni verildi.':'Bildirim izni verilmedi.'));return;}const dtr=t.closest('[data-deltrade]');if(dtr){trades.splice(Number(dtr.dataset.deltrade),1);save('trades',trades);render();return;}const dal=t.closest('[data-delalert]');if(dal){alerts.splice(Number(dal.dataset.delalert),1);save('alerts',alerts);render();return;}});
 document.addEventListener('input',ev=>{if(ev.target?.id==='search'){searchTerm=ev.target.value;const keys=Object.keys(ASSETS).filter(k=>(!marketsOnlyFav||favs.has(k))&&(category==='all'||ASSETS[k].cat===category)&&((ASSETS[k].name+' '+ASSETS[k].code).toLocaleLowerCase('tr').includes(searchTerm.toLocaleLowerCase('tr'))));const list=$('#secondary .list-wrap');if(list)list.innerHTML=keys.map(assetLi).join('')||'<div class="empty">Eşleşme yok</div>';}});
