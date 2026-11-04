@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://fatihozkaya0606-byte.github.io/AracimPro/sitemap.xml
