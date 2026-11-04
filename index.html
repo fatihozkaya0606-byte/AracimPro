@@ -89,6 +89,61 @@ h2{line-height:1.2}
 .hero-highlights{gap:7px 13px}
 }
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* Mobile-first visual polish v3: readable navigation, brighter photography, denser tools */
+:root{--muted:#c3d0e1;--line:#29465f}
+nav{min-height:68px}
+.navlinks a{padding:9px 10px;border-radius:10px;transition:background .15s,color .15s}
+.navlinks a:hover,.navlinks a:focus-visible{background:#1b344b;color:#fff}
+.hero{background:radial-gradient(ellipse at 84% 45%,#1749727a 0%,transparent 63%),linear-gradient(180deg,#0a1c31,#081626)}
+.hero .lead{color:#cad8e9}
+.hero-visual{background:#0d2541;border-color:#476981;box-shadow:0 30px 65px #0007}
+.hero-photo{filter:brightness(1.25) saturate(1.10) contrast(1.04)}
+.hero-visual:after{background:linear-gradient(180deg,transparent 54%,#061525ce 100%)}
+.hero-shine{box-shadow:inset 0 0 26px #07152766}
+.visual-caption strong{font-size:24px}
+.feature-icon{box-shadow:inset 0 0 0 1px #42738888}
+.card{background:linear-gradient(150deg,#132d45,#102239)}
+.card strong{line-height:1.35}
+.card p{line-height:1.55}
+.result strong{letter-spacing:-.5px}
+@media(max-width:650px){
+nav{min-height:65px;flex-wrap:nowrap;gap:5px;padding:10px 12px}
+.logo{font-size:19px;white-space:nowrap;gap:6px}
+.brand-icon{width:34px;height:34px;flex:none}
+.navlinks{gap:2px;font-size:12px}
+.navlinks a{padding:9px 5px}
+.hero{padding:30px 0 32px}
+.hero h1{font-size:clamp(38px,9.6vw,54px);margin:17px 0 15px}
+.hero .lead{font-size:16px;line-height:1.68}
+.hero-grid{gap:22px}
+.hero .actions{margin:21px 0 17px;gap:9px}
+.hero .btn{padding:12px 13px;font-size:14px;flex:1;text-align:center}
+.hero-highlights{font-size:12px;gap:8px 14px}
+.hero-visual{min-height:310px;border-radius:18px}
+.hero-photo{object-position:50% center;filter:brightness(1.34) saturate(1.08) contrast(1.04)}
+.hero-visual:after{background:linear-gradient(180deg,transparent 59%,#041426e3 100%)}
+.visual-caption{bottom:15px;left:16px;right:10px}
+.visual-caption strong{font-size:20px}
+section{padding:36px 0}
+h2{font-size:29px;line-height:1.2}
+.sectionlead{font-size:14px}
+.cards{gap:11px}
+.card{padding:17px 19px}
+.card strong{font-size:17px;margin:8px 0 5px}
+.card p{font-size:14px;line-height:1.55}
+.feature-icon{width:40px;height:40px;border-radius:12px;font-size:14px}
+.calc{padding:18px}
+label{font-size:13px}
+input{font-size:16px}
+.results{gap:10px}
+.result strong{font-size:25px}
+}
+@media(max-width:380px){
+.navlinks a{padding:8px 3px;font-size:11px}
+.logo{font-size:17px}
+.brand-icon{width:29px;height:29px}
+}
 </style></head><body>
 <header><nav><a class="logo" href="#basla"><span class="brand-icon" aria-hidden="true">A</span> Aracım<span>Pro</span></a><div class="navlinks"><a href="#araclar">Araçlar</a><a href="#yakit">Yakıt</a><a href="#gider">Giderler</a></div></nav></header>
 <main id="basla">
