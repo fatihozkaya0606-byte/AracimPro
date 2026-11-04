@@ -55,11 +55,77 @@ public final class MainActivity extends Activity {
             web.loadDataWithBaseURL(null, "<html><body style='background:#06101b;color:white'>Arayüz yüklenemedi</body></html>", "text/html", "UTF-8", null);
         }
     }
+
+    private String atlasFetchPublic(String urlText, int maxBytes) throws Exception {
+        HttpURLConnection conn=null;
+        try {
+            URL target=new URL(urlText);
+            if(!"https".equals(target.getProtocol()))throw new Exception("HTTPS only");
+            conn=(HttpURLConnection)target.openConnection();
+            conn.setConnectTimeout(9000);
+            conn.setReadTimeout(9000);
+            conn.setUseCaches(false);
+            conn.setRequestProperty("User-Agent","PiyasaAtlas/0.9 Android");
+            conn.setRequestProperty("Accept","application/json,text/csv");
+            if(conn.getResponseCode()!=200)throw new Exception("HTTP "+conn.getResponseCode());
+            try(InputStream in=conn.getInputStream();ByteArrayOutputStream out=new ByteArrayOutputStream()){
+                byte[] buf=new byte[8192];int n,total=0;
+                while((n=in.read(buf))!=-1){
+                    total+=n;
+                    if(total>maxBytes)throw new Exception("Exceeded response limit");
+                    out.write(buf,0,n);
+                }
+                return out.toString("UTF-8");
+            }
+        }finally{if(conn!=null)conn.disconnect();}
+    }
+    private void atlasSend(String callback,JSONObject data){
+        toWeb("window."+callback+" && window."+callback+"("+data.toString()+")");
+    }
     private void toWeb(String js) {
         WebView current=web;
         if(current!=null) runOnUiThread(() -> { if(web==current) current.evaluateJavascript(js,null); });
     }
     public final class AtlasBridge {
+
+        @JavascriptInterface public void requestFund(String inputCode){
+            String code=String.valueOf(inputCode).trim().toUpperCase(java.util.Locale.ROOT);
+            if(!code.matches("[A-Z0-9]{2,6}"))return;
+            new Thread(()->{
+                JSONObject result=new JSONObject();
+                try{
+                    result.put("code",code);
+                    JSONObject detail=new JSONObject(atlasFetchPublic("https://fonfiyat.com.tr/v1/funds/"+code+".json",100000));
+                    result.put("details",detail);
+                    try{
+                        String since=java.time.LocalDate.now().minusDays(150).toString();
+                        String history=atlasFetchPublic("https://fonfiyat.com.tr/v1/funds/"+code+"/history.csv?from="+since,130000);
+                        result.put("history",history);
+                    }catch(Exception ignored){result.put("history","");}
+                }catch(Exception err){
+                    try{result.put("code",code);result.put("error","Fund data unavailable");}catch(Exception ignored){}
+                }
+                atlasSend("onProFund",result);
+            },"atlas-fund").start();
+        }
+        @JavascriptInterface public void requestKlines(String textSymbol,String textInterval){
+            String symbol=String.valueOf(textSymbol).trim().toUpperCase(java.util.Locale.ROOT);
+            String interval=String.valueOf(textInterval);
+            if(!symbol.matches("[A-Z0-9]{4,18}")||!(interval.equals("1m")||interval.equals("5m")||interval.equals("15m")||interval.equals("1h")||interval.equals("4h")||interval.equals("1d")))return;
+            new Thread(()->{
+                JSONObject result=new JSONObject();
+                try{
+                    result.put("symbol",symbol);
+                    result.put("interval",interval);
+                    org.json.JSONArray rows=new org.json.JSONArray(atlasFetchPublic("https://data-api.binance.vision/api/v3/klines?symbol="+symbol+"&interval="+interval+"&limit=95",140000));
+                    result.put("rows",rows);
+                }catch(Exception err){
+                    try{result.put("symbol",symbol);result.put("interval",interval);result.put("error","OHLC unavailable");}catch(Exception ignored){}
+                }
+                atlasSend("onProCandles",result);
+            },"atlas-ohlc").start();
+        }
+
         @JavascriptInterface public void saveFastFeedKey(String key) {
             String cleaned = key == null ? "" : key.trim();
             if (cleaned.length() > 512) return;

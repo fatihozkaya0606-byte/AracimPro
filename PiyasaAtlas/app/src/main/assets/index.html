@@ -111,6 +111,35 @@
 .light .atlas-tool,.light .calc-tabs button{color:#284564;background:#fff}
 .light .calc-result{background:#e4f0fa;color:#132c46}.light .calc-result .description{color:#3e5a72}
 @media(max-width:370px){.atlas-tool{font-size:9px;gap:3px}.atlas-tool strong{font-size:15px}.hero{height:174px!important;min-height:174px!important}.bottom .nav{font-size:8px!important}}
+
+/* V0.9 professional-market pages */
+.pro-links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:9px 15px 10px}
+.pro-link{border:1px solid #385572;background:linear-gradient(130deg,#1a3049,#102238);color:#ebcf91;font-size:10.5px;font-weight:800;border-radius:12px;padding:12px 2px;text-align:center}
+.pro-link b{font-size:16px;margin-right:4px}.pro-link:focus-visible{outline:2px solid #f6c973}
+.pro-section{margin:12px 16px;padding:16px;background:#0f2032;border:1px solid #2d4a63;border-radius:18px}
+.pro-section h3{margin:0 0 10px;font-size:16px;color:#e9f3ff}.pro-kicker{font-size:10px;letter-spacing:1px;font-weight:800;color:#aac4d8}
+.pro-fund-value{font-size:29px;font-weight:900;margin:10px 0 6px;word-break:break-word}
+.pro-chiprow{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.pro-chip{background:#17314b;border:1px solid #365977;color:#b8d8f2;border-radius:9px;padding:9px 10px;font-size:11px}
+.pro-chip.selected{background:#e8c17a;color:#1b2b3e;border-color:#e8c17a;font-weight:850}
+.pro-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.pro-stat{background:#172d41;border:1px solid #29455d;padding:11px 12px;border-radius:12px}
+.pro-stat small{display:block;color:#8ea9c1;font-size:10px}.pro-stat strong{display:block;margin-top:6px;font-size:15px;overflow-wrap:anywhere}
+.pro-chart{border:1px solid #294961;border-radius:14px;background:#0a1b2a;min-height:165px;padding:8px 3px;overflow:hidden}
+.pro-chart svg{display:block;width:100%;height:auto}
+.pro-note{font-size:10px;color:#94aec4;line-height:1.75;margin-top:12px}
+.pro-fund-search{display:flex;gap:8px;margin-top:10px}.pro-fund-search input{min-width:0;flex:1;border:1px solid #40607c;background:#0b1b2d;border-radius:10px;padding:12px;font-size:16px;color:#eaf7ff;text-transform:uppercase}
+.pro-fund-search button{border-radius:10px;background:#ddbc78;color:#192739;padding:11px 16px;font-weight:900}
+.pro-event{display:flex;gap:12px;align-items:center;border-bottom:1px solid #283f54;padding:12px 0}.pro-event:last-child{border:0}
+.pro-event-date{width:64px;min-width:64px;background:#1a344d;border:1px solid #46627a;border-radius:12px;text-align:center;padding:8px 4px;color:#e9c984}
+.pro-event-date strong{font-size:20px;display:block}.pro-event-date small{font-size:9px}
+.pro-event-title{font-size:12px;font-weight:850}.pro-event-desc{font-size:10px;color:#91a9bf;line-height:1.6;margin-top:5px}
+.pro-weightrow{display:grid;grid-template-columns:82px minmax(0,1fr) 45px;align-items:center;gap:6px;margin:9px 0;font-size:10px;color:#b4cce1}
+.pro-weightbar{height:8px;background:#18364d;border-radius:8px;overflow:hidden}.pro-weightbar i{display:block;height:100%;border-radius:8px;background:#67b6ee}
+.pro-weightrow:nth-child(2) .pro-weightbar i{background:#e2be76}.pro-weightrow:nth-child(3) .pro-weightbar i{background:#43d5ae}
+.pro-action{background:#173b54;color:#badcf7;border:1px solid #3b607e;padding:10px 13px;border-radius:10px;font-size:11px}
+.light .pro-section,.light .pro-stat,.light .pro-link{background:#fff;color:#24384d}
+@media(max-width:350px){.pro-link{font-size:9px}.pro-link b{font-size:14px}}
 </style></head><body>
 <div class="app">
  <div class="top"><div class="brand"><div class="symbol">∿</div><div><div class="brand-name">Piyasa <b>Atlas</b></div><div class="brand-sub">PREMIUM MARKETS</div></div></div><div class="top-actions"><button class="circle" id="themeBtn" aria-label="Tema değiştir">☾</button><button class="circle" id="refreshBtn" aria-label="Verileri yenile">↻</button></div></div>
@@ -133,6 +162,7 @@
    </div>
   </div>
   <div class="atlas-tools"><button class="atlas-tool" data-nav="calculator"><strong>⌗</strong><span>Çevirici</span></button><button class="atlas-tool" data-nav="calculator"><strong>↗</strong><span>Kâr / Zarar</span></button><button class="atlas-tool" data-nav="calculator"><strong>%</strong><span>Yüzde Hesapla</span></button></div>
+  <div class="pro-links"><button class="pro-link" data-nav="charts"><b>▥</b>Mum Grafik</button><button class="pro-link" data-nav="funds"><b>◈</b>Fonlar</button><button class="pro-link" data-nav="calendar"><b>▤</b>Takvim</button></div>
   <div class="section-head"><h2>Piyasa özeti</h2><button class="more" id="viewAllBtn">Tümünü gör ›</button></div>
   <div class="scroll" id="filters"><button class="filter active" data-filter="all">Tümü</button><button class="filter" data-filter="fx">Döviz</button><button class="filter" data-filter="metal">Altın & emtia</button><button class="filter" data-filter="crypto">Kripto</button><button class="filter" data-filter="stock">Borsa</button></div>
   <div class="grid" id="tiles"></div>
@@ -208,12 +238,12 @@ function status(k){
  if(!Number.isFinite(prices[k]))return ['VERİ BEKLENİYOR','daily'];
  if(m?.provider==='Hesaplama')return ['TAHMİNİ SPOT','daily'];
  if(m?.provider==='Frankfurter')return ['GÜNLÜK REFERANS','daily'];
- if(m?.provider==='Hasfiyat WS')return Date.now()-(m.receivedAt||0)>30000?['SON KAYIT','daily']:['CANLI · WS','live'];
+ if(m?.provider==='Hasfiyat WS')return Date.now()-(m.receivedAt||0)>30000?['SON KAYIT','daily']:['CANLI','live'];
  if(m?.cached&&age(k)>90000)return ['SON KAYIT','daily'];
  if(a.mode==='market')return age(k)>5*60000?['GECİKMELİ','daily']:['PİYASA KAYNAĞI','daily'];
  if(a.mode==='daily')return ['GÜNLÜK','daily'];
- if(a.mode==='stream')return age(k)>30000?['SON KAYIT','daily']:['CANLI · ~1 SN','live'];
- return age(k)>120000?['SON KAYIT','daily']:['~30 SN','live'];
+ if(a.mode==='stream')return age(k)>30000?['SON KAYIT','daily']:['CANLI','live'];
+ return age(k)>120000?['SON KAYIT','daily']:['GÜNCEL','live'];
 }
 function change(k){const m=meta[k];return Number.isFinite(m?.pct)?m.pct:null}
 function sourceTime(k){
@@ -225,7 +255,7 @@ function sourceTime(k){
  if(m.provider==='Hasfiyat WS')return 'Hasfiyat · '+fmtTime(m.receivedAt)+cache+(Number.isFinite(m.buy)?' · Alış '+fmt(m.buy,a.unit):'');
  if(m.provider==='Trunçgil Finans')return 'Trunçgil · '+time+stale+cache+(Number.isFinite(m.buy)?' · Alış '+fmt(m.buy,a.unit):'');
  if(m.provider==='Frankfurter')return 'Frankfurter · günlük '+(m.date||'')+cache;
- return a.source+' · '+time+stale+cache;
+ return (a.mode==='stream'?'Binance':a.mode==='metal'?'Gold API':a.source)+' · '+time+stale+cache;
 }
 function record(k,pctVal,price,ts=Date.now(),details={}){
  if(!ASSETS[k]||!Number.isFinite(price)||price<=0)return;
@@ -276,7 +306,7 @@ function assetIcon(k,tiny=false){
  return `<span class="atlas-asset-icon ${c}${coin?' coin':''}${tiny?' tiny':''}" aria-label="${esc(a.name)} simgesi">${picture}</span>`;
 }
 function assetTile(k){const a=ASSETS[k],st=status(k),pct=change(k);return `<button class="tile ${a.cat==='metal'?'goldTile':''}" data-detail="${k}"><div class="tile-top">${assetIcon(k)}<span class="badge-small ${st[1]}">${st[0]}</span></div><div class="asset-name">${a.name}</div><div class="asset-val ${Number.isFinite(prices[k])?'':'unavailable'}">${fmt(prices[k],a.unit)}</div><div class="tile-foot"><span class="card-cat">${a.code}</span><span class="pct ${pct==null?'neutral':pct>=0?'up':'down'}">${pct==null?'—':(pct>0?'+':'')+formatN(pct)+'%'}</span></div>${miniSpark(k)}<div class="asset-source">${esc(sourceTime(k))}</div></button>`;}
-function assetLi(k){const a=ASSETS[k],s=status(k),pct=change(k);return `<div class="list-asset" data-detail="${k}"><div class="list-icon">${assetIcon(k)}</div><div style="min-width:0"><div class="list-name">${a.name}</div><div class="list-sub">${a.code} · ${esc(a.source)}</div></div><div class="list-value">${fmt(prices[k],a.unit)}<div class="list-status ${pct==null?'':pct>=0?'up':'down'}">${pct==null?s[0]:(pct>0?'+':'')+formatN(pct)+'%'}</div></div><button class="star" data-star="${k}" aria-label="Favorileri değiştir">${favs.has(k)?'★':'☆'}</button></div>`;}
+function assetLi(k){const a=ASSETS[k],s=status(k),pct=change(k);return `<div class="list-asset" data-detail="${k}"><div class="list-icon">${assetIcon(k)}</div><div style="min-width:0"><div class="list-name">${a.name}</div><div class="list-sub">${a.code} · ${esc(a.mode==='stream'?'Binance':a.mode==='metal'?'Gold API':a.source)}</div></div><div class="list-value">${fmt(prices[k],a.unit)}<div class="list-status ${pct==null?'':pct>=0?'up':'down'}">${pct==null?s[0]:(pct>0?'+':'')+formatN(pct)+'%'}</div></div><button class="star" data-star="${k}" aria-label="Favorileri değiştir">${favs.has(k)?'★':'☆'}</button></div>`;}
 
 let calcMode='convert';
 const CALC_KEYS=['usd','eur','gbp','chf','cad','aud','gold','gold22','silvergram','ceyrek','yarim','tam','cumhuriyet','ata','btc','eth','sol','xau','xag'];
@@ -348,10 +378,10 @@ function renderHome(){const keys=category==='all'?['usd','gold','bist','btc','eu
 function renderMarkets(){const keys=Object.keys(ASSETS).filter(k=>ASSETS[k].mode!=='licensed'&&(!marketsOnlyFav||favs.has(k))&&(category==='all'||ASSETS[k].cat===category)&&((ASSETS[k].name+' '+ASSETS[k].code).toLocaleLowerCase('tr').includes(searchTerm)));return `<div class="section-head"><h2>Tüm piyasalar</h2><span class="more">${keys.length} varlık</span></div><div class="search-box">⌕ <input id="search" value="${esc(searchTerm)}" placeholder="Hisse, kripto, döviz, altın ara"></div><div class="tabline">${[['all','Tümü'],['fx','Döviz'],['metal','Altın/Emtia'],['crypto','Kripto'],['stock','Borsa']].map(([k,v])=>`<button data-cat="${k}" class="${category===k?'chosen':''}">${v}</button>`).join('')}</div><div class="pill-row"><button class="pill ${marketsOnlyFav?'good':''}" id="onlyFav">★ Sadece favorilerim</button><span class="pill">Kaynak saati ve gerçek piyasa verisi</span></div><div class="list-wrap">${keys.map(assetLi).join('')||'<div class="empty">Bu filtre için sonuç bulunamadı.</div>'}</div>${category==='stock'?'<div class="hintbox" style="margin:12px 16px">BIST 30, S&P 500, Nasdaq 100 ve petrol fiyatları doğrulanmış veri lisansı sağlanana kadar gizlendi; boş ve yanıltıcı kart gösterilmiyor.</div>':''}`;}
 function valueTry(k){if(!Number.isFinite(prices[k]))return null;const a=ASSETS[k];if(a.unit==='₺')return prices[k];if(a.unit==='$'&&Number.isFinite(prices.usd))return prices[k]*prices.usd;return null;}
 function portfolioSum(){let val=0,cost=0,count=0,waiting=0;for(const t of trades){const p=valueTry(t.key);if(p===null){waiting++;continue}val+=t.qty*p;cost+=t.qty*t.cost;count++;}return {value:val,cost,profit:val-cost,count,waiting};}
-function renderPortfolio(){const p=portfolioSum(),valid=trades.filter(x=>ASSETS[x.key]);return `<div class="section-head"><h2>Portföyüm</h2><span class="more">Yerel kayıt</span></div><div class="panel"><div class="subtitle">Toplam tahmini portföy değeri</div><div class="overview-num">${fmt(p.value,'₺')}</div><div class="metric-row"><div class="metric"><div class="l">Maliyet</div><div class="n">${fmt(p.cost,'₺')}</div></div><div class="metric"><div class="l">Kâr / Zarar</div><div class="n ${p.profit>=0?'up':'down'}">${fmt(p.profit,'₺')}</div></div><div class="metric"><div class="l">İşlem</div><div class="n">${trades.length}</div></div></div><div class="hintbox">TL dönüşümlerinde piyasa USD/TRY alış/satış referansı kullanılır; USDT/USD aynı varlık değildir. Kurun güncellenme zamanını kontrol edin. ${p.waiting?'Güncel fiyatı gelmeyen '+p.waiting+' kayıt hesaba katılamadı.':''} İşlemler yalnızca bu cihazda saklanır.</div><div class="actionrow"><button class="wide-btn" id="addTrade">+ Yatırım kaydı ekle</button><button class="wide-btn secondary" id="exportCsv">CSV dışa aktar</button></div></div><div class="section-head"><h2>Yatırım kayıtları</h2></div><div class="panel">${valid.length?valid.map((t,i)=>`<div class="txitem"><div><b>${ASSETS[t.key].name}</b><div class="subtitle">${formatN(t.qty,6)} birim · maliyet ${fmt(t.cost,'₺')} / birim</div></div><div style="text-align:right"><b>${fmt((valueTry(t.key)??0)*t.qty,'₺')}</b><div><button class="ghost" data-deltrade="${i}">Sil</button></div></div></div>`).join(''):'<div class="empty">Henüz yatırım kaydı yok. Alım yaptığın varlığı ve birim maliyetini ekleyebilirsin.</div>'}</div><p class="privacy">Bu ekran alım-satım hizmeti değildir; yalnızca kayıtlı işlemleri yaklaşık piyasa referanslarıyla hesaplar.</p>`;}
+function renderPortfolio(){const p=portfolioSum(),valid=trades.filter(x=>ASSETS[x.key]);return `<div class="section-head"><h2>Portföyüm</h2><span class="more">Yerel kayıt</span></div><div class="panel"><div class="subtitle">Toplam tahmini portföy değeri</div><div class="overview-num">${fmt(p.value,'₺')}</div><div class="metric-row"><div class="metric"><div class="l">Maliyet</div><div class="n">${fmt(p.cost,'₺')}</div></div><div class="metric"><div class="l">Kâr / Zarar</div><div class="n ${p.profit>=0?'up':'down'}">${fmt(p.profit,'₺')}</div></div><div class="metric"><div class="l">İşlem</div><div class="n">${trades.length}</div></div></div><div class="hintbox">TL dönüşümlerinde piyasa USD/TRY alış/satış referansı kullanılır; USDT/USD aynı varlık değildir. Kurun güncellenme zamanını kontrol edin. ${p.waiting?'Güncel fiyatı gelmeyen '+p.waiting+' kayıt hesaba katılamadı.':''} İşlemler yalnızca bu cihazda saklanır.</div><div class="actionrow"><button class="wide-btn" id="addTrade">+ Yatırım kaydı ekle</button><button class="wide-btn secondary" id="exportCsv">CSV dışa aktar</button></div></div>${proPortfolioAllocation()}<div class="section-head"><h2>Yatırım kayıtları</h2></div><div class="panel">${valid.length?valid.map((t,i)=>`<div class="txitem"><div><b>${ASSETS[t.key].name}</b><div class="subtitle">${formatN(t.qty,6)} birim · maliyet ${fmt(t.cost,'₺')} / birim</div></div><div style="text-align:right"><b>${fmt((valueTry(t.key)??0)*t.qty,'₺')}</b><div><button class="ghost" data-deltrade="${i}">Sil</button></div></div></div>`).join(''):'<div class="empty">Henüz yatırım kaydı yok. Alım yaptığın varlığı ve birim maliyetini ekleyebilirsin.</div>'}</div><p class="privacy">Bu ekran alım-satım hizmeti değildir; yalnızca kayıtlı işlemleri yaklaşık piyasa referanslarıyla hesaplar.</p>`;}
 function renderAlerts(){return `<div class="section-head"><h2>Fiyat alarmlarım</h2><span class="more">Uygulama açıkken çalışır</span></div><div class="panel"><h3>Hedef fiyat takibi</h3><div class="subtitle">Fiyat yukarı veya aşağı eşiğini geçtiğinde ekranda uyarı gösterilir. Bu web sürümü arka planda bildirim göndermez.</div><div class="actionrow"><button class="wide-btn" id="addAlert">+ Yeni alarm kur</button><button class="wide-btn secondary" id="notifyBtn">Bildirim izni iste</button></div></div><div class="panel">${alerts.length?alerts.map((a,i)=>`<div class="alertitem"><div><b>${esc(ASSETS[a.key]?.name||a.key)}</b><div class="subtitle">${a.direction==='above'?'Üzerine çıkarsa':'Altına düşerse'} ${fmt(a.target,ASSETS[a.key]?.unit||'$')} · ${a.done?'Tetiklendi':'Aktif'}</div></div><button class="smallbtn" data-delalert="${i}">Sil</button></div>`).join(''):'<div class="empty">Aktif alarmın bulunmuyor.</div>'}</div>`;}
-function renderSettings(){return `<div class="section-head"><h2>Veriler ve ayarlar</h2></div><div class="panel"><h3>Veri durumu</h3><div class="kvrow"><span>Kripto (WebSocket)</span><b id="wsSettings">${wsConnected?'BAĞLI · ~1 sn':'Bağlanıyor / kapalı'}</b></div><div class="kvrow"><span>Kıymetli metaller</span><b>~30 sn · Gold API</b></div><div class="kvrow"><span>Döviz</span><b>Trunçgil · kaynak zamanı / günlük yedek</b></div><div class="kvrow"><span>Gram altın / TL</span><b>Trunçgil GRA alış/satış (varsa)</b></div><div class="kvrow"><span>BIST 100</span><b>Trunçgil XU100 referansı · gecikme olabilir</b></div><div class="hintbox warning">Türkiye döviz, gram altın ve XU100 kaynağı yalnızca ekran açıkken 8 saniyede bir kontrol edilir; kaynağın gerçek fiyat güncellemesi ve BIST gecikmesi farklı olabilir. BIST verisi test amaçlı referanstır. Google Play’de yeniden dağıtım için veri lisansı gerekir.</div><div class="actionrow"><button class="wide-btn secondary" id="fullRefresh">Verileri yenile</button><button class="wide-btn secondary" id="toggleTheme">Açık/koyu tema</button></div></div><div class="panel"><h3>⚡ Gerçek anlık altın & döviz (isteğe bağlı)</h3><div class="subtitle">Hasfiyat WebSocket, fiyat değiştikçe alış/satış fiyatını gönderir. API anahtarı ve aktif abonelik gerekir; 5 günlük deneme sunulabilir. Anahtar bu telefonda uygulama özel alanında saklanır. Anahtar girmeden ücretsiz Trunçgil sistemi çalışır.</div><div class="kvrow"><span>Canlı bağlantı durumu</span><b id="hasfiyatStatus">${esc(hasfiyatStatus)}</b></div><div class="field"><label>Hasfiyat API anahtarın</label><input id="hasfiyatKey" type="password" autocomplete="off" placeholder="API anahtarını gir"></div><div class="actionrow"><button class="wide-btn" id="saveHasfiyatKey">Canlı bağlantıyı aç</button><button class="wide-btn secondary" id="removeHasfiyatKey">Anahtarı sil</button></div><div class="note" style="margin-top:10px">Fiyatlar anahtarsız 8 saniyede bir kontrol edilir fakat aynı fiyatta kalabilir. BIST, Hasfiyat kapsamına girmez. Ticari kullanım ve yeniden dağıtım lisansını ayrıca kontrol et.</div></div><div class="panel"><h3>Veri hakları ve lisans</h3><div class="subtitle">Borsa İstanbul, Nasdaq ve bazı emtia fiyatları için gösterim/yeniden dağıtım izni alınmalıdır. Bu sürüm lisanssız veriye gerçek fiyat atamaz. Kripto: Binance açık piyasa akışı. Altın/emtia: Gold API. Döviz: Frankfurter kaynak günü. Kaynakların kullanım şartları, yayın öncesi tekrar kontrol edilmelidir.</div></div><div class="panel"><h3>Yerel kayıtlar</h3><div class="subtitle">Favoriler, fiyat geçmişi, portföy işlemleri ve alarmlar tarayıcında veya uygulamanın yerel verisinde saklanır; hesap eşitlemesi henüz yok.</div><div class="actionrow"><button class="wide-btn secondary" id="clearHistory">Grafik önbelleğini temizle</button></div></div><p class="privacy">Yatırım tavsiyesi değildir. Gerçek emir ve işlem özelliği bulunmaz. Uygulama sürümü 0.8 test.</p>`;}
-function render(){if(page==='home'){ $('#sectionMain').classList.remove('hide');$('#secondary').classList.add('hide');renderHome();}else{$('#sectionMain').classList.add('hide');$('#secondary').classList.remove('hide');const s=$('#secondary');if(page==='markets')s.innerHTML=renderMarkets();else if(page==='calculator'){if(!$('#calcView'))s.innerHTML=renderCalculator();calcRecompute();}else if(page==='portfolio')s.innerHTML=renderPortfolio();else if(page==='alerts')s.innerHTML=renderAlerts();else s.innerHTML=renderSettings();}bindNav();renderTicker();}
+function renderSettings(){return `<div class="section-head"><h2>Veriler ve ayarlar</h2></div><div class="panel"><h3>Veri durumu</h3><div class="kvrow"><span>Kripto (WebSocket)</span><b id="wsSettings">${wsConnected?'BAĞLI · ~1 sn':'Bağlanıyor / kapalı'}</b></div><div class="kvrow"><span>Kıymetli metaller</span><b>~30 sn · Gold API</b></div><div class="kvrow"><span>Döviz</span><b>Trunçgil · kaynak zamanı / günlük yedek</b></div><div class="kvrow"><span>Gram altın / TL</span><b>Trunçgil GRA alış/satış (varsa)</b></div><div class="kvrow"><span>BIST 100</span><b>Trunçgil XU100 referansı · gecikme olabilir</b></div><div class="hintbox warning">Türkiye döviz, gram altın ve XU100 kaynağı yalnızca ekran açıkken 8 saniyede bir kontrol edilir; kaynağın gerçek fiyat güncellemesi ve BIST gecikmesi farklı olabilir. BIST verisi test amaçlı referanstır. Google Play’de yeniden dağıtım için veri lisansı gerekir.</div><div class="actionrow"><button class="wide-btn secondary" id="fullRefresh">Verileri yenile</button><button class="wide-btn secondary" id="toggleTheme">Açık/koyu tema</button></div></div><div class="panel"><h3>⚡ Gerçek anlık altın & döviz (isteğe bağlı)</h3><div class="subtitle">Hasfiyat WebSocket, fiyat değiştikçe alış/satış fiyatını gönderir. API anahtarı ve aktif abonelik gerekir; 5 günlük deneme sunulabilir. Anahtar bu telefonda uygulama özel alanında saklanır. Anahtar girmeden ücretsiz Trunçgil sistemi çalışır.</div><div class="kvrow"><span>Canlı bağlantı durumu</span><b id="hasfiyatStatus">${esc(hasfiyatStatus)}</b></div><div class="field"><label>Hasfiyat API anahtarın</label><input id="hasfiyatKey" type="password" autocomplete="off" placeholder="API anahtarını gir"></div><div class="actionrow"><button class="wide-btn" id="saveHasfiyatKey">Canlı bağlantıyı aç</button><button class="wide-btn secondary" id="removeHasfiyatKey">Anahtarı sil</button></div><div class="note" style="margin-top:10px">Fiyatlar anahtarsız 8 saniyede bir kontrol edilir fakat aynı fiyatta kalabilir. BIST, Hasfiyat kapsamına girmez. Ticari kullanım ve yeniden dağıtım lisansını ayrıca kontrol et.</div></div><div class="panel"><h3>Veri hakları ve lisans</h3><div class="subtitle">Borsa İstanbul, Nasdaq ve bazı emtia fiyatları için gösterim/yeniden dağıtım izni alınmalıdır. Bu sürüm lisanssız veriye gerçek fiyat atamaz. Kripto: Binance açık piyasa akışı. Altın/emtia: Gold API. Döviz: Frankfurter kaynak günü. Kaynakların kullanım şartları, yayın öncesi tekrar kontrol edilmelidir.</div></div><div class="panel"><h3>Yerel kayıtlar</h3><div class="subtitle">Favoriler, fiyat geçmişi, portföy işlemleri ve alarmlar tarayıcında veya uygulamanın yerel verisinde saklanır; hesap eşitlemesi henüz yok.</div><div class="actionrow"><button class="wide-btn secondary" id="clearHistory">Grafik önbelleğini temizle</button></div></div><p class="privacy">Yatırım tavsiyesi değildir. Gerçek emir ve işlem özelliği bulunmaz. Uygulama sürümü 0.9 test.</p>`;}
+function render(){if(page==='home'){ $('#sectionMain').classList.remove('hide');$('#secondary').classList.add('hide');renderHome();}else{$('#sectionMain').classList.add('hide');$('#secondary').classList.remove('hide');const s=$('#secondary');if(page==='markets')s.innerHTML=renderMarkets();else if(page==='calculator'){if(!$('#calcView'))s.innerHTML=renderCalculator();calcRecompute();}else if(page==='portfolio')s.innerHTML=renderPortfolio();else if(page==='alerts')s.innerHTML=renderAlerts();else if(page==='funds')s.innerHTML=proRenderFunds();else if(page==='charts')s.innerHTML=proRenderCharts();else if(page==='calendar')s.innerHTML=proRenderCalendar();else s.innerHTML=renderSettings();}bindNav();renderTicker();}
 const ATLAS_TICKER_KEYS=['btc','eth','sol','usd','eur','gold','gold22','bist','xau','silvergram'];
 let heroSlide=0,heroSlideChangedAt=Date.now();
 let atlasTickerTimer=0,atlasTickerOffset=0,atlasTickerPreviousAt=0;
@@ -396,8 +426,8 @@ function renderTicker(){
   el.classList.toggle('up',pc>0);el.classList.toggle('down',pc<0);
  });
 }
-function scheduleRender(){if(renderTick)return;renderTick=setTimeout(()=>{renderTick=0;if(!$('#sheet').classList.contains('open')){let input=$('#search');if(input&&document.activeElement===input){$$('.list-asset').forEach(()=>{});renderTicker();}else render();}else renderTicker();},1800);}
-function navigate(p){page=p;render();window.scrollTo({top:0,behavior:'smooth'});}
+function scheduleRender(){if(renderTick)return;renderTick=setTimeout(()=>{renderTick=0;if(!$('#sheet').classList.contains('open')){let input=$('#search');if(input&&document.activeElement===input){$$('.list-asset').forEach(()=>{});renderTicker();}else if(['funds','charts','calendar'].includes(page))renderTicker();else render();}else renderTicker();},1800);}
+function navigate(p){page=p;render();window.scrollTo({top:0,behavior:'smooth'});if(p==='charts')setTimeout(proLoadCandles,0);if(p==='funds')setTimeout(()=>proLoadFund(proFundCode),0);}
 function closeSheet(){$('#sheet').classList.remove('open');$('#sheetContent').innerHTML='';render();}
 function sheet(content){$('#sheetContent').innerHTML=content;$('#sheet').classList.add('open');}
 function detail(k){k=safeKey(k);selected=k;const a=ASSETS[k],m=meta[k],pct=change(k),st=status(k);const info=`<div class="data-info"><span class="badge-source">${st[0]}</span><span>Son kaynak zamanı: ${m?fmtTime(m.ts):'—'}</span></div>`;sheet(`<span class="eyebrow">${a.code} · ${a.source}</span><div class="detail-title-icon">${assetIcon(k)}<h2>${a.name}</h2></div><div class="detail-price">${fmt(prices[k],a.unit)}</div><div class="subtitle ${pct==null?'':pct>=0?'up':'down'}">${pct==null?'Değişim verisi henüz yok':(pct>0?'+':'')+formatN(pct)+'% (son 24 saat)'}</div>${info}${Number.isFinite(m?.sell)?`<div class="metric-row" style="margin-top:12px"><div class="metric"><div class="l">Alış</div><div class="n">${fmt(m.buy,a.unit)}</div></div><div class="metric"><div class="l">Satış</div><div class="n">${fmt(m.sell,a.unit)}</div></div></div>`:''}<div class="range" id="detailRanges" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:17px">${[['5D','5 dk'],['1S','1 sa'],['1G','1 gün'],['7G','7 gün']].map(([t,n])=>`<button class="${range===t?'chosen':''}" data-drange="${t}">${n}</button>`).join('')}</div><div id="detailChart">${chartSvg(k)}</div><div class="metric-row"><div class="metric"><div class="l">24s En yüksek</div><div class="n">${fmt(m?.high,a.unit)}</div></div><div class="metric"><div class="l">24s En düşük</div><div class="n">${fmt(m?.low,a.unit)}</div></div><div class="metric"><div class="l">24s Hacim</div><div class="n">${formatN(m?.volume,0)}</div></div></div><div class="hintbox">${esc(sourceTime(k))}. Fiyat grafiği uygulama açıldıktan sonra kaydedilen gerçek verileri içerir; geçmiş veriler henüz sağlayıcıdan indirilmiyor.</div><div class="actionrow"><button class="wide-btn" id="detailFav">${favs.has(k)?'★ Favorilerden çıkar':'☆ Favorilere ekle'}</button><button class="wide-btn secondary" id="detailAlert">🔔 Alarm kur</button></div>`);$('#detailFav').onclick=()=>{toggleStar(k);detail(k)};$('#detailAlert').onclick=()=>alertForm(k);$$('[data-drange]').forEach(b=>b.onclick=()=>{range=b.dataset.drange;detail(k)});}
@@ -559,7 +589,7 @@ async function refreshAll(force=false){
  if(!goldBusy&&(force||now-(load('metalsRefresh',0))>30e3))tasks.push(metalFetch());
  if(!wsConnected)cryptoConnect();if(hasfiyatKey&&!hasfiyatConnected&&!hasfiyatPending)connectHasfiyat();
  if(tasks.length)await Promise.allSettled(tasks);
- updateStatus();render();
+ updateStatus();if(['funds','charts','calendar'].includes(page))renderTicker();else render();
 }
 function exportCsv(){const line=['Varlık;Miktar;Birim maliyet TL;Tarih',...trades.map(x=>[ASSETS[x.key]?.name||x.key,x.qty,x.cost,new Date(x.ts).toISOString()].join(';'))].join('\r\n');if(window.AtlasBridge&&typeof window.AtlasBridge.shareCsv==='function'){window.AtlasBridge.shareCsv(line);return;}const data=new Blob(['\ufeff'+line],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(data),a=document.createElement('a');a.href=url;a.download='PiyasaAtlas-Portfoy.csv';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 function init(){hasfiyatKey=loadHasfiyatKey();if(settings.theme==='light')document.body.classList.add('light');$('#today').textContent=new Date().toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});$('#clock').textContent=fmtTime(Date.now());render();refreshAll(true);setInterval(()=>{$('#clock').textContent=fmtTime(Date.now());if(document.visibilityState==='visible')updateStatus();},1000);setInterval(()=>{if(document.visibilityState==='visible')refreshAll(false);},2500);startAtlasTicker();setInterval(()=>{advanceHero();animateHeroIndicator()},125);setInterval(()=>save('history',hist),20000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){refreshAll(false);connectHasfiyat();}else{persistMarketQuotes();stopHasfiyat();if(ws){ws.onclose=null;ws.close();wsConnected=false;}}});window.addEventListener('beforeunload',()=>{save('history',hist);persistMarketQuotes();});}
@@ -567,5 +597,160 @@ function init(){hasfiyatKey=loadHasfiyatKey();if(settings.theme==='light')docume
 document.addEventListener('click',ev=>{const t=ev.target;const calcTabBtn=t.closest('[data-calc-mode]');if(calcTabBtn){calcMode=calcTabBtn.dataset.calcMode;calcRecompute();return;}const heroDot=t.closest('[data-hero-dot]');if(heroDot){setHeroSlide(Number(heroDot.dataset.heroDot));return;}const close=t.closest('#sheetClose');if(close){closeSheet();return;}if(t.id==='sheet'){closeSheet();return;}const star=t.closest('[data-star]');if(star){ev.stopPropagation();toggleStar(star.dataset.star);return;}const detailBtn=t.closest('[data-detail]');if(detailBtn){detail(detailBtn.dataset.detail);return;}const nav=t.closest('[data-nav]');if(nav){navigate(nav.dataset.nav);return;}const fil=t.closest('[data-filter]');if(fil){category=fil.dataset.filter;$$('[data-filter]').forEach(b=>b.classList.toggle('active',b===fil));renderHome();return;}const cat=t.closest('[data-cat]');if(cat){category=cat.dataset.cat;render();return;}const ran=t.closest('[data-range]');if(ran){range=ran.dataset.range;$$('[data-range]').forEach(b=>b.classList.toggle('selected',b===ran));renderHome();return;}if(t.closest('#themeBtn')||t.closest('#toggleTheme')){document.body.classList.toggle('light');settings.theme=document.body.classList.contains('light')?'light':'dark';save('settings',settings);return;}if(t.closest('#saveHasfiyatKey')){const key=$('#hasfiyatKey')?.value?.trim()||'';if(!key)return toast('API anahtarını gir.');saveHasfiyatKey(key);toast('Canlı altın/döviz WebSocket bağlantısı deneniyor.');return;}if(t.closest('#removeHasfiyatKey')){saveHasfiyatKey('');toast('Canlı kaynak anahtarı cihazdan kaldırıldı.');return;}if(t.closest('#refreshBtn')||t.closest('#updateBtn')||t.closest('#fullRefresh')){refreshAll(true);return;}if(t.closest('#viewAllBtn')||t.closest('#chartAssetBtn')){category='all';navigate('markets');return;}if(t.closest('#favoritesBtn')){category='all';marketsOnlyFav=true;navigate('markets');return;}if(t.closest('#portfolioBtn')){navigate('portfolio');return;}if(t.closest('#addTrade')){tradeForm();return;}if(t.closest('#addAlert')){alertForm();return;}if(t.closest('#onlyFav')){marketsOnlyFav=!marketsOnlyFav;render();return;}if(t.closest('#exportCsv')){exportCsv();return;}if(t.closest('#clearHistory')){if(confirm('Kaydedilmiş gerçek fiyat grafiği örnekleri silinsin mi?')){Object.keys(hist).forEach(k=>delete hist[k]);save('history',hist);render();toast('Grafik önbelleği temizlendi.');}return;}if(t.closest('#notifyBtn')){if(typeof Notification==='undefined'){toast('Bildirim API bu ortamda desteklenmiyor.');return;}Notification.requestPermission().then(p=>toast(p==='granted'?'Bildirim izni verildi.':'Bildirim izni verilmedi.'));return;}const dtr=t.closest('[data-deltrade]');if(dtr){trades.splice(Number(dtr.dataset.deltrade),1);save('trades',trades);render();return;}const dal=t.closest('[data-delalert]');if(dal){alerts.splice(Number(dal.dataset.delalert),1);save('alerts',alerts);render();return;}});
 document.addEventListener('change',ev=>{if(page==='calculator'&&ev.target.closest('#calcView'))calcRecompute();});
 document.addEventListener('input',ev=>{if(page==='calculator'&&ev.target.closest('#calcView'))calcRecompute();if(ev.target?.id==='search'){searchTerm=ev.target.value;const keys=Object.keys(ASSETS).filter(k=>ASSETS[k].mode!=='licensed'&&(!marketsOnlyFav||favs.has(k))&&(category==='all'||ASSETS[k].cat===category)&&((ASSETS[k].name+' '+ASSETS[k].code).toLocaleLowerCase('tr').includes(searchTerm.toLocaleLowerCase('tr'))));const list=$('#secondary .list-wrap');if(list)list.innerHTML=keys.map(assetLi).join('')||'<div class="empty">Eşleşme yok</div>';}});
+/* Piyasa Atlas V0.9 — verified market modules */
+const proFundsCache=load('fundCache09',{});
+let proFundCode='TI2',proFundLoading=false,proFundError='',proFundHistory=[],proFundResponse=null,proFundTimeout=0;
+function proFundAsset(code){return 'fund_'+String(code).toUpperCase()}
+function proRegisterFund(d){
+ const code=String(d?.kod||'').toUpperCase(),price=Number(d?.fiyat);
+ if(!/^[A-Z0-9]{2,6}$/.test(code)||!(price>0))return;
+ const key=proFundAsset(code);
+ ASSETS[key]={name:String(d.ad||code).slice(0,115),code,symbol:'◈',cat:'fund',unit:'₺',mode:'daily',source:'fonfiyat.com.tr / TEFAS · günlük fiyat'};
+ prices[key]=price;
+ const ts=Date.parse(String(d.tarih||'')+'T12:00:00+03:00');
+ meta[key]={provider:'fonfiyat / TEFAS',ts:Number.isFinite(ts)?ts:Date.now(),sourceDate:d.tarih,pct:Number.isFinite(Number(d.gunluk))?Number(d.gunluk):null,cached:true};
+}
+for(const cached of Object.values(proFundsCache))if(cached?.details)proRegisterFund(cached.details);
+const proNum=(n,d=2)=>Number.isFinite(Number(n))?new Intl.NumberFormat('tr-TR',{minimumFractionDigits:d,maximumFractionDigits:d}).format(Number(n)):'—';
+function proFundCsv(text){
+ const points=[];
+ for(const line of String(text||'').split(/\r?\n/)){
+  const date=line.match(/20\d\d-\d\d-\d\d/);if(!date)continue;
+  const following=line.substring(date.index+date[0].length).replace(/^[;,\s]+/,'');
+  const first=following.includes(';')?following.split(';')[0]:following.split(',')[0];
+  const price=Number(String(first).replace(',','.'));const t=Date.parse(date[0]+'T12:00:00+03:00');
+  if(price>0&&Number.isFinite(t))points.push([t,price]);
+ }
+ return points.sort((a,b)=>a[0]-b[0]).slice(-160);
+}
+function proFundSpark(data){
+ const pts=(data||[]).filter(x=>Array.isArray(x)&&Number.isFinite(x[1]));if(pts.length<3)return '<div class="empty">Günlük fiyat geçmişi kaynaktan alınamadı.</div>';
+ const lo=Math.min(...pts.map(x=>x[1])),hi=Math.max(...pts.map(x=>x[1])),v=Math.max(hi-lo,0.00000001);
+ const path=pts.map((p,i)=>(i?'L':'M')+(10+i*310/(pts.length-1)).toFixed(1)+','+(108-(p[1]-lo)/v*96).toFixed(1)).join(' ');
+ return '<div class="pro-chart"><svg viewBox="0 0 340 130" preserveAspectRatio="none" aria-label="Fonun gerçek fiyat geçmişi"><path d="M10 116H327" stroke="#41617c" stroke-width=".9"/><path d="'+path+'" stroke="'+(pts.at(-1)[1]>=pts[0][1]?'#38daa8':'#ed6c88')+'" stroke-width="2.7" fill="none"/></svg></div><div class="pro-note">'+new Date(pts[0][0]).toLocaleDateString('tr-TR')+' – '+new Date(pts.at(-1)[0]).toLocaleDateString('tr-TR')+' · '+pts.length+' gerçek günlük fiyat</div>';
+}
+function proRenderFunds(){
+ const cached=proFundsCache[proFundCode];const data=proFundResponse?.kod===proFundCode?proFundResponse:cached?.details;
+ const d=data&&data.kod?.toUpperCase()===proFundCode?data:null;
+ const stat=(label,field)=>'<div class="pro-stat"><small>'+label+'</small><strong class="'+(Number(d?.[field])>=0?'up':'down')+'">'+(Number.isFinite(Number(d?.[field]))?((Number(d[field])>0?'+':'')+proNum(d[field])+'%'):'—')+'</strong></div>';
+ const dist=d?.dagilim&&typeof d.dagilim==='object'?Object.entries(d.dagilim).filter(([k,v])=>Number(v)>0).sort((a,b)=>Number(b[1])-Number(a[1])):[];
+ return '<div id="proFundView"><div class="section-head"><h2>Fon takip merkezi</h2><span class="more">TEFAS · Günlük</span></div><div class="pro-section"><div class="pro-kicker">Fon kodu ile arama</div><div class="pro-fund-search"><input id="proFundCode" maxlength="6" value="'+esc(proFundCode)+'" placeholder="Ör. TI2" autocapitalize="characters"/><button id="proFundSearch">Ara</button></div><div class="pro-chiprow">'+['TI2','TMG','AFA','YAY','TCD'].map(c=>'<button class="pro-chip '+(c===proFundCode?'selected':'')+'" data-pro-fund="'+c+'">'+c+'</button>').join('')+'</div></div>'+
+ (proFundLoading?'<div class="pro-section"><div class="subtitle">Fon bilgileri yükleniyor…</div></div>':proFundError?'<div class="pro-section"><div class="hintbox warning">'+esc(proFundError)+'</div></div>':'')+
+ (d?'<div class="pro-section"><div class="pro-kicker">'+esc(String(d.tarih||'—'))+' tarihli birim pay fiyatı</div><h3 style="margin-top:9px">'+esc(String(d.ad||proFundCode))+'</h3><div class="pro-fund-value">'+fmt(Number(d.fiyat),'₺',6)+'</div><div class="pro-stats">'+stat('Günlük','gunluk')+stat('1 ay','getiri_1a')+stat('3 ay','getiri_3a')+stat('1 yıl','getiri_1y')+stat('3 yıl','getiri_3y')+stat('5 yıl','getiri_5y')+'</div><div class="actionrow"><button class="wide-btn" id="proFundToPortfolio">◈ Portföye ekle</button><button class="pro-action" id="proFundReload">↻ Yenile</button></div></div><div class="pro-section"><h3>Geçmiş fon fiyatları</h3>'+proFundSpark(proFundHistory.length?proFundHistory:cached?.history||[])+'</div><div class="pro-section"><h3>Portföy dağılımı</h3>'+(dist.length?dist.map(([name,p])=>'<div class="pro-weightrow"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(name)+'">'+esc(name)+'</span><div class="pro-weightbar"><i style="width:'+Math.min(100,Number(p))+'%"></i></div><strong>'+proNum(p,1)+'%</strong></div>').join(''):'<div class="subtitle">Bu fon için dağılım verisi gelmedi.</div>')+'<div class="pro-note">Yönetim ücreti: '+proNum(d.yonetim_ucreti)+'% · Toplam gider: '+proNum(d.toplam_gider)+'%</div></div>':'<div class="pro-section"><div class="empty">Kod seçerek gerçek fon verisini sorgulayın.</div></div>')+
+ '<div class="pro-section"><div class="pro-note">Veri: fonfiyat.com.tr / TEFAS. Fon fiyatı her iş gününde bir açıklanır; saatlik önbellek kullanılır. Bu servis TEFAS veya SPK ile bağlı değildir. Güncel işlem fiyatını resmî kaynakla karşılaştırın.</div><a href="https://www.tefas.gov.tr/" target="_blank" rel="noopener">Resmî TEFAS sitesini aç</a></div></div>';
+}
+async function proLoadFund(raw,force=false){
+ const code=String(raw||'').trim().toUpperCase();
+ if(!/^[A-Z0-9]{2,6}$/.test(code)){proFundError='2–6 karakterli geçerli fon kodu girin.';render();return;}
+ if(proFundLoading)return;
+ proFundCode=code;const cached=proFundsCache[code];
+ if(!force&&cached&&Date.now()-cached.fetched<3600000){proFundResponse=cached.details;proFundHistory=cached.history||[];proFundError='';render();return;}
+ proFundLoading=true;proFundError='';proFundResponse=cached?.details||null;proFundHistory=cached?.history||[];render();
+ clearTimeout(proFundTimeout);
+ proFundTimeout=setTimeout(()=>{if(proFundLoading){proFundLoading=false;proFundError='Fon veri kaynağı yanıt vermedi. Son kayıt varsa görüntüleniyor.';if(page==='funds')render();}},15000);
+ try{
+  if(window.AtlasBridge?.requestFund)window.AtlasBridge.requestFund(code);
+  else{
+   const details=await getJson('https://fonfiyat.com.tr/v1/funds/'+code+'.json');
+   const hist=await fetch('https://fonfiyat.com.tr/v1/funds/'+code+'/history.csv').then(r=>r.ok?r.text():'').catch(()=>'');
+   window.onProFund({code,details,history:hist});
+  }
+ }catch(e){clearTimeout(proFundTimeout);proFundLoading=false;proFundError='Fon kaynağına şu anda ulaşılamıyor.';if(page==='funds')render();}
+}
+window.onProFund=function(response){
+ if(String(response?.code||'').toUpperCase()!==proFundCode)return;
+ clearTimeout(proFundTimeout);proFundLoading=false;
+ if(response.error||!(Number(response.details?.fiyat)>0)){proFundError='Fona ait geçerli fiyat bulunamadı.';if(page==='funds')render();return;}
+ proFundResponse=response.details;proFundHistory=proFundCsv(response.history);
+ proFundsCache[proFundCode]={details:proFundResponse,history:proFundHistory,fetched:Date.now()};save('fundCache09',proFundsCache);proRegisterFund(proFundResponse);
+ proFundError='';if(page==='funds')render();
+};
+let proCandleKey='btc',proCandleInterval='1h',proCandleRows=[],proCandleBusy=false,proCandleError='',proCandleFetched=0,proCandleTimeout=0;
+const proCandlePairs=['btc','eth','sol','bnb','xrp','ada','doge','avax','link','ltc'];
+const proIntervals=['1m','5m','15m','1h','4h','1d'];
+function proRsi(rows){const x=(rows||[]).map(r=>r.c);if(x.length<16)return NaN;let gain=0,loss=0;for(let i=x.length-14;i<x.length;i++){let d=x[i]-x[i-1];gain+=Math.max(0,d);loss+=Math.max(0,-d);}return loss===0?100:100-100/(1+gain/loss);}
+function proCandleSvg(rows){
+ const d=(rows||[]).slice(-65);if(d.length<8)return '<div class="empty">Gerçek OHLC verileri bekleniyor.</div>';
+ const H=251,low=Math.min(...d.map(x=>x.l)),high=Math.max(...d.map(x=>x.h)),rng=Math.max(high-low,1e-8),top=12,bot=174,slot=304/d.length,width=Math.max(1.5,slot*.57),vMax=Math.max(1,...d.map(x=>x.v));
+ const yy=p=>top+(high-p)/rng*(bot-top);let candles='',vols='';const sma10=[],sma20=[];
+ for(let i=0;i<d.length;i++){
+  const c=d[i],x=12+(i+.5)*slot,up=c.c>=c.o,col=up?'#37d9a4':'#ef728c',y1=yy(c.o),y2=yy(c.c);
+  candles+='<path d="M'+x.toFixed(2)+' '+yy(c.h).toFixed(2)+'V'+yy(c.l).toFixed(2)+'" stroke="'+col+'" stroke-width=".9"/><rect x="'+(x-width/2).toFixed(2)+'" y="'+Math.min(y1,y2).toFixed(2)+'" width="'+width.toFixed(2)+'" height="'+Math.max(1.3,Math.abs(y1-y2)).toFixed(2)+'" fill="'+col+'"/>';
+  vols+='<rect x="'+(x-width/2).toFixed(2)+'" y="'+(219-(c.v/vMax)*30).toFixed(2)+'" width="'+width.toFixed(2)+'" height="'+(c.v/vMax*30).toFixed(2)+'" fill="'+col+'" opacity=".65"/>';
+  if(i>=9)sma10.push([x,yy(d.slice(i-9,i+1).reduce((a,r)=>a+r.c,0)/10)]);
+  if(i>=19)sma20.push([x,yy(d.slice(i-19,i+1).reduce((a,r)=>a+r.c,0)/20)]);
+ }
+ const line=pts=>pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+ const ticks=[0,.25,.5,.75,1].map(t=>'<path d="M12 '+(top+t*(bot-top))+'H318" stroke="#31516d" stroke-width=".6" stroke-dasharray="2 5"/><text x="335" y="'+(top+4+t*(bot-top))+'" text-anchor="end" fill="#97b2c9" font-size="9">'+formatN(high-(high-low)*t,high>100?0:2)+'</text>').join('');
+ const times=[0,Math.floor((d.length-1)/2),d.length-1].map(i=>'<text x="'+(12+(i+.5)*slot).toFixed(1)+'" y="245" fill="#99b3ca" text-anchor="middle" font-size="9">'+new Date(d[i].t).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit'})+'</text>').join('');
+ return '<svg viewBox="0 0 340 251" aria-label="Gerçek Binance OHLC mum grafiği" role="img">'+ticks+candles+'<path d="'+line(sma10)+'" fill="none" stroke="#f2ca77" stroke-width="1.4"/><path d="'+line(sma20)+'" fill="none" stroke="#6baeff" stroke-width="1.3"/><path d="M12 181H326M12 224H326" stroke="#2d526b" stroke-width=".8"/>'+vols+times+'</svg>';
+}
+function proRenderCharts(){
+ return '<div class="section-head"><h2>Profesyonel grafikler</h2><span class="more">Gerçek OHLC</span></div><div class="pro-section"><div class="pro-kicker">Binance spot · USDT</div><div class="field"><label>Kripto varlık</label><select id="proCandleAsset">'+proCandlePairs.map(k=>'<option value="'+k+'" '+(k===proCandleKey?'selected':'')+'>'+esc(ASSETS[k].name)+'</option>').join('')+'</select></div><div class="pro-chiprow">'+proIntervals.map(v=>'<button data-pro-interval="'+v+'" class="pro-chip '+(v===proCandleInterval?'selected':'')+'">'+v+'</button>').join('')+'</div><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;margin:10px 0"><div><div class="pro-kicker">'+ASSETS[proCandleKey].code+'</div><h3 style="margin-top:6px">'+fmt(prices[proCandleKey],'$')+'</h3></div><button class="pro-action" id="proCandleReload">↻ Yenile</button></div><div class="pro-chart">'+(proCandleBusy?'<div class="empty">Gerçek mum verileri yükleniyor…</div>':proCandleError?'<div class="empty">'+esc(proCandleError)+'</div>':proCandleSvg(proCandleRows))+'</div><div class="pro-chiprow"><span class="badge-small live">Yükseliş</span><span class="badge-small" style="color:#f2829d">Düşüş</span><span class="badge-small" style="color:#f1c875">SMA 10</span><span class="badge-small" style="color:#6badff">SMA 20</span><span class="badge-small">Hacim</span></div><div class="pro-stats"><div class="pro-stat"><small>RSI (14)</small><strong>'+(Number.isFinite(proRsi(proCandleRows))?proNum(proRsi(proCandleRows),1):'—')+'</strong></div><div class="pro-stat"><small>Geçmiş OHLC mum</small><strong>'+proCandleRows.length+'</strong></div></div><div class="pro-note">Gerçek Binance geçmiş mum, hacim, SMA ve kapanışlardan hesaplanan RSI verisi. Grafik açıkken 60 saniyede kontrol edilir. Yeni fiyatın gelmesi garanti değildir. Yatırım tavsiyesi değildir.</div></div>';
+}
+async function proLoadCandles(force=false){
+ if(proCandleBusy||document.visibilityState==='hidden')return;
+ if(!force&&proCandleRows.length&&Date.now()-proCandleFetched<60000)return;
+ const pair=ASSETS[proCandleKey].pair.toUpperCase(),interval=proCandleInterval;
+ proCandleBusy=true;proCandleError='';if(page==='charts')render();clearTimeout(proCandleTimeout);
+ proCandleTimeout=setTimeout(()=>{if(proCandleBusy){proCandleBusy=false;proCandleError='Grafik sunucusundan yanıt alınamadı.';if(page==='charts')render();}},15000);
+ try{
+  if(window.AtlasBridge?.requestKlines)window.AtlasBridge.requestKlines(pair,interval);
+  else window.onProCandles({symbol:pair,interval,rows:await getJson('https://data-api.binance.vision/api/v3/klines?symbol='+pair+'&interval='+interval+'&limit=95')});
+ }catch(e){clearTimeout(proCandleTimeout);proCandleBusy=false;proCandleError='Binance geçmiş mum verisine ulaşılamıyor.';if(page==='charts')render();}
+}
+window.onProCandles=function(d){
+ if(!d||d.symbol!==ASSETS[proCandleKey].pair.toUpperCase()||d.interval!==proCandleInterval)return;
+ clearTimeout(proCandleTimeout);proCandleBusy=false;
+ if(d.error||!Array.isArray(d.rows)){proCandleRows=[];proCandleError='Gerçek grafik verisi alınamadı.';}
+ else{proCandleRows=d.rows.map(a=>({t:Number(a[0]),o:Number(a[1]),h:Number(a[2]),l:Number(a[3]),c:Number(a[4]),v:Number(a[5])})).filter(r=>r.t>0&&r.o>0&&r.h>=Math.max(r.o,r.c)&&r.l<=Math.min(r.o,r.c)&&r.v>=0);proCandleError=proCandleRows.length<8?'Bu aralıkta yeterli mum bulunamadı.':'';proCandleFetched=Date.now();}
+ if(page==='charts')render();
+};
+const proEvents=[
+ ['2026-11-12','Enflasyon Raporu','TCMB','Resmî rapor sunumu'],
+ ['2026-11-27','Finansal İstikrar Raporu','TCMB','Finansal sistem raporu'],
+ ['2026-12-10','PPK Faiz Kararı','TCMB','Para Politikası Kurulu kararı'],
+ ['2026-12-17','PPK Toplantı Özeti','TCMB','10 Aralık toplantısı özeti'],
+ ['2027-01-21','PPK Faiz Kararı','TCMB','Para Politikası Kurulu kararı'],
+ ['2027-01-28','PPK Toplantı Özeti','TCMB','21 Ocak toplantısı özeti'],
+ ['2027-02-11','Enflasyon Raporu','TCMB','2027 enflasyon raporu'],
+ ['2027-03-18','PPK Faiz Kararı','TCMB','Para Politikası Kurulu kararı'],
+ ['2027-03-25','PPK Toplantı Özeti','TCMB','18 Mart toplantısı özeti'],
+ ['2027-04-22','PPK Faiz Kararı','TCMB','Para Politikası Kurulu kararı'],
+ ['2027-04-29','PPK Toplantı Özeti','TCMB','22 Nisan toplantısı özeti'],
+ ['2027-05-13','Enflasyon Raporu','TCMB','2027 enflasyon raporu'],
+ ['2027-05-28','Finansal İstikrar Raporu','TCMB','Finansal sistem raporu']
+];
+let proShowAllEvents=false;
+function proRenderCalendar(){
+ const today=new Date().toLocaleDateString('en-CA',{timeZone:'Europe/Istanbul'});
+ const events=proEvents.filter(e=>proShowAllEvents||e[0]>=today);
+ return '<div class="section-head"><h2>Ekonomi takvimi</h2><span class="more">TCMB resmî</span></div><div class="pro-section"><div class="pro-kicker">Önemli piyasa tarihleri</div><h3 style="margin-top:8px">PPK ve merkez bankası raporları</h3><div class="pro-chiprow"><button class="pro-chip '+(!proShowAllEvents?'selected':'')+'" data-pro-calendar="future">Yaklaşan</button><button class="pro-chip '+(proShowAllEvents?'selected':'')+'" data-pro-calendar="all">Tümü</button></div>'+
+ (events.length?events.map(e=>{const dt=new Date(e[0]+'T12:00:00+03:00');return '<div class="pro-event"><div class="pro-event-date"><strong>'+dt.getDate()+'</strong><small>'+dt.toLocaleDateString('tr-TR',{month:'short'})+'</small></div><div><div class="pro-event-title">'+esc(e[1])+'</div><div class="pro-event-desc">'+esc(e[3])+' · '+dt.getFullYear()+'</div></div></div>';}).join(''):'<div class="empty">Yaklaşan etkinlik bulunamadı.</div>')+'</div><div class="pro-section"><h3>Resmî kaynaklar</h3><div class="pro-note">Saatler bildirilmediği için gösterilmiyor. Takvim değişebilir. TÜİK veri takvimi ve KAP açıklamaları için resmî bağlantılar kullanılır.</div><div class="actionrow"><a class="pro-action" href="https://www.tcmb.gov.tr/wps/wcm/connect/TR/TCMB+TR/Main+Menu/Duyurular/Takvim" target="_blank">TCMB</a><a class="pro-action" href="https://www.kap.org.tr/tr/" target="_blank">KAP</a><a class="pro-action" href="https://www.tuik.gov.tr/" target="_blank">TÜİK</a></div></div>';
+}
+function proPortfolioAllocation(){
+ const totals={};let total=0;const names={crypto:'Kripto',fx:'Döviz',metal:'Altın / Emtia',stock:'Borsa',fund:'Fonlar'};
+ for(const t of trades){const a=ASSETS[t.key],v=valueTry(t.key);if(!a||!(v>0)||!(Number(t.qty)>0))continue;const val=Number(t.qty)*v;const name=names[a.cat]||'Diğer';totals[name]=(totals[name]||0)+val;total+=val;}
+ if(!(total>0))return '';
+ return '<div class="section-head"><h2>Varlık dağılımı</h2><span class="more">Referans değerler</span></div><div class="pro-section"><div class="subtitle">Fiyatı bulunan yatırımların toplam portföy içindeki payı</div>'+Object.entries(totals).sort((a,b)=>b[1]-a[1]).map(([name,val])=>'<div class="pro-weightrow"><span>'+esc(name)+'</span><div class="pro-weightbar"><i style="width:'+(val/total*100).toFixed(1)+'%"></i></div><b>'+proNum(val/total*100,1)+'%</b></div>').join('')+'<div class="pro-note">Fiyatı olmayan yatırımlar hesaplamaya dahil değildir. Vergi ve işlem masrafları hariçtir.</div></div>';
+}
+document.addEventListener('click',event=>{
+ const btn=event.target.closest('button');if(!btn)return;
+ if(btn.id==='proFundSearch'){proLoadFund($('#proFundCode')?.value,true);return;}
+ if(btn.dataset.proFund){proLoadFund(btn.dataset.proFund);return;}
+ if(btn.id==='proFundReload'){proLoadFund(proFundCode,true);return;}
+ if(btn.id==='proFundToPortfolio'){if(proFundResponse||proFundsCache[proFundCode]){tradeForm();const sel=$('#tradeAsset');if(sel)sel.value=proFundAsset(proFundCode);}return;}
+ if(btn.dataset.proInterval){proCandleInterval=btn.dataset.proInterval;proCandleRows=[];proCandleFetched=0;proLoadCandles(true);return;}
+ if(btn.id==='proCandleReload'){proCandleFetched=0;proLoadCandles(true);return;}
+ if(btn.dataset.proCalendar){proShowAllEvents=btn.dataset.proCalendar==='all';if(page==='calendar')render();return;}
+});
+document.addEventListener('change',event=>{
+ if(event.target?.id==='proCandleAsset'){proCandleKey=event.target.value;proCandleRows=[];proCandleFetched=0;proLoadCandles(true);}
+});
+document.addEventListener('keydown',event=>{
+ if(event.key==='Enter'&&event.target?.id==='proFundCode'){event.preventDefault();proLoadFund(event.target.value,true);}
+});
+setInterval(()=>{if(page==='charts'&&document.visibilityState==='visible'&&Date.now()-proCandleFetched>=60000)proLoadCandles();},15000);
+
 init();
 </script></body></html>
