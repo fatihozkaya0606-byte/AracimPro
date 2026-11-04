@@ -161,6 +161,10 @@ public class MainActivity extends Activity {
     private final android.os.Handler apPremiumSplashHandler = new android.os.Handler(android.os.Looper.getMainLooper());
 
     private boolean apPremiumSplashHidden = false;
+    // If the previous release crashed in an ad or WebView component, start the
+    // next launch without optional ads. Vehicle data/local storage is untouched.
+    private boolean startupRecovery254 = false;
+    private boolean homePageFailed254 = false;
 
     private android.view.View apPremiumSplashView;
     private static final int CREATE_FILE_REQUEST = 7701;
@@ -341,6 +345,20 @@ public class MainActivity extends Activity {
         appOpenLastShownAt122 = openPrefs122.getLong("last_shown", 0L);
         openPrefs122.edit().putInt("opens", appOpenLaunchCount122).apply();
         installLocalCrashRecorder();
+        try {
+            android.content.SharedPreferences d = getSharedPreferences("aracimpro_diag", MODE_PRIVATE);
+            long ts = d.getLong("last_native_crash_ts", 0L);
+            String crash = d.getString("last_native_crash", "");
+            String c = crash == null ? "" : crash.toLowerCase(java.util.Locale.ROOT);
+            long age = System.currentTimeMillis() - ts;
+            startupRecovery254 = ts > 0L && age >= 0L && age < 48L * 60 * 60 * 1000
+                    && (c.contains("ads.mobile") || c.contains("admob")
+                        || c.contains("admost") || c.contains("yandex")
+                        || c.contains("unityads") || c.contains("webview")
+                        || c.contains("chromium"));
+            if (startupRecovery254) android.util.Log.w("AracimStartup",
+                    "Previous startup crash: ads skipped to protect home screen");
+        } catch (Throwable ignored) {}
         // Play Console Android 15/16 edge-to-edge compatibility:
         // On Android 11+ explicitly use ALWAYS (never SHORT_EDGES) for the
         // Activity cutout policy before enabling edge-to-edge drawing.
@@ -383,14 +401,28 @@ public class MainActivity extends Activity {
         // v236: Native and 300x250 AdMob MREC are TWO separate ad positions,
         // stacked below Titanium at the top of the main page. Both obey Premium,
         // user consent, on-screen bounds and SDK impression/click policies.
-        nativeFeed146 = new NativeFeedController146(
-                this, root, webView, mainHandler,
-                () -> canRequestAdMobAds() && admobSdkReady,
-                () -> canRequestAdMobAds() && activityResumed143
-                        && apPremiumSplashHidden && !appOpenShowing122);
-        middleVideo237 = new MiddleVideoNative237(
-                this, root, mainHandler,
-                () -> canRequestAdMobAds() && admobSdkReady);
+        // Advertising controllers are optional; a broken mediation/SDK class
+        // must never prevent the actual vehicle manager from opening.
+        if (!startupRecovery254) {
+            try {
+                nativeFeed146 = new NativeFeedController146(
+                        this, root, webView, mainHandler,
+                        () -> canRequestAdMobAds() && admobSdkReady,
+                        () -> canRequestAdMobAds() && activityResumed143
+                                && apPremiumSplashHidden && !appOpenShowing122);
+            } catch (Throwable t) {
+                android.util.Log.e("AracimStartup", "Native ads unavailable", t);
+                nativeFeed146 = null;
+            }
+            try {
+                middleVideo237 = new MiddleVideoNative237(
+                        this, root, mainHandler,
+                        () -> canRequestAdMobAds() && admobSdkReady);
+            } catch (Throwable t) {
+                android.util.Log.e("AracimStartup", "Video ads unavailable", t);
+                middleVideo237 = null;
+            }
+        }
         if (Build.VERSION.SDK_INT >= 33) {
             try {
                 getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
@@ -483,8 +515,71 @@ public class MainActivity extends Activity {
                 }
                 return true;
             }
+            @Override public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                if (url != null && url.startsWith("https://appassets.androidplatform.net/assets/")) {
+                    homePageFailed254 = false;
+                    pageReady = false;
+                }
+            }
+            @Override public void onReceivedError(WebView view, WebResourceRequest request,
+                    android.webkit.WebResourceError error) {
+                if (request == null || !request.isForMainFrame()) return;
+                Uri url = request.getUrl();
+                if (url == null || !"appassets.androidplatform.net".equalsIgnoreCase(url.getHost())) return;
+                homePageFailed254 = true;
+                pageReady = false;
+                android.util.Log.e("AracimStartup", "Local home failed: " +
+                        (error == null ? "unknown" : error.getErrorCode()));
+            }
+            @Override public void onReceivedHttpError(WebView view, WebResourceRequest request,
+                    android.webkit.WebResourceResponse response) {
+                if (request == null || !request.isForMainFrame()) return;
+                Uri url = request.getUrl();
+                if (url != null && "appassets.androidplatform.net".equalsIgnoreCase(url.getHost())
+                        && response != null && response.getStatusCode() >= 400) {
+                    homePageFailed254 = true;
+                    pageReady = false;
+                    android.util.Log.e("AracimStartup", "Local home HTTP " + response.getStatusCode());
+                }
+            }
+            @Override public boolean onRenderProcessGone(WebView view,
+                    android.webkit.RenderProcessGoneDetail detail) {
+                // WebView's default is to kill the entire application. Recover
+                // once with ads isolated, and do not loop endlessly on failure.
+                final long now = System.currentTimeMillis();
+                final android.content.SharedPreferences diag =
+                        getSharedPreferences("aracimpro_diag", MODE_PRIVATE);
+                final boolean secondFailure = now - diag.getLong("webview_recovery_254_ts", 0L) < 60000L;
+                diag.edit().putLong("webview_recovery_254_ts", now)
+                        .putLong("last_native_crash_ts", now)
+                        .putString("last_native_crash", "WebView renderer gone during Aracim Pro")
+                        .commit();
+                try {
+                    if (view.getParent() instanceof android.view.ViewGroup)
+                        ((android.view.ViewGroup) view.getParent()).removeView(view);
+                    view.destroy();
+                } catch (Throwable ignored) {}
+                mainHandler.post(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    if (secondFailure) {
+                        new android.app.AlertDialog.Builder(MainActivity.this)
+                                .setTitle("Aracım Pro açılış sorunu")
+                                .setMessage("Android WebView iki kez durdu. Telefonun WebView bileşenini güncelleyip yeniden deneyin. Araç kayıtlarını silmeyin.")
+                                .setPositiveButton("Kapat", (d, w) -> finish())
+                                .show();
+                    } else {
+                        Intent restart = new Intent(MainActivity.this, MainActivity.class);
+                        restart.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(restart);
+                        finish();
+                    }
+                });
+                return true;
+            }
             @Override public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
+                if (homePageFailed254) return; // Never treat Android error HTML as the app home.
                 pageReady = true;
                 if (apLaunchProgressBar != null) apLaunchProgressBar.setProgress(100);
                 if (apLaunchProgressLabel != null) apLaunchProgressLabel.setText("HAZIR    %100");
@@ -826,7 +921,7 @@ private void showLaunchSplash() {
         logAdMob("webview_stalled_244", "Home UI not ready after retry");
         new android.app.AlertDialog.Builder(this)
             .setTitle("Aracım Pro açılışı tamamlanamadı")
-            .setMessage("Uygulamanın ana ekranı yüklenemedi. Bu test sürümünde yeniden dene.")
+            .setMessage("Ana ekran yüklenemedi. Tekrar deneyin; araç kayıtlarını veya uygulama verilerini silmeyin.")
             .setCancelable(false)
             .setPositiveButton("Tekrar dene", (dialog, which) -> {
                 webViewRetryDialogShown244 = false;
@@ -856,6 +951,17 @@ private void showLaunchSplash() {
             return;
         }
         if (webView == null) return;
+        if (homePageFailed254) {
+            if (webViewRecoveryAttempted243) {
+                showWebViewRetryDialog244();
+                return;
+            }
+            webViewRecoveryAttempted243 = true;
+            homePageFailed254 = false;
+            mainHandler.postDelayed(splashWatchdog243, 10000L);
+            webView.reload();
+            return;
+        }
         if (webViewRecoveryAttempted243) {
             showWebViewRetryDialog244();
             return;
@@ -907,9 +1013,10 @@ private void showLaunchSplash() {
                 (BuildConfig.ADMOB_TEST_MODE ||
                  (BuildConfig.APP_OPEN_AD_UNIT_ID != null &&
                   BuildConfig.APP_OPEN_AD_UNIT_ID.matches("ca-app-pub-[0-9]+/[0-9]+")));
-        if (openAdEligible && !BuildConfig.DEBUG &&
-                apPremiumSplashView != null &&
-                elapsedOnSplash < 11000L && !appOpenAttemptFinished141) {
+        if (!startupRecovery254 && openAdEligible && !BuildConfig.DEBUG &&
+                apPremiumSplashView != null && admobSdkInitialized
+                && canRequestAdMobAds() &&
+                elapsedOnSplash < 4700L && !appOpenAttemptFinished141) {
             // Let ad SDK, purchase status and consent resolve, up to a strict cap.
             // The splash is the only permitted App Open display surface.
             mainHandler.postDelayed(this::hideLaunchSplashWhenReady, 150L);
@@ -1619,7 +1726,7 @@ private void showLaunchSplash() {
     private boolean canRequestAdMobAds() {
         // Google Play purchase check gates LIVE ads. Debug preview builds use
         // only Google's sample ad IDs and cannot query this Play subscription.
-        if (premiumActive) return false;
+        if (startupRecovery254 || premiumActive) return false;
         if (BuildConfig.DEBUG) {
             // Side-by-side debug package has SAMPLE ad units exclusively;
             // a failed Play Billing/UMP connection must not hide the preview.
@@ -1635,7 +1742,7 @@ private void showLaunchSplash() {
         if (BuildConfig.DEBUG &&
                 (!pageReady || !apPremiumSplashHidden || apPremiumSplashView != null))
             return;
-        if (premiumActive || (!premiumBillingReady && !BuildConfig.DEBUG)
+        if (startupRecovery254 || premiumActive || (!premiumBillingReady && !BuildConfig.DEBUG)
                 || admobConsentRequested || isFinishing() || isDestroyed()) return;
         admobConsentRequested = true;
         try {
@@ -2976,7 +3083,8 @@ private void showLaunchSplash() {
                 communityDb = FirebaseFirestore.getInstance(communityFirebaseApp);
                 communityConfigured = true;
             }
-        } catch (Exception ignored) {
+        } catch (Throwable ignored) {
+            // Firebase is optional. Do not terminate the app if an SDK class fails to load.
             communityConfigured = false;
         }
     }
@@ -3041,6 +3149,8 @@ private void showLaunchSplash() {
             o.put("android", android.os.Build.VERSION.RELEASE + " / SDK " + android.os.Build.VERSION.SDK_INT);
             o.put("device", android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL);
             o.put("lastCrash", getSharedPreferences("aracimpro_diag", MODE_PRIVATE).getString("last_native_crash", ""));
+            o.put("startupRecovery254", startupRecovery254);
+            o.put("homePageFailed254", homePageFailed254);
         } catch (Throwable ignored) {}
         return o.toString();
     }
