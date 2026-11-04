@@ -60,6 +60,17 @@ public final class MainActivity extends Activity {
         if(current!=null) runOnUiThread(() -> { if(web==current) current.evaluateJavascript(js,null); });
     }
     public final class AtlasBridge {
+        @JavascriptInterface public void saveFastFeedKey(String key) {
+            String cleaned = key == null ? "" : key.trim();
+            if (cleaned.length() > 512) return;
+            getSharedPreferences("atlas_private", MODE_PRIVATE)
+                .edit().putString("hasfiyat_api_key", cleaned).apply();
+        }
+        @JavascriptInterface public String loadFastFeedKey() {
+            return getSharedPreferences("atlas_private", MODE_PRIVATE)
+                .getString("hasfiyat_api_key", "");
+        }
+
         @JavascriptInterface public void requestTruncgil() {
             new Thread(() -> {
                 HttpURLConnection c=null;
