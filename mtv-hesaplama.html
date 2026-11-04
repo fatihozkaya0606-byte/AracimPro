@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2026 MTV Hesaplama | Aracım Pro</title>
+<meta name="description" content="2026 motorlu taşıtlar vergisi hesaplama. Model yılı, 2018 öncesi/sonrası tescil, motor hacmi ve ilk iktisap taşıt değerine göre yıllık MTV tarifesi.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://fatihozkaya0606-byte.github.io/AracimPro/mtv-hesaplama.html">
+<meta name="theme-color" content="#061322">
+<style>
+:root{color-scheme:dark;--bg:#061322;--panel:#10283d;--line:#30516a;--text:#f0f8ff;--muted:#bacedd;--green:#69ead3;--blue:#16364e}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16px/1.6 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text)}
+a{color:var(--green)}button,input,select{font:inherit}button{cursor:pointer}
+header{position:sticky;top:0;z-index:5;background:#071827f5;border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
+nav{max-width:1080px;margin:auto;display:flex;align-items:center;justify-content:space-between;padding:13px 18px;gap:12px}
+.logo{font-size:19px;font-weight:850;white-space:nowrap;text-decoration:none;color:white}.logo span{color:var(--green)}
+.navlinks{display:flex;gap:14px;flex-wrap:wrap;font-size:13px}.navlinks a{text-decoration:none;color:#c8dae9}
+.container{max-width:1050px;margin:0 auto;padding:40px 18px 70px}
+.eyebrow{font-size:12px;font-weight:900;letter-spacing:1.2px;color:var(--green)}
+h1{font-size:clamp(30px,5vw,46px);letter-spacing:-1.4px;line-height:1.13;margin:13px 0 15px}
+.subtitle{max-width:800px;font-size:16px;color:var(--muted);margin-bottom:28px}
+h2{font-size:23px;line-height:1.25;margin:0 0 15px}
+h3{font-size:18px;margin:0 0 10px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:19px;padding:24px;margin:15px 0}
+label{display:block;font-size:13px;color:#d7e9f4;font-weight:750;margin:0 0 7px}
+input,select{background:#071b2c;border:1px solid #466079;color:#f4fcff;border-radius:11px;width:100%;min-height:50px;padding:11px 13px;font-size:16px}
+input:focus,select:focus,button:focus-visible,a:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.field{min-width:0}.field small{font-size:12px;color:#9ab7cb;display:block;margin-top:6px;line-height:1.4}
+.note{border:1px solid #417478;background:#123b45;padding:14px 17px;border-radius:12px;font-size:13px;color:#c6eadd;margin-top:18px}
+.result{padding:22px;background:linear-gradient(130deg,#165b5a,#113b50);border:1px solid #3c8e7c;border-radius:16px;margin:20px 0 12px}
+.result small{display:block;font-size:12px;font-weight:750;color:#cdf5ed;letter-spacing:.5px}
+.result strong{display:block;font-size:clamp(30px,6vw,45px);color:#a3ffea;line-height:1.2;margin:8px 0}
+.result p{font-size:14px;margin:0;color:#daedef}
+.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.metric{padding:17px;background:#0a2639;border:1px solid #34596c;border-radius:13px}
+.metric small{font-size:12px;color:#acc5d8;display:block}
+.metric strong{font-size:24px;display:block;margin:5px 0 0;color:#89f4d8;overflow-wrap:anywhere}
+.mini{font-size:13px;color:#a8c3d5;line-height:1.75}
+.btn{border:0;background:var(--green);border-radius:10px;padding:13px 18px;color:#063145;font-weight:850;display:inline-block;text-decoration:none}
+details{background:#0b2236;border:1px solid #294961;padding:15px 18px;border-radius:12px;margin:10px 0}
+summary{cursor:pointer;font-weight:750}
+footer{border-top:1px solid var(--line);padding:20px 15px 30px;text-align:center;font-size:13px;color:#afc2d3}
+footer a{display:inline-block;margin:2px 9px}
+[hidden]{display:none!important}
+@media(max-width:660px){.container{padding:32px 15px 58px}.panel{padding:18px}.fields,.metrics{grid-template-columns:1fr}.navlinks{gap:9px;font-size:12px}.logo{font-size:17px}.metric strong{font-size:22px}}
+</style></head><body>
+<header><nav><a class="logo" href="./">Aracım<span>Pro</span></a>
+<div class="navlinks"><a href="./">Ana sayfa</a><a href="mtv-hesaplama.html">MTV</a><a href="arac-karsilastirma.html">Karşılaştır</a><a href="./#bilgi-merkezi">Rehber</a></div></nav></header>
+<main class="container">
+<span class="eyebrow">2026 · RESMÎ TARİFEYE DAYALI</span>
+<h1>2026 MTV hesaplama</h1>
+<p class="subtitle">Otomobilinizin model yılını, ilk tescil dönemini ve motor hacmini girin. Yıllık Motorlu Taşıtlar Vergisi tutarını 2026 tarifesine göre hesaplayın.</p>
+<section class="panel"><h2>Araç bilgileri</h2><div class="fields">
+<div class="field"><label for="modelYear">Model yılı</label><input type="number" id="modelYear" min="1900" max="2026" step="1" value="2024"></div>
+<div class="field"><label for="registration">İlk kayıt ve tescil dönemi</label><select id="registration"><option value="new">1 Ocak 2018 ve sonrası</option><option value="old">31 Aralık 2017 ve öncesi</option></select></div>
+<div class="field"><label for="engine">Motor silindir hacmi (cm³)</label><input type="number" id="engine" min="1" step="1" value="1498"><small>Örneğin 1.5 litre bir otomobil için ruhsatta yazan hacmi girin (1498, 1499 vb.).</small></div>
+<div class="field" id="acquisitionField"><label for="acquisition">MTV taşıt değeri (TL)</label><input type="number" id="acquisition" min="0" step="1" value="500000"><small>İlk iktisap/tescilde vergiye esas alınan değer; <b>bugünkü ikinci el satış fiyatı değildir.</b></small></div>
+</div><div class="note" id="registrationNote">Bu araç için (I) sayılı tarife uygulanır. Tarihte ilk defa tescil edilmiş aracın değer sınıfını doğru belirlemek için ilk iktisap taşıt değeri gereklidir.</div>
+<div class="result" aria-live="polite"><small>2026 YILLIK MTV</small><strong id="mtvAnnual">—</strong><p id="mtvSummary">Araç bilgilerine göre hesaplanıyor.</p></div>
+<div class="metrics"><div class="metric"><small>Yaklaşık 2 eşit taksit</small><strong id="mtvInstallment">—</strong></div><div class="metric"><small>2026 yaş grubu</small><strong id="mtvAge">—</strong></div></div>
+<p class="mini" id="errorMsg" role="status"></p>
+</section>
+<div class="note"><b>Kapsam:</b> Bu hesaplayıcı, yalnızca <b>içten yanmalı motorlu otomobil</b> ve benzeri (I)/(I-A) tarife kapsamındaki araçlar içindir. Elektrikli, hibrit, ticari veya özel istisnalı taşıtlarda farklı kurallar uygulanabilir. 2018 öncesi edinilip sonradan tescil edilen bazı taşıtlar için farklı tarife geçerlidir. Kasko değerinin %5'i sınırı ve olası vergi istisnaları otomatik uygulanmaz. Son ve bağlayıcı tutar için GİB kaydını kontrol edin.</div>
+<section class="panel"><h2>MTV hesaplama hakkında</h2>
+<details><summary>Motorlu taşıtların yaşı nasıl hesaplanır?</summary><p>2026 MTV için araç yaşı genel olarak <b>2026 - model yılı + 1</b> şeklinde hesaplanır. 2024 model araç 3 yaş, 2013 model araç 14 yaş grubundadır.</p></details>
+<details><summary>MTV taşıt değeri neden soruluyor?</summary><p>2018 ve sonrasında ilk defa tescil edilen içten yanmalı otomobillerde vergi, motor hacmine ve yaşa ek olarak taşıtın ilk edinimindeki mevzuatta tanımlı değere bağlıdır. Bu değer aracın güncel piyasa bedeli değildir.</p></details>
+<details><summary>Resmî tarife nereden alındı?</summary><p>Gelir İdaresi Başkanlığının <a href="https://www.gib.gov.tr/mevzuat/kanun/441/teblig/11860" target="_blank" rel="noopener">58 Seri No.lu Motorlu Taşıtlar Vergisi Genel Tebliği</a> ile <a href="https://cdn.gib.gov.tr/api/gibportal-file/file/getFileResources?objectKey=arsiv%2Ffileadmin%2Fbeyannamerehberi%2F2026%2F2026MtvTpcRehberi.pdf" target="_blank" rel="noopener">2026 MTV rehberi</a> esas alındı.</p></details>
+<details><summary>Ödemeyi nereden yapabilirim?</summary><p>Kesin borç sorgulama ve ödeme için Gelir İdaresi Başkanlığının resmî <a href="https://dijital.gib.gov.tr/" target="_blank" rel="noopener">Dijital Vergi Dairesi</a> hizmetini kullanın.</p></details>
+</section>
+<a class="btn" href="arac-karsilastirma.html">İki aracı karşılaştır ↗</a>
+</main>
+<script>
+"use strict";
+const tariff={"old":[[5750,4010,2238,1689,593],[10016,7510,4354,3077,1181],[17705,13829,8145,4957,1917],[27898,21478,12624,7510,2958],[41840,30372,18977,11333,4479],[58347,50754,31704,17044,6255],[88859,79955,48158,24031,8813],[139721,120647,71048,31704,12624],[228681,171485,101555,45632,17705]],"new":[{"limits":[309100,541500],"rows":[[5750,4010,2238,1689,593],[6319,4409,2459,1861,655],[6902,4807,2693,2032,706]]},{"limits":[309100,541500],"rows":[[10016,7510,4354,3077,1181],[11023,8264,4794,3375,1290],[12028,9012,5220,3685,1408]]},{"limits":[775100],"rows":[[19472,15226,8948,5458,2113],[21251,16600,9775,5964,2307]]},{"limits":[775100],"rows":[[30679,23625,13886,8264,3248],[33474,25784,15147,9012,3547]]},{"limits":[968100],"rows":[[46027,33413,20874,12465,4930],[50217,36448,22768,13606,5378]]},{"limits":[1937500],"rows":[[64175,55837,34878,18758,6875],[70018,60905,38053,20466,7503]]},{"limits":[1937500],"rows":[[97744,87954,52976,26443,9684],[106641,95940,57791,28839,10578]]},{"limits":[3101800],"rows":[[153684,132712,78152,34878,13886],[167671,144770,85271,38053,15147]]},{"limits":[3683200],"rows":[[251554,188627,111714,50206,19472],[274415,205781,121873,54769,21251]]}]};
+const groups=[1300,1600,1800,2000,2500,3000,3500,4000,Infinity];
+const lira=n=>Number.isFinite(n)?n.toLocaleString("tr-TR",{maximumFractionDigits:0})+" TL":"—";
+const el=id=>document.getElementById(id);
+function updateMTV(){
+ const model=Number(el("modelYear").value),engine=Number(el("engine").value);
+ const reg=el("registration").value;
+ el("acquisitionField").hidden=reg==="old";
+ el("registrationNote").textContent=reg==="old"?"2017 ve öncesinde ilk kez tescil edilen otomobiller için (I/A) sayılı yaş ve motor hacmi tarifesi kullanılır.":"2018 ve sonrasında ilk kez tescil edilen otomobiller için (I) sayılı tarife uygulanır. Vergiye esas ilk iktisap taşıt değerini girin; güncel piyasa fiyatını değil.";
+ const value=Number(el("acquisition").value);
+ const isValid=Number.isInteger(model)&&model>=1900&&model<=2026&&Number.isInteger(engine)&&engine>0&&Number.isFinite(value)&&(reg==="old"||value>0);
+ if(!isValid){el("mtvAnnual").textContent="—";el("mtvInstallment").textContent="—";el("mtvAge").textContent="—";el("mtvSummary").textContent="Geçerli model yılı, motor hacmi ve gerektiğinde taşıt değeri girin.";el("errorMsg").textContent="Boş veya hatalı alanları kontrol edin.";return;}
+ const age=2026-model+1;
+ const ageIndex=age<=3?0:age<=6?1:age<=11?2:age<=15?3:4;
+ const engineIndex=groups.findIndex(limit=>engine<=limit);
+ let annual;
+ if(reg==="old")annual=tariff.old[engineIndex][ageIndex];
+ else{
+   const band=tariff.new[engineIndex],valueIndex=band.limits.findIndex(limit=>value<=limit);
+   annual=band.rows[valueIndex===-1?band.rows.length-1:valueIndex][ageIndex];
+ }
+ el("mtvAnnual").textContent=lira(annual);
+ el("mtvInstallment").textContent=(annual/2).toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2})+" TL";
+ el("mtvAge").textContent=age+" yaş";
+ el("mtvSummary").textContent=(reg==="old"?"I/A":"I")+" sayılı tarife · "+engine+" cm³ · "+age+" yaş · 2026";
+ el("errorMsg").textContent="Bu tutar 2026 yıllık tarife hesabıdır; kasko değeri indirimi, istisna veya özel durumlar için resmî vergi borcunu kontrol edin.";
+}
+["modelYear","engine","registration","acquisition"].forEach(id=>{el(id).addEventListener("input",updateMTV);el(id).addEventListener("change",updateMTV)});
+updateMTV();
+</script>
+<footer>© 2026 Aracım Pro Web · <a href="hakkimizda.html">Hakkımızda</a><a href="gizlilik-politikasi.html">Gizlilik</a><a href="iletisim.html">İletişim</a></footer>
+</body></html>
