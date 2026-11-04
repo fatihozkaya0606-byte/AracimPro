@@ -44,6 +44,11 @@ footer{border-top:1px solid var(--line);padding:20px 15px 30px;text-align:center
 footer a{display:inline-block;margin:2px 9px}
 [hidden]{display:none!important}
 @media(max-width:660px){.container{padding:32px 15px 58px}.panel{padding:18px}.fields,.metrics{grid-template-columns:1fr}.navlinks{gap:9px;font-size:12px}.logo{font-size:17px}.metric strong{font-size:22px}}
+
+select{appearance:auto;cursor:pointer}
+select option{color:#fff;background:#0b2a42}
+.field select{min-height:55px}
+@media(max-width:660px){.field select{min-height:54px;font-size:16px}}
 </style></head><body>
 <header><nav><a class="logo" href="./">Aracım<span>Pro</span></a>
 <div class="navlinks"><a href="./">Ana sayfa</a><a href="mtv-hesaplama.html">MTV</a><a href="arac-karsilastirma.html">Karşılaştır</a><a href="./#bilgi-merkezi">Rehber</a></div></nav></header>
@@ -51,11 +56,22 @@ footer a{display:inline-block;margin:2px 9px}
 <span class="eyebrow">2026 · RESMÎ TARİFEYE DAYALI</span>
 <h1>2026 MTV hesaplama</h1>
 <p class="subtitle">Otomobilinizin model yılını, ilk tescil dönemini ve motor hacmini girin. Yıllık Motorlu Taşıtlar Vergisi tutarını 2026 tarifesine göre hesaplayın.</p>
-<section class="panel"><h2>Araç bilgileri</h2><div class="fields">
-<div class="field"><label for="modelYear">Model yılı</label><input type="number" id="modelYear" min="1900" max="2026" step="1" value="2024"></div>
+<section class="panel"><h2>Araç bilgileri</h2><p class="mini">Kutulara dokunup listeden seçebilirsin; klavyeyle yıl veya motor hacmi yazman gerekmiyor.</p><div class="fields">
+<div class="field"><label for="modelYear">Model yılı</label><select id="modelYear" aria-label="Model yılını seçin"><option value="2026">2026</option><option value="2025">2025</option><option value="2024" selected>2024</option><option value="2023">2023</option><option value="2022">2022</option><option value="2021">2021</option><option value="2020">2020</option><option value="2019">2019</option><option value="2018">2018</option><option value="2017">2017</option><option value="2016">2016</option><option value="2015">2015</option><option value="2014">2014</option><option value="2013">2013</option><option value="2012">2012</option><option value="2011">2011</option><option value="2010">2010</option><option value="2009">2009</option><option value="2008">2008</option><option value="2007">2007</option><option value="2006">2006</option><option value="2005">2005</option><option value="2004">2004</option><option value="2003">2003</option><option value="2002">2002</option><option value="2001">2001</option><option value="2000">2000</option><option value="1999">1999</option><option value="1998">1998</option><option value="1997">1997</option><option value="1996">1996</option><option value="1995">1995</option><option value="1994">1994</option><option value="1993">1993</option><option value="1992">1992</option><option value="1991">1991</option><option value="1990">1990</option><option value="1989">1989</option><option value="1988">1988</option><option value="1987">1987</option><option value="1986">1986</option><option value="1985">1985</option><option value="1984">1984</option><option value="1983">1983</option><option value="1982">1982</option><option value="1981">1981</option><option value="1980">1980</option><option value="1979">1979</option><option value="1978">1978</option><option value="1977">1977</option><option value="1976">1976</option><option value="1975">1975</option><option value="1974">1974</option><option value="1973">1973</option><option value="1972">1972</option><option value="1971">1971</option><option value="1970">1970</option><option value="1969">1969</option><option value="1968">1968</option><option value="1967">1967</option><option value="1966">1966</option><option value="1965">1965</option><option value="1964">1964</option><option value="1963">1963</option><option value="1962">1962</option><option value="1961">1961</option><option value="1960">1960</option><option value="1959">1959</option><option value="1958">1958</option><option value="1957">1957</option><option value="1956">1956</option><option value="1955">1955</option><option value="1954">1954</option><option value="1953">1953</option><option value="1952">1952</option><option value="1951">1951</option><option value="1950">1950</option></select></div>
 <div class="field"><label for="registration">İlk kayıt ve tescil dönemi</label><select id="registration"><option value="new">1 Ocak 2018 ve sonrası</option><option value="old">31 Aralık 2017 ve öncesi</option></select></div>
-<div class="field"><label for="engine">Motor silindir hacmi (cm³)</label><input type="number" id="engine" min="1" step="1" value="1498"><small>Örneğin 1.5 litre bir otomobil için ruhsatta yazan hacmi girin (1498, 1499 vb.).</small></div>
-<div class="field" id="acquisitionField"><label for="acquisition">MTV taşıt değeri (TL)</label><input type="number" id="acquisition" min="0" step="1" value="500000"><small>İlk iktisap/tescilde vergiye esas alınan değer; <b>bugünkü ikinci el satış fiyatı değildir.</b></small></div>
+<div class="field"><label for="engine">Motor silindir hacmi (cm³)</label><select id="engine" aria-label="Motor hacim aralığını seçin">
+<option value="1300">1300 cm³ ve altı (1.3 ve altı)</option>
+<option value="1600" selected>1301–1600 cm³ (1.4–1.6)</option>
+<option value="1800">1601–1800 cm³</option>
+<option value="2000">1801–2000 cm³</option>
+<option value="2500">2001–2500 cm³</option>
+<option value="3000">2501–3000 cm³</option>
+<option value="3500">3001–3500 cm³</option>
+<option value="4000">3501–4000 cm³</option>
+<option value="4001">4001 cm³ ve üzeri</option></select>
+<small>Ruhsattaki silindir hacminin bulunduğu aralığı seçin. İsterseniz önce <a href="#rehber">aşağıdaki açıklamayı</a> okuyun.</small></div>
+<div class="field" id="acquisitionField"><label for="acquisition">MTV taşıt değeri (TL)</label><select id="acquisition" aria-label="Taşıt değer aralığını seçin"><option value="">Önce değer aralığını seçin</option></select>
+<small>2026 tarifesindeki taşıt değer aralığını seçin. Bu tutar, <b>ilk iktisap/tescilde esas alınan taşıt değeridir; bugünkü ikinci el fiyatı değildir.</b></small></div>
 </div><div class="note" id="registrationNote">Bu araç için (I) sayılı tarife uygulanır. Tarihte ilk defa tescil edilmiş aracın değer sınıfını doğru belirlemek için ilk iktisap taşıt değeri gereklidir.</div>
 <div class="result" aria-live="polite"><small>2026 YILLIK MTV</small><strong id="mtvAnnual">—</strong><p id="mtvSummary">Araç bilgilerine göre hesaplanıyor.</p></div>
 <div class="metrics"><div class="metric"><small>Yaklaşık 2 eşit taksit</small><strong id="mtvInstallment">—</strong></div><div class="metric"><small>2026 yaş grubu</small><strong id="mtvAge">—</strong></div></div>
@@ -76,31 +92,82 @@ const tariff={"old":[[5750,4010,2238,1689,593],[10016,7510,4354,3077,1181],[1770
 const groups=[1300,1600,1800,2000,2500,3000,3500,4000,Infinity];
 const lira=n=>Number.isFinite(n)?n.toLocaleString("tr-TR",{maximumFractionDigits:0})+" TL":"—";
 const el=id=>document.getElementById(id);
+function populateYears(){
+ const select=el("modelYear");
+ const selected=select.value;
+ const reg=el("registration").value;
+ Array.from(select.options).forEach(opt=>{
+  opt.hidden=reg==="old"&&Number(opt.value)>2017;
+  opt.disabled=reg==="old"&&Number(opt.value)>2017;
+ });
+ if(reg==="old"&&Number(selected)>2017)select.value="2017";
+}
+function populateValueBands(){
+ const sel=el("acquisition");
+ const old=sel.value;
+ const engine=Number(el("engine").value);
+ const index=groups.findIndex(limit=>engine<=limit);
+ if(index<0)return;
+ const thresholds=tariff.new[index].limits;
+ const intervals=[];
+ let lower=0;
+ for(const max of thresholds){
+  intervals.push({min:lower,max,value:max,label:lower===0?max.toLocaleString("tr-TR")+" TL ve altı":lower.toLocaleString("tr-TR")+" – "+max.toLocaleString("tr-TR")+" TL"});
+  lower=max+1;
+ }
+ intervals.push({min:lower,max:Infinity,value:lower,label:lower.toLocaleString("tr-TR")+" TL üzeri"});
+ sel.innerHTML='<option value="">Taşıt değer aralığını seçin</option>';
+ for(const item of intervals){
+  const option=document.createElement("option");
+  option.value=String(item.value);
+  option.textContent=item.label;
+  sel.appendChild(option);
+ }
+ if([...sel.options].some(option=>option.value===old))sel.value=old;
+ else sel.value="";
+}
 function updateMTV(){
- const model=Number(el("modelYear").value),engine=Number(el("engine").value);
+ const yearText=el("modelYear").value;
+ const model=Number(yearText),engine=Number(el("engine").value);
  const reg=el("registration").value;
  el("acquisitionField").hidden=reg==="old";
- el("registrationNote").textContent=reg==="old"?"2017 ve öncesinde ilk kez tescil edilen otomobiller için (I/A) sayılı yaş ve motor hacmi tarifesi kullanılır.":"2018 ve sonrasında ilk kez tescil edilen otomobiller için (I) sayılı tarife uygulanır. Vergiye esas ilk iktisap taşıt değerini girin; güncel piyasa fiyatını değil.";
- const value=Number(el("acquisition").value);
- const isValid=Number.isInteger(model)&&model>=1900&&model<=2026&&Number.isInteger(engine)&&engine>0&&Number.isFinite(value)&&(reg==="old"||value>0);
- if(!isValid){el("mtvAnnual").textContent="—";el("mtvInstallment").textContent="—";el("mtvAge").textContent="—";el("mtvSummary").textContent="Geçerli model yılı, motor hacmi ve gerektiğinde taşıt değeri girin.";el("errorMsg").textContent="Boş veya hatalı alanları kontrol edin.";return;}
+ el("registrationNote").textContent=reg==="old"
+ ?"2017 veya öncesinde ilk tescil edilen otomobillerde (I/A) sayılı tarife uygulanır. Model yılı ve motor hacmi aralığını seçmeniz yeterlidir."
+ :"2018 veya sonrasında ilk tescil edilen otomobillerde (I) sayılı tarife uygulanır. Vergiye esas ilk iktisap taşıt değerinin aralığını seçin; güncel ikinci el fiyatını değil.";
+ const selectedValue=el("acquisition").value;
+ const value=Number(selectedValue);
+ const isValid=yearText!==""&&Number.isInteger(model)&&model>=1950&&model<=2026
+  &&(reg!=="old"||model<=2017)&&Number.isInteger(engine)&&engine>0
+  &&(reg==="old"||selectedValue!=="");
+ if(!isValid){
+  el("mtvAnnual").textContent="—";
+  el("mtvInstallment").textContent="—";
+  el("mtvAge").textContent=yearText?(2026-model+1)+" yaş":"—";
+  el("mtvSummary").textContent="Listelerden model yılı, motor hacmi ve gerekiyorsa taşıt değer aralığı seçin.";
+  el("errorMsg").textContent="Seçimlerinizi tamamladığınızda 2026 MTV tutarı otomatik hesaplanır.";
+  return;
+ }
  const age=2026-model+1;
  const ageIndex=age<=3?0:age<=6?1:age<=11?2:age<=15?3:4;
  const engineIndex=groups.findIndex(limit=>engine<=limit);
  let annual;
  if(reg==="old")annual=tariff.old[engineIndex][ageIndex];
  else{
-   const band=tariff.new[engineIndex],valueIndex=band.limits.findIndex(limit=>value<=limit);
-   annual=band.rows[valueIndex===-1?band.rows.length-1:valueIndex][ageIndex];
+  const band=tariff.new[engineIndex],idx=band.limits.findIndex(limit=>value<=limit);
+  annual=band.rows[idx===-1?band.rows.length-1:idx][ageIndex];
  }
+ const engineLabel=el("engine").selectedOptions[0].textContent.split(" (")[0];
  el("mtvAnnual").textContent=lira(annual);
  el("mtvInstallment").textContent=(annual/2).toLocaleString("tr-TR",{minimumFractionDigits:2,maximumFractionDigits:2})+" TL";
  el("mtvAge").textContent=age+" yaş";
- el("mtvSummary").textContent=(reg==="old"?"I/A":"I")+" sayılı tarife · "+engine+" cm³ · "+age+" yaş · 2026";
+ el("mtvSummary").textContent=(reg==="old"?"I/A":"I")+" sayılı tarife · "+engineLabel+" · "+age+" yaş · 2026";
  el("errorMsg").textContent="Bu tutar 2026 yıllık tarife hesabıdır; kasko değeri indirimi, istisna veya özel durumlar için resmî vergi borcunu kontrol edin.";
 }
-["modelYear","engine","registration","acquisition"].forEach(id=>{el(id).addEventListener("input",updateMTV);el(id).addEventListener("change",updateMTV)});
-updateMTV();
+el("registration").addEventListener("change",()=>{populateYears();updateMTV();});
+el("engine").addEventListener("change",()=>{populateValueBands();updateMTV();});
+el("modelYear").addEventListener("change",updateMTV);
+el("acquisition").addEventListener("change",updateMTV);
+populateYears();populateValueBands();updateMTV();
 </script>
 <footer>© 2026 Aracım Pro Web · <a href="hakkimizda.html">Hakkımızda</a><a href="gizlilik-politikasi.html">Gizlilik</a><a href="iletisim.html">İletişim</a></footer>
 </body></html>
