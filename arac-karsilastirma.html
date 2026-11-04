@@ -50,6 +50,52 @@ footer a{display:inline-block;margin:2px 9px}
 .quick-select option{background:#102c44;color:white}
 .field select{min-height:54px}
 @media(max-width:660px){.field select{min-height:53px;font-size:16px}}
+
+/* A-Z vehicle catalog, searchable cascading selection */
+.catalog-selection{background:#071f32;border:1px solid #315b6d;border-radius:15px;padding:16px;margin:16px 0}
+.catalog-title{font-size:17px;margin:0 0 14px}
+.catalog-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.catalog-pick{appearance:none;border:1px solid #44627b;background:#102e45;color:#f5fbff;border-radius:11px;width:100%;min-height:52px;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;text-align:left;gap:9px;cursor:pointer;font-size:15px;font-weight:650}
+.catalog-pick:disabled{cursor:not-allowed;color:#8da5b6;background:#132738;border-color:#27445a}
+.catalog-pick:not(:disabled):hover{border-color:#6ee7d1}
+.catalog-pick .catalog-value{overflow-wrap:anywhere}
+.catalog-chevron{color:#72e4d0;font-size:23px;line-height:1}
+.catalog-selected{color:#99e7d7;font-size:13px;line-height:1.5;margin-top:15px;overflow-wrap:anywhere}
+.vehicle-dialog{position:fixed;inset:0;z-index:9999;background:#000b;display:grid;place-items:center;padding:18px}
+.vehicle-dialog[hidden]{display:none!important}
+.vehicle-modal{display:flex;flex-direction:column;width:min(660px,100%);height:min(840px,94dvh);background:#0b2133;border:1px solid #45677b;border-radius:21px;overflow:hidden;box-shadow:0 20px 90px #000c}
+.vehicle-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 20px 11px}
+.vehicle-modal-head h2{font-size:24px;margin:3px 0 0}
+.vehicle-close{background:#1a4154;color:white;border:1px solid #486e7e;border-radius:10px;min-width:44px;height:44px;font-size:22px;cursor:pointer}
+.vehicle-search{padding:0 20px 8px}
+.vehicle-search label{font-size:12px}
+.vehicle-search input{min-height:52px}
+.vehicle-alphabet{padding:8px 15px;display:flex;align-items:center;gap:5px;overflow-x:auto;border-bottom:1px solid #2a4b63;scrollbar-width:thin}
+.vehicle-letter{flex:none;border:1px solid #335b6b;background:#17334a;color:#bde7e1;font-size:12px;border-radius:8px;min-width:34px;height:34px;font-weight:750}
+.vehicle-letter.selected{background:#49d8bb;color:#062536}
+.vehicle-count{font-size:12px;color:#a9c5d4;padding:9px 19px;background:#0a2030}
+.vehicle-options{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.vehicle-option{display:block;width:100%;padding:16px 20px;min-height:56px;border:0;border-bottom:1px solid #223e52;background:transparent;color:#f2fcff;text-align:left;font-size:16px}
+.vehicle-option:hover,.vehicle-option:focus-visible{background:#1b4254}
+.vehicle-option.special{color:#84f2d9;font-weight:800}
+.vehicle-options-empty{padding:20px;color:#aaccd9}
+.vehicle-custom{display:flex;gap:10px;align-items:end;padding:15px 20px;border-top:1px solid #35556b}
+.vehicle-custom label{font-size:13px;margin:0 0 4px}
+.vehicle-custom input{min-width:0;flex:1}
+.vehicle-custom button{flex:none;font-size:13px}
+.vehicle-custom[hidden]{display:none!important}
+@media(max-width:780px){.catalog-grid{grid-template-columns:1fr}.catalog-selection{padding:13px}}
+@media(max-width:650px){
+ .vehicle-dialog{padding:0}
+ .vehicle-modal{width:100%;height:100dvh;border-radius:0;border:0}
+ .vehicle-modal-head{padding:18px 15px 12px}
+ .vehicle-search{padding:0 15px 9px}
+ .vehicle-alphabet{padding:7px 12px}
+ .vehicle-option{padding:15px 16px;min-height:55px}
+ .vehicle-custom{padding:11px 13px;display:block}
+ .vehicle-custom button{width:100%;margin-top:9px}
+ .vehicle-modal-head h2{font-size:22px}
+}
 </style><style>
 .compare-cards{display:grid;grid-template-columns:1fr 1fr;gap:15px}
 .compare-car{margin:0}
@@ -61,7 +107,9 @@ footer a{display:inline-block;margin:2px 9px}
 <div class="navlinks"><a href="./">Ana sayfa</a><a href="mtv-hesaplama.html">MTV</a><a href="arac-karsilastirma.html">Karşılaştır</a><a href="./#bilgi-merkezi">Rehber</a></div></nav></header>
 <main class="container">
 <span class="eyebrow">ARAÇLARI KARŞILAŞTIR</span><h1>Hangi otomobilin yıllık gideri daha düşük?</h1>
-<p class="subtitle">Tüm kutulara dokunup hazır değerlerden seçim yapabilirsin. Listede olmayan bir tutar veya araç için <b>Başka değer gir</b> seçeneğini kullan.</p><div class="note">Araç isimleri örnek seçeneklerdir. Bir marka/model seçmek yakıt tüketimini, fiyatını veya vergisini otomatik olarak değiştirmez. Bunları kendi aracına göre seçmelisin.</div>
+<p class="subtitle">Araç seçimi artık Sahibinden tarzında adım adım yapılıyor: <b>Marka → Model → Seri/Kasa → Paket → Yıl.</b> Her aşamada arama yapabilir ve eksik seçenekleri kendin yazabilirsin.</p>
+<div class="note"><b>Genişletilmiş araç kataloğu:</b> 118 marka ve 1.939 model listelendi. Seri/kasa ve donanım bilgileri özellikle yaygın araçlarda derlenmiştir; tüm üretim yılları ve paketler için eksiksiz resmî katalog değildir. Seçtiğin araç fiyat, tüketim veya vergiyi otomatik doldurmaz; karşılaştırma masraflarını ayrıca belirtmen gerekir.</div>
+<p class="mini" id="catalogInfo">Araç kataloğu yükleniyor…</p>
 <div class="panel">
 <div class="fields">
 <div class="field"><label for="annualKm">Yıllık kullanım mesafesi (km)</label><select class="quick-select" id="annualKmChoice" data-target="annualKm" aria-label="Hazır değer seç"><option value="0">0 km</option><option value="5000">5.000 km</option><option value="8000">8.000 km</option><option value="10000">10.000 km</option><option value="12000" selected>12.000 km</option><option value="15000">15.000 km</option><option value="20000">20.000 km</option><option value="25000">25.000 km</option><option value="30000">30.000 km</option><option value="40000">40.000 km</option><option value="50000">50.000 km</option><option value="__other__">Başka tutar gir…</option></select><input hidden aria-label="Özel değer gir" id="annualKm" type="number" min="0" step="100" value="12000"></div>
@@ -69,8 +117,18 @@ footer a{display:inline-block;margin:2px 9px}
 </div></div>
 <div class="compare-cards">
 <section class="panel compare-car">
-<span class="eyebrow">ARAÇ A</span><div class="fields">
-<div class="field wide"><label for="aName">Araç adı</label><select id="aNameChoice" class="quick-select" data-target="aName" aria-label="İlk araç modeli"><option value="Araç A" selected>Araç A (örnek)</option><option value="Araç B">Araç B (örnek)</option><option value="Hyundai Elantra">Hyundai Elantra</option><option value="Hyundai Tucson">Hyundai Tucson</option><option value="Toyota Corolla">Toyota Corolla</option><option value="Toyota Corolla Hybrid">Toyota Corolla Hybrid</option><option value="Kia Sportage">Kia Sportage</option><option value="Chery Tiggo 8 Pro">Chery Tiggo 8 Pro</option><option value="Volkswagen Passat">Volkswagen Passat</option><option value="Honda Civic">Honda Civic</option><option value="Peugeot 508">Peugeot 508</option><option value="BMW 320i">BMW 320i</option><option value="Mercedes CLA 200">Mercedes CLA 200</option><option value="__other__">Başka araç adı yaz…</option></select><input hidden aria-label="Özel araç adı" id="aName" type="text" value="Araç A" maxlength="65"></div>
+<span class="eyebrow">ARAÇ A</span><div class="catalog-selection" aria-label="Araç A marka model seçimi">
+  <h3 class="catalog-title">Aracını belirle</h3>
+  <div class="catalog-grid">
+    <div class="field"><label for="aBrandPick">1. Marka</label><button class="catalog-pick" type="button" id="aBrandPick" data-car="a" data-stage="brand"><span class="catalog-value">Marka seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
+    <div class="field"><label for="aModelPick">2. Model</label><button class="catalog-pick" type="button" id="aModelPick" data-car="a" data-stage="model" disabled><span class="catalog-value">Önce marka seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
+    <div class="field"><label for="aSeriesPick">3. Seri / kasa</label><button class="catalog-pick" type="button" id="aSeriesPick" data-car="a" data-stage="series" disabled><span class="catalog-value">Önce model seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
+    <div class="field"><label for="aTrimPick">4. Paket / versiyon</label><button class="catalog-pick" type="button" id="aTrimPick" data-car="a" data-stage="trim" disabled><span class="catalog-value">Önce seri seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
+    <div class="field"><label for="aYearPick">5. Model yılı</label><button class="catalog-pick" type="button" id="aYearPick" data-car="a" data-stage="year" disabled><span class="catalog-value">Önce paket seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
+  </div>
+  <div class="catalog-selected" id="aSelected" aria-live="polite">Araç seçimi yapılmadı.</div>
+</div><input type="hidden" id="aName" value="Araç A"><div class="fields">
+
 <div class="field"><label for="aBuy">Satın alma bedeli (TL)</label><select class="quick-select" id="aBuyChoice" data-target="aBuy" aria-label="Hazır değer seç"><option value="500000">500.000 TL</option><option value="750000">750.000 TL</option><option value="1000000">1.000.000 TL</option><option value="1200000">1.200.000 TL</option><option value="1300000" selected>1.300.000 TL</option><option value="1400000">1.400.000 TL</option><option value="1500000">1.500.000 TL</option><option value="1550000">1.550.000 TL</option><option value="1600000">1.600.000 TL</option><option value="1800000">1.800.000 TL</option><option value="2000000">2.000.000 TL</option><option value="2500000">2.500.000 TL</option><option value="3000000">3.000.000 TL</option><option value="4000000">4.000.000 TL</option><option value="__other__">Başka tutar gir…</option></select><input hidden aria-label="Özel değer gir" id="aBuy" type="number" min="0" step="1000" value="1300000"></div>
 <div class="field"><label for="aConsumption">Yakıt tüketimi (L/100 km)</label><select class="quick-select" id="aConsumptionChoice" data-target="aConsumption" aria-label="Hazır değer seç"><option value="3">3 L/100 km</option><option value="4">4 L/100 km</option><option value="4.5">4,5 L/100 km</option><option value="5">5 L/100 km</option><option value="5.5">5,5 L/100 km</option><option value="5.6">5,6 L/100 km</option><option value="6">6 L/100 km</option><option value="6.5">6,5 L/100 km</option><option value="7">7 L/100 km</option><option value="7.2" selected>7,2 L/100 km</option><option value="7.5">7,5 L/100 km</option><option value="8">8 L/100 km</option><option value="8.5">8,5 L/100 km</option><option value="9">9 L/100 km</option><option value="10">10 L/100 km</option><option value="12">12 L/100 km</option><option value="15">15 L/100 km</option><option value="__other__">Başka tutar gir…</option></select><input hidden aria-label="Özel değer gir" id="aConsumption" type="number" min="0" step="0.1" value="7.2"></div>
 <div class="field"><label for="aFuel">Litre fiyatı (TL)</label><select class="quick-select" id="aFuelChoice" data-target="aFuel" aria-label="Hazır değer seç"><option value="30">30 TL/L</option><option value="35">35 TL/L</option><option value="40">40 TL/L</option><option value="45">45 TL/L</option><option value="50" selected>50 TL/L</option><option value="55">55 TL/L</option><option value="60">60 TL/L</option><option value="65">65 TL/L</option><option value="70">70 TL/L</option><option value="75">75 TL/L</option><option value="80">80 TL/L</option><option value="__other__">Başka tutar gir…</option></select><input hidden aria-label="Özel değer gir" id="aFuel" type="number" min="0" step="0.01" value="50"></div>
@@ -79,8 +137,18 @@ footer a{display:inline-block;margin:2px 9px}
 <div class="field"><label for="aMaint">Yıllık bakım + diğer (TL)</label><select class="quick-select" id="aMaintChoice" data-target="aMaint" aria-label="Hazır değer seç"><option value="0">0 TL</option><option value="5000">5.000 TL</option><option value="8000">8.000 TL</option><option value="10000">10.000 TL</option><option value="12000">12.000 TL</option><option value="13000">13.000 TL</option><option value="15000" selected>15.000 TL</option><option value="20000">20.000 TL</option><option value="25000">25.000 TL</option><option value="30000">30.000 TL</option><option value="40000">40.000 TL</option><option value="50000">50.000 TL</option><option value="__other__">Başka tutar gir…</option></select><input hidden aria-label="Özel değer gir" id="aMaint" type="number" min="0" step="100" value="15000"></div>
 </div><div class="result"><small>YILLIK İŞLETME MALİYETİ</small><strong id="aYearly">—</strong><p id="aPerKm">—</p></div></section>
 <section class="panel compare-car">
-<span class="eyebrow">ARAÇ B</span><div class="fields">
-<div class="field wide"><label for="bName">Araç adı</label><select id="bNameChoice" class="quick-select" data-target="bName" aria-label="İkinci araç modeli"><option value="Araç A">Araç A (örnek)</option><option value="Araç B" selected>Araç B (örnek)</option><option value="Hyundai Elantra">Hyundai Elantra</option><option value="Hyundai Tucson">Hyundai Tucson</option><option value="Toyota Corolla">Toyota Corolla</option><option value="Toyota Corolla Hybrid">Toyota Corolla Hybrid</option><option value="Kia Sportage">Kia Sportage</option><option value="Chery Tiggo 8 Pro">Chery Tiggo 8 Pro</option><option value="Volkswagen Passat">Volkswagen Passat</option><option value="Honda Civic">Honda Civic</option><option value="Peugeot 508">Peugeot 508</option><option value="BMW 320i">BMW 320i</option><option value="Mercedes CLA 200">Mercedes CLA 200</option><option value="__other__">Başka araç adı yaz…</option></select><input hidden aria-label="Özel araç adı" id="bName" type="text" value="Araç B" maxlength="65"></div>
+<span class="eyebrow">ARAÇ B</span><div class="catalog-selection" aria-label="Araç B marka model seçimi">
+  <h3 class="catalog-title">Aracını belirle</h3>
+  <div class="catalog-grid">
+    <div class="field"><label for="bBrandPick">1. Marka</label><button class="catalog-pick" type="button" id="bBrandPick" data-car="b" data-stage="brand"><span class="catalog-value">Marka seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
+    <div class="field"><label for="bModelPick">2. Model</label><button class="catalog-pick" type="button" id="bModelPick" data-car="b" data-stage="model" disabled><span class="catalog-value">Önce marka seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
+    <div class="field"><label for="bSeriesPick">3. Seri / kasa</label><button class="catalog-pick" type="button" id="bSeriesPick" data-car="b" data-stage="series" disabled><span class="catalog-value">Önce model seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
+    <div class="field"><label for="bTrimPick">4. Paket / versiyon</label><button class="catalog-pick" type="button" id="bTrimPick" data-car="b" data-stage="trim" disabled><span class="catalog-value">Önce seri seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
+    <div class="field"><label for="bYearPick">5. Model yılı</label><button class="catalog-pick" type="button" id="bYearPick" data-car="b" data-stage="year" disabled><span class="catalog-value">Önce paket seç</span><span class="catalog-chevron" aria-hidden="true">⌄</span></button></div>
+  </div>
+  <div class="catalog-selected" id="bSelected" aria-live="polite">Araç seçimi yapılmadı.</div>
+</div><input type="hidden" id="bName" value="Araç B"><div class="fields">
+
 <div class="field"><label for="bBuy">Satın alma bedeli (TL)</label><select class="quick-select" id="bBuyChoice" data-target="bBuy" aria-label="Hazır değer seç"><option value="500000">500.000 TL</option><option value="750000">750.000 TL</option><option value="1000000">1.000.000 TL</option><option value="1200000">1.200.000 TL</option><option value="1300000">1.300.000 TL</option><option value="1400000">1.400.000 TL</option><option value="1500000">1.500.000 TL</option><option value="1550000" selected>1.550.000 TL</option><option value="1600000">1.600.000 TL</option><option value="1800000">1.800.000 TL</option><option value="2000000">2.000.000 TL</option><option value="2500000">2.500.000 TL</option><option value="3000000">3.000.000 TL</option><option value="4000000">4.000.000 TL</option><option value="__other__">Başka tutar gir…</option></select><input hidden aria-label="Özel değer gir" id="bBuy" type="number" min="0" step="1000" value="1550000"></div>
 <div class="field"><label for="bConsumption">Yakıt tüketimi (L/100 km)</label><select class="quick-select" id="bConsumptionChoice" data-target="bConsumption" aria-label="Hazır değer seç"><option value="3">3 L/100 km</option><option value="4">4 L/100 km</option><option value="4.5">4,5 L/100 km</option><option value="5">5 L/100 km</option><option value="5.5">5,5 L/100 km</option><option value="5.6" selected>5,6 L/100 km</option><option value="6">6 L/100 km</option><option value="6.5">6,5 L/100 km</option><option value="7">7 L/100 km</option><option value="7.2">7,2 L/100 km</option><option value="7.5">7,5 L/100 km</option><option value="8">8 L/100 km</option><option value="8.5">8,5 L/100 km</option><option value="9">9 L/100 km</option><option value="10">10 L/100 km</option><option value="12">12 L/100 km</option><option value="15">15 L/100 km</option><option value="__other__">Başka tutar gir…</option></select><input hidden aria-label="Özel değer gir" id="bConsumption" type="number" min="0" step="0.1" value="5.6"></div>
 <div class="field"><label for="bFuel">Litre fiyatı (TL)</label><select class="quick-select" id="bFuelChoice" data-target="bFuel" aria-label="Hazır değer seç"><option value="30">30 TL/L</option><option value="35">35 TL/L</option><option value="40">40 TL/L</option><option value="45">45 TL/L</option><option value="50" selected>50 TL/L</option><option value="55">55 TL/L</option><option value="60">60 TL/L</option><option value="65">65 TL/L</option><option value="70">70 TL/L</option><option value="75">75 TL/L</option><option value="80">80 TL/L</option><option value="__other__">Başka tutar gir…</option></select><input hidden aria-label="Özel değer gir" id="bFuel" type="number" min="0" step="0.01" value="50"></div>
@@ -100,7 +168,28 @@ footer a{display:inline-block;margin:2px 9px}
 </div><p class="mini" id="periodLabel"></p>
 </section>
 <div class="note"><b>Dikkat:</b> Hesap, satın alma bedeli ve girdiğiniz yıllık masraflardan oluşur. Araçların satışta elde edilecek ikinci el değeri, enflasyon, faiz, sigorta değişimleri, lastik gibi öngörülmeyen harcamalar ve değer kaybı hesaplanmaz. Dolayısıyla bu, toplam sahip olma maliyeti tahmini değil, sınırlı bir <b>nakit gider karşılaştırmasıdır.</b> Elektrikli otomobillerde litre hesabı kullanılmaz. Gerçek yıllık MTV için <a href="mtv-hesaplama.html">2026 MTV hesaplayıcımızı</a> açabilirsiniz.</div>
+<div class="vehicle-dialog" id="vehicleDialog" role="dialog" aria-modal="true" aria-labelledby="vehicleDialogTitle" hidden>
+  <div class="vehicle-modal" role="document">
+    <div class="vehicle-modal-head">
+      <div><span class="eyebrow" id="vehicleDialogKicker">ARAÇ KATALOĞU</span><h2 id="vehicleDialogTitle">Marka seç</h2></div>
+      <button type="button" class="vehicle-close" id="vehicleDialogClose" aria-label="Seçimi kapat">✕</button>
+    </div>
+    <div class="vehicle-search">
+      <label for="vehicleSearchInput">Arama</label>
+      <input type="search" id="vehicleSearchInput" autocomplete="off" placeholder="A-Z marka veya model ara…" aria-controls="vehicleOptionList">
+    </div>
+    <div class="vehicle-alphabet" id="vehicleAlphabet" aria-label="Harf seçimi"></div>
+    <div class="vehicle-count" id="vehicleOptionCount"></div>
+    <div class="vehicle-options" id="vehicleOptionList" role="listbox" aria-label="Araç seçim seçenekleri"></div>
+    <form class="vehicle-custom" id="vehicleCustomForm" hidden>
+      <label for="vehicleCustomInput">Listede olmayan değeri gir</label>
+      <input id="vehicleCustomInput" type="text" maxlength="75" placeholder="Marka, seri veya paket yaz…" required>
+      <button type="submit" class="btn">Seçimi Kaydet</button>
+    </form>
+  </div>
+</div>
 </main>
+<script src="vehicle-catalog.js"></script>
 <script>
 "use strict";
 const el=id=>document.getElementById(id);
@@ -136,6 +225,122 @@ function syncQuickPick(picker,focus=false){
  if(!custom)target.value=picker.value;
  else if(focus)target.focus();
 }
+
+/* Searchable A-Z vehicle catalog */
+const catalog=window.ARACIM_VEHICLES||{brands:{},series:{},trims:{}};
+const brandNames=Object.keys(catalog.brands||{}).sort((a,b)=>a.localeCompare(b,"tr"));
+const carState={
+ a:{brand:"",model:"",series:"",trim:"",year:""},
+ b:{brand:"",model:"",series:"",trim:"",year:""}
+};
+const stages=["brand","model","series","trim","year"];
+const stageLabels={brand:"Marka",model:"Model",series:"Seri / kasa",trim:"Paket / versiyon",year:"Model yılı"};
+const dialog=el("vehicleDialog"),search=el("vehicleSearchInput");
+let activeCar="a",activeStage="brand",activeLetter="",focusReturn=null;
+function normalizeText(str){return String(str).replace(/İ/g,"I").replace(/ı/g,"i").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLocaleLowerCase("tr");}
+function catalogOptions(car,stage){
+ const st=carState[car],custom={value:"__custom__",label:"Listede yok — kendim yazacağım",special:true};
+ const item=val=>({value:val,label:val,special:false});
+ if(stage==="brand")return brandNames.map(item).concat([custom]);
+ if(stage==="model")return (catalog.brands[st.brand]||[]).map(item).concat([custom]);
+ if(stage==="series")return (catalog.series[st.brand+"|"+st.model]||[]).map(item).concat([item("Seri belirtilmedi"),custom]);
+ if(stage==="trim")return (catalog.trims[st.brand]||[]).map(item).concat([item("Paket belirtilmedi"),custom]);
+ if(stage==="year")return Array.from({length:2026-1950+1},(_,i)=>String(2026-i)).map(item);
+ return [];
+}
+const getButton=(car,stage)=>el(car+stage[0].toUpperCase()+stage.slice(1)+"Pick");
+function refreshCar(car){
+ const st=carState[car];
+ for(let i=0;i<stages.length;i++){
+  const stage=stages[i],btn=getButton(car,stage);
+  const enabled=i===0||Boolean(st[stages[i-1]]);
+  btn.disabled=!enabled;
+  btn.querySelector(".catalog-value").textContent=st[stage]||(!enabled?"Önce "+stageLabels[stages[i-1]].toLowerCase()+" seç":stageLabels[stage]+" seç");
+ }
+ const entries=[st.brand,st.model,st.series,st.trim,st.year].filter(x=>x&&!x.includes("belirtilmedi"));
+ const name=entries.join(" ");
+ el(car+"Name").value=name||"Araç "+car.toUpperCase();
+ el(car+"Selected").textContent=entries.length?"Seçilen araç: "+name:"Araç seçimi yapılmadı.";
+ updateComparison();
+}
+function closeDialog(){
+ dialog.hidden=true;
+ document.body.style.overflow="";
+ if(focusReturn)focusReturn.focus();
+}
+function openDialog(car,stage,button){
+ if(!catalog.brands||!Object.keys(catalog.brands).length){window.alert("Araç kataloğu henüz yüklenmedi. Sayfayı yenileyin.");return;}
+ activeCar=car;activeStage=stage;activeLetter="";
+ focusReturn=button;
+ el("vehicleDialogTitle").textContent=stageLabels[stage]+" seç";
+ el("vehicleDialogKicker").textContent=(car==="a"?"ARAÇ A":"ARAÇ B")+" • A-Z KATALOG";
+ search.value="";
+ search.placeholder=stageLabels[stage]+" ara…";
+ el("vehicleCustomForm").hidden=true;
+ el("vehicleCustomInput").value="";
+ dialog.hidden=false;
+ document.body.style.overflow="hidden";
+ renderOptions();
+ search.focus();
+}
+function alphabet(){
+ const bar=el("vehicleAlphabet");bar.replaceChildren();
+ if(!["brand","model"].includes(activeStage)){bar.hidden=true;return;}
+ bar.hidden=false;
+ const vals=catalogOptions(activeCar,activeStage).filter(x=>!x.special);
+ const letters=[...new Set(vals.map(x=>x.value[0]?.toLocaleUpperCase("tr")||"#"))].sort((a,b)=>a.localeCompare(b,"tr"));
+ for(const key of ["Tümü",...letters]){
+  const btn=document.createElement("button");
+  btn.type="button";btn.className="vehicle-letter"+((activeLetter===(key==="Tümü"?"":key))?" selected":"");
+  btn.textContent=key;
+  btn.addEventListener("click",()=>{activeLetter=key==="Tümü"?"":key;renderOptions();});
+  bar.appendChild(btn);
+ }
+}
+function renderOptions(){
+ alphabet();
+ const list=el("vehicleOptionList");list.replaceChildren();list.scrollTop=0;
+ const q=normalizeText(search.value.trim());
+ const all=catalogOptions(activeCar,activeStage);
+ const filtered=all.filter(option=>{
+  const match=!q||normalizeText(option.label).includes(q)||option.special;
+  return match&&(!activeLetter||option.special||option.value[0].toLocaleUpperCase("tr")===activeLetter);
+ });
+ el("vehicleOptionCount").textContent=(all.length-1)+" seçenek • "+filtered.length+" gösteriliyor";
+ if(!filtered.length){const p=document.createElement("p");p.className="vehicle-options-empty";p.textContent="Aradığın seçenek bulunamadı. Listede yok seçeneğini kullanabilirsin.";list.appendChild(p);}
+ for(const item of filtered){
+  const btn=document.createElement("button");
+  btn.type="button";btn.setAttribute("role","option");btn.className="vehicle-option"+(item.special?" special":"");
+  btn.textContent=item.label;
+  btn.addEventListener("click",()=>{
+   if(item.special){el("vehicleCustomForm").hidden=false;el("vehicleCustomInput").focus();return;}
+   saveSelection(item.value);
+  });
+  list.appendChild(btn);
+ }
+}
+function saveSelection(value){
+ const st=carState[activeCar],index=stages.indexOf(activeStage);
+ st[activeStage]=String(value).trim();
+ for(const later of stages.slice(index+1))st[later]="";
+ const prevCar=activeCar,prevStage=activeStage;
+ closeDialog();refreshCar(prevCar);
+ const nextStage=stages[index+1];
+ if(nextStage){const btn=getButton(prevCar,nextStage);if(!btn.disabled)openDialog(prevCar,nextStage,btn);}
+}
+document.querySelectorAll(".catalog-pick").forEach(btn=>btn.addEventListener("click",()=>openDialog(btn.dataset.car,btn.dataset.stage,btn)));
+el("vehicleDialogClose").addEventListener("click",closeDialog);
+dialog.addEventListener("click",e=>{if(e.target===dialog)closeDialog();});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!dialog.hidden)closeDialog();});
+search.addEventListener("input",()=>{activeLetter="";renderOptions();});
+el("vehicleCustomForm").addEventListener("submit",e=>{
+ e.preventDefault();const input=el("vehicleCustomInput").value.trim();
+ if(!input)return;
+ saveSelection(input);
+});
+el("catalogInfo").textContent=brandNames.length+" marka, "+Object.values(catalog.brands).reduce((s,models)=>s+models.length,0).toLocaleString("tr-TR")+" model • A-Z arama destekli.";
+for(const car of ["a","b"])refreshCar(car);
+
 document.querySelectorAll(".quick-select").forEach(picker=>{
  syncQuickPick(picker,false);
  picker.addEventListener("change",()=>{syncQuickPick(picker,true);updateComparison();});
