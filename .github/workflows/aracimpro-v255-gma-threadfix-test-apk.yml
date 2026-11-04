@@ -3,6 +3,8 @@ name: AracimPro v255 GMA UI-Thread Fix Test APK
 on:
   push:
     branches: [ aracimpro-255-gma-main-thread-hotfix ]
+  pull_request:
+    branches: [ aracimpro-254-startup-recovery-hotfix ]
   workflow_dispatch:
 
 jobs:
