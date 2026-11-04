@@ -571,23 +571,6 @@ document.addEventListener('click',ev=>{
  if(ASSETS[selected]?.pair)atlasDetailGetCandles(selected,interval);
  else atlasDetailUpdate(selected);
 });
-const atlasPreviousProCandles=window.onProCandles;
-window.onProCandles=function(payload){
- try{atlasPreviousProCandles(payload);}catch(e){console.warn('Chart view callback failed',e);}
- const req=atlasDetailRequest;
- if(!req||!payload||payload.symbol!==ASSETS[req.key]?.pair?.toUpperCase()||payload.interval!==req.interval)return;
- clearTimeout(atlasDetailFetchTimer);atlasDetailRequest=null;
- if(!payload.error&&Array.isArray(payload.rows)){
-  const rows=payload.rows.map(r=>({t:Number(r[0]),o:Number(r[1]),h:Number(r[2]),l:Number(r[3]),c:Number(r[4]),v:Number(r[5])}))
-   .filter(r=>Number.isFinite(r.t)&&r.t>0&&r.o>0&&r.h>=Math.max(r.o,r.c)&&r.l<=Math.min(r.o,r.c)&&r.v>=0)
-   .sort((a,b)=>a.t-b.t);
-  if(rows.length>=8)atlasDetailCache[req.key+':'+req.interval]={rows,checkedAt:Date.now()};
- }
- if($('#sheet')?.classList.contains('open')&&selected===req.key&&atlasDetailPeriod===req.interval){
-  atlasDetailUpdate(req.key);
-  if(!atlasDetailCache[req.key+':'+req.interval]&&$('#detailChart'))$('#detailChart').innerHTML='<div class="empty-graph">Bu zaman diliminin gerçek mum verileri alınamadı. Daha sonra yeniden deneyin.</div>';
- }
-};
 setInterval(()=>{if($('#sheet')?.classList.contains('open')&&ASSETS[selected]&&!$('#tradeAsset'))atlasDetailUpdate(selected)},4000);
 
 function toggleStar(k){if(favs.has(k))favs.delete(k);else favs.add(k);save('favs',[...favs]);if(!$('#sheet').classList.contains('open'))render();}
@@ -865,6 +848,24 @@ window.onProCandles=function(d){
  else{proCandleRows=d.rows.map(a=>({t:Number(a[0]),o:Number(a[1]),h:Number(a[2]),l:Number(a[3]),c:Number(a[4]),v:Number(a[5])})).filter(r=>r.t>0&&r.o>0&&r.h>=Math.max(r.o,r.c)&&r.l<=Math.min(r.o,r.c)&&r.v>=0);proCandleError=proCandleRows.length<8?'Bu aralıkta yeterli mum bulunamadı.':'';proCandleFetched=Date.now();}
  if(page==='charts')render();
 };
+const atlasPreviousProCandles=window.onProCandles;
+window.onProCandles=function(payload){
+ try{atlasPreviousProCandles(payload);}catch(e){console.warn('Chart view callback failed',e);}
+ const req=atlasDetailRequest;
+ if(!req||!payload||payload.symbol!==ASSETS[req.key]?.pair?.toUpperCase()||payload.interval!==req.interval)return;
+ clearTimeout(atlasDetailFetchTimer);atlasDetailRequest=null;
+ if(!payload.error&&Array.isArray(payload.rows)){
+  const rows=payload.rows.map(r=>({t:Number(r[0]),o:Number(r[1]),h:Number(r[2]),l:Number(r[3]),c:Number(r[4]),v:Number(r[5])}))
+   .filter(r=>Number.isFinite(r.t)&&r.t>0&&r.o>0&&r.h>=Math.max(r.o,r.c)&&r.l<=Math.min(r.o,r.c)&&r.v>=0)
+   .sort((a,b)=>a.t-b.t);
+  if(rows.length>=8)atlasDetailCache[req.key+':'+req.interval]={rows,checkedAt:Date.now()};
+ }
+ if($('#sheet')?.classList.contains('open')&&selected===req.key&&atlasDetailPeriod===req.interval){
+  atlasDetailUpdate(req.key);
+  if(!atlasDetailCache[req.key+':'+req.interval]&&$('#detailChart'))$('#detailChart').innerHTML='<div class="empty-graph">Bu zaman diliminin gerçek mum verileri alınamadı. Daha sonra yeniden deneyin.</div>';
+ }
+};
+
 const proEvents=[
  ['2026-11-12','Enflasyon Raporu','TCMB','Resmî rapor sunumu'],
  ['2026-11-27','Finansal İstikrar Raporu','TCMB','Finansal sistem raporu'],
