@@ -131,7 +131,7 @@ jobs:
           profile: pixel_6
           emulator-options: -no-window -gpu swiftshader_indirect -no-audio -no-boot-anim
           script: |
-            set -euo pipefail
+            set -eu
             gradle --no-daemon --max-workers=2 :app:assembleDebug
             adb install -r app/build/outputs/apk/debug/app-debug.apk
             adb logcat -c
