@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="tr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Araç Karşılaştırma | Aracım Pro</title>
+<meta name="description" content="İki otomobilin yakıt, MTV, sigorta, bakım ve satın alma bedelini karşılaştırın. Yıllık işletme maliyeti ve çok yıllı nakit gideri hesaplayın.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://fatihozkaya0606-byte.github.io/AracimPro/arac-karsilastirma.html">
+<meta name="theme-color" content="#061322">
+<style>
+:root{color-scheme:dark;--bg:#061322;--panel:#10283d;--line:#30516a;--text:#f0f8ff;--muted:#bacedd;--green:#69ead3;--blue:#16364e}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16px/1.6 system-ui,-apple-system,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text)}
+a{color:var(--green)}button,input,select{font:inherit}button{cursor:pointer}
+header{position:sticky;top:0;z-index:5;background:#071827f5;border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
+nav{max-width:1080px;margin:auto;display:flex;align-items:center;justify-content:space-between;padding:13px 18px;gap:12px}
+.logo{font-size:19px;font-weight:850;white-space:nowrap;text-decoration:none;color:white}.logo span{color:var(--green)}
+.navlinks{display:flex;gap:14px;flex-wrap:wrap;font-size:13px}.navlinks a{text-decoration:none;color:#c8dae9}
+.container{max-width:1050px;margin:0 auto;padding:40px 18px 70px}
+.eyebrow{font-size:12px;font-weight:900;letter-spacing:1.2px;color:var(--green)}
+h1{font-size:clamp(30px,5vw,46px);letter-spacing:-1.4px;line-height:1.13;margin:13px 0 15px}
+.subtitle{max-width:800px;font-size:16px;color:var(--muted);margin-bottom:28px}
+h2{font-size:23px;line-height:1.25;margin:0 0 15px}
+h3{font-size:18px;margin:0 0 10px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:19px;padding:24px;margin:15px 0}
+label{display:block;font-size:13px;color:#d7e9f4;font-weight:750;margin:0 0 7px}
+input,select{background:#071b2c;border:1px solid #466079;color:#f4fcff;border-radius:11px;width:100%;min-height:50px;padding:11px 13px;font-size:16px}
+input:focus,select:focus,button:focus-visible,a:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.field{min-width:0}.field small{font-size:12px;color:#9ab7cb;display:block;margin-top:6px;line-height:1.4}
+.note{border:1px solid #417478;background:#123b45;padding:14px 17px;border-radius:12px;font-size:13px;color:#c6eadd;margin-top:18px}
+.result{padding:22px;background:linear-gradient(130deg,#165b5a,#113b50);border:1px solid #3c8e7c;border-radius:16px;margin:20px 0 12px}
+.result small{display:block;font-size:12px;font-weight:750;color:#cdf5ed;letter-spacing:.5px}
+.result strong{display:block;font-size:clamp(30px,6vw,45px);color:#a3ffea;line-height:1.2;margin:8px 0}
+.result p{font-size:14px;margin:0;color:#daedef}
+.metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.metric{padding:17px;background:#0a2639;border:1px solid #34596c;border-radius:13px}
+.metric small{font-size:12px;color:#acc5d8;display:block}
+.metric strong{font-size:24px;display:block;margin:5px 0 0;color:#89f4d8;overflow-wrap:anywhere}
+.mini{font-size:13px;color:#a8c3d5;line-height:1.75}
+.btn{border:0;background:var(--green);border-radius:10px;padding:13px 18px;color:#063145;font-weight:850;display:inline-block;text-decoration:none}
+details{background:#0b2236;border:1px solid #294961;padding:15px 18px;border-radius:12px;margin:10px 0}
+summary{cursor:pointer;font-weight:750}
+footer{border-top:1px solid var(--line);padding:20px 15px 30px;text-align:center;font-size:13px;color:#afc2d3}
+footer a{display:inline-block;margin:2px 9px}
+[hidden]{display:none!important}
+@media(max-width:660px){.container{padding:32px 15px 58px}.panel{padding:18px}.fields,.metrics{grid-template-columns:1fr}.navlinks{gap:9px;font-size:12px}.logo{font-size:17px}.metric strong{font-size:22px}}
+</style><style>
+.compare-cards{display:grid;grid-template-columns:1fr 1fr;gap:15px}
+.compare-car{margin:0}
+.compare-car .fields{grid-template-columns:1fr}
+.compare-car .result{margin-bottom:0}
+@media(max-width:780px){.compare-cards{grid-template-columns:1fr;gap:12px}}
+</style></head><body>
+<header><nav><a class="logo" href="./">Aracım<span>Pro</span></a>
+<div class="navlinks"><a href="./">Ana sayfa</a><a href="mtv-hesaplama.html">MTV</a><a href="arac-karsilastirma.html">Karşılaştır</a><a href="./#bilgi-merkezi">Rehber</a></div></nav></header>
+<main class="container">
+<span class="eyebrow">ARAÇLARI KARŞILAŞTIR</span><h1>Hangi otomobilin yıllık gideri daha düşük?</h1>
+<p class="subtitle">İki aracın tüketim, fiyat, sigorta, bakım ve MTV bilgilerini gir; kullanım maliyetlerini anında karşılaştır. Tüm fiyatlar örnektir ve değerleri kendin değiştirebilirsin.</p>
+<div class="panel">
+<div class="fields">
+<div class="field"><label for="annualKm">Yıllık kullanım mesafesi (km)</label><input id="annualKm" type="number" min="0" step="100" value="12000"></div>
+<div class="field"><label for="years">Kullanım süresi (yıl)</label><select id="years"><option value="1">1 yıl</option><option value="3">3 yıl</option><option value="5" selected>5 yıl</option><option value="10">10 yıl</option></select></div>
+</div></div>
+<div class="compare-cards">
+<section class="panel compare-car">
+<span class="eyebrow">ARAÇ A</span><div class="fields">
+<div class="field wide"><label for="aName">Araç adı</label><input id="aName" type="text" value="Araç A" maxlength="65"></div>
+<div class="field"><label for="aBuy">Satın alma bedeli (TL)</label><input id="aBuy" type="number" min="0" step="1000" value="1300000"></div>
+<div class="field"><label for="aConsumption">Yakıt tüketimi (L/100 km)</label><input id="aConsumption" type="number" min="0" step="0.1" value="7.2"></div>
+<div class="field"><label for="aFuel">Litre fiyatı (TL)</label><input id="aFuel" type="number" min="0" step="0.01" value="50"></div>
+<div class="field"><label for="aMtv">Yıllık MTV (TL)</label><input id="aMtv" type="number" min="0" step="1" value="5000"></div>
+<div class="field"><label for="aInsurance">Yıllık sigorta + kasko (TL)</label><input id="aInsurance" type="number" min="0" step="100" value="25000"></div>
+<div class="field"><label for="aMaint">Yıllık bakım + diğer (TL)</label><input id="aMaint" type="number" min="0" step="100" value="15000"></div>
+</div><div class="result"><small>YILLIK İŞLETME MALİYETİ</small><strong id="aYearly">—</strong><p id="aPerKm">—</p></div></section>
+<section class="panel compare-car">
+<span class="eyebrow">ARAÇ B</span><div class="fields">
+<div class="field wide"><label for="bName">Araç adı</label><input id="bName" type="text" value="Araç B" maxlength="65"></div>
+<div class="field"><label for="bBuy">Satın alma bedeli (TL)</label><input id="bBuy" type="number" min="0" step="1000" value="1550000"></div>
+<div class="field"><label for="bConsumption">Yakıt tüketimi (L/100 km)</label><input id="bConsumption" type="number" min="0" step="0.1" value="5.6"></div>
+<div class="field"><label for="bFuel">Litre fiyatı (TL)</label><input id="bFuel" type="number" min="0" step="0.01" value="50"></div>
+<div class="field"><label for="bMtv">Yıllık MTV (TL)</label><input id="bMtv" type="number" min="0" step="1" value="7000"></div>
+<div class="field"><label for="bInsurance">Yıllık sigorta + kasko (TL)</label><input id="bInsurance" type="number" min="0" step="100" value="30000"></div>
+<div class="field"><label for="bMaint">Yıllık bakım + diğer (TL)</label><input id="bMaint" type="number" min="0" step="100" value="13000"></div>
+</div><div class="result"><small>YILLIK İŞLETME MALİYETİ</small><strong id="bYearly">—</strong><p id="bPerKm">—</p></div></section>
+</div>
+<section class="panel" aria-live="polite">
+<h2>Karşılaştırma sonucu</h2>
+<div class="result"><small>YILLIK MASRAF FARKI</small><strong id="difference">—</strong><p id="winner">—</p></div>
+<div class="metrics">
+<div class="metric"><small>Yakıt tüketimi farkı (yıllık)</small><strong id="fuelDiff">—</strong></div>
+<div class="metric"><small>Seçilen sürede toplam nakit çıkışı: Araç A</small><strong id="aTotal">—</strong></div>
+<div class="metric"><small>Seçilen sürede toplam nakit çıkışı: Araç B</small><strong id="bTotal">—</strong></div>
+<div class="metric"><small>Toplam fark (alış bedeli dahil)</small><strong id="totalDiff">—</strong></div>
+</div><p class="mini" id="periodLabel"></p>
+</section>
+<div class="note"><b>Dikkat:</b> Hesap, satın alma bedeli ve girdiğiniz yıllık masraflardan oluşur. Araçların satışta elde edilecek ikinci el değeri, enflasyon, faiz, sigorta değişimleri, lastik gibi öngörülmeyen harcamalar ve değer kaybı hesaplanmaz. Dolayısıyla bu, toplam sahip olma maliyeti tahmini değil, sınırlı bir <b>nakit gider karşılaştırmasıdır.</b> Elektrikli otomobillerde litre hesabı kullanılmaz. Gerçek yıllık MTV için <a href="mtv-hesaplama.html">2026 MTV hesaplayıcımızı</a> açabilirsiniz.</div>
+</main>
+<script>
+"use strict";
+const el=id=>document.getElementById(id);
+const number=id=>{const n=Number(el(id).value);return Number.isFinite(n)?Math.max(0,n):0};
+const fmt=n=>Number.isFinite(n)?n.toLocaleString("tr-TR",{maximumFractionDigits:2,minimumFractionDigits:2})+" TL":"—";
+function calcCar(prefix,kms){
+ const fuelLitres=kms*number(prefix+"Consumption")/100;
+ const fuelCost=fuelLitres*number(prefix+"Fuel");
+ const annual=fuelCost+number(prefix+"Mtv")+number(prefix+"Insurance")+number(prefix+"Maint");
+ return {annual,fuelLitres,fuelCost,buy:number(prefix+"Buy")};
+}
+function updateComparison(){
+ const km=number("annualKm"),years=number("years");
+ const a=calcCar("a",km),b=calcCar("b",km);
+ el("aYearly").textContent=fmt(a.annual);el("bYearly").textContent=fmt(b.annual);
+ el("aPerKm").textContent="Km başı işletme: "+fmt(km?a.annual/km:0);
+ el("bPerKm").textContent="Km başı işletme: "+fmt(km?b.annual/km:0);
+ const gap=Math.abs(a.annual-b.annual);
+ el("difference").textContent=fmt(gap);
+ const aName=(el("aName").value.trim()||"Araç A"),bName=(el("bName").value.trim()||"Araç B");
+ el("winner").textContent=Math.abs(a.annual-b.annual)<0.01?"İki araç aynı yıllık işletme maliyetine sahip.":(a.annual<b.annual?aName:bName)+" yıllık işletme masrafında "+fmt(gap)+" daha düşük.";
+ el("fuelDiff").textContent=Math.abs(a.fuelLitres-b.fuelLitres).toLocaleString("tr-TR",{maximumFractionDigits:1})+" L";
+ const ta=a.buy+a.annual*years,tb=b.buy+b.annual*years;
+ el("aTotal").textContent=fmt(ta);el("bTotal").textContent=fmt(tb);
+ el("totalDiff").textContent=fmt(Math.abs(ta-tb));
+ el("periodLabel").textContent=years+" yıl boyunca yıllık giderlerin değişmediği varsayılmıştır. Araç satış değeri toplamdan düşülmemiştir. Bu bir piyasa fiyatı veya yatırım tavsiyesi değildir.";
+}
+document.querySelectorAll("input,select").forEach(x=>{x.addEventListener("input",updateComparison);x.addEventListener("change",updateComparison)});
+updateComparison();
+</script>
+<footer>© 2026 Aracım Pro Web · <a href="hakkimizda.html">Hakkımızda</a><a href="gizlilik-politikasi.html">Gizlilik</a><a href="iletisim.html">İletişim</a></footer>
+</body></html>
