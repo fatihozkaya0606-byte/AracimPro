@@ -655,15 +655,21 @@ public class MainActivity extends Activity {
                 new AdRequest.Builder("ca-app-pub-3940256099942544/1033173712").build(),
                 new AdLoadCallback<InterstitialAd>() {
                     @Override public void onAdLoaded(InterstitialAd ad) {
+                    runAdUi255(() -> {
                         logAdMob("test_interstitial_loaded", "Sample interstitial shown");
                         ad.show(MainActivity.this);
-                    }
+                    
+                    });
+}
                     @Override public void onAdFailedToLoad(LoadAdError e) {
+                    runAdUi255(() -> {
                         logAdMob("test_interstitial_failed", String.valueOf(e));
                         android.widget.Toast.makeText(MainActivity.this,
                                 "Geçiş yüklenemedi, hata: " + (e == null ? "?" : e.getCode()),
                                 android.widget.Toast.LENGTH_LONG).show();
-                    }
+                    
+                    });
+}
                 });
     }
 
@@ -1713,6 +1719,20 @@ private void showLaunchSplash() {
         }
     }
 
+
+    // v255: Google Next-Gen Mobile Ads invokes load/error callbacks on GMA(BG).
+    // Every UI, WebView, view-size or callback-owned state change must execute
+    // on the Activity main looper. This fixes CalledFromWrongThreadException.
+    private void runAdUi255(Runnable work) {
+        if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper()) {
+            if (!isFinishing() && !isDestroyed()) work.run();
+        } else {
+            mainHandler.post(() -> {
+                if (!isFinishing() && !isDestroyed()) work.run();
+            });
+        }
+    }
+
     // AdMob only: Google Play Premium entitlement and UMP consent gate ad requests.
     private void logAdMob(String step, String result) {
         android.util.Log.i("AracimAdMob", step + ": " + result);
@@ -2078,6 +2098,7 @@ private void showLaunchSplash() {
             adMostPlacements230 = new AdMostPlacements230(this,
                     new AdMostPlacements230.Callbacks() {
                 @Override public void onLoaded(boolean isBanner, View adView, String network) {
+                    runAdUi255(() -> {
                     if (!canRequestAdMobAds() || !adMostRoutingRequested230()
                             || isFinishing() || isDestroyed()
                             || (isBanner ? adMostBannerFallback230 : adMostMrecFallback230)) return;
@@ -2116,11 +2137,16 @@ private void showLaunchSplash() {
                         if (isBanner) fallbackAdMostBanner230(-3);
                         else fallbackAdMostMrec230(-3);
                     }
-                }
+                
+                    });
+}
                 @Override public void onFailed(boolean isBanner, int errorCode) {
+                    runAdUi255(() -> {
                     if (isBanner) fallbackAdMostBanner230(errorCode);
                     else fallbackAdMostMrec230(errorCode);
-                }
+                
+                    });
+}
             });
         }
         if (!adMostBannerFallback230 && !adMostBannerRequested230) {
@@ -2219,6 +2245,7 @@ private void showLaunchSplash() {
             bottomBannerRequest242 = new BannerAdRequest.Builder(bannerUnit242, size).build();
             bottomBannerCallback242 = new AdLoadCallback<BannerAd>() {
                 @Override public void onAdLoaded(BannerAd loadedAd) {
+                    runAdUi255(() -> {
                     if (bannerAdView != banner || !canRequestAdMobAds()) return;
                     bottomBanner231.adLoaded();
                     mainHandler.removeCallbacks(bannerTimeoutTask231);
@@ -2229,20 +2256,28 @@ private void showLaunchSplash() {
                     recordAdSource123("banner", loadedAd.getResponseInfo());
                     loadedAd.setAdEventCallback(new BannerAdEventCallback() {
                         @Override public void onAdImpression() {
+                    runAdUi255(() -> {
                             if (bannerAdView != banner) return;
                             logAdMob("banner_impression", "AdMob banner impression");
                             getSharedPreferences("aracim_admob_diagnostics", MODE_PRIVATE).edit()
                                     .putLong("bannerLastImpressionTime", System.currentTimeMillis()).apply();
-                        }
+                        
+                    });
+}
                     });
                     updateAdMobBannerVisibility();
                     banner.post(MainActivity.this::updateBottomBannerGeometry231);
-                }
+                
+                    });
+}
                 @Override public void onAdFailedToLoad(LoadAdError error) {
+                    runAdUi255(() -> {
                     if (bannerAdView != banner || !canRequestAdMobAds()) return;
                     scheduleBottomBannerFailure231(error == null ? "Unknown" : error.toString());
                     updateAdMobBannerVisibility();
-                }
+                
+                    });
+}
             };
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                     size.getWidthInPixels(this), size.getHeightInPixels(this),
@@ -2312,6 +2347,7 @@ private void showLaunchSplash() {
             mrecRequest242 = new BannerAdRequest.Builder(mrecUnit242, AdSize.MEDIUM_RECTANGLE).build();
             mrecCallback242 = new AdLoadCallback<BannerAd>() {
                 @Override public void onAdLoaded(BannerAd loadedAd) {
+                    runAdUi255(() -> {
                     if (ad != mrecAdView || !canRequestAdMobAds()) return;
                     mrecAdLoaded = true;
                     mrecPlacementReason151 = "Reklam yüklendi, görünür slot ölçümü bekleniyor";
@@ -2321,8 +2357,11 @@ private void showLaunchSplash() {
                     recordAdSource123("mrec", loadedAd.getResponseInfo());
                     loadedAd.setAdEventCallback(new BannerAdEventCallback() {
                         @Override public void onAdImpression() {
+                    runAdUi255(() -> {
                             logAdMob("mrec_impression", "300x250 in-feed rectangle impression");
-                        }
+                        
+                    });
+}
                     });
                     getSharedPreferences("aracim_admob_diagnostics", MODE_PRIVATE).edit()
                             .putString("mrecLastError", "").apply();
@@ -2331,8 +2370,11 @@ private void showLaunchSplash() {
                     // The native ad is positioned from an HTML slot; after a
                     // refresh the DOM can have moved (e.g. Native feed reload).
                     requestMrecPositionSync205();
-                }
+                
+                    });
+}
                 @Override public void onAdFailedToLoad(LoadAdError error) {
+                    runAdUi255(() -> {
                     if (ad != mrecAdView || isFinishing() || isDestroyed()) return;
                     final boolean hadDisplayedCreative = mrecAdLoaded;
                     final String mrecError = error == null ? "Bilinmeyen hata" : error.toString();
@@ -2361,7 +2403,9 @@ private void showLaunchSplash() {
                         final long delay = Math.max(30000L, adRetryDelay(mrecRetryAttempt++));
                         mainHandler.postDelayed(mrecRetryTask205, delay);
                     }
-                }
+                
+                    });
+}
             };
             // Never mix 50dp creative with a 250dp container or vice versa.
             // Native view and HTML placeholder are exactly 300x250.
@@ -2567,6 +2611,7 @@ private void showLaunchSplash() {
         AppOpenAd.load(new AdRequest.Builder(unit).build(),
             new AdLoadCallback<AppOpenAd>() {
                 @Override public void onAdLoaded(AppOpenAd ad) {
+                    runAdUi255(() -> {
                     appOpenLoading122 = false;
                     appOpenAttemptFinished141 = true;
                     if (!canRequestAdMobAds() || isFinishing() || isDestroyed()) return;
@@ -2576,14 +2621,19 @@ private void showLaunchSplash() {
                     recordAdSource123("appOpen", ad.getResponseInfo());
                     appOpenAd122 = ad;
                     showAppOpenOnSplash122();
-                }
+                
+                    });
+}
                 @Override public void onAdFailedToLoad(LoadAdError error) {
+                    runAdUi255(() -> {
                     appOpenLoading122 = false;
                     appOpenAttemptFinished141 = true;
                     appOpenAd122 = null;
                     logAdMob("app_open_failed", error == null ? "No fill" : error.toString());
                     hideLaunchSplashWhenReady();
-                }
+                
+                    });
+}
             });
     }
 
@@ -2607,21 +2657,30 @@ private void showLaunchSplash() {
         appOpenShowing122 = true;
         ad.setAdEventCallback(new AppOpenAdEventCallback() {
             @Override public void onAdShowedFullScreenContent() {
+                    runAdUi255(() -> {
                 appOpenLastShownAt122 = System.currentTimeMillis();
                 getSharedPreferences("aracim_app_open", MODE_PRIVATE).edit()
                     .putLong("last_shown", appOpenLastShownAt122).apply();
                 stopLaunchEngineSound();
                 logAdMob("app_open_shown", "Startup splash: loaded App Open displayed");
-            }
+            
+                    });
+}
             @Override public void onAdDismissedFullScreenContent() {
+                    runAdUi255(() -> {
                 appOpenShowing122 = false;
                 hideLaunchSplashWhenReady();
-            }
+            
+                    });
+}
             @Override public void onAdFailedToShowFullScreenContent(FullScreenContentError error) {
+                    runAdUi255(() -> {
                 appOpenShowing122 = false;
                 logAdMob("app_open_show_failed", String.valueOf(error));
                 hideLaunchSplashWhenReady();
-            }
+            
+                    });
+}
         });
         try { ad.show(this); }
         catch (Throwable t) {
@@ -2664,16 +2723,25 @@ private void showLaunchSplash() {
         lastInAppInterstitialShownAt145 = now;
         ad.setAdEventCallback(new InterstitialAdEventCallback() {
             @Override public void onAdShowedFullScreenContent() {
+                    runAdUi255(() -> {
                 logAdMob("vehicle_saved_interstitial", "After successful new vehicle save");
-            }
+            
+                    });
+}
             @Override public void onAdDismissedFullScreenContent() {
+                    runAdUi255(() -> {
                 logAdMob("vehicle_saved_interstitial_closed", "Return to the saved vehicle");
                 releaseAndReloadInterstitial145();
-            }
+            
+                    });
+}
             @Override public void onAdFailedToShowFullScreenContent(FullScreenContentError error) {
+                    runAdUi255(() -> {
                 logAdMob("vehicle_saved_interstitial_failed", String.valueOf(error));
                 releaseAndReloadInterstitial145();
-            }
+            
+                    });
+}
         });
         try { ad.show(this); }
         catch (Throwable t) {
@@ -2701,17 +2769,23 @@ private void showLaunchSplash() {
         excelRewardedLoading124 = true;
         RewardedAd.load(new AdRequest.Builder(unit).build(), new AdLoadCallback<RewardedAd>() {
             @Override public void onAdLoaded(RewardedAd ad) {
+                    runAdUi255(() -> {
                 excelRewardedLoading124 = false;
                 if (!canRequestAdMobAds() || isFinishing() || isDestroyed()) return;
                 excelRewardedAd124 = ad;
                 excelRewardedLoadedAt124 = android.os.SystemClock.elapsedRealtime();
                 logAdMob("rewarded_excel_loaded", "A voluntary rewarded ad is ready");
-            }
+            
+                    });
+}
             @Override public void onAdFailedToLoad(LoadAdError error) {
+                    runAdUi255(() -> {
                 excelRewardedLoading124 = false;
                 excelRewardedAd124 = null;
                 logAdMob("rewarded_excel_load_failed", error == null ? "No fill" : error.toString());
-            }
+            
+                    });
+}
         });
     }
 
@@ -2760,22 +2834,31 @@ private void showLaunchSplash() {
         };
         ad.setAdEventCallback(new RewardedAdEventCallback() {
             @Override public void onAdShowedFullScreenContent() {
+                    runAdUi255(() -> {
                 logAdMob("rewarded_excel_shown", "Optional Excel report reward from Add Vehicle");
-            }
+            
+                    });
+}
             @Override public void onAdDismissedFullScreenContent() {
+                    runAdUi255(() -> {
                 lastExcelRewardedClosedAt125 = android.os.SystemClock.elapsedRealtime();
                 excelRewardedShowing124 = false;
                 dismissed.set(true);
                 finalizeReward.run();
                 if (!earned.get()) notifyExcelRewardJs124("not_earned");
                 mainHandler.postDelayed(() -> loadExcelRewardedAd124(), 1500L);
-            }
+            
+                    });
+}
             @Override public void onAdFailedToShowFullScreenContent(FullScreenContentError error) {
+                    runAdUi255(() -> {
                 excelRewardedShowing124 = false;
                 notifyExcelRewardJs124("unavailable");
                 logAdMob("rewarded_excel_show_failed", String.valueOf(error));
                 mainHandler.postDelayed(() -> loadExcelRewardedAd124(), 3000L);
-            }
+            
+                    });
+}
         });
         try {
             ad.show(this, rewardItem -> runOnUiThread(() -> {
@@ -2802,6 +2885,7 @@ private void showLaunchSplash() {
         InterstitialAd.load(new AdRequest.Builder(unitId).build(),
                 new AdLoadCallback<InterstitialAd>() {
                     @Override public void onAdLoaded(InterstitialAd ad) {
+                    runAdUi255(() -> {
                         interstitialLoading = false;
                         interstitialRetryAttempt = 0;
                         if (!canRequestAdMobAds() || oneInterstitialClaimed.get()) return;
@@ -2810,9 +2894,12 @@ private void showLaunchSplash() {
                         oneInterstitialReady = true;
                         logAdMob("interstitial_loaded", "Full-screen ad preloaded through AdMob mediation");
                         recordAdSource123("interstitial", ad.getResponseInfo());
-                    }
+                    
+                    });
+}
 
                     @Override public void onAdFailedToLoad(LoadAdError error) {
+                    runAdUi255(() -> {
                         interstitialLoading = false;
                         oneInterstitialAd = null;
                         oneInterstitialReady = false;
@@ -2823,7 +2910,9 @@ private void showLaunchSplash() {
                                     && !isFinishing() && !isDestroyed())
                                 loadSingleInterstitial();
                         }, delay);
-                    }
+                    
+                    });
+}
                 });
     }
 
@@ -2840,6 +2929,7 @@ private void showLaunchSplash() {
         InterstitialAd.load(new AdRequest.Builder(unit).build(),
                 new AdLoadCallback<InterstitialAd>() {
                     @Override public void onAdLoaded(InterstitialAd ad) {
+                    runAdUi255(() -> {
                         recordInterstitialLoading147 = false;
                         recordInterstitialRetry147 = 0;
                         if (!canRequestAdMobAds() || isFinishing() || isDestroyed()) return;
@@ -2847,15 +2937,20 @@ private void showLaunchSplash() {
                         recordInterstitialLoadedAt147 = android.os.SystemClock.elapsedRealtime();
                         recordAdSource123("recordInterstitial", ad.getResponseInfo());
                         logAdMob("record_interstitial_ready_147", "Completed record slot");
-                    }
+                    
+                    });
+}
                     @Override public void onAdFailedToLoad(LoadAdError error) {
+                    runAdUi255(() -> {
                         recordInterstitialLoading147 = false;
                         recordInterstitialAd147 = null;
                         logAdMob("record_interstitial_failed_147",
                                 error == null ? "No fill" : error.toString());
                         mainHandler.postDelayed(() -> loadRecordInterstitial147(),
                                 adRetryDelay(recordInterstitialRetry147++));
-                    }
+                    
+                    });
+}
                 });
     }
 
@@ -2892,13 +2987,22 @@ private void showLaunchSplash() {
                 mainHandler.postDelayed(() -> loadRecordInterstitial147(), 1200L);
             }
             @Override public void onAdShowedFullScreenContent() {
+                    runAdUi255(() -> {
                 logAdMob("record_interstitial_shown_147", type);
-            }
-            @Override public void onAdDismissedFullScreenContent() { finish(); }
+            
+                    });
+}
+            @Override public void onAdDismissedFullScreenContent() {
+                    runAdUi255(() -> { finish(); 
+                    });
+}
             @Override public void onAdFailedToShowFullScreenContent(FullScreenContentError error) {
+                    runAdUi255(() -> {
                 logAdMob("record_interstitial_show_failed_147", String.valueOf(error));
                 finish();
-            }
+            
+                    });
+}
         });
         try { ad.show(this); }
         catch (Throwable error) {
@@ -2953,18 +3057,27 @@ private void showLaunchSplash() {
             }
             ad.setAdEventCallback(new InterstitialAdEventCallback() {
                 @Override public void onAdShowedFullScreenContent() {
+                    runAdUi255(() -> {
                     logAdMob("interstitial_shown", "In-app navigation interstitial displayed");
-                }
+                
+                    });
+}
                 @Override public void onAdDismissedFullScreenContent() {
+                    runAdUi255(() -> {
                     logAdMob("interstitial_dismissed", "Navigation continued");
                     releaseAndReloadInterstitial145();
                     finishOneInterstitialNavigation(target);
-                }
+                
+                    });
+}
                 @Override public void onAdFailedToShowFullScreenContent(FullScreenContentError error) {
+                    runAdUi255(() -> {
                     logAdMob("interstitial_show_failed", error == null ? "Unknown" : error.toString());
                     releaseAndReloadInterstitial145();
                     finishOneInterstitialNavigation(target);
-                }
+                
+                    });
+}
             });
             try {
                 ad.show(this);

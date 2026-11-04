@@ -1,0 +1,66 @@
+name: AracimPro v255 GMA UI-Thread Fix Test APK
+
+on:
+  push:
+    branches: [ aracimpro-255-gma-main-thread-hotfix ]
+  pull_request:
+    branches: [ aracimpro-254-startup-recovery-hotfix ]
+  workflow_dispatch:
+
+jobs:
+  test-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Install Android SDK and NDK
+        run: |
+          set -euo pipefail
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools" "ndk;27.2.12479018"
+      - name: Verify crash fix and non-destructive separate install
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          s=Path("app/src/main/java/com/aracimpro/app/MainActivity.java").read_text()
+          b=Path("app/build.gradle").read_text()
+          assert "versionCode 255" in b and "versionName '7.12.7'" in b
+          assert "applicationIdSuffix '.neonpreview'" in b
+          assert "if (android.os.Looper.myLooper() == android.os.Looper.getMainLooper())" in s
+          callbacks=re.findall(r"@Override\s+public void (?:onAdLoaded|onAdFailedToLoad|onAdImpression|onAdDismissedFullScreenContent|onAdShowedFullScreenContent|onAdFailedToShowFullScreenContent|onLoaded|onFailed)\s*\([^)]*\)\s*\{\s*runAdUi255\(\(\) -> \{", s)
+          assert len(callbacks) >= 33, f"Expected 33 UI-thread guarded ad callbacks, got {len(callbacks)}"
+          print("PASS: 33 UI-thread guarded ad callbacks, unchanged ad setup, separate debug package.")
+          PY
+      - name: Build debug APK with Google sample ads only
+        run: |
+          set -o pipefail
+          gradle --no-daemon --max-workers=2 :app:assembleDebug 2>&1 | tee v255-apk-build.log
+      - name: Validate APK and export
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          unzip -t "$APK" >/dev/null
+          mkdir -p out
+          cp "$APK" out/AracimPro-v255-7.12.7-GMA-ThreadFix-TEST.apk
+          sha256sum out/AracimPro-v255-7.12.7-GMA-ThreadFix-TEST.apk > out/SHA256.txt
+          printf '%s\n' "Separate package com.aracimpro.app.neonpreview; Google sample ads only." "If an older preview is already installed and the signatures differ, uninstall ONLY the preview before installing this APK. Do not remove the Play Store app." > out/README.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: AracimPro-v255-7.12.7-GMA-ThreadFix-TestAPK
+          path: |
+            out/
+            v255-apk-build.log
+          if-no-files-found: ignore
+          retention-days: 10
