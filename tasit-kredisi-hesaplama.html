@@ -93,7 +93,7 @@ details{border:1px solid #30516a;background:#0b2638;border-radius:10px;padding:1
 <div class="related"><a href="mtv-hesaplama.html">2026 MTV hesabı</a><a href="arac-karsilastirma.html">Araçları karşılaştır</a><a href="arac-giderleri-rehberi.html">Yıllık masraf rehberi</a></div>
 </section>
 <section class="panel section"><h2>Sık sorulan sorular</h2>
-<details><summary>Taşıt kredisi faiz oranları otomatik güncelleniyor mu?</summary><p>Hayır. Gerçek banka faizini elle girmelisiniz. Hesaplayıcı, ücretli bir API kullanmaz.</p></details>
+<details><summary>Taşıt kredisi faiz oranları otomatik güncelleniyor mu?</summary><p>Ücretsiz üçüncü taraf kredi veri servisi, banka seçilince sorgulanır. Uygun oran dönerse taksit hesaplanır; veri yoksa otomatik oran gösterilmez.</p></details>
 <details><summary>KKDF ve BSMV neden ayrı giriliyor?</summary><p>Kredi türüne göre vergi uygulamaları değişebilir. Bankanızın sunduğu gerçek oranları girebilmeniz için ayrıdır.</p></details>
 <details><summary>Peşinatı artırırsam taksit azalır mı?</summary><p>Faiz ve vade aynıysa peşinat arttığında kredi tutarı ve taksit azalır.</p></details>
 <details><summary>Hesaplanan taksit kesin banka teklifi midir?</summary><p>Hayır. Bankanın kredi limiti, sigorta ve dosya ücretleri gibi koşulları gerçek ödemeyi değiştirebilir.</p></details>
@@ -249,7 +249,7 @@ function render(){
  updateEligibility();
  const error=[price,down,rate,n,k,b,fees].some(x=>!Number.isFinite(x))||price<=0||price>100000000||down<0||down>=price||rate<0||rate>30||n<1||n>120||k<0||k>100||b<0||b>100||fees<0||fees>10000000;
  const warn=document.getElementById('warning');warn.hidden=!error;
- if(error){warn.textContent='Geçerli bilgiler girin. Peşinat araç fiyatından düşük olmalı; negatif tutar girmeyin.';
+ if(error){warn.textContent=!Number.isFinite(rate)?(document.getElementById('bank').value==='manual'?'Hesaplamak için aylık akdi faizi gir.':'Banka faiz verisi henüz alınamadı. Kaynak bağlantısını kontrol et veya faizi elle gir.'):'Geçerli bilgiler girin. Peşinat araç fiyatından düşük olmalı; negatif tutar girmeyin.';
  ['monthly','principal','total','interest','taxes','financing','grand'].forEach(id=>document.getElementById(id).textContent='—');
  document.getElementById('schedule').replaceChildren();document.getElementById('alternatives').replaceChildren();
  ['bar1','bar2','bar3'].forEach(id=>document.getElementById(id).style.width='0%');return}
