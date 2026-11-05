@@ -43,35 +43,33 @@ details{border:1px solid #30516a;background:#0b2638;border-radius:10px;padding:1
 <div class="field"><label for="down">Peşinat (TL)</label><input id="down" type="number" inputmode="decimal" value="1000000" min="0" step="1000"></div>
 <div class="field"><label for="bank">Banka ve kredi paketi seç</label>
 <select id="bank">
-<option value="manual" selected>Diğer / faiz oranını kendim gireceğim</option>
-<optgroup label="Resmî yayımlanmış oranla örnek hesap">
-<option value="ziraat">Ziraat Bankası – Kredi Paketi (şartlı)</option>
-<option value="isbank">İş Bankası – Sigortalı 2. el (şartlı)</option>
-<option value="akbank">Akbank – yayımlanan aralığın üst oranı</option>
-<option value="halk_sifir">Halkbank – 0 km (48 ay örneği)</option>
-<option value="halk_ikinci">Halkbank – 2. el (48 ay örneği)</option>
-<option value="halk_bordro0">Halkbank – Bordro24 sıfır km (şartlı)</option>
-<option value="halk_bordro2">Halkbank – Bordro24 ikinci el (şartlı)</option>
-<option value="qnb">QNB – yayımlanmış örnek oran</option>
-</optgroup>
-<optgroup label="Faiz oranı bankadan alınacak">
-<option value="garanti">Garanti BBVA</option>
-<option value="vakif">VakıfBank</option>
-<option value="yapikredi">Yapı Kredi</option>
-<option value="deniz">DenizBank</option>
-<option value="teb">TEB</option>
+<option value="manual" selected>Faiz oranını kendim gireceğim</option>
+<optgroup label="Banka seç · faiz otomatik dolar (örnek oran)">
+<option value="ziraat">Ziraat Bankası · Taşıt Paketi</option>
+<option value="isbank">İş Bankası · Taşıt Kredisi</option>
+<option value="akbank">Akbank · Taşıt Kredisi</option>
+<option value="halk_sifir">Halkbank · 0 km</option>
+<option value="halk_ikinci">Halkbank · 2. el</option>
+<option value="halk_bordro0">Halkbank · Bordro24 0 km (özel koşul)</option>
+<option value="halk_bordro2">Halkbank · Bordro24 2. el (özel koşul)</option>
+<option value="garanti">Garanti BBVA · Taşıt Kredisi</option>
+<option value="vakif">VakıfBank · 2. el taşıt</option>
+<option value="yapikredi">Yapı Kredi · Taşıt Kredisi</option>
+<option value="qnb">QNB · Taşıt Kredisi</option>
+<option value="deniz">DenizBank · Standart taşıt</option>
+<option value="teb">TEB · Sigortalı taşıt</option>
 </optgroup>
 </select>
-<small class="hint">Bankayı seçince varsa yayımlanmış örnek faiz otomatik gelir. Teklif ve güncellik bankadan doğrulanmalı.</small></div>
+<small class="hint">Bankayı seçtiğinde aylık faiz otomatik dolar. Oranlar tarihli örnektir, canlı teklif değildir.</small></div>
 <div class="field"><label for="rate">Aylık akdi faiz (%)</label><input id="rate" type="number" inputmode="decimal" value="3.5" min="0" max="30" step=".01"><small class="hint">Örnek oran; canlı banka oranı değildir.</small></div>
 <div class="field"><label for="months">Vade (ay)</label><select id="months"><option value="6">6 ay</option><option value="12">12 ay</option><option value="18">18 ay</option><option value="24">24 ay</option><option value="30">30 ay</option><option value="36" selected>36 ay</option><option value="48">48 ay</option></select></div>
 <div class="field"><label for="kkdf">KKDF (% faiz üzerinden)</label><input id="kkdf" type="number" inputmode="decimal" value="15" min="0" max="100" step=".1"><small class="hint">Bireysel kredi için örnek varsayım.</small></div>
 <div class="field"><label for="bsmv">BSMV (% faiz üzerinden)</label><input id="bsmv" type="number" inputmode="decimal" value="15" min="0" max="100" step=".1"><small class="hint">Güncel banka teklifine göre değiştir.</small></div>
 <div class="field"><label for="fees">Ek masraflar (TL)</label><input id="fees" type="number" inputmode="decimal" value="0" min="0" step="100"><small class="hint">Tahsis ücreti ve sigorta gibi ek giderler.</small></div>
 </div>
-<div class="bank-info" id="bankInfo" role="status" aria-live="polite"><strong id="bankTitle">Faiz oranını kendin belirle</strong><p id="bankDescription">Bankandan öğrendiğin aylık faiz oranını gir. Banka seçimi ücretli bir hizmet değildir.</p><a id="bankLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Bankanın resmî kredi sayfasını aç ↗</a><small id="bankAsOf"></small></div>
+<div class="bank-info" id="bankInfo" role="status" aria-live="polite"><strong id="bankTitle">Faiz oranını kendin belirle</strong><p id="bankDescription">Bankanı seçtiğinde faiz otomatik yazılır. İstersen kendi oranını gir.</p><a id="bankLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Bankanın resmî kredi sayfasını aç ↗</a><small id="bankAsOf"></small></div>
 <p class="eligibility" id="eligibility" role="status"></p>
-<p class="note">Faiz, vergi ve masraflar bankaya göre değişebilir. Kredi tutarı ve vade için yasal sınırlar geçerlidir. Bu araç kesin teklif, kredi onayı veya finansal tavsiye değildir.</p></section>
+<p class="note">Banka faizleri çevrimdışı, tarihlendirilmiş <strong>örnek oranlardır</strong>; günlük otomatik yenilenmez. Gerçek faiz ve kredi onayı için bankayı kontrol edin. Karşılaştırma verileri: <a href="https://bankaci.app/tr/banka-faiz-oranlari" target="_blank" rel="noopener noreferrer">2 Kasım 2026 banka oran derlemesi</a>, <a href="https://www.hesapkurdu.com/tasit-kredisi" target="_blank" rel="noopener noreferrer">4 Kasım 2026 taşıt kredisi karşılaştırması</a>. Faiz, vergi ve masraflar bankaya göre değişebilir. Kredi tutarı ve vade için yasal sınırlar geçerlidir. Bu araç kesin teklif, kredi onayı veya finansal tavsiye değildir.</p></section>
 <section class="panel"><h2>Sonucun</h2><div class="big" aria-live="polite"><span>Tahmini aylık taksit</span><strong id="monthly">—</strong><small id="termLabel">36 ay</small></div>
 <div class="stats">
 <div class="stat"><label>Kredi tutarı</label><strong id="principal">—</strong></div>
@@ -119,38 +117,40 @@ function calculateLoan(P,r,n,k,b){
  }
  return{instal,paid,interest,taxes,rows};
 }
+// Tarihli örnek oranlar. Bankalar tarafından sunulan canlı/personalize teklifler değildir.
+// Kullanıcı banka değiştirdiğinde faiz alanı her durumda yeniden doldurulur.
 const bankCatalog={
- manual:{name:"Manuel faiz",url:"",fn:()=>null,desc:"Bankanın sana sunduğu gerçek aylık faiz oranını kendin gir."},
- ziraat:{name:"Ziraat Bankası – Taşıt Ürün Paketi",url:"https://www.ziraatbank.com.tr/tr/bireysel/krediler/kredi-paketleri/ziraat-kredi-paketi",fn:n=>n<=24?3.49:n<=36?3.39:n<=48?3.29:null,desc:"Yayımlanan paket oranı: 1–24 ay %3,49; 25–36 ay %3,39; 37–48 ay %3,29. Kasko ve ek bankacılık ürünü şartları bulunur."},
- isbank:{name:"İş Bankası – Hayat Sigortalı 2. El",url:"https://www.isbank.com.tr/urun-ve-hizmet-ucretleri",fn:n=>n>=1&&n<=23?3.79:n>=24&&n<=35?3.59:null,desc:"Yalnızca hayat sigortalı ikinci el taşıt kredisine ait yayımlanmış oranlar. 1–23 ay %3,79, 24–35 ay %3,59 (21.10.2026 tarihli banka tablosu). Diğer vadelerde teyitli oran yok."},
- akbank:{name:"Akbank – yayımlanmış oran aralığının üst sınırı",url:"https://www.akbank.com/urun-ve-hizmet-ucretleri",fn:n=>n<=24?3.69:n<=48?3.55:null,desc:"08.09.2026 tarihli banka tablosunda 1–24 ay %3,49–3,69; 25–48 ay %3,45–3,55 aralığı yer alıyor. Temkinli örnek için ÜST değer seçildi; kişisel teklif değildir."},
- halk_sifir:{name:"Halkbank – Sıfır Km Taşıt",url:"https://www.halkbank.com.tr/tr/bireysel/krediler/tasit-kredileri/tasit-kredisi",fn:n=>n===48?4.89:null,desc:"Bankanın 100.000 TL ve 48 ay için verdiği örnek %4,89'dur. Diğer vadeler veya tutarlar için teyitli oran kullanılmıyor."},
- halk_ikinci:{name:"Halkbank – İkinci El Taşıt",url:"https://www.halkbank.com.tr/tr/bireysel/krediler/tasit-kredileri/tasit-kredisi",fn:n=>n===48?4.95:null,desc:"Bankanın 100.000 TL ve 48 ay için verdiği ikinci el örneği %4,95'tir. Diğer vadelerde gerçek teklif gereklidir."},
- halk_bordro0:{name:"Halkbank – Bordro24 0 km",url:"https://www.halkbank.com.tr/tr/bireysel/bordro-24-musterilerimize-ozel-avantajlar",fn:n=>n===48?3.39:null,desc:"Bordro24 maaş müşterilerine özel 100.000 TL / 48 ay örnek %3,39 oranıdır. Diğer vadelerde ve müşterilerde banka teyidi gerekir."},
- halk_bordro2:{name:"Halkbank – Bordro24 2. el",url:"https://www.halkbank.com.tr/tr/bireysel/bordro-24-musterilerimize-ozel-avantajlar",fn:n=>n===48?3.44:null,desc:"Bordro24 maaş müşterilerine özel 100.000 TL / 48 ay örnek %3,44 oranıdır. Diğer vadelerde ve müşterilerde banka teyidi gerekir."},
- garanti:{name:"Garanti BBVA",url:"https://www.garantibbva.com.tr/krediler/tasit-kredisi",fn:()=>null,desc:"Araç marka, model, yıl ve kişisel başvuru koşullarına göre faiz değişebilir. Resmî bankacılık sayfasından teklif al."},
- vakif:{name:"VakıfBank",url:"https://www.vakifbank.com.tr/",fn:()=>null,desc:"Teyit edilebilir tüm vadeleri kapsayan sabit oran bulunmuyor. Bankanın güncel teklifini faiz alanına gir."},
- yapikredi:{name:"Yapı Kredi",url:"https://www.yapikredi.com.tr/bireysel-bankacilik/krediler/tasit-kredisi/",fn:()=>null,desc:"Güncel ve kişiye uygun faiz için bankanın teklifini faiz alanına gir."},
- qnb:{name:"QNB – Taşıt Kredisi",url:"https://www.qnb.com.tr/tasit-otomobil-kredisi",fn:n=>n>=1&&n<=48?4.72:null,desc:"Bankanın taşıt kredisi sayfasında aylık %4,72 örnek oran yer alıyor. Kişiye özel faiz, tutar ve vade banka tarafından belirlenir."},
- deniz:{name:"DenizBank",url:"https://www.denizbank.com/krediler/bireysel-bankacilik/tasit-kredisi",fn:()=>null,desc:"Güncel faiz oranını bankanın teklifinden öğrenip faiz alanına gir."},
- teb:{name:"TEB",url:"https://www.teb.com.tr/",fn:()=>null,desc:"Güncel faiz oranını bankanın teklifinden öğrenip faiz alanına gir."}
+ manual:{name:"Kendi faiz oranım",url:"",fn:()=>null,date:"",desc:"Bankanızdan aldığınız aylık faizi girin."},
+ ziraat:{name:"Ziraat Bankası – Taşıt Ürün Paketi",url:"https://www.ziraatbank.com.tr/tr/bireysel/krediler/kredi-paketleri/ziraat-kredi-paketi",fn:n=>n<=24?3.49:n<=36?3.39:3.29,date:"05.11.2026 kontrol",desc:"Paket için 1–24 ay %3,49, 25–36 ay %3,39, 37–48 ay %3,29 olarak yayımlanan örnek oranlar. Kasko ve ürün edinim koşulları uygulanabilir."},
+ isbank:{name:"İş Bankası – Taşıt Kredisi",url:"https://www.isbank.com.tr/urun-ve-hizmet-ucretleri",fn:n=>n<=23?3.79:n<=35?3.59:3.49,date:"02.11.2026 derleme",desc:"1–23 ay eski sigortalı 2. el örneği %3,79; 24–35 ay %3,59; 36–48 ay farklı sigortalı taşıt kampanyasında görülen %3,49 örnek oran. Aynı ürünün tek bir faiz tarifesi değildir."},
+ akbank:{name:"Akbank – Taşıt Kredisi",url:"https://www.akbank.com/urun-ve-hizmet-ucretleri",fn:n=>3.40,date:"04.11.2026 derleme",desc:"Yayımlanan %3,40 örnek aylık oran üzerinden hesaplanır. Vadeye/tutara ve sigorta tercihlerine göre bankanın teklifi farklı olabilir."},
+ halk_sifir:{name:"Halkbank – 0 km Taşıt",url:"https://www.halkbank.com.tr/tr/bireysel/krediler/tasit-kredileri/tasit-kredisi",fn:n=>4.89,date:"05.11.2026 kontrol",desc:"Bankanın 100.000 TL / 48 ay 0 km örneği %4,89. Başka vadelerde de bu oran yalnızca karşılaştırma için uygulanır; gerçek teklif değildir."},
+ halk_ikinci:{name:"Halkbank – 2. El Taşıt",url:"https://www.halkbank.com.tr/tr/bireysel/krediler/tasit-kredileri/tasit-kredisi",fn:n=>4.95,date:"05.11.2026 kontrol",desc:"Bankanın 100.000 TL / 48 ay ikinci el örneği %4,95. Farklı tutar ve vadelerde yalnızca varsayımsal kıyaslama sağlar."},
+ halk_bordro0:{name:"Halkbank – Bordro24 0 km",url:"https://www.halkbank.com.tr/tr/bireysel/bordro-24-musterilerimize-ozel-avantajlar",fn:n=>3.39,date:"05.11.2026 kontrol",desc:"Bordro24 maaş müşterilerine özel 100.000 TL / 48 ay örnek %3,39. Farklı vadelerde örnek faiz korunur; kampanya koşulları zorunludur."},
+ halk_bordro2:{name:"Halkbank – Bordro24 2. el",url:"https://www.halkbank.com.tr/tr/bireysel/bordro-24-musterilerimize-ozel-avantajlar",fn:n=>3.44,date:"05.11.2026 kontrol",desc:"Bordro24 maaş müşterilerine özel 100.000 TL / 48 ay örnek %3,44. Farklı vadelerde örnek faiz korunur; kampanya koşulları zorunludur."},
+ garanti:{name:"Garanti BBVA – Taşıt Kredisi",url:"https://www.garantibbva.com.tr/krediler/tasit-kredisi",fn:n=>n>=37?3.34:3.44,date:"02.11.2026 derleme",desc:"Yayımlanan %3,34–3,44 aralığından 37–48 ay için %3,34; diğer vadeler için örnek olarak %3,44 kullanılıyor. Gerçek oran tutara ve ürüne bağlı."},
+ vakif:{name:"VakıfBank – İkinci El Taşıt",url:"https://www.vakifbank.com.tr/",fn:n=>3.99,date:"02.11.2026 derleme",desc:"İkinci el taşıt için yayımlanmış %3,84–3,99 aralığının üst değeri %3,99 örnek alınır. Bankanın kişisel teklifi değişebilir."},
+ yapikredi:{name:"Yapı Kredi – Taşıt Kredisi",url:"https://www.yapikredi.com.tr/bireysel-bankacilik/krediler/tasit-kredisi/",fn:n=>3.99,date:"02.11.2026 derleme",desc:"12–48 ay taşıt kredisi için yayımlanmış %3,99 örnek aylık oran kullanılır. Vade ve tutara özel onay bankaya aittir."},
+ qnb:{name:"QNB – Taşıt Kredisi",url:"https://www.qnb.com.tr/tasit-otomobil-kredisi",fn:n=>4.72,date:"04.11.2026 derleme",desc:"Yayımlanmış aylık %4,72 örnek oran kullanılır. Gerçek faiz ve kredi onayı bankaya bağlıdır."},
+ deniz:{name:"DenizBank – Standart Taşıt",url:"https://www.denizbank.com/krediler/bireysel-bankacilik/tasit-kredisi",fn:n=>4.15,date:"02.11.2026 derleme",desc:"Standart taşıt örnekleri için %4,14–4,15 aralığının üstü %4,15 alınır. TOGG'a özel %3,11 kampanyası bu standart seçeneğe dahil değildir."},
+ teb:{name:"TEB – Sigortalı Taşıt",url:"https://www.teb.com.tr/",fn:n=>3.69,date:"02.11.2026 derleme",desc:"Sigortalı taşıt kredisinde yayımlanmış %3,39–3,69 aralığının üst değeri %3,69 örnek alınır. Gerçek oran ve sigorta şartları bankadan doğrulanmalıdır."}
 };
 let rateAppliedByBank=false;
 function applyBankRate(){
  const key=document.getElementById('bank').value,bank=bankCatalog[key],n=v('months'),known=bank.fn(n);
- const title=document.getElementById('bankTitle'),description=document.getElementById('bankDescription'),source=document.getElementById('bankLink'),asof=document.getElementById('bankAsOf');
+ const title=document.getElementById('bankTitle'),description=document.getElementById('bankDescription'),link=document.getElementById('bankLink'),asof=document.getElementById('bankAsOf');
  title.textContent=bank.name;
- source.hidden=!bank.url;
- if(bank.url)source.href=bank.url;
- if(Number.isFinite(known)){
+ link.hidden=!bank.url;
+ if(bank.url)link.href=bank.url;
+ if(key!=="manual"&&Number.isFinite(known)){
    document.getElementById('rate').value=String(known);
    rateAppliedByBank=true;
-   description.textContent=bank.desc+" Seçilen vade için aylık faiz otomatik dolduruldu.";
-   asof.textContent="Kaynak: bankanın resmî internet sitesi • kontrol: 05.11.2026 • CANLI ORAN DEĞİLDİR";
+   description.textContent=bank.desc+" Faiz alanına otomatik yazıldı; taksitler hesaplandı.";
+   asof.textContent="ÖRNEK ORAN · "+bank.date+" · CANLI BANKA TEKLİFİ DEĞİL";
  }else{
-   if(key!=="manual"||rateAppliedByBank){document.getElementById('rate').value="";rateAppliedByBank=false}
-   description.textContent=bank.desc+" Seçilen vadeye uygun doğrulanmış örnek oran olmadığından aylık faizi elle gir.";
-   asof.textContent=key==="manual"?"":"Resmî bağlantı mevcuttur • otomatik faiz verisi yok";
+   if(rateAppliedByBank){document.getElementById('rate').value="";rateAppliedByBank=false;}
+   description.textContent=bank.desc;
+   asof.textContent="";
  }
  render();
 }
