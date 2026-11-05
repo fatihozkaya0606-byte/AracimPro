@@ -35,7 +35,7 @@ details{border:1px solid #30516a;background:#0b2638;border-radius:10px;padding:1
 </head><body>
 <header><nav><a class="brand" href="./">Aracım<span>Pro</span></a><div class="links"><a href="./">Ana sayfa</a><a href="mtv-hesaplama.html">MTV</a><a href="arac-karsilastirma.html">Karşılaştır</a><a href="tasit-kredisi-hesaplama.html" aria-current="page">Kredi</a></div></nav></header>
 <main><span class="eyebrow">ÜCRETSİZ • HESAP OLUŞTURMADAN KULLAN</span><h1>Taşıt kredisi hesaplama</h1><p class="lead">Araç fiyatını, peşinatı, aylık faiz oranını ve vadeyi girerek aylık taksitini, toplam kredi maliyetini ve ayrıntılı ödeme planını hesapla.</p>
-<div class="pills"><span>Ücretsiz</span><span>BSMV + KKDF ayrı hesaplanır</span><span>Mobil uyumlu</span><span>Canlı hesaplama</span></div>
+<div class="pills"><span>GÜNCEL SÜRÜM · BANKA FAİZİ OTOMATİK (05.11.2026)</span><span>Ücretsiz</span><span>BSMV + KKDF ayrı hesaplanır</span><span>Mobil uyumlu</span><span>Canlı hesaplama</span></div>
 <div class="cols">
 <section class="panel"><h2>Kredi bilgileri</h2>
 <div class="fields">
@@ -198,6 +198,7 @@ document.querySelectorAll('input,select').forEach(el=>{
   el.addEventListener('input',render);el.addEventListener('change',render)
 });
 document.getElementById('bank').addEventListener('change',applyBankRate);
+document.getElementById('bank').addEventListener('input',applyBankRate);
 document.getElementById('months').addEventListener('change',()=>{
  if(document.getElementById('bank').value==='manual')render();else applyBankRate();
 });
@@ -212,7 +213,8 @@ document.getElementById('rate').addEventListener('input',()=>{
  }
  render();
 });
-render();
+if(document.getElementById('bank').value!=='manual')applyBankRate();else render();
+window.addEventListener('pageshow',event=>{if(event.persisted&&document.getElementById('bank').value!=='manual')applyBankRate();});
 </script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"088fccd0b5a843adb37336d35c42a57e"}'></script>
 </body></html>
