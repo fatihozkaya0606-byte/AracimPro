@@ -52,12 +52,12 @@ details{border:1px solid #30516a;background:#0b2638;border-radius:10px;padding:1
 <option value="halk_ikinci">Halkbank – 2. el (48 ay örneği)</option>
 <option value="halk_bordro0">Halkbank – Bordro24 sıfır km (şartlı)</option>
 <option value="halk_bordro2">Halkbank – Bordro24 ikinci el (şartlı)</option>
+<option value="qnb">QNB – yayımlanmış örnek oran</option>
 </optgroup>
 <optgroup label="Faiz oranı bankadan alınacak">
 <option value="garanti">Garanti BBVA</option>
 <option value="vakif">VakıfBank</option>
 <option value="yapikredi">Yapı Kredi</option>
-<option value="qnb">QNB</option>
 <option value="deniz">DenizBank</option>
 <option value="teb">TEB</option>
 </optgroup>
@@ -130,9 +130,9 @@ const bankCatalog={
  halk_bordro2:{name:"Halkbank – Bordro24 2. el",url:"https://www.halkbank.com.tr/tr/bireysel/bordro-24-musterilerimize-ozel-avantajlar",fn:n=>n===48?3.44:null,desc:"Bordro24 maaş müşterilerine özel 100.000 TL / 48 ay örnek %3,44 oranıdır. Diğer vadelerde ve müşterilerde banka teyidi gerekir."},
  garanti:{name:"Garanti BBVA",url:"https://www.garantibbva.com.tr/krediler/tasit-kredisi",fn:()=>null,desc:"Araç marka, model, yıl ve kişisel başvuru koşullarına göre faiz değişebilir. Resmî bankacılık sayfasından teklif al."},
  vakif:{name:"VakıfBank",url:"https://www.vakifbank.com.tr/",fn:()=>null,desc:"Teyit edilebilir tüm vadeleri kapsayan sabit oran bulunmuyor. Bankanın güncel teklifini faiz alanına gir."},
- yapikredi:{name:"Yapı Kredi",url:"https://www.yapikredi.com.tr/",fn:()=>null,desc:"Güncel ve kişiye uygun faiz için bankanın teklifini faiz alanına gir."},
- qnb:{name:"QNB",url:"https://www.qnb.com.tr/",fn:()=>null,desc:"Krediye özel güncel faiz oranını bankadan öğrenip faiz alanına gir."},
- deniz:{name:"DenizBank",url:"https://www.denizbank.com/",fn:()=>null,desc:"Güncel faiz oranını bankanın teklifinden öğrenip faiz alanına gir."},
+ yapikredi:{name:"Yapı Kredi",url:"https://www.yapikredi.com.tr/bireysel-bankacilik/krediler/tasit-kredisi/",fn:()=>null,desc:"Güncel ve kişiye uygun faiz için bankanın teklifini faiz alanına gir."},
+ qnb:{name:"QNB – Taşıt Kredisi",url:"https://www.qnb.com.tr/tasit-otomobil-kredisi",fn:n=>n>=1&&n<=48?4.72:null,desc:"Bankanın taşıt kredisi sayfasında aylık %4,72 örnek oran yer alıyor. Kişiye özel faiz, tutar ve vade banka tarafından belirlenir."},
+ deniz:{name:"DenizBank",url:"https://www.denizbank.com/krediler/bireysel-bankacilik/tasit-kredisi",fn:()=>null,desc:"Güncel faiz oranını bankanın teklifinden öğrenip faiz alanına gir."},
  teb:{name:"TEB",url:"https://www.teb.com.tr/",fn:()=>null,desc:"Güncel faiz oranını bankanın teklifinden öğrenip faiz alanına gir."}
 };
 let rateAppliedByBank=false;
@@ -148,7 +148,7 @@ function applyBankRate(){
    description.textContent=bank.desc+" Seçilen vade için aylık faiz otomatik dolduruldu.";
    asof.textContent="Kaynak: bankanın resmî internet sitesi • kontrol: 05.11.2026 • CANLI ORAN DEĞİLDİR";
  }else{
-   if(rateAppliedByBank){document.getElementById('rate').value="";rateAppliedByBank=false}
+   if(key!=="manual"||rateAppliedByBank){document.getElementById('rate').value="";rateAppliedByBank=false}
    description.textContent=bank.desc+" Seçilen vadeye uygun doğrulanmış örnek oran olmadığından aylık faizi elle gir.";
    asof.textContent=key==="manual"?"":"Resmî bağlantı mevcuttur • otomatik faiz verisi yok";
  }
