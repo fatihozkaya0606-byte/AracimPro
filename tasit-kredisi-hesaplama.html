@@ -105,7 +105,7 @@ details{border:1px solid #30516a;background:#0b2638;border-radius:10px;padding:1
 <script>
 'use strict';
 const fmt=n=>Number.isFinite(n)?n.toLocaleString('tr-TR',{style:'currency',currency:'TRY'}):'—';
-const v=id=>Number(document.getElementById(id).value);
+const v=id=>{const raw=document.getElementById(id).value.trim();return raw===''?NaN:Number(raw)};
 function calculateLoan(P,r,n,k,b){
  const e=r*(1+(k+b)/100);
  const instal=e===0?P/n:P*e/(-Math.expm1(-n*Math.log1p(e)));
