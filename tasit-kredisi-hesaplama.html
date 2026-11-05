@@ -24,6 +24,9 @@ main{max-width:1100px;margin:auto;padding:36px 18px 70px}h1{font-size:clamp(30px
 .section{margin-top:22px}.tablewrap{overflow:auto;border:1px solid #345267;border-radius:11px}table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap}th,td{text-align:right;border-bottom:1px solid #29465b;padding:11px 12px}th:first-child,td:first-child{text-align:left}th{background:#17394c;color:#ebfbfd}tbody tr:nth-child(even){background:#0b2739}tbody tr:last-child td{border-bottom:0}.muted{color:var(--muted);font-size:13px}
 .related{display:flex;flex-wrap:wrap;gap:9px;margin:18px 0 0}.related a{display:inline-block;border:1px solid #41827c;background:#0d333c;border-radius:9px;padding:10px 12px;color:#d7fdf4;text-decoration:none;font-weight:700;font-size:13px}
 details{border:1px solid #30516a;background:#0b2638;border-radius:10px;padding:13px;margin:8px 0}summary{cursor:pointer;font-weight:700}details p{color:var(--muted);margin-bottom:0}footer{border-top:1px solid #28465a;padding:24px 16px;text-align:center;font-size:12px;color:#acc5d3}footer a{margin:0 6px}
+.bank-info{border:1px solid #407c75;background:#103b42;border-radius:12px;padding:14px;margin:17px 0 0;color:#e9fff9}
+.bank-info strong{display:block;font-size:14px}.bank-info p{font-size:12px;color:#c2ded8;margin:5px 0 7px}.bank-info a{display:inline-block;font-size:12px;font-weight:750}.bank-info small{display:block;font-size:11px;margin-top:5px;color:#b5d3ce}
+.eligibility{font-size:12px;padding:10px 12px;border:1px solid #886245;border-radius:9px;background:#372d2b;color:#ffdfbc;margin:12px 0 0}
 @media(max-width:780px){.cols{grid-template-columns:1fr}.panel{padding:16px}nav{flex-wrap:wrap}main{padding-top:28px}}
 @media(max-width:380px){.fields,.stats{grid-template-columns:1fr}}
 </style>
@@ -38,12 +41,36 @@ details{border:1px solid #30516a;background:#0b2638;border-radius:10px;padding:1
 <div class="fields">
 <div class="field"><label for="price">Araç satış fiyatı (TL)</label><input id="price" type="number" inputmode="decimal" value="1500000" min="1" step="1000"></div>
 <div class="field"><label for="down">Peşinat (TL)</label><input id="down" type="number" inputmode="decimal" value="1000000" min="0" step="1000"></div>
+<div class="field"><label for="bank">Banka ve kredi paketi seç</label>
+<select id="bank">
+<option value="manual" selected>Diğer / faiz oranını kendim gireceğim</option>
+<optgroup label="Resmî yayımlanmış oranla örnek hesap">
+<option value="ziraat">Ziraat Bankası – Kredi Paketi (şartlı)</option>
+<option value="isbank">İş Bankası – Sigortalı 2. el (şartlı)</option>
+<option value="akbank">Akbank – yayımlanan aralığın üst oranı</option>
+<option value="halk_sifir">Halkbank – 0 km (48 ay örneği)</option>
+<option value="halk_ikinci">Halkbank – 2. el (48 ay örneği)</option>
+<option value="halk_bordro0">Halkbank – Bordro24 sıfır km (şartlı)</option>
+<option value="halk_bordro2">Halkbank – Bordro24 ikinci el (şartlı)</option>
+</optgroup>
+<optgroup label="Faiz oranı bankadan alınacak">
+<option value="garanti">Garanti BBVA</option>
+<option value="vakif">VakıfBank</option>
+<option value="yapikredi">Yapı Kredi</option>
+<option value="qnb">QNB</option>
+<option value="deniz">DenizBank</option>
+<option value="teb">TEB</option>
+</optgroup>
+</select>
+<small class="hint">Bankayı seçince varsa yayımlanmış örnek faiz otomatik gelir. Teklif ve güncellik bankadan doğrulanmalı.</small></div>
 <div class="field"><label for="rate">Aylık akdi faiz (%)</label><input id="rate" type="number" inputmode="decimal" value="3.5" min="0" max="30" step=".01"><small class="hint">Örnek oran; canlı banka oranı değildir.</small></div>
 <div class="field"><label for="months">Vade (ay)</label><select id="months"><option value="6">6 ay</option><option value="12">12 ay</option><option value="18">18 ay</option><option value="24">24 ay</option><option value="30">30 ay</option><option value="36" selected>36 ay</option><option value="48">48 ay</option></select></div>
 <div class="field"><label for="kkdf">KKDF (% faiz üzerinden)</label><input id="kkdf" type="number" inputmode="decimal" value="15" min="0" max="100" step=".1"><small class="hint">Bireysel kredi için örnek varsayım.</small></div>
 <div class="field"><label for="bsmv">BSMV (% faiz üzerinden)</label><input id="bsmv" type="number" inputmode="decimal" value="15" min="0" max="100" step=".1"><small class="hint">Güncel banka teklifine göre değiştir.</small></div>
 <div class="field"><label for="fees">Ek masraflar (TL)</label><input id="fees" type="number" inputmode="decimal" value="0" min="0" step="100"><small class="hint">Tahsis ücreti ve sigorta gibi ek giderler.</small></div>
 </div>
+<div class="bank-info" id="bankInfo" role="status" aria-live="polite"><strong id="bankTitle">Faiz oranını kendin belirle</strong><p id="bankDescription">Bankandan öğrendiğin aylık faiz oranını gir. Banka seçimi ücretli bir hizmet değildir.</p><a id="bankLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Bankanın resmî kredi sayfasını aç ↗</a><small id="bankAsOf"></small></div>
+<p class="eligibility" id="eligibility" role="status"></p>
 <p class="note">Faiz, vergi ve masraflar bankaya göre değişebilir. Kredi tutarı ve vade için yasal sınırlar geçerlidir. Bu araç kesin teklif, kredi onayı veya finansal tavsiye değildir.</p></section>
 <section class="panel"><h2>Sonucun</h2><div class="big" aria-live="polite"><span>Tahmini aylık taksit</span><strong id="monthly">—</strong><small id="termLabel">36 ay</small></div>
 <div class="stats">
@@ -92,8 +119,55 @@ function calculateLoan(P,r,n,k,b){
  }
  return{instal,paid,interest,taxes,rows};
 }
+const bankCatalog={
+ manual:{name:"Manuel faiz",url:"",fn:()=>null,desc:"Bankanın sana sunduğu gerçek aylık faiz oranını kendin gir."},
+ ziraat:{name:"Ziraat Bankası – Taşıt Ürün Paketi",url:"https://www.ziraatbank.com.tr/tr/bireysel/krediler/kredi-paketleri/ziraat-kredi-paketi",fn:n=>n<=24?3.49:n<=36?3.39:n<=48?3.29:null,desc:"Yayımlanan paket oranı: 1–24 ay %3,49; 25–36 ay %3,39; 37–48 ay %3,29. Kasko ve ek bankacılık ürünü şartları bulunur."},
+ isbank:{name:"İş Bankası – Hayat Sigortalı 2. El",url:"https://www.isbank.com.tr/urun-ve-hizmet-ucretleri",fn:n=>n>=1&&n<=23?3.79:n>=24&&n<=35?3.59:null,desc:"Yalnızca hayat sigortalı ikinci el taşıt kredisine ait yayımlanmış oranlar. 1–23 ay %3,79, 24–35 ay %3,59 (21.10.2026 tarihli banka tablosu). Diğer vadelerde teyitli oran yok."},
+ akbank:{name:"Akbank – yayımlanmış oran aralığının üst sınırı",url:"https://www.akbank.com/urun-ve-hizmet-ucretleri",fn:n=>n<=24?3.69:n<=48?3.55:null,desc:"08.09.2026 tarihli banka tablosunda 1–24 ay %3,49–3,69; 25–48 ay %3,45–3,55 aralığı yer alıyor. Temkinli örnek için ÜST değer seçildi; kişisel teklif değildir."},
+ halk_sifir:{name:"Halkbank – Sıfır Km Taşıt",url:"https://www.halkbank.com.tr/tr/bireysel/krediler/tasit-kredileri/tasit-kredisi",fn:n=>n===48?4.89:null,desc:"Bankanın 100.000 TL ve 48 ay için verdiği örnek %4,89'dur. Diğer vadeler veya tutarlar için teyitli oran kullanılmıyor."},
+ halk_ikinci:{name:"Halkbank – İkinci El Taşıt",url:"https://www.halkbank.com.tr/tr/bireysel/krediler/tasit-kredileri/tasit-kredisi",fn:n=>n===48?4.95:null,desc:"Bankanın 100.000 TL ve 48 ay için verdiği ikinci el örneği %4,95'tir. Diğer vadelerde gerçek teklif gereklidir."},
+ halk_bordro0:{name:"Halkbank – Bordro24 0 km",url:"https://www.halkbank.com.tr/tr/bireysel/bordro-24-musterilerimize-ozel-avantajlar",fn:n=>n===48?3.39:null,desc:"Bordro24 maaş müşterilerine özel 100.000 TL / 48 ay örnek %3,39 oranıdır. Diğer vadelerde ve müşterilerde banka teyidi gerekir."},
+ halk_bordro2:{name:"Halkbank – Bordro24 2. el",url:"https://www.halkbank.com.tr/tr/bireysel/bordro-24-musterilerimize-ozel-avantajlar",fn:n=>n===48?3.44:null,desc:"Bordro24 maaş müşterilerine özel 100.000 TL / 48 ay örnek %3,44 oranıdır. Diğer vadelerde ve müşterilerde banka teyidi gerekir."},
+ garanti:{name:"Garanti BBVA",url:"https://www.garantibbva.com.tr/krediler/tasit-kredisi",fn:()=>null,desc:"Araç marka, model, yıl ve kişisel başvuru koşullarına göre faiz değişebilir. Resmî bankacılık sayfasından teklif al."},
+ vakif:{name:"VakıfBank",url:"https://www.vakifbank.com.tr/",fn:()=>null,desc:"Teyit edilebilir tüm vadeleri kapsayan sabit oran bulunmuyor. Bankanın güncel teklifini faiz alanına gir."},
+ yapikredi:{name:"Yapı Kredi",url:"https://www.yapikredi.com.tr/",fn:()=>null,desc:"Güncel ve kişiye uygun faiz için bankanın teklifini faiz alanına gir."},
+ qnb:{name:"QNB",url:"https://www.qnb.com.tr/",fn:()=>null,desc:"Krediye özel güncel faiz oranını bankadan öğrenip faiz alanına gir."},
+ deniz:{name:"DenizBank",url:"https://www.denizbank.com/",fn:()=>null,desc:"Güncel faiz oranını bankanın teklifinden öğrenip faiz alanına gir."},
+ teb:{name:"TEB",url:"https://www.teb.com.tr/",fn:()=>null,desc:"Güncel faiz oranını bankanın teklifinden öğrenip faiz alanına gir."}
+};
+let rateAppliedByBank=false;
+function applyBankRate(){
+ const key=document.getElementById('bank').value,bank=bankCatalog[key],n=v('months'),known=bank.fn(n);
+ const title=document.getElementById('bankTitle'),description=document.getElementById('bankDescription'),source=document.getElementById('bankLink'),asof=document.getElementById('bankAsOf');
+ title.textContent=bank.name;
+ source.hidden=!bank.url;
+ if(bank.url)source.href=bank.url;
+ if(Number.isFinite(known)){
+   document.getElementById('rate').value=String(known);
+   rateAppliedByBank=true;
+   description.textContent=bank.desc+" Seçilen vade için aylık faiz otomatik dolduruldu.";
+   asof.textContent="Kaynak: bankanın resmî internet sitesi • kontrol: 05.11.2026 • CANLI ORAN DEĞİLDİR";
+ }else{
+   if(rateAppliedByBank){document.getElementById('rate').value="";rateAppliedByBank=false}
+   description.textContent=bank.desc+" Seçilen vadeye uygun doğrulanmış örnek oran olmadığından aylık faizi elle gir.";
+   asof.textContent=key==="manual"?"":"Resmî bağlantı mevcuttur • otomatik faiz verisi yok";
+ }
+ render();
+}
+function updateEligibility(){
+ const price=v('price'),down=v('down'),term=v('months'),display=document.getElementById('eligibility');
+ const amount=price-down;
+ if(!Number.isFinite(price)||price<=0||!Number.isFinite(amount)||amount<=0){display.hidden=true;return}
+ display.hidden=false;
+ if(price>2000000){display.textContent="Uyarı: Standart bireysel taşıt kredisi için 2 milyon TL üzeri araçlarda farklı/özel koşullar geçerli olabilir. Bankadan kredi hakkını doğrula.";return}
+ let maxTerm=48,maxRatio=.70;
+ if(price>1200000){maxTerm=12;maxRatio=.20}else if(price>800000){maxTerm=24;maxRatio=.30}else if(price>400000){maxTerm=36;maxRatio=.50}
+ if(amount>price*maxRatio+1 || term>maxTerm){display.textContent="Dikkat: Bu araç bedeli için standart taşıt kredisi bilgilendirmelerinde yaklaşık "+maxTerm+" ay azami vade ve %"+Math.round(maxRatio*100)+" kredi oranı yer alıyor. Seçilen tutar/vade sınırı aşıyor olabilir. Özel araç/kampanya istisnalarını bankadan doğrula."}
+ else display.textContent="Bilgi: Girilen tutar/vade, standart taşıt kredisi tablolarındaki genel limitleri aşmıyor gibi görünüyor; banka onayı ve diğer şartlar ayrıca gerekir.";
+}
 function render(){
  const price=v('price'),down=v('down'),rate=v('rate'),n=v('months'),k=v('kkdf'),b=v('bsmv'),fees=v('fees');
+ updateEligibility();
  const error=[price,down,rate,n,k,b,fees].some(x=>!Number.isFinite(x))||price<=0||price>100000000||down<0||down>=price||rate<0||rate>30||n<1||n>120||k<0||k>100||b<0||b>100||fees<0||fees>10000000;
  const warn=document.getElementById('warning');warn.hidden=!error;
  if(error){warn.textContent='Geçerli bilgiler girin. Peşinat araç fiyatından düşük olmalı; negatif tutar girmeyin.';
@@ -119,7 +193,25 @@ function render(){
  row.forEach((value,i)=>{const td=document.createElement('td');td.textContent=i===0?String(value):fmt(value);tr.append(td)});
  schedule.append(tr)});
 }
-document.querySelectorAll('input,select').forEach(el=>{el.addEventListener('input',render);el.addEventListener('change',render)});
+document.querySelectorAll('input,select').forEach(el=>{
+  if(el.id==='bank'||el.id==='months'||el.id==='rate')return;
+  el.addEventListener('input',render);el.addEventListener('change',render)
+});
+document.getElementById('bank').addEventListener('change',applyBankRate);
+document.getElementById('months').addEventListener('change',()=>{
+ if(document.getElementById('bank').value==='manual')render();else applyBankRate();
+});
+document.getElementById('rate').addEventListener('input',()=>{
+ if(document.getElementById('bank').value!=='manual'){
+  document.getElementById('bank').value='manual';
+  rateAppliedByBank=false;
+  document.getElementById('bankTitle').textContent='Manuel faiz kullanılıyor';
+  document.getElementById('bankDescription').textContent='Faiz alanındaki değeri elle değiştirdin; hesaplama senin yazdığın oranla yapılır.';
+  document.getElementById('bankLink').hidden=true;
+  document.getElementById('bankAsOf').textContent='';
+ }
+ render();
+});
 render();
 </script>
 <script type="module" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"088fccd0b5a843adb37336d35c42a57e"}'></script>
