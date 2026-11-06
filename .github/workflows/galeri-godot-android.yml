@@ -25,6 +25,29 @@ jobs:
           test -s "$HOME/.local/share/godot/export_templates/4.4.1.stable/android_debug.apk"
           test -d /usr/lib/jvm/java-17-openjdk-amd64
           grep -n "export/android" "$HOME/.config/godot/editor_settings-4.4.tres"
+      - name: Download properly licensed real 3D models
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p galeri3d/assets
+          curl --fail --location --retry 3 --silent --show-error \
+            https://raw.githubusercontent.com/JaronKBragg7337/spectral-gt-rs/main/spectral_gt_rs_game_ready.glb \
+            -o galeri3d/assets/spectral_gt_rs_game_ready.glb
+          curl --fail --location --retry 3 --silent --show-error \
+            https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/CarConcept/glTF-Binary/CarConcept.glb \
+            -o galeri3d/assets/CarConcept.glb
+          curl --fail --location --retry 3 --silent --show-error \
+            https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/CesiumMan/glTF-Binary/CesiumMan.glb \
+            -o galeri3d/assets/CesiumMan.glb
+          python3 - <<'PY'
+          import pathlib, struct
+          for p in pathlib.Path('galeri3d/assets').glob('*.glb'):
+              with p.open('rb') as f:
+                  header=f.read(12)
+              assert len(header)==12 and header[:4]==b'glTF', (p,header)
+              print(p.name,p.stat().st_size, 'bytes', 'version',struct.unpack('<I',header[4:8])[0])
+              assert p.stat().st_size>30000
+          PY
       - name: Godot version and project import
         shell: bash
         run: |
