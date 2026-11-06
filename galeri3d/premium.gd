@@ -191,7 +191,7 @@ func _display_vehicle(parent: Node3D,p: Vector3,asset: String,spin: float) -> vo
     var model=res.instantiate()
     pedestal.add_child(model)
     var bb=_scene_bounds(pedestal)
-    var s=4.8/maxf(bb.size.x,bb.size.z,0.01)
+    var s=4.8/maxf(maxf(bb.size.x,bb.size.z),0.01)
     model.scale=Vector3.ONE*s
     model.position = Vector3(-bb.get_center().x*s,0.32-bb.position.y*s,
         -bb.get_center().z*s)
