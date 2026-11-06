@@ -208,6 +208,25 @@ func _planted_tree(parent: Node3D, pos: Vector3) -> void:
 
 func _create_city() -> void:
     super._create_city()
+    # Replace the bright-green placeholder field with a wide polished,
+    # driveable-looking forecourt covering the player's starting position.
+    _block(self,Vector3(0,0.07,4),Vector3(63,0.13,43),
+        Color("777f8a"),0.43)
+    _block(self,Vector3(0,0.14,-17.0),Vector3(63,0.05,0.28),
+        Color("d5b160"),0.6,false,true)
+    for tx in range(-30,31,3):
+        _block(self,Vector3(float(tx),0.145,4),Vector3(0.035,0.025,42.4),
+            Color("343b49"),0.25)
+    for tz in range(-15,24,3):
+        _block(self,Vector3(0,0.148,float(tz)),Vector3(62,0.025,0.035),
+            Color("343b49"),0.25)
+    for side in [-1.0,1.0]:
+        _block(self,Vector3(side*33.0,0.08,3.0),Vector3(3,0.13,42),
+            Color("a7a5a0"),0.3)
+    # Entrance spotlight glow, curbside landscaped boundaries.
+    for ix in [-24.0,-12.0,12.0,24.0]:
+        _block(self,Vector3(ix,0.18,18),Vector3(7,0.025,0.08),
+            Color("ece1c9"),0.3)
     # Roadside physical street props and metropolitan high-rise backdrop.
     for i in 30:
         var a: float = float(i)
