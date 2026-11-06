@@ -30,15 +30,26 @@ jobs:
         run: |
           set -euxo pipefail
           mkdir -p galeri3d/assets
-          curl --fail --location --retry 3 --silent --show-error \
-            https://raw.githubusercontent.com/JaronKBragg7337/spectral-gt-rs/main/spectral_gt_rs_game_ready.glb \
-            -o galeri3d/assets/spectral_gt_rs_game_ready.glb
-          curl --fail --location --retry 3 --silent --show-error \
-            https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/CarConcept/glTF-Binary/CarConcept.glb \
-            -o galeri3d/assets/CarConcept.glb
-          curl --fail --location --retry 3 --silent --show-error \
-            https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/CesiumMan/glTF-Binary/CesiumMan.glb \
-            -o galeri3d/assets/CesiumMan.glb
+          python3 - <<'PY'
+          import urllib.request, pathlib, time
+          items={
+           "spectral_gt_rs_game_ready.glb":"https://raw.githubusercontent.com/JaronKBragg7337/spectral-gt-rs/main/spectral_gt_rs_game_ready.glb",
+           "CarConcept.glb":"https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/CarConcept/glTF-Binary/CarConcept.glb",
+           "CesiumMan.glb":"https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/CesiumMan/glTF-Binary/CesiumMan.glb"
+          }
+          for filename,url in items.items():
+              for attempt in range(3):
+                  try:
+                      with urllib.request.urlopen(url,timeout=75) as response:
+                          data=response.read()
+                      assert data[:4]==b'glTF'
+                      (pathlib.Path('galeri3d/assets')/filename).write_bytes(data)
+                      print(filename,len(data))
+                      break
+                  except Exception:
+                      if attempt==2: raise
+                      time.sleep(2)
+          PY
           python3 - <<'PY'
           import pathlib, struct
           for p in pathlib.Path('galeri3d/assets').glob('*.glb'):
