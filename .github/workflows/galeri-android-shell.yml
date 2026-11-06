@@ -1,0 +1,88 @@
+name: Build Galeri Test Android Shell
+on:
+  push:
+    branches:
+      - galeri-krali-test-apk-fix
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare Android application
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p app/src/com/ozkaya/galerikrali3d output
+          cat > app/AndroidManifest.xml <<'XML'
+          <?xml version="1.0" encoding="utf-8"?>
+          <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.ozkaya.galerikrali3d" android:versionCode="2" android:versionName="1.0.2-test">
+            <uses-sdk android:minSdkVersion="23" android:targetSdkVersion="28" />
+            <application android:label="Galeri Kralı 3D" android:theme="@android:style/Theme.NoTitleBar.Fullscreen" android:hardwareAccelerated="true" android:usesCleartextTraffic="false">
+              <activity android:name=".MainActivity" android:screenOrientation="landscape" android:exported="true">
+                <intent-filter>
+                  <action android:name="android.intent.action.MAIN" />
+                  <category android:name="android.intent.category.LAUNCHER" />
+                </intent-filter>
+              </activity>
+            </application>
+          </manifest>
+          XML
+          cat > app/src/com/ozkaya/galerikrali3d/MainActivity.java <<'JAVA'
+          package com.ozkaya.galerikrali3d;
+          import android.app.Activity;
+          import android.os.Bundle;
+          import android.view.View;
+          import android.view.WindowManager;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
+          import android.webkit.WebSettings;
+          import android.graphics.Color;
+          public final class MainActivity extends Activity {
+            private WebView webView;
+            @Override public void onCreate(Bundle savedInstanceState) {
+              super.onCreate(savedInstanceState);
+              getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+              getWindow().getDecorView().setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+              webView = new WebView(this);
+              webView.setBackgroundColor(Color.BLACK);
+              WebSettings s = webView.getSettings();
+              s.setJavaScriptEnabled(true);
+              s.setDomStorageEnabled(true);
+              s.setAllowFileAccess(true);
+              webView.setWebViewClient(new WebViewClient());
+              setContentView(webView);
+              webView.loadUrl("file:///android_asset/index.html");
+            }
+            @Override public void onBackPressed() {
+              if(webView!=null && webView.canGoBack()) webView.goBack(); else super.onBackPressed();
+            }
+          }
+          JAVA
+          SDK="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          PLATFORM="$(find "$SDK/platforms" -maxdepth 1 -name 'android-*' -type d | sort -V | tail -1)"
+          BT="$(find "$SDK/build-tools" -maxdepth 1 -type d | sort -V | tail -1)"
+          echo "SDK=$SDK PLATFORM=$PLATFORM BUILD_TOOLS=$BT"
+          mkdir -p output/classes output/dex
+          javac -source 8 -target 8 -classpath "$PLATFORM/android.jar" -d output/classes app/src/com/ozkaya/galerikrali3d/MainActivity.java
+          "$BT/d8" --lib "$PLATFORM/android.jar" --min-api 23 --output output/dex output/classes/com/ozkaya/galerikrali3d/MainActivity.class
+          "$BT/aapt2" link -I "$PLATFORM/android.jar" --manifest app/AndroidManifest.xml -o output/manifest.apk
+          cp output/dex/classes.dex output/classes.dex
+          python3 - <<'PY'
+          import zipfile
+          with zipfile.ZipFile('output/manifest.apk') as z:
+              with open('output/AndroidManifest.xml','wb') as f:f.write(z.read('AndroidManifest.xml'))
+              if 'resources.arsc' in z.namelist():
+                  with open('output/resources.arsc','wb') as f:f.write(z.read('resources.arsc'))
+          PY
+          file output/classes.dex output/AndroidManifest.xml
+      - name: Export Android components
+        uses: actions/upload-artifact@v4
+        with:
+          name: galeri-android-shell
+          path: |
+            output/classes.dex
+            output/AndroidManifest.xml
+            output/resources.arsc
+          if-no-files-found: error
