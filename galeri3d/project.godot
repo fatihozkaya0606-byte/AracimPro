@@ -1,0 +1,22 @@
+; Engine configuration
+config_version=5
+
+[application]
+config/name="Galeri Kralı 3D - Gerçek 3D Test"
+config/description="Özkaya Otomotiv: gerçek 3D galeri, karakter ve araç sürüşü"
+config/features=PackedStringArray("4.4", "GL Compatibility")
+run/main_scene="res://main.tscn"
+
+[display]
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/handheld/orientation=1
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/default_filters/use_nearest_mipmap_filter=false
+
+[physics]
+3d/default_gravity=22.0
