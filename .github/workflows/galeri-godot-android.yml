@@ -1,0 +1,49 @@
+name: Galeri Krali 3D - Godot Android Test
+on:
+  push:
+    branches:
+      - galeri-krali-test-apk-fix
+    paths:
+      - 'galeri3d/**'
+      - '.github/workflows/galeri-godot-android.yml'
+permissions:
+  contents: read
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.4.1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Godot version and project import
+        shell: bash
+        run: |
+          set -euxo pipefail
+          godot --version
+          godot --headless --path galeri3d --editor --quit 2>&1 | tee /tmp/galeri-import.log
+          if grep -Ei 'SCRIPT ERROR|Parse Error|ERROR:.*game.gd' /tmp/galeri-import.log; then exit 31; fi
+      - name: Runtime smoke test (60 frames)
+        shell: bash
+        run: |
+          set -euxo pipefail
+          godot --headless --path galeri3d --quit-after 60 2>&1 | tee /tmp/galeri-runtime.log
+          if grep -Ei 'SCRIPT ERROR|Parse Error|ERROR:.*game.gd|Invalid call|Invalid access' /tmp/galeri-runtime.log; then exit 32; fi
+      - name: Export actual Godot Android APK
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p build
+          export GODOT_ANDROID_KEYSTORE_DEBUG_PATH=/root/debug.keystore
+          export GODOT_ANDROID_KEYSTORE_DEBUG_USER=androiddebugkey
+          export GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD=android
+          godot --headless --path galeri3d --export-debug "Android" "$GITHUB_WORKSPACE/build/Galeri_Krali_3D_Gercek3D_Test.apk" 2>&1 | tee /tmp/galeri-export.log
+          test -s build/Galeri_Krali_3D_Gercek3D_Test.apk
+          ls -lh build/Galeri_Krali_3D_Gercek3D_Test.apk
+          APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner | sort -V | tail -1)
+          "$APKSIGNER" verify --verbose build/Galeri_Krali_3D_Gercek3D_Test.apk
+      - name: Share APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Galeri-Krali-3D-Godot-Test-APK
+          path: build/Galeri_Krali_3D_Gercek3D_Test.apk
+          if-no-files-found: error
