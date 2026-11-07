@@ -37,6 +37,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     private TextView signalHeadline, signalLevel, modeNote, soundState;
     private ProgressBar signalBar;
     private SeekBar thresholdSeek;
+    private TextView thresholdHint;
     private final Button[] modeButtons = new Button[4];
     private int activeMode = 0;
     private boolean alarmEnabled = true;
@@ -129,13 +130,17 @@ public class MainActivity extends Activity implements SensorEventListener {
         thresholdSeek.setProgressTintList(ColorStateList.valueOf(0xff4ee9b9));
         add(sens,thresholdSeek,8);
         add(sens,text("SOL: Daha hassas (çok alarm)     SAĞ: Daha seçici (az alarm)",11,0xffa2b9c9,false),5);
-        add(sens,text("Aralık: 2–120 µT. Düşük değer daha uzun menzil garantisi vermez.",11,0xff8ba9be,false),7);
+        thresholdHint=text("Aralık: 2–120 µT. Daha düşük eşik, fiziksel menzili garanti etmez.",11,0xff8ba9be,false);
+        add(sens,thresholdHint,7);
         thresholdSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override public void onProgressChanged(SeekBar bar,int v,boolean user) {
-                threshold=2f+v;
-                String quality=threshold<=8 ? "Çok hassas" : threshold<=15 ? "Hassas"
+                // Weak mode offers precision in 0.1 uT increments; other modes retain the v1.5 scale.
+                threshold=activeMode==3 ? (0.3f+v*0.1f) : (2f+v);
+                String quality=activeMode==3
+                    ? (threshold<1f ? "Maksimum duyarlılık" : threshold<2.5f ? "Zayıf değişimler" : "Daha seçici")
+                    : threshold<=8 ? "Çok hassas" : threshold<=15 ? "Hassas"
                     : threshold<=25 ? "Dengeli" : threshold<=45 ? "Az hassas" : "Sadece güçlü değişimler";
-                thresholdText.setText(String.format(Locale.US,"%.0f µT • %s",threshold,quality));
+                thresholdText.setText(String.format(Locale.US,activeMode==3 ? "%.1f µT • %s" : "%.0f µT • %s",threshold,quality));
                 if(graph!=null) graph.setThreshold(threshold);
                 if(user) {
                     alarmStart=0; belowSince=0; alarmArmed=true;
@@ -194,15 +199,22 @@ public class MainActivity extends Activity implements SensorEventListener {
         soundState=text("Ses için telefonun MEDYA sesini açın. Sesi Test Et düğmesine basın.",12,0xffa7cbe0,false);
         add(settings,soundState,9);
         stateText=text("Ölçüm bekleniyor...",13,0xffd3e7ef,false); add(settings,stateText,12);
-        add(root,text("SAHA NOTU: Kalibrasyonu metalden uzakta sabit tutarak yapın. Zayıf Sinyal modunda 2 saniye kadar yavaş ve sabit tarayın. Tek uyarı kuralı korunur. Bu uygulama manyetik alan değişimini ölçer; metal türü veya 30–50 cm mesafe doğrulanamaz.",12,0xff91aec1,false),17);
+        add(root,text("SAHA NOTU: Önce metalden uzak noktada kalibre edin. Zayıf Sinyal modunda telefonu yavaş ve sabit gezdirin; 0,9 µT ile başlayın. Yanlış uyarıda eşiği yükseltin. Ölçülen manyetik alan değişimidir; fiziksel erişim mesafesi veya metal türü belirlenemez.",12,0xff91aec1,false),17);
         if(graph!=null) graph.setThreshold(threshold);
         applyMode(0);
     }
     private void applyMode(int which) {
         activeMode=which;
-        float preset=which==0 ? 20.0f : (which==1 ? 30.0f : (which==2 ? 6.0f : 2.0f));
+        float preset=which==0 ? 20.0f : (which==1 ? 30.0f : (which==2 ? 6.0f : 0.9f));
         threshold=preset;
-        if(thresholdSeek!=null) thresholdSeek.setProgress(Math.round(preset-2.0f));
+        if(thresholdSeek!=null) {
+            int progress=which==3 ? Math.round((preset-0.3f)/0.1f) : Math.round(preset-2.0f);
+            thresholdSeek.setProgress(progress);
+            if(which==3) threshold=0.3f+progress*0.1f;
+        }
+        if(thresholdHint!=null) thresholdHint.setText(which==3
+            ? "Zayıf Sinyal: 0,3–12,1 µT, 0,1 µT adımlarla. Yanlış alarm artabilir."
+            : "Normal modlar: 2–120 µT. Hassasiyet, fiziksel menzili garanti etmez.");
         for(int i=0;i<modeButtons.length;i++) {
             Button b=modeButtons[i];
             if(b==null) continue;
@@ -214,7 +226,7 @@ public class MainActivity extends Activity implements SensorEventListener {
             which==0 ? "KARIŞIK: Genel manyetik değişimler. Metal türünü ayırt edemez." :
             which==1 ? "DEMİR ETKİ: Daha yüksek eşik. Yalnızca demiri kesin tespit etmez." :
             which==2 ? "HASSAS: Küçük manyetik değişimlerde daha sık uyarı." :
-                       "ZAYIF SİNYAL: Uzun ölçüm ve güçlü gürültü filtresi. Daha uzak algılama garantisi değildir.");
+                       "ZAYIF SİNYAL+: Daha ince eşik (0,1 µT adım), hareket filtresi ve 1,2 sn doğrulama. Gürültüye duyarlıdır.");
         alarmStart=0; alarmArmed=true; belowSince=0;
     }
     private void playFeedback(boolean test) {
@@ -241,7 +253,7 @@ public class MainActivity extends Activity implements SensorEventListener {
             signalBar.setProgress(0);
             return;
         }
-        float effective=Math.max(threshold,noise*(activeMode==3 ? 5.5f : 4f));
+        float effective=Math.max(threshold,noise*(activeMode==3 ? 3.5f : 4f));
         float factor=effective>0 ? delta/effective : 0;
         int progress=Math.min(100,Math.round(factor*25f));
         signalBar.setProgress(progress);
@@ -309,8 +321,8 @@ public class MainActivity extends Activity implements SensorEventListener {
         if(!Float.isFinite(x)||!Float.isFinite(y)||!Float.isFinite(z)) return;
         float mag=(float)Math.sqrt((double)x*x+(double)y*y+(double)z*z);
         if(!Float.isFinite(filtered)) filtered=mag;
-        // Weak-signal mode favours long integration over fast response, reducing momentary sensor noise.
-        filtered += (activeMode==3 ? 0.055f : 0.12f)*(mag-filtered);
+        // Weak signal uses moderate integration to keep faint signals visible during slow sweeps.
+        filtered += (activeMode==3 ? 0.085f : 0.12f)*(mag-filtered);
         if(!ready) {
             samples++; calSum += filtered; calSq += (double)filtered*filtered;
             if(samples>=85) {
@@ -328,7 +340,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         }
         long time=SystemClock.elapsedRealtime();
         boolean moving=gyro!=null && time<motionHoldUntil;
-        float effective=Math.max(threshold,noise*(activeMode==3 ? 5.5f : 4f));
+        float effective=Math.max(threshold,noise*(activeMode==3 ? 3.5f : 4f));
         float delta=ready ? Math.abs(filtered-base) : 0f;
         boolean over=ready && !moving && delta>=effective;
         if(over) {
@@ -342,7 +354,7 @@ public class MainActivity extends Activity implements SensorEventListener {
                 if(time-belowSince>=1700) alarmArmed=true;
             } else belowSince=0;
         }
-        boolean confirmed=over && alarmStart>0 && time-alarmStart>=(activeMode==3 ? 1800 : 1100);
+        boolean confirmed=over && alarmStart>0 && time-alarmStart>=(activeMode==3 ? 1200 : 1100);
         if(ready) {
             peak=Math.max(peak,delta);
             if(!moving && delta<effective*0.4f) {
@@ -364,7 +376,7 @@ public class MainActivity extends Activity implements SensorEventListener {
                 peakText.setText(String.format(Locale.US,"En yüksek fark: %.2f µT  •  Gürültü: %.2f",peak,noise));
                 if(moving) stateText.setText("Telefonu yavaş çevirin; dönüş alarmı geçici olarak durdurur.");
                 else if(confirmed) stateText.setText("Sinyal algılandı. Tek uyarı; tekrar için uzaklaşın.");
-                else if(over) stateText.setText(activeMode==3 ? "Zayıf sinyal 1,8 sn doğrulanıyor..." : "1,1 saniyelik sinyal doğrulanıyor...");
+                else if(over) stateText.setText(activeMode==3 ? "Zayıf sinyal 1,2 sn doğrulanıyor..." : "1,1 saniyelik sinyal doğrulanıyor...");
                 else stateText.setText("Tarama aktif. Manyetik değişim izleniyor.");
                 updateSignal(delta,confirmed,over,moving);
                 graph.push(delta);
