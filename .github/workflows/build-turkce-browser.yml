@@ -4,6 +4,9 @@ on:
     branches:
       - turkce-altyazi-tarayici
   workflow_dispatch:
+  pull_request:
+    branches:
+      - main
 jobs:
   android:
     runs-on: ubuntu-latest
