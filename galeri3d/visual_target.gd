@@ -14,7 +14,7 @@ const CARS = [
     "res://assets/cars/mercedes-benz-mersedes-s-class.glb",
     "res://assets/cars/audi-a4.glb"
 ]
-const HERO = "res://assets/people/hero.glb"
+const HERO = "res://assets/people/dealer2.glb"
 const PEOPLE = [
     "res://assets/people/dealer.glb",
     "res://assets/people/customer.glb",
@@ -146,7 +146,7 @@ func _display_vehicle(parent: Node3D,p: Vector3,asset: String,spin: float) -> vo
 func _create_city() -> void:
     super._create_city()
     # Dark neutral plaza replaces saturated aqua-white floor.
-    _block(self,Vector3(0,0.192,6),Vector3(67,0.055,47),Color("383f4b"),0.08)
+    _block(self,Vector3(0,0.192,6),Vector3(67,0.055,47),Color("292a32"),0.0)
     for x in range(-32,34,4):
         _block(self,Vector3(float(x),0.224,6),Vector3(0.025,0.006,46.7),
             Color("222933"),0.05)
@@ -161,8 +161,8 @@ func _create_city() -> void:
 func _create_camera() -> void:
     super._create_camera()
     camera.fov = 67.0
-    camera.position = Vector3(-11.0,2.95,3.0)
-    camera.look_at(Vector3(-11.0,1.65,-9.0))
+    camera.position = Vector3(-11.0,3.45,4.9)
+    camera.look_at(Vector3(-11.0,3.2,-12.0))
     camera.far = 185.0
 
 func _process(delta: float) -> void:
@@ -176,9 +176,9 @@ func _process(delta: float) -> void:
         offset = Basis(Vector3.UP,car.rotation.y+camera_yaw)*Vector3(
             0,3.05+camera_tilt*2.8,6.8)
     else:
-        look = player.position + Vector3(0,1.65,0)
+        look = player.position + Vector3(0,2.45,-5.2)
         offset = Basis(Vector3.UP,camera_yaw)*Vector3(
-            0,2.10+camera_tilt*2.8,5.1)
+            0,2.95+camera_tilt*2.8,6.35)
     camera.position = camera.position.lerp(look+offset,minf(delta*5.5,1.0))
     camera.look_at(look)
     _refresh_labels()
