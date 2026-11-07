@@ -18,7 +18,7 @@ func _interface() -> void:
     touch_stick.position = Vector2(18,500)
     touch_stick.size = Vector2(210,210)
     play_controls.add_child(touch_stick)
-    touch_stick.direction_changed.connect(_on_joystick_moved)
+    touch_stick.connect("direction_changed",Callable(self,"_on_joystick_moved"))
     help_text.text = "ANALOG: Yürü  •  EKRANI KAYDIR: Kamera  •  ARACA BİN: E"
     _refresh_labels()
 
