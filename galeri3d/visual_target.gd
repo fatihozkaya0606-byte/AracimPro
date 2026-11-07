@@ -91,6 +91,7 @@ func _create_avatar() -> void:
     for child in body_visual.get_children():
         child.queue_free()
     walk_animation = null
+    player.position = Vector3(-11.0,0.29,-2.0)
     var shell = _visual_instance(HERO,body_visual,1.82,true)
     if shell != null:
         shell.name = "MainCharacter_RealClothedHuman"
@@ -159,9 +160,9 @@ func _create_city() -> void:
 
 func _create_camera() -> void:
     super._create_camera()
-    camera.fov = 59.0
-    camera.position = Vector3(0,3.35,15.8)
-    camera.look_at(Vector3(0,1.75,-19.0))
+    camera.fov = 67.0
+    camera.position = Vector3(-11.0,2.95,3.0)
+    camera.look_at(Vector3(-11.0,1.65,-9.0))
     camera.far = 185.0
 
 func _process(delta: float) -> void:
@@ -173,11 +174,11 @@ func _process(delta: float) -> void:
         var car: Node3D = vehicles[driving_index]["mesh"]
         look = car.position + Vector3(0,1.65,0)
         offset = Basis(Vector3.UP,car.rotation.y+camera_yaw)*Vector3(
-            0,3.45+camera_tilt*3.0,7.2)
+            0,3.05+camera_tilt*2.8,6.8)
     else:
         look = player.position + Vector3(0,1.65,0)
         offset = Basis(Vector3.UP,camera_yaw)*Vector3(
-            0,2.65+camera_tilt*3.2,5.1)
+            0,2.10+camera_tilt*2.8,5.1)
     camera.position = camera.position.lerp(look+offset,minf(delta*5.5,1.0))
     camera.look_at(look)
     _refresh_labels()
