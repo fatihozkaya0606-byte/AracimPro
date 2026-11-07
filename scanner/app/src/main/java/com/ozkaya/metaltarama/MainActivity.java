@@ -16,6 +16,8 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
+import android.content.res.ColorStateList;
+import android.widget.ProgressBar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -31,6 +33,12 @@ public class MainActivity extends Activity implements SensorEventListener {
     private ToneGenerator tone;
     private Vibrator vibrator;
     private TextView fieldText, diffText, peakText, stateText, thresholdText, axesText;
+    private TextView signalHeadline, signalLevel, modeNote, soundState;
+    private ProgressBar signalBar;
+    private SeekBar thresholdSeek;
+    private final Button[] modeButtons = new Button[3];
+    private int activeMode = 0;
+    private boolean alarmEnabled = true;
     private Graph graph;
     private float filtered = Float.NaN, base = Float.NaN, peak = 0f;
     private float x = 0, y = 0, z = 0;
@@ -48,7 +56,9 @@ public class MainActivity extends Activity implements SensorEventListener {
         sensors = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
         magnet = sensors == null ? null : sensors.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         vibrator = (Vibrator)getSystemService(VIBRATOR_SERVICE);
-        tone = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 55);
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
+        try { tone = new ToneGenerator(AudioManager.STREAM_MUSIC, 100); }
+        catch (RuntimeException ignored) { tone = null; }
         buildScreen();
         calibrate();
         if (magnet == null) {
@@ -84,6 +94,40 @@ public class MainActivity extends Activity implements SensorEventListener {
         add(root,text("METAL TARAYICI",25,0xfff2f9ff,true),0);
         add(root,text("TOPRAK / KAYA  •  SENSÖR TEST",11,0xff63e6c6,true),5);
         add(root,text("Gerçek manyetik alan ölçümü. Altın tespiti veya 30 cm–1 m menzil garantisi değildir.",13,0xffa4b9c9,false),12);
+        LinearLayout choose = section(root);
+        add(choose,text("TARAMA MODU",12,0xff8aabc3,true),0);
+        LinearLayout modeRow = new LinearLayout(this);
+        modeRow.setOrientation(LinearLayout.HORIZONTAL);
+        String[] labels = {"KARIŞIK","DEMİR ETKİ","HASSAS"};
+        for(int i=0;i<3;i++) {
+            final int which=i;
+            Button b=new Button(this);
+            b.setText(labels[i]); b.setTextSize(11); b.setAllCaps(false);
+            b.setPadding(dp(2),dp(1),dp(2),dp(1)); b.setMinimumHeight(dp(46));
+            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(46),1f);
+            lp.setMargins(dp(2),0,dp(2),0);
+            modeRow.addView(b,lp);
+            modeButtons[i]=b;
+            b.setOnClickListener(v -> applyMode(which));
+        }
+        add(choose,modeRow,12);
+        modeNote=text("",12,0xff94b4c6,false);
+        add(choose,modeNote,9);
+
+        LinearLayout target = section(root);
+        add(target,text("SİNYAL DURUMU",12,0xff91adc4,true),0);
+        signalHeadline=text("KALİBRASYON",27,0xffe1f5ff,true);
+        add(target,signalHeadline,7);
+        signalLevel=text("Bekleniyor...",14,0xff9db7c7,false);
+        add(target,signalLevel,7);
+        signalBar=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);
+        signalBar.setMax(100); signalBar.setProgress(0);
+        signalBar.setProgressTintList(ColorStateList.valueOf(0xff4ee9b9));
+        signalBar.setProgressBackgroundTintList(ColorStateList.valueOf(0xff294255));
+        LinearLayout.LayoutParams sbp=new LinearLayout.LayoutParams(-1,dp(13));
+        sbp.topMargin=dp(13);
+        target.addView(signalBar,sbp);
+
         LinearLayout meter = section(root);
         add(meter,text("ANLIK MANYETİK ALAN",12,0xff8aabc3,true),0);
         fieldText=text("--.- µT",44,0xfff4fdff,true); add(meter,fieldText,8);
@@ -96,10 +140,10 @@ public class MainActivity extends Activity implements SensorEventListener {
         graph = new Graph(this); LinearLayout.LayoutParams gp=new LinearLayout.LayoutParams(-1,dp(178)); gp.topMargin=dp(10); plot.addView(graph,gp);
         LinearLayout settings = section(root);
         thresholdText=text("Alarm eşiği: 2.0 µT",15,0xffe1f5ff,true); add(settings,thresholdText,0);
-        SeekBar seek = new SeekBar(this); seek.setMax(59); seek.setProgress(3);
-        seek.setProgressTintList(android.content.res.ColorStateList.valueOf(0xff4ee9b9));
-        add(settings,seek,7);
-        seek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        thresholdSeek = new SeekBar(this); thresholdSeek.setMax(59); thresholdSeek.setProgress(3);
+        thresholdSeek.setProgressTintList(ColorStateList.valueOf(0xff4ee9b9));
+        add(settings,thresholdSeek,7);
+        thresholdSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override public void onProgressChanged(SeekBar s,int v,boolean user) {
                 threshold = 0.5f + v*0.5f;
                 thresholdText.setText(String.format(Locale.US,"Alarm eşiği: %.1f µT",threshold));
@@ -113,13 +157,104 @@ public class MainActivity extends Activity implements SensorEventListener {
         cal.setTextColor(0xff051b22); cal.setAllCaps(false);
         cal.setBackground(bg(0xff4ee9b9,13)); add(settings,cal,10);
         cal.setOnClickListener(v -> calibrate());
+        Button test = new Button(this);
+        test.setText("SESİ TEST ET 🔊"); test.setAllCaps(false);
+        test.setTextColor(0xffffffff);
+        test.setBackground(bg(0xff2769a5,13));
+        add(settings,test,9);
+        test.setOnClickListener(v -> playFeedback(true));
+        Button onoff = new Button(this);
+        onoff.setText("ALARM: AÇIK"); onoff.setAllCaps(false);
+        onoff.setTextColor(0xffe9f5fc); onoff.setBackground(bg(0xff24405b,13));
+        add(settings,onoff,9);
+        onoff.setOnClickListener(v -> {
+            alarmEnabled=!alarmEnabled;
+            onoff.setText(alarmEnabled ? "ALARM: AÇIK" : "ALARM: KAPALI");
+            if(!alarmEnabled && tone!=null) tone.stopTone();
+        });
+        soundState=text("Ses için telefonun MEDYA sesini açın. Sesi Test Et düğmesine basın.",12,0xffa7cbe0,false);
+        add(settings,soundState,9);
         stateText=text("Ölçüm bekleniyor...",13,0xffd3e7ef,false); add(settings,stateText,12);
         add(root,text("SAHA NOTU: Telefonu sabit yönde tutun. Demir ve mıknatıslar sinyal değişimi oluşturabilir. Sinyal tek başına altın veya metal türünü doğrulamaz.",12,0xff91aec1,false),17);
         if(graph!=null) graph.setThreshold(threshold);
+        applyMode(0);
+    }
+    private void applyMode(int which) {
+        activeMode=which;
+        float preset=which==0 ? 2.0f : (which==1 ? 4.0f : 1.0f);
+        threshold=preset;
+        if(thresholdSeek!=null) thresholdSeek.setProgress(Math.round((preset-0.5f)/0.5f));
+        for(int i=0;i<modeButtons.length;i++) {
+            Button b=modeButtons[i];
+            if(b==null) continue;
+            boolean selected=i==which;
+            b.setTextColor(selected ? 0xff071b25 : 0xffd5e9fa);
+            b.setBackground(bg(selected ? 0xff4ee9b9 : 0xff27445d,11));
+        }
+        modeNote.setText(
+            which==0 ? "KARIŞIK: Genel manyetik değişimler. Metal türünü ayırt edemez." :
+            which==1 ? "DEMİR ETKİ: Daha yüksek eşik. Yalnızca demiri kesin tespit etmez." :
+                       "HASSAS: Küçük manyetik değişimleri gösterir; yanlış alarm artabilir.");
+        alarmStart=0;
+    }
+    private void playFeedback(boolean test) {
+        try {
+            AudioManager audio=(AudioManager)getSystemService(Context.AUDIO_SERVICE);
+            int volume=audio==null ? 0 : audio.getStreamVolume(AudioManager.STREAM_MUSIC);
+            if(tone!=null) tone.startTone(ToneGenerator.TONE_PROP_BEEP,480);
+            if(vibrator!=null && vibrator.hasVibrator())
+                vibrator.vibrate(VibrationEffect.createOneShot(290,VibrationEffect.DEFAULT_AMPLITUDE));
+            if(test && soundState!=null) {
+                soundState.setText(volume==0 ?
+                    "Medya sesi kapalı! Telefonun SES AÇMA tuşuna bas." :
+                    "Test sinyali gönderildi. Ses yoksa medya sesini / sessiz modu kontrol et.");
+            }
+        } catch(RuntimeException ex) {
+            if(soundState!=null) soundState.setText("Ses başlatılamadı. Telefon medya ses ayarını kontrol et.");
+        }
+    }
+    private void updateSignal(float delta, boolean confirmed, boolean over) {
+        if(!ready) {
+            signalHeadline.setText("KALİBRASYON");
+            signalHeadline.setTextColor(0xffd7e9f4);
+            signalLevel.setText("Telefonu sabit tutun...");
+            signalBar.setProgress(0);
+            return;
+        }
+        float effective=Math.max(threshold,noise*3f);
+        float factor=effective>0 ? delta/effective : 0;
+        int progress=Math.min(100,Math.round(factor*25f));
+        signalBar.setProgress(progress);
+        int color;
+        if(confirmed) {
+            if(factor>=4) {
+                signalHeadline.setText("GÜÇLÜ SİNYAL");
+                signalLevel.setText("Güçlü manyetik değişim algılandı!");
+                color=0xffff6767;
+            } else if(factor>=2) {
+                signalHeadline.setText("ORTA SİNYAL");
+                signalLevel.setText("Manyetik değişim algılandı");
+                color=0xffffad50;
+            } else {
+                signalHeadline.setText("SİNYAL ALGILANDI");
+                signalLevel.setText("Zayıf manyetik değişim algılandı");
+                color=0xffffdf72;
+            }
+        } else if(over) {
+            signalHeadline.setText("KONTROL EDİLİYOR");
+            signalLevel.setText("Anlık sıçrama; kalıcı sinyal bekleniyor");
+            color=0xffffdf72;
+        } else {
+            signalHeadline.setText("SİNYAL YOK");
+            signalLevel.setText("Eşik üstü kalıcı manyetik değişim yok");
+            color=0xff4ee9b9;
+        }
+        signalHeadline.setTextColor(color);
+        signalBar.setProgressTintList(ColorStateList.valueOf(color));
     }
     private void calibrate() {
         ready = false; samples = 0; calSum = 0; calSq = 0; base = Float.NaN; peak = 0;
-        alarmStart = 0; lastAlarm = 0;
+        alarmStart = 0; lastAlarm = 0; filtered=Float.NaN;
         if(stateText!=null) stateText.setText("Kalibrasyon: Telefonu 2–3 saniye sabit tutun...");
         if(graph!=null) graph.clear();
     }
@@ -129,6 +264,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     }
     @Override protected void onPause() {
         if(sensors != null) sensors.unregisterListener(this);
+        if(tone!=null) tone.stopTone();
         super.onPause();
     }
     @Override protected void onDestroy() {
@@ -153,18 +289,18 @@ public class MainActivity extends Activity implements SensorEventListener {
             }
         }
         float delta = ready ? Math.abs(filtered-base) : 0f;
+        long time=SystemClock.elapsedRealtime();
+        boolean over=ready && delta>=Math.max(threshold,noise*3f);
+        if(over) {
+            if(alarmStart==0) alarmStart=time;
+        } else alarmStart=0;
+        boolean confirmed=over && alarmStart>0 && time-alarmStart>=650;
         if(ready) {
             peak=Math.max(peak,delta);
-            if(delta>=Math.max(threshold,noise*3f)) {
-                if(alarmStart==0) alarmStart=SystemClock.elapsedRealtime();
-                long now=SystemClock.elapsedRealtime();
-                if(now-alarmStart>=300 && now-lastAlarm>=1800) {
-                    lastAlarm=now;
-                    if(tone!=null) tone.startTone(ToneGenerator.TONE_PROP_BEEP,130);
-                    if(vibrator!=null && vibrator.hasVibrator())
-                        vibrator.vibrate(VibrationEffect.createOneShot(130,VibrationEffect.DEFAULT_AMPLITUDE));
-                }
-            } else alarmStart=0;
+            if(confirmed && alarmEnabled && time-lastAlarm>=1350) {
+                lastAlarm=time;
+                playFeedback(false);
+            }
         }
         long now=SystemClock.elapsedRealtime();
         if(now-lastUi>=95) {
@@ -174,12 +310,15 @@ public class MainActivity extends Activity implements SensorEventListener {
             if(ready) {
                 diffText.setText(String.format(Locale.US,"%.2f µT",delta));
                 peakText.setText(String.format(Locale.US,"En yüksek fark: %.2f µT  •  Gürültü: %.2f",peak,noise));
-                if(delta >= Math.max(threshold,noise*3f)) stateText.setText("Manyetik alan değişimi! Altın tespiti değildir.");
-                else stateText.setText("Tarama aktif. Ölçüm manyetik anomali içindir.");
+                if(confirmed) stateText.setText("MANYETİK SİNYAL ALGILANDI (metal türü belirsiz)");
+                else if(over) stateText.setText("Sinyal doğrulanıyor...");
+                else stateText.setText("Tarama aktif. Metal türü ayırt edilemez.");
+                updateSignal(delta,confirmed,over);
                 graph.push(delta);
             } else {
                 diffText.setText("Kalibrasyon");
                 peakText.setText("Örnek: "+samples+"/65");
+                updateSignal(0f,false,false);
                 graph.push(0f);
             }
         }
