@@ -92,6 +92,13 @@ jobs:
           set -euxo pipefail
           godot --headless --path galeri3d --quit-after 60 2>&1 | tee /tmp/galeri-runtime.log
           if grep -Ei 'SCRIPT ERROR|Parse Error|ERROR:.*game.gd|Invalid call|Invalid access' /tmp/galeri-runtime.log; then exit 32; fi
+      - name: Fail if vehicles or characters regress to toy placeholders
+        shell: bash
+        run: |
+          set -euo pipefail
+          godot --headless --path galeri3d --script res://validate_visual_assets.gd \
+            2>&1 | tee /tmp/galeri-model-test.log
+          grep -q 'VISUAL_ASSET_GATE_PASS' /tmp/galeri-model-test.log
       - name: Render gameplay screenshot for visual quality review
         shell: bash
         run: |
