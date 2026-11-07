@@ -103,14 +103,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if command -v xvfb-run >/dev/null 2>&1; then
-            xvfb-run -a -s "-screen 0 1280x720x24" \
-              godot --path galeri3d --rendering-method gl_compatibility \
-              --script res://visual_capture.gd 2>&1 | tee /tmp/galeri-visual.log
-            test -s galeri3d/visual_proof.png || exit 39
-          else
-            echo "::warning::xvfb-run unavailable; no visual verification possible in this runner."
+          if ! command -v xvfb-run >/dev/null 2>&1; then
+            apt-get update -qq
+            DEBIAN_FRONTEND=noninteractive apt-get install -y -qq xvfb libgl1-mesa-dri libglx-mesa0
           fi
+          xvfb-run -a -s "-screen 0 1280x720x24" \
+            godot --path galeri3d --rendering-method gl_compatibility \
+            --script res://visual_capture.gd 2>&1 | tee /tmp/galeri-visual.log
+          test -s galeri3d/visual_proof.png || exit 39
       - name: Save screenshot evidence
         uses: actions/upload-artifact@v4
         with:
