@@ -21,7 +21,15 @@ func _run_capture() -> void:
         push_error("VISUAL_CAPTURE: empty frame")
         quit(14)
         return
-    image.flip_y()
     var result: Error = image.save_png("res://visual_proof.png")
+    # Close-range model verification: the same real avatar, no screenshots-as-sprites.
+    scene.in_city = false
+    scene.camera.position = scene.player.position + Vector3(2.3,2.5,4.7)
+    scene.camera.look_at(scene.player.position + Vector3(0,1.0,0))
+    await process_frame
+    await process_frame
+    var portrait: Image = root.get_texture().get_image()
+    portrait.save_png("res://visual_character.png")
+    print("CHARACTER_SCENE: ",scene.player.position," meshes=",scene.body_visual.get_child_count())
     print("VISUAL_CAPTURE_RESULT ",result," dimensions=",image.get_width(),"x",image.get_height())
     quit(0 if result == OK else 15)
