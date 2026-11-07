@@ -37,7 +37,7 @@ public class MainActivity extends Activity implements SensorEventListener {
     private TextView signalHeadline, signalLevel, modeNote, soundState;
     private ProgressBar signalBar;
     private SeekBar thresholdSeek;
-    private final Button[] modeButtons = new Button[3];
+    private final Button[] modeButtons = new Button[4];
     private int activeMode = 0;
     private boolean alarmEnabled = true;
     private Graph graph;
@@ -99,21 +99,23 @@ public class MainActivity extends Activity implements SensorEventListener {
         add(root,text("Gerçek manyetik alan ölçümü. Altın tespiti veya 30 cm–1 m menzil garantisi değildir.",13,0xffa4b9c9,false),12);
         LinearLayout choose = section(root);
         add(choose,text("TARAMA MODU",12,0xff8aabc3,true),0);
-        LinearLayout modeRow = new LinearLayout(this);
-        modeRow.setOrientation(LinearLayout.HORIZONTAL);
-        String[] labels = {"KARIŞIK","DEMİR ETKİ","HASSAS"};
-        for(int i=0;i<3;i++) {
-            final int which=i;
-            Button b=new Button(this);
-            b.setText(labels[i]); b.setTextSize(11); b.setAllCaps(false);
-            b.setPadding(dp(2),dp(1),dp(2),dp(1)); b.setMinimumHeight(dp(46));
-            LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(46),1f);
-            lp.setMargins(dp(2),0,dp(2),0);
-            modeRow.addView(b,lp);
-            modeButtons[i]=b;
-            b.setOnClickListener(v -> applyMode(which));
+        String[] labels = {"KARIŞIK","DEMİR ETKİ","HASSAS","ZAYIF SİNYAL"};
+        for(int rowIndex=0;rowIndex<2;rowIndex++) {
+            LinearLayout modeRow = new LinearLayout(this);
+            modeRow.setOrientation(LinearLayout.HORIZONTAL);
+            for(int col=0;col<2;col++) {
+                final int which=rowIndex*2+col;
+                Button b=new Button(this);
+                b.setText(labels[which]); b.setTextSize(11); b.setAllCaps(false);
+                b.setPadding(dp(2),dp(1),dp(2),dp(1)); b.setMinimumHeight(dp(46));
+                LinearLayout.LayoutParams lp=new LinearLayout.LayoutParams(0,dp(46),1f);
+                lp.setMargins(dp(2),0,dp(2),0);
+                modeRow.addView(b,lp);
+                modeButtons[which]=b;
+                b.setOnClickListener(v -> applyMode(which));
+            }
+            add(choose,modeRow,rowIndex==0 ? 12 : 5);
         }
-        add(choose,modeRow,12);
         modeNote=text("",12,0xff94b4c6,false);
         add(choose,modeNote,9);
 
@@ -192,13 +194,13 @@ public class MainActivity extends Activity implements SensorEventListener {
         soundState=text("Ses için telefonun MEDYA sesini açın. Sesi Test Et düğmesine basın.",12,0xffa7cbe0,false);
         add(settings,soundState,9);
         stateText=text("Ölçüm bekleniyor...",13,0xffd3e7ef,false); add(settings,stateText,12);
-        add(root,text("SAHA NOTU: Kalibrasyonu metalden uzakta, telefonu sabit tutarak yapın. Sonra yavaş tarayın. Bir hedefte bir kere ses verir; yeniden alarm için hedef uzaklaşmalı. Sensör yalnızca manyetik değişimi gösterir; altın/bakır türünü veya 30 cm–1 m mesafeyi doğrulamaz.",12,0xff91aec1,false),17);
+        add(root,text("SAHA NOTU: Kalibrasyonu metalden uzakta sabit tutarak yapın. Zayıf Sinyal modunda 2 saniye kadar yavaş ve sabit tarayın. Tek uyarı kuralı korunur. Bu uygulama manyetik alan değişimini ölçer; metal türü veya 30–50 cm mesafe doğrulanamaz.",12,0xff91aec1,false),17);
         if(graph!=null) graph.setThreshold(threshold);
         applyMode(0);
     }
     private void applyMode(int which) {
         activeMode=which;
-        float preset=which==0 ? 20.0f : (which==1 ? 30.0f : 6.0f);
+        float preset=which==0 ? 20.0f : (which==1 ? 30.0f : (which==2 ? 6.0f : 2.0f));
         threshold=preset;
         if(thresholdSeek!=null) thresholdSeek.setProgress(Math.round(preset-2.0f));
         for(int i=0;i<modeButtons.length;i++) {
@@ -211,7 +213,8 @@ public class MainActivity extends Activity implements SensorEventListener {
         modeNote.setText(
             which==0 ? "KARIŞIK: Genel manyetik değişimler. Metal türünü ayırt edemez." :
             which==1 ? "DEMİR ETKİ: Daha yüksek eşik. Yalnızca demiri kesin tespit etmez." :
-                       "HASSAS: Küçük manyetik değişimleri gösterir; yanlış alarm artabilir.");
+            which==2 ? "HASSAS: Küçük manyetik değişimlerde daha sık uyarı." :
+                       "ZAYIF SİNYAL: Uzun ölçüm ve güçlü gürültü filtresi. Daha uzak algılama garantisi değildir.");
         alarmStart=0; alarmArmed=true; belowSince=0;
     }
     private void playFeedback(boolean test) {
@@ -238,7 +241,7 @@ public class MainActivity extends Activity implements SensorEventListener {
             signalBar.setProgress(0);
             return;
         }
-        float effective=Math.max(threshold,noise*3f);
+        float effective=Math.max(threshold,noise*(activeMode==3 ? 5.5f : 4f));
         float factor=effective>0 ? delta/effective : 0;
         int progress=Math.min(100,Math.round(factor*25f));
         signalBar.setProgress(progress);
@@ -306,7 +309,8 @@ public class MainActivity extends Activity implements SensorEventListener {
         if(!Float.isFinite(x)||!Float.isFinite(y)||!Float.isFinite(z)) return;
         float mag=(float)Math.sqrt((double)x*x+(double)y*y+(double)z*z);
         if(!Float.isFinite(filtered)) filtered=mag;
-        filtered += 0.12f*(mag-filtered);
+        // Weak-signal mode favours long integration over fast response, reducing momentary sensor noise.
+        filtered += (activeMode==3 ? 0.055f : 0.12f)*(mag-filtered);
         if(!ready) {
             samples++; calSum += filtered; calSq += (double)filtered*filtered;
             if(samples>=85) {
@@ -324,7 +328,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         }
         long time=SystemClock.elapsedRealtime();
         boolean moving=gyro!=null && time<motionHoldUntil;
-        float effective=Math.max(threshold,noise*4f);
+        float effective=Math.max(threshold,noise*(activeMode==3 ? 5.5f : 4f));
         float delta=ready ? Math.abs(filtered-base) : 0f;
         boolean over=ready && !moving && delta>=effective;
         if(over) {
@@ -338,7 +342,7 @@ public class MainActivity extends Activity implements SensorEventListener {
                 if(time-belowSince>=1700) alarmArmed=true;
             } else belowSince=0;
         }
-        boolean confirmed=over && alarmStart>0 && time-alarmStart>=1100;
+        boolean confirmed=over && alarmStart>0 && time-alarmStart>=(activeMode==3 ? 1800 : 1100);
         if(ready) {
             peak=Math.max(peak,delta);
             if(!moving && delta<effective*0.4f) {
@@ -360,13 +364,13 @@ public class MainActivity extends Activity implements SensorEventListener {
                 peakText.setText(String.format(Locale.US,"En yüksek fark: %.2f µT  •  Gürültü: %.2f",peak,noise));
                 if(moving) stateText.setText("Telefonu yavaş çevirin; dönüş alarmı geçici olarak durdurur.");
                 else if(confirmed) stateText.setText("Sinyal algılandı. Tek uyarı; tekrar için uzaklaşın.");
-                else if(over) stateText.setText("1,1 saniyelik sinyal doğrulanıyor...");
+                else if(over) stateText.setText(activeMode==3 ? "Zayıf sinyal 1,8 sn doğrulanıyor..." : "1,1 saniyelik sinyal doğrulanıyor...");
                 else stateText.setText("Tarama aktif. Manyetik değişim izleniyor.");
                 updateSignal(delta,confirmed,over,moving);
                 graph.push(delta);
             } else {
                 diffText.setText("Kalibrasyon");
-                peakText.setText("Örnek: "+samples+"/65");
+                peakText.setText("Örnek: "+samples+"/85");
                 updateSignal(0f,false,false,false);
                 graph.push(0f);
             }
