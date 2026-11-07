@@ -92,6 +92,24 @@ jobs:
           set -euxo pipefail
           godot --headless --path galeri3d --quit-after 60 2>&1 | tee /tmp/galeri-runtime.log
           if grep -Ei 'SCRIPT ERROR|Parse Error|ERROR:.*game.gd|Invalid call|Invalid access' /tmp/galeri-runtime.log; then exit 32; fi
+      - name: Render gameplay screenshot for visual quality review
+        shell: bash
+        run: |
+          set -euo pipefail
+          if command -v xvfb-run >/dev/null 2>&1; then
+            xvfb-run -a -s "-screen 0 1280x720x24" \
+              godot --path galeri3d --rendering-method gl_compatibility \
+              --script res://visual_capture.gd 2>&1 | tee /tmp/galeri-visual.log
+            test -s galeri3d/visual_proof.png || exit 39
+          else
+            echo "::warning::xvfb-run unavailable; no visual verification possible in this runner."
+          fi
+      - name: Save screenshot evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: Galeri-Krali-3D-Visual-Evidence
+          path: galeri3d/visual_proof.png
+          if-no-files-found: warn
       - name: Export actual Godot Android APK
         shell: bash
         run: |
