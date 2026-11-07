@@ -79,6 +79,22 @@ jobs:
               }
               if(last)throw last;
             }
+      - name: Set up Node for model decoding
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Decode meshopt and quantization for Godot 4.4
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p /tmp/gltf-tools
+          npm install --prefix /tmp/gltf-tools --no-audit --no-fund \
+            @gltf-transform/core @gltf-transform/extensions \
+            @gltf-transform/functions meshoptimizer
+          cp galeri3d/tools/decode_glb.mjs /tmp/gltf-tools/decode.mjs
+          node /tmp/gltf-tools/decode.mjs \
+            galeri3d/assets/cars/*.glb \
+            galeri3d/assets/people/*.glb
       - name: Godot version and project import
         shell: bash
         run: |
