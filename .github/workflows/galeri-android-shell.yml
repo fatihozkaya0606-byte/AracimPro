@@ -1,8 +1,6 @@
-name: Build Galeri Test Android Shell
+name: Build Galeri Legacy Android Shell (manual only)
 on:
-  push:
-    branches:
-      - galeri-krali-test-apk-fix
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
