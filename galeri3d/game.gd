@@ -3,11 +3,16 @@ extends Node3D
 # Godot 4.4, all geometry is real MeshInstance3D (not Canvas or a background screenshot).
 const SAVE_FILE = "user://galeri_krali_3d_save.json"
 const CATALOG = [
- ["Anka GT",315000,"b82e28",0],["Bora Sedan",465000,"eeeeea",0],
- ["Kartal SUV",720000,"cbd7da",1],["Vega Sport",1180000,"d8a12a",2],
- ["Zirve 4x4",980000,"414f5b",1],["Şimşek Coupe",1340000,"1d2737",2],
- ["Poyraz X",680000,"225d85",1],["Atlas RS",1760000,"ba343c",2],
- ["Efe Hatch",295000,"f4efdb",0],["Kuzey EV",1390000,"314f67",0]
+ ["BMW M4 CSL",2250000,"c21d25",2],
+ ["Mercedes-Benz E-Class",1880000,"f4f2ef",0],
+ ["Hyundai Tucson",1680000,"e2e2df",1],
+ ["Audi A6",1640000,"4c5262",0],
+ ["Porsche Panamera",2680000,"c79e1d",2],
+ ["Hyundai Elantra",1160000,"245b7b",0],
+ ["BMW X5",2850000,"4f5963",1],
+ ["BMW M3",2490000,"ad1924",2],
+ ["Mercedes S-Class",3400000,"c0c2c4",0],
+ ["Audi A4",1370000,"25334e",0]
 ]
 const RIVALS = ["ANADOLU OTO","PRESTİJ MOTORS","ŞAHİN GALERİ","EFSANE OTOMOTİV","GARAJ 06"]
 var cash: int = 8850000
