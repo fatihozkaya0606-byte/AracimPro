@@ -42,6 +42,43 @@ jobs:
             test "$(wc -c < "$a")" -gt 30000
             echo "Validated GLB: $a : $(wc -c < "$a") bytes"
           done
+      - name: Fetch properly attributed realistic vehicles and people
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            const root = 'galeri3d/assets';
+            const cars = [
+              'bmw-m4-csl','mercedes-benz-mersedes-e-class','hyundai-tucson',
+              'audi-a6','porsche-panamera','hyundai-elantra','bmw-x5',
+              'bmw-m3','mercedes-benz-mersedes-s-class','audi-a4'
+            ];
+            const entries = [
+              ...cars.map(id=>({file:'cars/'+id+'.glb',url:'https://raw.githubusercontent.com/pedrosoandre/carros/main/assets/'+id+'.glb'})),
+              {file:'people/dealer.glb',url:'https://models.codelove.in/models/business-male-02.glb'},
+              {file:'people/dealer2.glb',url:'https://models.codelove.in/models/business-male-01.glb'},
+              {file:'people/customer.glb',url:'https://models.codelove.in/models/business-female-01.glb'},
+              {file:'people/hero.glb',url:'https://vibeassets.io/download/zpepqtthci?combined=1'}
+            ];
+            for (const item of entries) {
+              let last;
+              for(let retry=0;retry<3;retry++){
+                try{
+                  const resp=await fetch(item.url,{headers:{'User-Agent':'GaleriKraliGamePrototype/1.0'}});
+                  if(!resp.ok)throw Error('HTTP '+resp.status+' '+item.url);
+                  const data=Buffer.from(await resp.arrayBuffer());
+                  if(data.toString('ascii',0,4)!=='glTF' || data.length<10000)throw Error('Invalid GLB '+item.url+' bytes='+data.length);
+                  const dest=path.join(root,item.file);
+                  fs.mkdirSync(path.dirname(dest),{recursive:true});
+                  fs.writeFileSync(dest,data);
+                  core.info(item.file+': '+data.length+' bytes');
+                  last=null;
+                  break;
+                }catch(err){last=err; core.warning('retry '+item.file+': '+String(err))}
+              }
+              if(last)throw last;
+            }
       - name: Godot version and project import
         shell: bash
         run: |
