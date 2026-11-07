@@ -6,8 +6,8 @@ android {
   applicationId 'com.ozkaya.metaltarama'
   minSdk 26
   targetSdk 28
-  versionCode 5
-  versionName '1.4-test'
+  versionCode 6
+  versionName '1.5-test'
  }
  compileOptions {
   sourceCompatibility JavaVersion.VERSION_17
