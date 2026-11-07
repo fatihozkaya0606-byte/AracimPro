@@ -131,7 +131,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Galeri-Krali-3D-Visual-Evidence
-          path: galeri3d/visual_proof.png
+          path: |
+            galeri3d/visual_proof.png
+            galeri3d/visual_character.png
           if-no-files-found: warn
       - name: Export actual Godot Android APK
         shell: bash
