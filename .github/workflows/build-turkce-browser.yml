@@ -19,6 +19,8 @@ jobs:
         run: |
           base64 -d browser-source.b64 | tar -xJf -
           test -f TurkceAltyaziTarayici/app/build.gradle
+          sed -i 's/com.google.mlkit.nl.translate.DownloadConditions/com.google.mlkit.common.model.DownloadConditions/' TurkceAltyaziTarayici/app/src/main/java/com/stratexia/turkcealtyazi/SubtitleTranslator.java
+          sed -i 's/b.setTextAllCaps(false);/b.setAllCaps(false);/' TurkceAltyaziTarayici/app/src/main/java/com/stratexia/turkcealtyazi/MainActivity.java
       - name: Set up Java 17
         uses: actions/setup-java@v4
         with:
