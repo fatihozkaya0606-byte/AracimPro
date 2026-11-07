@@ -31,6 +31,8 @@ public class MainActivity extends Activity implements SensorEventListener {
     private SensorManager sensors;
     private Sensor magnet;
     private Sensor gyro;
+    private Sensor linearAcceleration;
+    private int magnetAccuracy = SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM;
     private ToneGenerator tone;
     private Vibrator vibrator;
     private TextView fieldText, diffText, peakText, stateText, thresholdText, axesText;
@@ -59,6 +61,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         sensors = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
         magnet = sensors == null ? null : sensors.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
         gyro = sensors == null ? null : sensors.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+        linearAcceleration = sensors == null ? null : sensors.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         vibrator = (Vibrator)getSystemService(VIBRATOR_SERVICE);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
         try { tone = new ToneGenerator(AudioManager.STREAM_MUSIC, 100); }
@@ -97,7 +100,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         scroll.addView(root); setContentView(scroll);
         add(root,text("METAL TARAYICI",25,0xfff2f9ff,true),0);
         add(root,text("TOPRAK / KAYA  •  SENSÖR TEST",11,0xff63e6c6,true),5);
-        add(root,text("Gerçek manyetik alan ölçümü. Altın tespiti veya 30 cm–1 m menzil garantisi değildir.",13,0xffa4b9c9,false),12);
+        add(root,text("Manyetik alan taraması: demir veya manyetik parazitleri gösterebilir. Cam ve altın gibi manyetik olmayan nesneleri ayırt edemez.",13,0xffa4b9c9,false),12);
         LinearLayout choose = section(root);
         add(choose,text("TARAMA MODU",12,0xff8aabc3,true),0);
         String[] labels = {"KARIŞIK","DEMİR ETKİ","HASSAS","ZAYIF SİNYAL"};
@@ -199,7 +202,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         soundState=text("Ses için telefonun MEDYA sesini açın. Sesi Test Et düğmesine basın.",12,0xffa7cbe0,false);
         add(settings,soundState,9);
         stateText=text("Ölçüm bekleniyor...",13,0xffd3e7ef,false); add(settings,stateText,12);
-        add(root,text("SAHA NOTU: Önce metalden uzak noktada kalibre edin. Zayıf Sinyal modunda telefonu yavaş ve sabit gezdirin; 0,9 µT ile başlayın. Yanlış uyarıda eşiği yükseltin. Ölçülen manyetik alan değişimidir; fiziksel erişim mesafesi veya metal türü belirlenemez.",12,0xff91aec1,false),17);
+        add(root,text("KARŞILAŞTIRMALI TEST: Telefonu bir masaya SABİT yerleştir, kılıfındaki mıknatısı çıkar. Önce ortamı kalibre et. Demir, düz cam ve altını ayrı ayrı telefona yaklaştır. Telefonu oynatmadan oluşan farkları karşılaştır. Cam uyarısı varsa çevrede metal/parazit aranmalı. Bu uygulama altın tespiti yapmaz.",12,0xff91aec1,false),17);
         if(graph!=null) graph.setThreshold(threshold);
         applyMode(0);
     }
@@ -259,20 +262,20 @@ public class MainActivity extends Activity implements SensorEventListener {
         signalBar.setProgress(progress);
         int color;
         if(moving) {
-            signalHeadline.setText("TELEFON HAREKETLİ");
-            signalLevel.setText("Hızlı dönüş algılandı. Yavaş ve sabit tarayın.");
+            signalHeadline.setText("ÖLÇÜM BEKLETİLDİ");
+            signalLevel.setText("Hareket veya sensör paraziti: daha sabit ölçüm yapın.");
             color=0xffa8b5c8;
         } else if(confirmed) {
             if(factor>=4) {
-                signalHeadline.setText("GÜÇLÜ SİNYAL");
+                signalHeadline.setText("GÜÇLÜ MANYETİK FARK");
                 signalLevel.setText(alarmArmed ? "Güçlü manyetik değişim" : "Tek uyarı verildi. Yeni hedef için sinyalden uzaklaşın.");
                 color=0xffff6767;
             } else if(factor>=2) {
-                signalHeadline.setText("ORTA SİNYAL");
+                signalHeadline.setText("ORTA MANYETİK FARK");
                 signalLevel.setText(alarmArmed ? "Manyetik değişim algılandı" : "Tek uyarı verildi. Yeniden uyarı için uzaklaşın.");
                 color=0xffffad50;
             } else {
-                signalHeadline.setText("SİNYAL ALGILANDI");
+                signalHeadline.setText("MANYETİK FARK VAR");
                 signalLevel.setText(alarmArmed ? "Zayıf manyetik değişim" : "Tek uyarı verildi. Yeniden uyarı için uzaklaşın.");
                 color=0xffffdf72;
             }
@@ -298,6 +301,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         super.onResume();
         if(sensors != null && magnet != null) sensors.registerListener(this,magnet,SensorManager.SENSOR_DELAY_GAME);
         if(sensors != null && gyro != null) sensors.registerListener(this,gyro,SensorManager.SENSOR_DELAY_GAME);
+        if(sensors != null && linearAcceleration != null) sensors.registerListener(this,linearAcceleration,SensorManager.SENSOR_DELAY_GAME);
     }
     @Override protected void onPause() {
         if(sensors != null) sensors.unregisterListener(this);
@@ -308,12 +312,19 @@ public class MainActivity extends Activity implements SensorEventListener {
         if(tone!=null) { tone.release(); tone=null; }
         super.onDestroy();
     }
-    @Override public void onAccuracyChanged(Sensor sensor,int accuracy) { }
+    @Override public void onAccuracyChanged(Sensor sensor,int accuracy) {
+        if (sensor.getType()==Sensor.TYPE_MAGNETIC_FIELD) magnetAccuracy=accuracy;
+    }
     @Override public void onSensorChanged(SensorEvent event) {
         if(event.values.length<3) return;
         if(event.sensor.getType()==Sensor.TYPE_GYROSCOPE) {
             float g=(float)Math.sqrt(event.values[0]*event.values[0]+event.values[1]*event.values[1]+event.values[2]*event.values[2]);
-            if(g > 0.85f) motionHoldUntil=SystemClock.elapsedRealtime()+750;
+            if(g > 0.65f) motionHoldUntil=SystemClock.elapsedRealtime()+900;
+            return;
+        }
+        if(event.sensor.getType()==Sensor.TYPE_LINEAR_ACCELERATION) {
+            float a=(float)Math.sqrt(event.values[0]*event.values[0]+event.values[1]*event.values[1]+event.values[2]*event.values[2]);
+            if(a > 2.2f) motionHoldUntil=SystemClock.elapsedRealtime()+850;
             return;
         }
         if(event.sensor.getType() != Sensor.TYPE_MAGNETIC_FIELD) return;
@@ -339,17 +350,18 @@ public class MainActivity extends Activity implements SensorEventListener {
             }
         }
         long time=SystemClock.elapsedRealtime();
-        boolean moving=gyro!=null && time<motionHoldUntil;
+        boolean moving=time<motionHoldUntil;
+        boolean unreliable = magnetAccuracy==SensorManager.SENSOR_STATUS_UNRELIABLE;
         float effective=Math.max(threshold,noise*(activeMode==3 ? 3.5f : 4f));
         float delta=ready ? Math.abs(filtered-base) : 0f;
-        boolean over=ready && !moving && delta>=effective;
+        boolean over=ready && !moving && !unreliable && delta>=effective;
         if(over) {
             if(alarmStart==0) alarmStart=time;
             belowSince=0;
         } else {
             alarmStart=0;
             // Yalnızca sinyal gerçekten düştüğünde yeniden alarm kur.
-            if(ready && !moving && delta < effective*0.55f) {
+            if(ready && !moving && !unreliable && delta < effective*0.55f) {
                 if(belowSince==0) belowSince=time;
                 if(time-belowSince>=1700) alarmArmed=true;
             } else belowSince=0;
@@ -357,7 +369,7 @@ public class MainActivity extends Activity implements SensorEventListener {
         boolean confirmed=over && alarmStart>0 && time-alarmStart>=(activeMode==3 ? 1200 : 1100);
         if(ready) {
             peak=Math.max(peak,delta);
-            if(!moving && delta<effective*0.4f) {
+            if(!moving && !unreliable && delta<effective*0.4f) {
                 // Sessiz zemini çok yavaş izle; büyük anomalileri yutma.
                 base += 0.002f*(filtered-base);
             }
@@ -374,11 +386,12 @@ public class MainActivity extends Activity implements SensorEventListener {
             if(ready) {
                 diffText.setText(String.format(Locale.US,"%.2f µT",delta));
                 peakText.setText(String.format(Locale.US,"En yüksek fark: %.2f µT  •  Gürültü: %.2f",peak,noise));
-                if(moving) stateText.setText("Telefonu yavaş çevirin; dönüş alarmı geçici olarak durdurur.");
-                else if(confirmed) stateText.setText("Sinyal algılandı. Tek uyarı; tekrar için uzaklaşın.");
+                if(unreliable) stateText.setText("Sensör doğruluğu düşük: telefonun manyetik sensörünü kalibre edin.");
+                else if(moving) stateText.setText("Telefon hareketi algılandı. Tarama sırasında yavaş ve sabit ilerleyin.");
+                else if(confirmed) stateText.setText("Manyetik fark görüldü. Bu, altın veya metal türü tespiti değildir.");
                 else if(over) stateText.setText(activeMode==3 ? "Zayıf sinyal 1,2 sn doğrulanıyor..." : "1,1 saniyelik sinyal doğrulanıyor...");
                 else stateText.setText("Tarama aktif. Manyetik değişim izleniyor.");
-                updateSignal(delta,confirmed,over,moving);
+                updateSignal(delta,confirmed,over,moving || unreliable);
                 graph.push(delta);
             } else {
                 diffText.setText("Kalibrasyon");
