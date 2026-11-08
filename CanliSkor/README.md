@@ -56,3 +56,11 @@ Takım logoları kullanılmıyor; üçüncü taraf fikri haklarını kontrol edi
 - Uygulama görünürken daha önce gözlenen maç skorunun değişiminden GOL toast gösterebilir
 - Açık/koyu tema ve maç detayları korunur; arka plan push bildirimleri bu sürümde yoktur
 - Özel BSD anahtarı public source'a eklenmemiştir
+
+## v1.0 Premium Steel
+- Azaltılmış neon, kabartmalı çelik arayüz ve büyük yazılar.
+- Üstte Güncelleme etiketi kaldırıldı.
+- Uzatma dakikası yalnızca BSD'nin bildirdiği 90+2 gibi değerlerden alınır.
+- Gerçek maç verisine bağlı Karşılaştırma ve Maç Bilgisi sekmeleri.
+- Uygulama açıkken gol uyarıları korunur. Arka plan push sistemi henüz yok.
+- API anahtarı açık kaynakta saklanmaz.
