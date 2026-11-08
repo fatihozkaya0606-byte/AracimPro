@@ -25,3 +25,27 @@ gradle assembleDebug
 - [SportScore geliştirici şartları](https://sportscore.com/developers/terms/)
 
 Takım logoları kullanılmıyor; üçüncü taraf fikri haklarını kontrol edin. Canlı sonuç verileri her zaman gecikmeli olabilir.
+
+## v0.4 — Maçkolik tarzı liste ve canlı veri düzeltmeleri
+- Lig başlıkları maç yokken de gösterilir, ilk 9 lig önceliklidir.
+- Kompakt maç satırı: saat/dakika | ev sahibi | skor | deplasman | favori.
+- Lig adları ayrı BSD `/api/v2/leagues/` çağrısından alınır ve league_id ile eşleştirilir.
+- Canlı maçlar bağımsız BSD `/api/v2/events/live/` uç noktasından çekilir.
+- Canlı maçlar ekrandayken 15 saniyede bir sorgu; arka planda otomatik sorgu yok.
+- Türkiye saatine göre günün maçları gösterilir, tarihi etkileyen UTC sınırları ele alınır.
+- BSD hesabı anahtarı APK ve GitHub'a eklenmemiştir; kullanıcı yalnızca kendi cihazında Ayarlar üzerinden girer.
+- Test yapılacak noktalar: gerçek cihazda BSD API yanıtları, lig kapsama ve skor gecikmesi.
+
+## v0.5 — 3D canlı skor ekranı ve geniş istatistikler
+- Kompakt lig ve maç satırları korunur; 3D derinlikli tasarım uygulanır.
+- BSD kimliği mevcut takımların resmî logo görselleri yüklenir; yoksa baş harf gösterilir.
+- Maç detayında İstatistikler, Maç olayları ve Kadro sekmeleri.
+- Resmî BSD şemasındaki possession, shots_total, corners, xg gibi alanlar desteklenir.
+- Canlı kontrol 15 saniyede bir; API anahtarı kodda veya APK içerisinde yoktur.
+
+## v0.6 — Tema / Forma renkleri / Diziliş
+- Açık/koyu tema (üstteki ikon ve Ayarlar), seçilen tema kalıcıdır.
+- Maç skor kutularında kırmızı çerçeve yerine nötr renkler, takımların bilinen forma renklerine göre çizgiler ve isim vurguları.
+- Maç detayında istatistik, olaylar, ilk 11 + yedekler ve API formasyonuyla saha dizilişi.
+- Eksik ilk 11 veya diziliş uydurulmaz; şema varsa oyuncu yerleşimi yaklaşık olarak işaretlenir.
+- BSD anahtarı aynı cihazda önceki kurulumdan korunur; genel GitHub koduna veya paylaşılan APK'ya gömülmez.
