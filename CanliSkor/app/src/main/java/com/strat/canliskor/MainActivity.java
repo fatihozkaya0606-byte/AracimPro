@@ -59,7 +59,7 @@ public class MainActivity extends Activity {
                     String host=url.getHost();
                     if(!"https".equals(url.getProtocol()) || !(host.equals("sportscore.com")||host.equals("sports.bzzoiro.com"))) throw new SecurityException("İzin verilmeyen veri sunucusu");
                     conn=(HttpURLConnection)url.openConnection();
-                    conn.setConnectTimeout(9000);conn.setReadTimeout(11000);
+                    conn.setInstanceFollowRedirects(false);conn.setConnectTimeout(9000);conn.setReadTimeout(11000);
                     conn.setRequestProperty("Accept","application/json");
                     conn.setRequestProperty("User-Agent","CanliSkorPlus/0.1 Android");
                     if(host.equals("sports.bzzoiro.com")&&!token.isEmpty())conn.setRequestProperty("Authorization","Token "+token);
