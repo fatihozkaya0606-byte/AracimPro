@@ -195,6 +195,7 @@ body.premium .royal-showcase:after{
   background:linear-gradient(transparent,#01271de0);pointer-events:none
 }
 body.premium .royal-showcase .royal-skyline{display:block!important;z-index:1;bottom:0;height:115px;opacity:.95;filter:drop-shadow(0 -2px 1px #d5b17175)}
+body.premium .royal-showcase .hd-top-controls{display:flex!important;flex-direction:row!important;justify-content:space-between!important;align-items:center!important;}
 .hd-top-controls{display:flex!important;justify-content:space-between;position:absolute;z-index:9;left:13px;right:13px;top:13px;pointer-events:none}
 .hd-top-controls button{pointer-events:auto;display:grid;place-items:center;width:40px;height:40px;background:linear-gradient(145deg,#266b53,#06402d 72%);color:#ffdfa0;
   border:1.5px solid #d4ad66;border-radius:12px;box-shadow:inset 0 1px 1px #f6e4bba0,inset 0 -3px #002e1c,0 4px 6px #00150ca8;
@@ -345,7 +346,7 @@ function home(){
  ['adhan','ezan','Ezanlar'],['worship','tesbih','Tesbih'],
  ['worship','qibla','Kıble'],['progress','hatim','Hatim Takibi']
  ];
- main.innerHTML='<div class="royal-showcase"><div class="hd-top-controls"><button type="button" data-page="settings" aria-label="Menü ve Ayarlar">☰</button><button type="button" data-page="worship" aria-label="Namaz Vakitleri">♧</button></div><div class="hd-halo">'+royalIcon('meal')+'</div><div class="royal-crown">☪ ✦</div>'
+ main.innerHTML='<div class="royal-showcase"><div class="hd-top-controls"><button type="button" data-page="settings" aria-label="Menü ve Ayarlar">☰</button><button type="button" data-page="worship" aria-label="Namaz Vakitleri">🔔</button></div><div class="hd-halo">'+royalIcon('meal')+'</div><div class="royal-crown">☪ ✦</div>'
   +royalSkyline+'<div class="royal-title">Nur Rehberi</div>'
   +'<div class="royal-caption">Kur’an, namaz, ezan ve ibadetleriniz için<br>kapsamlı İslâmî rehberinize hoş geldiniz.</div>'
   +'<div class="royal-divider"></div><div class="royal-sub">✦ Maneviyatın huzurlu dünyası ✦</div></div>'
@@ -463,7 +464,7 @@ function adhan(){
  const guzel=ADHANS.filter(x=>x.kind!=='mekke');
  main.innerHTML=
  '<div class="royal-page-head"><span>☪</span><h1>Ezanlar</h1><small>Gönüllere huzur veren sesler</small></div>'
- +'<div class="royal-audio-frame"><div class="royal-audio-top">🕋</div><h2>Mekke Ezanları</h2>'
+ +'<div class="royal-audio-frame"><div class="royal-audio-top">'+royalIcon('qibla')+'</div><h2>Mekke Ezanları</h2>'
  +'<p>Harem-i Şerif’ten (Mekke) tarihî ezan kayıtları</p><div class="royal-audio-tracks">'+mekke.map(royalAudioRow).join('')+'</div></div>'
  +'<div class="royal-audio-frame"><div class="royal-audio-top">'+royalIcon('hafiz')+'</div><h2>Güzel Ezan Okuyanlar</h2>'
  +'<p>Farklı makamlarda açık lisanslı ezanlar</p><div class="royal-audio-tracks">'+guzel.map(royalAudioRow).join('')+'</div></div>'
