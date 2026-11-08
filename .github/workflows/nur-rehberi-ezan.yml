@@ -1,0 +1,64 @@
+name: Nur Rehberi Ezan Test APK
+on:
+  push:
+    branches:
+      - nur-rehberi-ezan
+    paths:
+      - 'nur-rehberi/**'
+      - '.github/workflows/nur-rehberi-ezan.yml'
+  workflow_dispatch:
+jobs:
+  apk:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Use JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Prepare Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Build offline licensed adhan audio assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
+          mkdir -p nur-rehberi/app/src/main/assets/audio
+          mkdir -p /tmp/nur-adhans
+          cd /tmp/nur-adhans
+          useragent="NurRehberi/0.6 (licenced-content-testing; Wikimedia Commons)"
+          curl -fL --retry 4 --retry-delay 3 --connect-timeout 20 --max-time 180 -A "$useragent" \
+            "https://upload.wikimedia.org/wikipedia/commons/a/a7/Adhan%2C_Great_Mosque_of_Mecca_-_Jan_21%2C_2013.webm" -o mecca_2013.webm
+          curl -fL --retry 4 --retry-delay 3 --connect-timeout 20 --max-time 180 -A "$useragent" \
+            "https://upload.wikimedia.org/wikipedia/commons/6/6d/Maghrib_Adhan_at_the_Masjid_al_Haram%2C_Mecca_-_25_Feb%2C_2012.webm" -o mecca_2012.webm
+          curl -fL --retry 4 --retry-delay 3 --connect-timeout 20 --max-time 180 -A "$useragent" \
+            "https://upload.wikimedia.org/wikipedia/commons/b/b0/Beautiful_adhan.ogg" -o beautiful_adhan.ogg
+          curl -fL --retry 4 --retry-delay 3 --connect-timeout 20 --max-time 180 -A "$useragent" \
+            "https://upload.wikimedia.org/wikipedia/commons/7/7d/The_Adhan_-_Muslim_Call_to_Prayer_-_Aaqib_Azeez.mp3" -o aaqib_azeez.mp3
+          for file in *.ogg *.webm *.mp3; do
+            ffprobe -v error -show_entries format=duration -of default=nokey=1:noprint_wrappers=1 "$file"
+          done
+          out="$GITHUB_WORKSPACE/nur-rehberi/app/src/main/assets/audio"
+          ffmpeg -nostdin -v error -y -i mecca_2013.webm -vn -ac 1 -ar 44100 -c:a libmp3lame -b:a 96k "$out/mecca_2013.mp3"
+          ffmpeg -nostdin -v error -y -i mecca_2012.webm -vn -ac 1 -ar 44100 -c:a libmp3lame -b:a 96k "$out/mecca_2012.mp3"
+          ffmpeg -nostdin -v error -y -i beautiful_adhan.ogg -vn -ac 1 -ar 44100 -c:a libmp3lame -b:a 96k "$out/beautiful_adhan.mp3"
+          ffmpeg -nostdin -v error -y -i aaqib_azeez.mp3 -vn -ac 1 -ar 44100 -c:a libmp3lame -b:a 96k "$out/aaqib_azeez.mp3"
+          for file in "$out"/*.mp3; do
+            test "$(stat -c%s "$file")" -gt 100000 || exit 1
+            ffprobe -v error -show_entries format=duration -of default=nokey=1:noprint_wrappers=1 "$file"
+          done
+          ls -lh "$out"/*.mp3
+      - name: Build debug APK
+        run: gradle -p nur-rehberi :app:assembleDebug --stacktrace --no-daemon
+      - name: Upload test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NurRehberi-Ezan-Test-v0.6
+          path: nur-rehberi/app/build/outputs/apk/debug/app-debug.apk
