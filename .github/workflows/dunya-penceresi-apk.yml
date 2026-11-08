@@ -23,8 +23,11 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
-      - name: Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Check SDK availability
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls "$ANDROID_HOME/platforms" || true
+          ls "$ANDROID_HOME/build-tools" || true
       - name: Build debug APK
         run: gradle -p dunya-penceresi :app:assembleDebug --stacktrace --no-daemon
       - name: Upload test APK
