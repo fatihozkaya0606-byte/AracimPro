@@ -35,3 +35,10 @@ Takım logoları kullanılmıyor; üçüncü taraf fikri haklarını kontrol edi
 - Türkiye saatine göre günün maçları gösterilir, tarihi etkileyen UTC sınırları ele alınır.
 - BSD hesabı anahtarı APK ve GitHub'a eklenmemiştir; kullanıcı yalnızca kendi cihazında Ayarlar üzerinden girer.
 - Test yapılacak noktalar: gerçek cihazda BSD API yanıtları, lig kapsama ve skor gecikmesi.
+
+## v0.5 — 3D canlı skor ekranı ve geniş istatistikler
+- Kompakt lig ve maç satırları korunur; 3D derinlikli tasarım uygulanır.
+- BSD kimliği mevcut takımların resmî logo görselleri yüklenir; yoksa baş harf gösterilir.
+- Maç detayında İstatistikler, Maç olayları ve Kadro sekmeleri.
+- Resmî BSD şemasındaki possession, shots_total, corners, xg gibi alanlar desteklenir.
+- Canlı kontrol 15 saniyede bir; API anahtarı kodda veya APK içerisinde yoktur.
