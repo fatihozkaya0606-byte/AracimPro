@@ -49,3 +49,10 @@ Takım logoları kullanılmıyor; üçüncü taraf fikri haklarını kontrol edi
 - Maç detayında istatistik, olaylar, ilk 11 + yedekler ve API formasyonuyla saha dizilişi.
 - Eksik ilk 11 veya diziliş uydurulmaz; şema varsa oyuncu yerleşimi yaklaşık olarak işaretlenir.
 - BSD anahtarı aynı cihazda önceki kurulumdan korunur; genel GitHub koduna veya paylaşılan APK'ya gömülmez.
+
+## v0.9 Arena Edition
+- Metalik 3D yükseltilmiş maç listesi, lig başlıkları, canlı skor ve alt menü
+- BSD takımlarının mevcut armalarını kullanır; veri ve skor uydurmaz
+- Uygulama görünürken daha önce gözlenen maç skorunun değişiminden GOL toast gösterebilir
+- Açık/koyu tema ve maç detayları korunur; arka plan push bildirimleri bu sürümde yoktur
+- Özel BSD anahtarı public source'a eklenmemiştir
