@@ -308,6 +308,18 @@ body.premium .adhan-float[hidden],body.premium .player[hidden]{display:none!impo
 .library-topic small{font:10px/1.4 system-ui,sans-serif;color:#88704d;text-align:center;margin-top:7px}
 body.premium .library-panel .btn.gold{display:inline-flex;text-decoration:none;font-size:12px;line-height:1.35}
 
+
+/* Verified recitation screen: full-resolution controls and original publisher embed */
+.sadien-feature{margin:14px 0 29px;padding:21px 15px;border:2px solid #ddb76e;border-radius:25px;
+ background:radial-gradient(at 80% 0,#297c5b,#0b4b36 52%,#032a1c);box-shadow:inset 0 2px #e7dfad8c,0 7px 0 #805522,0 14px 20px #0008}
+.sadien-star{font:800 11px system-ui,sans-serif;letter-spacing:1.5px;color:#ffcf73}
+.sadien-feature h2{font:bold 26px Georgia,serif;color:#ffe6ac;text-shadow:0 2px 2px #301e0b;margin:9px 0}
+.sadien-feature p{font:13px/1.6 system-ui,sans-serif;color:#f2e4c9}
+.sadien-feature small{display:block;font:11px/1.5 system-ui,sans-serif;color:#ded1ae;margin-top:12px}
+.sadien-embed{height:170px;background:#082d25;border:1px solid #d8af6c;border-radius:14px;overflow:hidden;margin:14px 0}
+.sadien-embed iframe{width:100%;height:100%;border:0;background:white}
+.sadien-feature a.btn{display:inline-flex;font-size:12px;line-height:1.3;text-decoration:none}
+
 </style>
   <title>Nur Rehberi • Kur'an ve İslam</title>
 </head>
@@ -465,7 +477,7 @@ const TURK_HAFIZLAR=[
  'Musa Coşkun','Erhan Mete','Ömer Erdem','Ali Derman','Habip Deveci','Salih Akyüz'
 ];
 const TURK_ARŞİV='https://kuran.diyanet.gov.tr/dijital/asri-serifler';
-let hafizCatalog=[],hafizLoading=false,hafizError='',hafizQuery='',hafizShowAll=false,hafizSelected='',hafizAudio=new Audio();
+let hafizCatalog=[],hafizLoading=false,hafizError='',hafizQuery='',hafizShowAll=false,hafizSelected='',hafizSurah=1,hafizAudio=new Audio();
 hafizAudio.preload='none';
 const hafizPanel=document.createElement('div');
 hafizPanel.id='hafiz-panel';
@@ -495,8 +507,10 @@ hafizAudio.addEventListener('playing',()=>drawHafizPanel());
 hafizAudio.addEventListener('error',()=>{if(hafizSelected){toast('Bu yayının ses akışı açılamadı.');stopHafiz()}});
 async function playHafiz(id){
  const r=hafizCatalog.find(x=>x.id===id);if(!r)return;
- const n=Number(document.getElementById('hafiz-surah')?.value||st.surah||1);
- if(!r.available.includes(n)){toast('Bu hafızda '+n+'. sure kaydı bulunmuyor.');return}
+ const preferred=Number(document.getElementById('hafiz-surah')?.value||hafizSurah||1);
+ const n=r.available.includes(preferred)?preferred:r.available[0];
+ if(!n){toast('Bu hafız için kayıtlı sure bulunamadı.');return}
+ if(n!==preferred)toast('Seçtiğin sure yok; mevcut '+n+'. sure açılıyor.');
  stopAudio();stopAdhan();stopHafiz();
  const link=r.server+String(n).padStart(3,'0')+'.mp3';
  if(!/^https:\/\/([a-z0-9-]+\.)*mp3quran\.net\//i.test(link)){toast('Yayın kaynağı güvenilir değil.');return}
@@ -509,32 +523,49 @@ async function loadHafizCatalog(force=false){
  hafizLoading=true;hafizError='';
  if(st.page==='hafizlar')hafizlar();
  try{
-  const controller=new AbortController(), cancel=setTimeout(()=>controller.abort(),15000);
-  let resp;
-  try{resp=await fetch('https://mp3quran.net/api/v3/reciters?language=tr',{signal:controller.signal,cache:'no-cache'});}
-  finally{clearTimeout(cancel)}
-  if(!resp.ok)throw Error('API '+resp.status);
-  const d=await resp.json();
-  const list=[];
-  for(let c of d.reciters||[]){
-    if(!c.name||!Array.isArray(c.moshaf))continue;
-    for(let m of c.moshaf){
-       const server=String(m.server||'');
-       if(!/^https:\/\/([a-z0-9-]+\.)*mp3quran\.net\//i.test(server))continue;
-       const available=String(m.surah_list||'').split(',').map(Number).filter(n=>n>=1&&n<=114);
-       if(!available.length)continue;
-       list.push({id:String(c.id)+'-'+String(m.id),name:String(c.name),moshaf:String(m.name||''),server:server.endsWith('/')?server:server+'/',available:available});
+  let list=[];
+  // Stable, prevalidated snapshot bundled in APK to avoid external API CORS failures.
+  try{
+   const res=await fetch('reciters.json',{cache:'no-store'});
+   if(!res.ok)throw Error('Katalog dosyası yok');
+   const d=await res.json();
+   list=Array.isArray(d)?d:Array.isArray(d.reciters)?d.reciters:[];
+  }catch(_){list=[];}
+  if(!list.length){
+   const controller=new AbortController(),cancel=setTimeout(()=>controller.abort(),14000);
+   try{
+    const res=await fetch('https://www.mp3quran.net/api/v3/reciters?language=tr',{signal:controller.signal});
+    if(!res.ok)throw Error('API '+res.status);
+    const d=await res.json();
+    for(let r of d.reciters||[]){
+     for(let m of r.moshaf||[]){
+      const server=String(m.server||'');
+      const available=String(m.surah_list||'').split(',').map(Number).filter(x=>x>=1&&x<=114);
+      if(!/^https:\/\/([a-z0-9-]+\.)*mp3quran\.net\//i.test(server)||!available.length)continue;
+      list.push({id:String(r.id)+'-'+String(m.id),name:String(r.name),moshaf:String(m.name),server,available});
+     }
     }
+   }finally{clearTimeout(cancel);}
   }
-  if(!list.length)throw Error('Ses kaydı bulunamadı');
-  hafizCatalog=list.sort((a,b)=>a.name.localeCompare(b.name,'tr'));
- }catch(e){hafizError='Geniş hafız listesine şu an ulaşılamadı. Mevcut 12 hafızın dinleme seçeneği Kur’an bölümünde çalışmaya devam ediyor.';}
- finally{hafizLoading=false;if(st.page==='hafizlar')hafizlar()}
+  list=list.filter(r=>r&&r.name&&typeof r.server==='string'&&/^https:\/\/([a-z0-9-]+\.)*mp3quran\.net\//i.test(r.server)&&Array.isArray(r.available)&&r.available.length);
+  if(!list.length)throw Error('Katalog verisi alınamadı');
+  const featured=/abdulbasit|abdulbasit|abdülbasit|maher|mahir|meaq|mishary|mi[şs]ari|yasser|nasser|sudais|südeys|minshawi|min[şs]avi|shatri|şatri|qatami|husary|huzeyfi|huthaify|f[aâ]res|f[aâ]ris|mus[ta]fa|saad|salah|sal[aâ]h/i;
+  hafizCatalog=list.sort((a,b)=>{
+   const aa=featured.test(a.name)?0:1,bb=featured.test(b.name)?0:1;
+   return aa-bb||b.available.length-a.available.length||a.name.localeCompare(b.name,'tr');
+  });
+ }catch(e){
+  hafizError='Ses kataloğuna ulaşılamadı. İnternet bağlantını kontrol et veya resmî hafız arşivini aç.';
+ }finally{
+  hafizLoading=false;
+  if(st.page==='hafizlar')hafizlar();
+ }
 }
 function hafizlar(){
  main.innerHTML='<div class="royal-page-head"><span>🎙</span><h1>Hafızlar</h1><small>Kur’an-ı Kerim dinleme merkezi</small></div>'+
- '<div class="notice">Eski 12 hafız korunuyor. Kur’an ekranında sureyi açıp “Hafız Seç” alanından ayet ayet dinleyebilirsin. Geniş katalogda sure kayıtları internetten açılır.</div>'+
- section('Önceki Hafızlar','12 ses seçeneği')+
+ '<div class="notice">Ses kayıtları, hafızın mevcut surelerine göre gösterilir. Dinleme için internet gerekir; bağlantı başarısız olursa başka sure veya hafız seçebilirsin.</div>'+
+ '<div class="sadien-feature"><div class="sadien-star">✦ ÖNE ÇIKAN HAFIZ</div><h2>Abdurrahmaan Sadien</h2><p>Güney Afrika • Abdülbasit üslubuyla tanınan kârî. Quran Central’da 24 kayıt mevcut. Malezyalı Saidin Abdulrahman ile aynı kişi değildir.</p><div class="sadien-embed"><iframe title="Abdurrahmaan Sadien Quran Central Apple Podcasts oynatıcı" src="https://embed.podcasts.apple.com/za/podcast/abdurrahmaan-sadien/id1087814219" loading="lazy" allow="autoplay; encrypted-media" referrerpolicy="no-referrer-when-downgrade"></iframe></div><a class="btn gold" href="https://qurancentral.com/audio/abdurrahmaan-sadien/">24 kaydı resmî kaynaktan dinle ↗</a><small>Oynatıcı açılmazsa yukarıdaki resmî bağlantıyı kullan. Kayıtlar Quran Central’a aittir.</small></div>'+
+ section('Önceki Hafızlar','12 alternatif ayet kaydı')+
  '<div class="library-grid">'+RECITERS.map(r=>'<button class="reciter-chip" data-action="open-reciter" data-id="'+esc(r[0])+'">♫ '+esc(r[1])+'<small>Kur’an sayfasında dinle ›</small></button>').join('')+'</div>'+
  section('Türk Hafızları','Diyanet resmî arşivi')+
  '<div class="library-panel"><div class="library-tag">59 aşr-ı şerif kaydı • Seçme tilavetler</div><p>Türk hafızların Diyanet tarafından yayımlanmış kayıtlarını resmî arşivde dinle. Buradaki bağlantılar uygulama içinde kopyalanmış ses dosyaları değildir.</p><div class="turkish-names">'+TURK_HAFIZLAR.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div><a class="btn gold" href="'+TURK_ARŞİV+'">Diyanet’te 59 kaydı dinle ↗</a></div>'+
@@ -546,7 +577,7 @@ function hafizlar(){
  (hafizError?'<div class="notice">'+esc(hafizError)+'</div>':'')+
  '<div id="hafiz-results"></div></div>'+
  '<div class="notice">Aradığın Türk okuyucuların tamamına ait açık ve izinli sure sesleri henüz doğrulanmış değildir. Doğrulanmayan kişilerin adını çalışır kayıt gibi göstermiyoruz.</div>';
- const val=document.getElementById('hafiz-surah');if(val)val.value=String(st.surah);
+ const val=document.getElementById('hafiz-surah');if(val)val.value=String(hafizSurah);
  renderHafizResults();
  if(!hafizCatalog.length&&!hafizLoading&&!hafizError)loadHafizCatalog();
 }
@@ -554,7 +585,7 @@ function renderHafizResults(){
  const box=document.getElementById('hafiz-results');if(!box)return;
  const match=hafizCatalog.filter(r=>r.name.toLocaleLowerCase('tr').includes(hafizQuery.toLocaleLowerCase('tr')));
  const shown=hafizShowAll?match:match.slice(0,40);
- box.innerHTML=shown.map(r=>'<div class="hafiz-item"><div><strong>'+esc(r.name)+'</strong><small>'+esc(r.moshaf)+' • '+r.available.length+' sure</small></div><button class="btn tiny" data-action="hafiz-play" data-id="'+esc(r.id)+'">▶ Dinle</button></div>').join('')+
+ box.innerHTML=shown.map(r=>'<div class="hafiz-item"><div><strong>'+esc(r.name)+'</strong><small>'+esc(r.moshaf)+' • '+r.available.length+' sure'+(r.available.includes(hafizSurah)?'':' • Seçili sure yok; '+r.available[0]+'. sure açılır')+'</small></div><button class="btn tiny" data-action="hafiz-play" data-id="'+esc(r.id)+'">▶ Dinle</button></div>').join('')+
  (!hafizLoading&&!shown.length?'<div class="muted text-small">Bu isimle kayıt bulunamadı.</div>':'')+
  (!hafizShowAll&&match.length>40?'<button class="btn ghost" data-action="hafiz-more">Diğer '+(match.length-40)+' kaydı da göster</button>':'');
 }
@@ -629,7 +660,8 @@ else if(act==='toggle-theme'){st.dark=!st.dark;save();render();}
 else if(act==='clear-cache'){if(confirm('İndirilen sure önbelleği temizlensin mi? Hatim ve ayarların korunur.')){for(let i=1;i<=114;i++)localStorage.removeItem('surah-'+i);toast('Önbellek temizlendi.');}}
 });
 document.addEventListener('input',ev=>{if(ev.target.id==='hafiz-search'){hafizQuery=ev.target.value;renderHafizResults();return;} if(ev.target.id==='surah-search'){st.search=ev.target.value;const list=document.getElementById('surah-list');if(list)list.innerHTML=filtered().map(surahMarkup).join('')||'<div class="empty">Aramana uygun sure bulunamadı.</div>';}});
-document.addEventListener('change',ev=>{if(ev.target.id==='city'){st.city=ev.target.value;save();getPrayer();}
+document.addEventListener('change',ev=>{if(ev.target.id==='hafiz-surah'){hafizSurah=Number(ev.target.value);renderHafizResults();}
+else if(ev.target.id==='city'){st.city=ev.target.value;save();getPrayer();}
 else if(ev.target.id==='reciter'){st.reciter=ev.target.value;save();stopAudio();toast('Hafız değiştirildi.');}else if(ev.target.id==='dailyGoal'){st.dailyGoal=Number(ev.target.value);save();toast('Günlük hedef kaydedildi.')}else if(ev.target.id==='fontSelect'){st.arabicSize=Number(ev.target.value);save();render();}});
 document.getElementById('back').addEventListener('click',()=>go(st.page==='reader'?'quran':'home'));
 if('serviceWorker' in navigator && window.location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
