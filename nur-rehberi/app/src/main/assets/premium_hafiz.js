@@ -15,7 +15,7 @@ const NR_SIMILAR_RECITERS=[
  {id:'128-128',name:'Muammer ZA',desc:'Endonezya • makamlı okuyuş • kısmi sureler'},
  {id:'4-4',name:'Ebubekir eş-Şâtırî',desc:'Akıcı tilavet'}
 ];
-let nrSadienCatalog=null,nrSadienError='',nrCurrentTrack=null,nrNativeState='stopped',nrNativeError='';
+let nrSadienCatalog=null,nrSadienError='',nrCurrentTrack=null,nrNativeState='stopped',nrNativeError='',nrFeaturedVerified=null;
 const nrSadienAudio=new Audio();nrSadienAudio.preload='none';
 const nrSadienBar=document.createElement('div');nrSadienBar.id='nr-sadien-bar';nrSadienBar.hidden=true;
 document.querySelector('.app-shell').appendChild(nrSadienBar);
@@ -98,13 +98,23 @@ function nrRenderPremium(){
  '<p>Abdülbasit, Mustafa İsmail, Minşavî ve başka etkileyici kıraatler. Yukarıdaki “Dinlenecek sure” seçimin kullanılır.</p>'+
  '<div class="nr-similar-grid">'+NR_SIMILAR_RECITERS.map(m=>{
   const entry=hafizCatalog.find(x=>x.id===m.id);
+  const verified=Array.isArray(nrFeaturedVerified)&&nrFeaturedVerified.includes(m.id);
   return '<div class="nr-similar-card"><b>'+esc(m.name)+'</b><small>'+esc(m.desc)+'</small>'+
-  '<span>'+(entry?entry.available.length+' sure kaydı':'Katalog yükleniyor…')+'</span>'+
+  '<span>'+(entry?entry.available.length+' sure • '+(verified?'MP3 erişimi doğrulandı':'Yayın testi kesin değil'):'Katalog yükleniyor…')+'</span>'+
   '<button data-sadien="similar" data-id="'+esc(m.id)+'" '+(!entry?'disabled':'')+'>▶ Uygulamada dinle</button></div>';
  }).join('')+'</div>';
 }
+
+async function nrLoadFeaturedVerified(){
+ try{
+  const r=await fetch('featured_verified.json');
+  if(r.ok){const x=await r.json();nrFeaturedVerified=Array.isArray(x)?x:[];}
+ }catch(e){nrFeaturedVerified=[];}
+ nrRenderPremium();
+}
+
 async function nrLoadPremiumHafiz(){
- if(nrSadienCatalog){nrRenderPremium();return;}
+ if(nrSadienCatalog){nrRenderPremium();if(nrFeaturedVerified===null)nrLoadFeaturedVerified();return;}
  try{
   const r=await fetch('premium_recitations.json');
   if(!r.ok)throw Error('Hafız kataloğu yüklenemedi.');
@@ -113,6 +123,7 @@ async function nrLoadPremiumHafiz(){
   nrSadienCatalog=c;
  }catch(e){nrSadienError=String(e.message||'Kayıt bulunamadı.');}
  nrRenderPremium();
+ if(nrFeaturedVerified===null)nrLoadFeaturedVerified();
 }
 nrSadienAudio.addEventListener('playing',nrDrawSadienBar);
 nrSadienAudio.addEventListener('pause',nrDrawSadienBar);
