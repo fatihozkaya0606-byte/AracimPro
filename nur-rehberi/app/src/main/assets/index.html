@@ -517,6 +517,7 @@ hafizAudio.addEventListener('pause',()=>drawHafizPanel());
 hafizAudio.addEventListener('playing',()=>drawHafizPanel());
 hafizAudio.addEventListener('error',()=>{if(hafizSelected){toast('Bu yayının ses akışı açılamadı.');stopHafiz()}});
 async function playHafiz(id){
+  nrStopSadien();
  const r=hafizCatalog.find(x=>x.id===id);if(!r)return;
  const preferred=Number(document.getElementById('hafiz-surah')?.value||hafizSurah||1);
  const n=r.available.includes(preferred)?preferred:r.available[0];
@@ -712,6 +713,7 @@ function drawAdhanFloat(){
 }
 function stopAdhan(){adhanAudio.pause();adhanAudio.removeAttribute('src');adhanAudio.load();currentAdhan=null;drawAdhanFloat();}
 async function playAdhan(id){
+  nrStopSadien();
   const a=ADHANS.find(x=>x.id===id);if(!a)return;
   if(currentAdhan===id&&!adhanAudio.paused){adhanAudio.pause();drawAdhanFloat();if(st.page==='adhan')adhan();return}
   if(currentAdhan!==id){
