@@ -22,6 +22,20 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+      - name: Validate Nur Rehberi JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import pathlib,re
+          page=pathlib.Path("nur-rehberi/app/src/main/assets/index.html").read_text(encoding="utf-8")
+          scripts=re.findall(r"<script(?:\s[^>]*)?>([\s\S]*?)</script>",page)
+          assert scripts, "No application JavaScript found"
+          pathlib.Path("/tmp/nur-rehberi.js").write_text("\n".join(scripts),encoding="utf-8")
+          assert "royal-tile" in page and "royal-audio-row" in page
+          assert "function home()" in page and "function adhan()" in page
+          PY
+          node --check /tmp/nur-rehberi.js
       - name: Build offline licensed adhan audio assets
         shell: bash
         run: |
