@@ -65,3 +65,25 @@
 .nr-tafsir-bottom{display:flex;gap:9px;margin:17px 0}.nr-tafsir-bottom button{flex:1}
 @media(max-width:380px){.nr-tafsir-sheet{padding:24px 14px 12px}.nr-tafsir-controls-actions{gap:5px}
 .nr-tafsir-nav{gap:6px}.nr-tafsir-nav button{font-size:11px;padding:12px 5px}}
+
+
+/* Built-in Abdurrahmaan Sadien tracklist */
+.nr-premium-msg{border:1px solid #bc9f5d;color:#f1d9a4;padding:13px;border-radius:12px;margin:12px 0}
+.nr-premium-status{font:700 12px system-ui,sans-serif;color:#f9d58a;margin:11px 0}
+.nr-premium-tracks{max-height:420px;overflow-y:auto;overscroll-behavior:contain;background:#082b21;border:1px solid #e3bd74;border-radius:14px;padding:7px;margin:13px 0;scrollbar-color:#d7b673 #0d3b2d}
+.nr-premium-tracks button{display:flex;align-items:center;gap:11px;width:100%;padding:12px 9px;border:0;border-bottom:1px solid #b7975957;background:transparent;color:#fff1c8;text-align:left;font:13px system-ui,sans-serif}
+.nr-premium-tracks button:last-child{border-bottom:0}
+.nr-premium-tracks button:active{background:#21694c}
+.nr-premium-play{width:38px;height:38px;flex-shrink:0;display:grid;place-items:center;border-radius:50%;color:#19563b;
+ background:linear-gradient(#ffedc2,#dcb467);border:1px solid #fff3cc;box-shadow:0 3px 0 #855b2c}
+.nr-premium-tracks button>span:last-child{min-width:0;flex:1}
+.nr-premium-tracks strong{display:block;font-weight:700;line-height:1.4}
+.nr-premium-tracks small{display:block;font:11px system-ui,sans-serif;color:#d4c29d;margin-top:4px}
+#nr-sadien-bar:not([hidden]){position:fixed;bottom:83px;left:50%;z-index:55;transform:translateX(-50%);
+ width:calc(100% - 15px);max-width:520px;padding:12px;display:flex;align-items:center;gap:9px;
+ background:linear-gradient(#135741,#063829);border:2px solid #d2aa67;border-radius:14px;
+ box-shadow:0 5px 0 #785223,0 11px 18px #00150cab;color:#ffe5ad}
+#nr-sadien-bar>div{flex:1;min-width:0}
+#nr-sadien-bar strong{display:block;font:700 12px system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#nr-sadien-bar small{display:block;font:10px system-ui,sans-serif;color:#e5d09d;margin-top:4px}
+#nr-sadien-bar button{padding:9px 12px;border:1px solid #dcbe7d;border-radius:10px;background:#124f3a;color:#ffe5ad;font-size:17px}
