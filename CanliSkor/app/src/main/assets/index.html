@@ -309,7 +309,53 @@ body[data-theme="light"] .pitch-caption{color:#416477!important}
 body[data-theme="light"] .pitch-warning{color:#4e6d79!important}
 body[data-theme="light"] .kit-legend{color:#567685!important}
 body[data-theme="light"] .game-team .team-name{color:inherit}
-</style></head><body><div id="app">
+
+/* v0.7 Stadium Edition */
+body.v07{--lime:#c2ff67;background:#071521}
+body.v07 #app{background:radial-gradient(ellipse at 80% 3%,#174c3c77,transparent 65%),#071521}
+body.v07 .header{background:linear-gradient(120deg,#102a3d,#0d2634,#16473d)!important;box-shadow:0 9px 24px #0005!important}
+body.v07 .brand-mark{border-radius:13px;transform:none;box-shadow:0 7px 15px #a4ff4c36!important}
+body.v07 .title{text-shadow:none!important}
+body.v07 .live-strip{background:linear-gradient(115deg,#214e46,#142d3b)!important;border-color:#4f8273!important;box-shadow:inset 0 1px #fff2,0 5px 10px #0005!important}
+body.v07 .section{padding:10px 11px}
+body.v07 .v4-today{background:linear-gradient(105deg,#1b413e,#18394a)!important;border:1px solid #417365a0}
+body.v07 .v4-date{border-radius:11px!important;background:#183246!important;box-shadow:0 3px 8px #0005!important}
+body.v07 .v4-date.on{background:linear-gradient(135deg,#d6ff94,#a9f15d)!important;box-shadow:0 4px 12px #a7f26855!important;color:#143a1e!important}
+body.v07 .top-tab{border-radius:11px!important;background:#173247!important;box-shadow:0 3px 9px #0004!important}
+body.v07 .top-tab.on{background:linear-gradient(125deg,#d7ff8c,#acf45c)!important;box-shadow:0 4px 12px #8fec5055!important;color:#17381d!important}
+body.v07 .chip{background:#183347!important;box-shadow:none!important}
+body.v07 .chip.on{background:#c8fa85!important;box-shadow:0 3px 10px #b8ff6144!important}
+body.v07 .v4-group{background:#112638!important;border:1px solid #486977!important;border-radius:13px!important;box-shadow:0 9px 17px #0006!important;margin-bottom:11px!important}
+body.v07 .v4-league{background:linear-gradient(95deg,#284956,#183544)!important;box-shadow:none!important;text-shadow:none!important;padding:11px 12px!important}
+body.v07 .v4-match{min-height:54px!important;background:linear-gradient(170deg,#1b3547,#11293a)!important;border-color:#354c58!important;padding:8px 7px!important}
+body.v07 .v4-status.now{color:#b6f67c!important;text-shadow:none!important}
+body.v07 .v4-score{border-radius:8px;background:#24414e!important;color:#f2fbfc!important;box-shadow:inset 0 1px #fff2,0 3px 8px #0004!important}
+body.v07 .v4-score.now{background:#275143!important;color:#bffa8e!important;border-color:#659675!important}
+body.v07 .v4-group.empty-league{opacity:.7;box-shadow:none!important;margin-bottom:5px!important}
+body.v07 .v4-group.empty-league .v4-league{padding:8px 11px!important}
+body.v07 .v4-group.empty-league .v4-no-match{display:none}
+body.v07 .future-note{padding:12px;margin:8px 0 11px;border:1px solid #4b7e70;border-radius:11px;color:#d9f4e7;background:#173b3c;font-size:11px}
+body.v07 .game-hero{background:linear-gradient(145deg,#225157,#122a43,#1a4a3e)!important;box-shadow:0 12px 21px #0007!important;border-radius:18px!important}
+body.v07 .score-podium{box-shadow:0 7px 15px #0007,inset 0 1px #fff3!important}
+body.v07 .detail-tabs{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+body.v07 .detail-tab{font-size:10px;box-shadow:0 3px 9px #0004!important}
+body.v07 .mini-score-grid>div{box-shadow:0 5px 12px #0004!important}
+body.v07 .game-section{box-shadow:0 9px 16px #0005!important}
+body.v07[data-theme="light"] .header{background:linear-gradient(120deg,#d4eee8,#edf7f5)!important;box-shadow:0 7px 16px #b4cdd18f!important}
+body.v07[data-theme="light"] .v4-date{background:#fff!important;border-color:#bdd1d9!important;box-shadow:0 2px 6px #c1d4d7!important}
+body.v07[data-theme="light"] .v4-date.on{background:#c8f38e!important;box-shadow:0 3px 9px #b3dba7!important}
+body.v07[data-theme="light"] .top-tab{background:#fff!important;color:#476575!important;box-shadow:0 3px 8px #c0d2d8!important}
+body.v07[data-theme="light"] .top-tab.on{background:#c8f690!important;color:#204c2d!important}
+body.v07[data-theme="light"] .v4-group{background:#fff!important;box-shadow:0 6px 13px #c3d6da!important;border-color:#b3cdd4!important}
+body.v07[data-theme="light"] .v4-league{background:#e3f0ef!important;color:#244958!important}
+body.v07[data-theme="light"] .v4-match{background:#fff!important;color:#244251!important}
+body.v07[data-theme="light"] .v4-score{background:#eff5f7!important;color:#2d4c59!important;border-color:#c4d4da!important}
+body.v07[data-theme="light"] .v4-score.now{background:#e6f4e6!important;color:#26733f!important;border-color:#99cba3!important}
+body.v07[data-theme="light"] .future-note{color:#315846!important;background:#e3f3e8!important;border-color:#abcdb7}
+body.v07[data-theme="light"] .game-hero{background:linear-gradient(135deg,#d9f0e4,#e1f0f4)!important;box-shadow:0 9px 19px #b6cbd4!important}
+@media(max-width:360px){body.v07 .v4-home,body.v07 .v4-away{font-size:10.5px}}
+
+</style></head><body class="v07"><div id="app">
 <header class="header">
   <div class="titlebar"><div class="brand"><div class="brand-mark">⚽</div><div><div class="title">Canlı Skor<span style="color:var(--lime)">+</span></div><div class="subtitle">Tüm maçlar, tek ekranda</div></div></div>
   <div class="header-actions"><button class="theme-switch" id="theme-toggle" title="Açık / koyu tema" aria-label="Temayı değiştir">☀</button><span class="status-pill"><i class="dot"></i><span id="source-label">BAĞLANIYOR</span></span></div></div>
@@ -322,6 +368,7 @@ body[data-theme="light"] .game-team .team-name{color:inherit}
 <button data-tab="favorites"><span>☆</span>Favoriler</button>
 <button data-tab="settings"><span>⚙</span>Ayarlar</button>
 </nav>
+<script src="private-config.js"></script>
 <script>
 'use strict';
 const $=id=>document.getElementById(id);
@@ -341,9 +388,9 @@ const FEATURED=[
 const STATE={tab:'today',day:0,filter:'Tümü',term:'',match:null,details:null,matches:[],liveMatches:[],loading:false,liveLoading:false,error:'',liveError:'',source:'sportscore',last:0,lastFixtures:0,lastLive:0,lastAttempt:0,liveAttempt:0,leagueMap:{},leagueFetched:0,liveChecked:false};
 const UI_THEME_KEY='canliThemeV6';
 let selectedTheme=localStorage.getItem(UI_THEME_KEY)==='light'?'light':'dark';
-function applyTheme(){document.body.dataset.theme=selectedTheme;const b=$('theme-toggle');if(b){b.textContent=selectedTheme==='dark'?'☀':'☾';b.title=selectedTheme==='dark'?'Açık temaya geç':'Koyu temaya geç'}}
+function applyTheme(){document.body.dataset.theme=selectedTheme;if(typeof AndroidApi!=='undefined'&&typeof AndroidApi.setLightTheme==='function'){try{AndroidApi.setLightTheme(selectedTheme==='light')}catch(_){}}const b=$('theme-toggle');if(b){b.textContent=selectedTheme==='dark'?'☀':'☾';b.title=selectedTheme==='dark'?'Açık temaya geç':'Koyu temaya geç'}}
 function changeTheme(next){selectedTheme=next==='light'?'light':'dark';localStorage.setItem(UI_THEME_KEY,selectedTheme);applyTheme();render()}
-let bsdToken=localStorage.getItem('bsdToken')||'';
+let bsdToken=localStorage.getItem('bsdToken')??String(window.__BSD_BOOTSTRAP_TOKEN__||'');
 let favorites=new Set(JSON.parse(localStorage.getItem('canliFavorites')||'[]'));
 const pending=new Map(); let seq=0;
 const first=(obj,keys,def='')=>{for(const k of keys){const v=obj?.[k];if(v!==undefined&&v!==null&&v!=='')return v}return def};
@@ -361,7 +408,7 @@ function request(url,token=''){
 function getDate(offset=0){const fmt=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'});const now=new Date(Date.now()+offset*86400000);return fmt.format(now)}
 function dateOf(value){if(!value)return '';const d=new Date(value);if(!Number.isFinite(d.getTime()))return '';return new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}).format(d)}
 function timeOf(value){const d=new Date(value);return Number.isFinite(d.getTime())?d.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit',timeZone:'Europe/Istanbul'}):'—'}
-function dateLabel(offset){if(offset===0)return 'Bugün';if(offset===-1)return 'Dün';if(offset===1)return 'Yarın';return String(getDate(offset)).slice(8,10)+'.'+String(getDate(offset)).slice(5,7)}
+function dateLabel(offset){if(offset===0)return 'Bugün';if(offset===-1)return 'Dün';if(offset===1)return 'Yarın';return new Intl.DateTimeFormat('tr-TR',{weekday:'short',timeZone:'Europe/Istanbul'}).format(new Date(Date.now()+offset*86400000)).replace('.','')}
 function arrayOf(data){
  if(Array.isArray(data))return data;
  const variants=[data?.results,data?.events,data?.matches,data?.fixtures,data?.live,data?.live_events,data?.data?.results,data?.data?.events,data?.data?.matches,data?.data];
@@ -413,16 +460,40 @@ async function ensureLeagues(){
  try{const response=await request(BSD+'/api/v2/leagues/?limit=200',bsdToken);const rows=assertArrayShape(response,'Lig');const map={};for(const l of rows){const id=str(l.id);if(id)map[id]={name:str(first(l,['name','league_name','title'],'Lig #'+id)),country:str(textVal(first(l,['country','country_name'],'')))} }STATE.leagueMap=map;localStorage.setItem('bsdLeaguesV4',JSON.stringify({at:Date.now(),map}));}
  catch(e){STATE.error='Lig bilgileri alınamadı: '+(e.message||'bağlantı hatası')}
 }
-async function paginated(url,token,maxPages=4){let all=[];let next=url;const seen=new Set();for(let i=0;next&&i<maxPages;i++){
- if(seen.has(next))break;seen.add(next);let data=await request(next,token);all.push(...assertArrayShape(data,'Fikstür'));
- let candidate=data?.next; if(candidate && /^https:\/\/sports\.bzzoiro\.com\//.test(candidate))next=candidate;else if(candidate&&candidate.startsWith('/'))next=BSD+candidate;else next=null;
- }return all}
+async function paginated(url,token,maxPages=14){
+ let all=[],next=url,seen=new Set();
+ for(let i=0;next&&i<maxPages;i++){
+  if(seen.has(next))break;seen.add(next);
+  const data=await request(next,token);
+  const rows=assertArrayShape(data,'Fikstür');
+  all.push(...rows);
+  const candidate=data?.next||null;
+  if(candidate&&candidate.startsWith('https://sports.bzzoiro.com/'))next=candidate;
+  else if(candidate&&candidate.startsWith('/'))next=BSD+candidate;
+  else if(!candidate&&Number(data?.count||0)>all.length&&rows.length){
+   const nextURL=new URL(url);
+   nextURL.searchParams.set('limit','200');
+   nextURL.searchParams.set('offset',String(all.length));
+   next=nextURL.toString();
+  }else next=null;
+ }
+ return all;
+}
 async function fixtures(day){
  const target=getDate(day);
- if(bsdToken){await ensureLeagues();const url=BSD+'/api/v2/events/?date_from='+getDate(day-1)+'&date_to='+getDate(day+1)+'&limit=200';
- let rows=await paginated(url,bsdToken,5);
- const seen=new Set();return rows.filter(r=>dateOf(first(r,['event_date','start_time','kickoff','kickoff_at'],r?.time?.kickoff_at))===target).map(r=>normalize(r,'bsd')).filter(m=>{const k=matchKey(m);if(seen.has(k))return false;seen.add(k);return true})}
- let data=await request(SPORT+'/api/v1/fixtures/?sport=football&date='+target+'&limit=200');STATE.source='sportscore';return assertArrayShape(data,'Maç').map(r=>normalize(r,'sportscore'));
+ if(bsdToken){
+  await ensureLeagues();
+  const url=BSD+'/api/v2/events/?date_from='+target+'&date_to='+target+'&limit=200';
+  const rows=await paginated(url,bsdToken,14);
+  const prior=getDate(day-1);
+  const priorUrl=BSD+'/api/v2/events/?date_from='+prior+'&date_to='+prior+'&limit=200';
+  const prev=await paginated(priorUrl,bsdToken,14);
+  const seen=new Set();
+  const matches=rows.concat(prev).filter(r=>dateOf(first(r,['event_date','start_time','kickoff','kickoff_at','start_at','date'],r?.time?.kickoff_at))===target).map(r=>normalize(r,'bsd'));
+  STATE.source='bsd';return matches.filter(m=>{const k=matchKey(m);if(seen.has(k))return false;seen.add(k);return true});
+ }
+ const response=await request(SPORT+'/api/v1/fixtures/?sport=football&date='+target+'&limit=200');
+ STATE.source='sportscore';return assertArrayShape(response,'Maç').map(r=>normalize(r,'sportscore'));
 }
 async function liveMatches(){
  if(bsdToken){const data=await request(BSD+'/api/v2/events/live/?limit=200',bsdToken);const rows=assertArrayShape(data,'Canlı maç');return rows.map(r=>normalize(r,'bsd',true))}
@@ -475,21 +546,29 @@ function kitVars(home,away,info){
 }
 function matchCard(m){const live=isLive(m),id=encodeURIComponent(matchKey(m));return `<article class="v4-match" data-open="${id}" style="${kitVars(m.home,m.away)}"><span class="v4-status ${live?'now':''}">${escapeHtml(formatStatus(m))}</span><span class="v4-home">${escapeHtml(m.home)}</span><b class="v4-score ${live?'now':''}">${escapeHtml(scoreText(m))}</b><span class="v4-away">${escapeHtml(m.away)}</span><button class="v4-star ${saved(m)?'saved':''}" data-star="${id}" aria-label="Favori">${saved(m)?'★':'☆'}</button></article>`}
 
-function buildSections(){const data=visibleMatches();const map=new Map();for(const m of data){const key=m.league.key;if(!map.has(key))map.set(key,{league:m.league,rows:[]});map.get(key).rows.push(m)}
- const shown=new Set();let selected=[];
- for(const f of FEATURED){if(STATE.filter!=='Tümü'&&STATE.filter!==f.key)continue;const entry=map.get(f.key);selected.push({league:entry?.league||f,rows:entry?.rows||[]});shown.add(f.key)}
- for(const [key,value] of map){if(!shown.has(key))selected.push(value)}
- if(STATE.term.trim()&&data.length===0)return `<div class="v4-empty"><b>Aramada maç bulunamadı</b><p>Başka bir takım veya lig ara.</p></div>`;
- if(STATE.filter!=='Tümü'&&!selected.length)return `<div class="v4-empty">Seçilen ligde maç bulunamadı.</div>`;
- let html=selected.map(({league,rows})=>`<section class="v4-group"><div class="v4-league"><span>${escapeHtml(league.flag||'⚽')}　${escapeHtml(league.title)}</span><small>${rows.length?rows.length+' maç':'0 maç'}</small></div>${rows.length?rows.sort((a,b)=>Number(isLive(b))-Number(isLive(a))||String(a.time).localeCompare(String(b.time))).map(matchCard).join(''):`<p class="v4-no-match">${STATE.tab==='live'?'Şu anda bu ligde canlı maç yok.':'Seçilen günde bu ligde maç yok.'}</p>`}</section>`).join('');
- if(!data.length&&!STATE.loading&&STATE.tab==='live')html=`<div class="v4-note">${STATE.liveError?'Canlı veri alınamadı: '+escapeHtml(STATE.liveError):STATE.liveChecked?'BSD şu anda canlı maç bildirmiyor. Fikstürdeki maç durumları gecikmeli olabilir.':'Canlı maçlar kontrol ediliyor.'}</div>`+html;
+function buildSections(){
+ const data=visibleMatches(),groups=new Map();
+ for(const m of data){const k=m.league.key;if(!groups.has(k))groups.set(k,{league:m.league,rows:[]});groups.get(k).rows.push(m)}
+ const shown=new Set(),filled=[],empty=[];
+ for(const f of FEATURED){
+  if(STATE.filter!=='Tümü'&&STATE.filter!==f.key)continue;
+  const entry=groups.get(f.key),row={league:entry?.league||f,rows:entry?.rows||[]};
+  (row.rows.length?filled:empty).push(row);shown.add(f.key);
+ }
+ for(const [key,value] of groups)if(!shown.has(key))filled.push(value);
+ if(STATE.term.trim()&&!data.length)return '<div class="v4-empty">Bu aramaya uygun maç bulunamadı.</div>';
+ const rows=filled.concat(empty);
+ let html=rows.map(({league,rows})=>'<section class="v4-group '+(rows.length?'has-games':'empty-league')+'"><div class="v4-league"><span>'+escapeHtml(league.flag||'⚽')+'　'+escapeHtml(league.title)+'</span><small>'+(rows.length?rows.length+' maç':'—')+'</small></div>'+(rows.length?rows.sort((a,b)=>Number(isLive(b))-Number(isLive(a))||String(a.time).localeCompare(String(b.time))).map(matchCard).join(''):'<p class="v4-no-match">Bu tarihte maç yok</p>')+'</section>').join('');
+ if(!data.length&&!STATE.loading&&STATE.tab==='live')html='<div class="v4-note">'+(STATE.liveError?'Canlı veri alınamadı: '+escapeHtml(STATE.liveError):'Şu anda canlı maç bildirilmedi.')+'</div>'+html;
+ if(data.length&&STATE.day>0&&STATE.tab==='today')html='<div class="future-note">📅 '+escapeHtml(getDate(STATE.day))+' tarihinin planlanan karşılaşmaları · Saatler değişebilir</div>'+html;
+ if(!data.length&&STATE.tab==='today'&&!STATE.loading)html='<div class="v4-note">Bu tarih için veri sağlayıcısında fikstür bulunamadı.</div>'+html;
  return html;
 }
 function screenMatches(){const items=visibleMatches();const tabs=[['today','Tümü'],['live','● Canlı'],['finished','Biten'],['favorites','☆ Favoriler']].map(([id,name])=>`<button data-top-tab="${id}" class="top-tab ${STATE.tab===id?'on':''}">${name}</button>`).join('');
  const dates=Array.from({length:7},(_,i)=>i-3).map(i=>`<button data-day="${i}" class="v4-date ${STATE.day===i?'on':''}"><small>${getDate(i).slice(8)}.${getDate(i).slice(5,7)}</small><b>${dateLabel(i)}</b></button>`).join('');
  const other=new Map();for(const m of STATE.matches.concat(STATE.liveMatches)){const l=m.league;if(!FEATURED.some(f=>f.key===l.key))other.set(l.key,l)}
  const leagues=[{key:'Tümü',title:'Tüm Ligler'},...FEATURED,...other.values()];
- return `<div class="v4-today"><span>⚽ <b>${STATE.liveMatches.length}</b> Canlı</span><span>${STATE.last?'Son: '+new Date(STATE.last).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}):'Bağlanıyor…'}</span></div><div class="v4-dates">${dates}</div><div class="top-tabs">${tabs}</div><div class="v4-toolbar"><label>⌕ <input id="search" placeholder="Takım veya lig ara…" type="search" autocomplete="off" value="${escapeHtml(STATE.term)}"></label><button data-refresh="1">↻ Yenile</button></div><div class="v4-league-chips">${leagues.map(l=>`<button data-filter="${encodeURIComponent(l.key)}" class="chip ${STATE.filter===l.key?'on':''}">${escapeHtml(l.title)}</button>`).join('')}</div><div class="v4-summary">${items.length} maç · ${STATE.source==='bsd'?'BSD':'SportScore'} ${STATE.loading?'· Güncelleniyor…':''}</div>${STATE.error?`<div class="errorbox">⚠ ${escapeHtml(STATE.error)}</div>`:''}<div id="match-results">${buildSections()}</div>`;
+ return `<div class="v4-today"><span>⚽ <b>${STATE.liveMatches.length}</b> Canlı</span><span>${STATE.last?'Son: '+new Date(STATE.last).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}):'Bağlanıyor…'}</span></div><div class="v4-dates">${dates}</div><div class="top-tabs">${tabs}</div><div class="v4-toolbar"><label>⌕ <input id="search" placeholder="Takım veya lig ara…" type="search" autocomplete="off" value="${escapeHtml(STATE.term)}"></label><button data-refresh="1">↻ Yenile</button></div><div class="v4-league-chips">${leagues.map(l=>`<button data-filter="${encodeURIComponent(l.key)}" class="chip ${STATE.filter===l.key?'on':''}">${escapeHtml(l.title)}</button>`).join('')}</div><div class="v4-summary">${items.length} maç ${STATE.loading?'· Güncelleniyor…':''}</div>${STATE.error?`<div class="errorbox">⚠ ${escapeHtml(STATE.error)}</div>`:''}<div id="match-results">${buildSections()}</div>`;
 }
 function screenSettings(){return `<h2>⚙ Ayarlar</h2><div class="setting"><h3>🎨 Görünüm</h3><p>Açık veya koyu temayı istediğin zaman değiştir. Seçimin aynı cihazda saklanır.</p><div class="theme-settings"><button data-theme="dark" class="theme-option ${selectedTheme==='dark'?'on':''}">☾ Koyu tema</button><button data-theme="light" class="theme-option ${selectedTheme==='light'?'on':''}">☀ Açık tema</button></div></div><div class="setting"><h3>BSD futbol API</h3><p>Bağlı API anahtarı bu cihazda saklanır; uygulamanın üzerine güncelleme yaptığında yeniden girmen gerekmez. Canlı maçlar 15 saniyede bir kontrol edilir. Uygulama arka plandayken durur.</p><div class="label">API ANAHTARI</div><input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="BSD API anahtarını yapıştır" value="${escapeHtml(bsdToken)}"><div class="setting-actions"><button class="primary" data-save-token="1">Kaydet ve bağlan</button><button class="secondary" data-clear-token="1">Anahtarsız kullan</button></div><p>API anahtarı herkese açık APK'ya veya GitHub'a eklenmez. Google Play sürümü için ortak sunucu gerekir.</p></div><div class="setting"><h3>Bağlantı durumu</h3><p>Kaynak: <b>${STATE.source==='bsd'?'BSD':'SportScore'}</b><br>Son canlı kontrol: ${STATE.lastLive?new Date(STATE.lastLive).toLocaleTimeString('tr-TR'):'Henüz yapılmadı'}<br>${STATE.liveError?'Hata: '+escapeHtml(STATE.liveError):'Hata raporlanmadı.'}</p><p><a href="https://sports.bzzoiro.com/dashboard/">BSD hesap paneline git ↗</a></p></div>`}
 const STAT_SPEC=[
@@ -595,7 +674,7 @@ function detailScreen(m){
  <div class="game-hero" style="${kitVars(m.home,m.away,d?.metadata||{})}"><div class="game-date">${escapeHtml(new Date(m.time||Date.now()).toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Istanbul'}))} · ${escapeHtml(timeOf(m.time))}</div>
  <div class="game-scoreline"><div class="game-team home">${detailCrest(homeId,m.home)}<div class="team-name">${escapeHtml(m.home)}</div></div>
  <div class="score-podium"><div class="score-values">${escapeHtml(m.hs??'–')} : ${escapeHtml(m.as??'–')}</div><div class="score-status ${isLive(m)?'live':''}">${status}</div></div>
- <div class="game-team away">${detailCrest(awayId,m.away)}<div class="team-name">${escapeHtml(m.away)}</div></div></div><div class="game-footnote"><span class="indicator"></span> Gerçek zamanlı BSD maç merkezi</div></div><div class="kit-legend" style="${kitVars(m.home,m.away,d?.metadata||{})}"><i class="kit-dot"></i>${escapeHtml(m.home)} <span>•</span> <i class="kit-dot away"></i>${escapeHtml(m.away)}</div>
+ <div class="game-team away">${detailCrest(awayId,m.away)}<div class="team-name">${escapeHtml(m.away)}</div></div></div></div><div class="kit-legend" style="${kitVars(m.home,m.away,d?.metadata||{})}"><i class="kit-dot"></i>${escapeHtml(m.home)} <span>•</span> <i class="kit-dot away"></i>${escapeHtml(m.away)}</div>
  <div class="mini-score-grid">${statMini(d,'Şut',['shots_total','total_shots','shots'])}${statMini(d,'Korner',['corners','corner_kicks'])}${statMini(d,'Topla oynama %',['possession','ball_possession'])}</div>
  <div class="detail-tabs">${[['stats','📊 İstatistik'],['events','⚽ Olaylar'],['lineups','👕 Kadrolar'],['formation','▦ Diziliş']].map(([id,title])=>`<button class="detail-tab ${tab===id?'on':''}" data-detail-tab="${id}">${title}</button>`).join('')}</div>`;
  if(!d)return html+'<div class="game-section"><div class="stat-empty"><span class="spinner"></span> Maç detayları yükleniyor…</div></div>';
@@ -613,13 +692,13 @@ function detailScreen(m){
  return html;
 }
 
-function render(){applyTheme();if(document.activeElement?.id==='search')return;const scroll=window.scrollY;const count=STATE.liveMatches.length||STATE.matches.filter(isLive).length;$('live-count').textContent=String(count);$('today-count').textContent=String(STATE.matches.length);$('updated-at').textContent=STATE.last?new Date(STATE.last).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}):'—';$('source-label').textContent=STATE.source==='bsd'?'BSD API':'SPORTSCORE';$('content').innerHTML=STATE.match?detailScreen(STATE.match):STATE.tab==='settings'?screenSettings():screenMatches();$('credit').innerHTML=STATE.source==='sportscore'?'<a href="https://sportscore.com/">Powered by SportScore</a> · Maç verilerinde gecikme olabilir':'Kaynak: BSD · Maç verilerinde gecikme olabilir';document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===STATE.tab)); if(Math.abs(window.scrollY-scroll)>2)window.scrollTo(0,scroll)}
+function render(){applyTheme();if(document.activeElement?.id==='search')return;const scroll=window.scrollY;const count=STATE.liveMatches.length||STATE.matches.filter(isLive).length;$('live-count').textContent=String(count);$('today-count').textContent=String(STATE.matches.length);$('updated-at').textContent=STATE.last?new Date(STATE.last).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}):'—';$('source-label').textContent=STATE.source==='bsd'?'CANLI VERİ':'SPOR VERİSİ';$('content').innerHTML=STATE.match?detailScreen(STATE.match):STATE.tab==='settings'?screenSettings():screenMatches();$('credit').innerHTML=STATE.source==='sportscore'?'<a href="https://sportscore.com/">Powered by SportScore</a> · Maç verilerinde gecikme olabilir':'Kaynak: BSD · Maç verilerinde gecikme olabilir';document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===STATE.tab)); if(Math.abs(window.scrollY-scroll)>2)window.scrollTo(0,scroll)}
 async function refreshLive(){if(STATE.liveLoading)return;STATE.liveLoading=true;STATE.liveAttempt=Date.now();try{const data=await liveMatches();STATE.liveMatches=data;STATE.liveChecked=true;STATE.lastLive=Date.now();STATE.liveError='';mergeLiveIntoFixtures();if(STATE.match){const fresh=data.find(x=>matchKey(x)===matchKey(STATE.match));if(fresh)STATE.match={...STATE.match,...fresh,homeId:fresh.homeId||STATE.match.homeId,awayId:fresh.awayId||STATE.match.awayId};}STATE.last=Date.now()}catch(e){STATE.liveError=e.message||'Canlı veri alınamadı';STATE.liveChecked=false}finally{STATE.liveLoading=false;render()}}
 async function refresh(force=false){if(STATE.loading)return;STATE.loading=true;STATE.lastAttempt=Date.now();STATE.error='';render();try{if(force||!STATE.lastFixtures||Date.now()-STATE.lastFixtures>240000){const data=await fixtures(STATE.day);STATE.matches=data;STATE.lastFixtures=Date.now();}STATE.last=Date.now();if(STATE.day===0||STATE.tab==='live')await refreshLive();}catch(e){STATE.error=e.message||'Maç listesi alınamadı';if(!STATE.matches.length)try{let c=JSON.parse(localStorage.getItem('scoreCacheV4')||'null');if(c&&c.day===STATE.day){STATE.matches=c.matches;STATE.error+=' • Son kaydedilen fikstür gösteriliyor.'}}catch(_){} }finally{STATE.loading=false;try{localStorage.setItem('scoreCacheV4',JSON.stringify({day:STATE.day,matches:STATE.matches.map(({raw,...m})=>m)}))}catch(_){}render()}}
 function switchTab(tab){if(tab===STATE.tab)return;window.scrollTo(0,0);STATE.tab=tab;STATE.match=null;STATE.details=null;STATE.filter='Tümü';STATE.term='';if(tab==='live')STATE.day=0;if(tab==='settings'){render();return}render();if(tab==='live'){refreshLive();if(!STATE.matches.length)refresh(true)}else if(!STATE.matches.length)refresh(true);}
 $('theme-toggle').addEventListener('click',()=>changeTheme(selectedTheme==='dark'?'light':'dark'));
 $('nav').addEventListener('click',e=>{let button=e.target.closest('[data-tab]');if(button)switchTab(button.dataset.tab)});
-$('content').addEventListener('click',e=>{let b=e.target.closest('button');if(b){if(b.dataset.theme){changeTheme(b.dataset.theme);return}if(b.dataset.formationSide){STATE.formationSide=b.dataset.formationSide;render();return}if(b.dataset.refresh){refresh(true);return}if(b.dataset.topTab){switchTab(b.dataset.topTab);return}if(b.dataset.day!==undefined){window.scrollTo(0,0);STATE.day=Number(b.dataset.day);STATE.tab='today';STATE.filter='Tümü';STATE.match=null;STATE.matches=[];STATE.lastFixtures=0;refresh(true);return}if(b.dataset.filter!==undefined){STATE.filter=decodeURIComponent(b.dataset.filter);render();return}if(b.dataset.star){e.stopPropagation();const key=decodeURIComponent(b.dataset.star);const m=[...STATE.liveMatches,...STATE.matches].find(m=>matchKey(m)===key);if(m){if(saved(m))favorites.delete(key);else favorites.add(key);localStorage.setItem('canliFavorites',JSON.stringify([...favorites]));render()}return}if(b.dataset.detailTab){STATE.detailTab=b.dataset.detailTab;render();if(['lineups','formation'].includes(STATE.detailTab)&&STATE.details&&!STATE.details.lineupsLoaded&&!STATE.details.lineups)loadLineups();return}if(b.dataset.detailRetry){STATE.details=null;render();loadDetail(STATE.match);return}if(b.dataset.back){STATE.match=null;STATE.details=null;window.scrollTo(0,0);render();return}if(b.dataset.saveToken){bsdToken=$('token').value.trim();localStorage.setItem('bsdToken',bsdToken);STATE.source=bsdToken?'bsd':'sportscore';STATE.matches=[];STATE.liveMatches=[];STATE.lastFixtures=0;STATE.lastLive=0;STATE.leagueMap={};STATE.tab='today';STATE.day=0;refresh(true);return}if(b.dataset.clearToken){bsdToken='';localStorage.removeItem('bsdToken');STATE.source='sportscore';STATE.matches=[];STATE.liveMatches=[];STATE.lastFixtures=0;STATE.tab='today';STATE.day=0;refresh(true);return}}let card=e.target.closest('[data-open]');if(card){const id=decodeURIComponent(card.dataset.open);const m=[...STATE.liveMatches,...STATE.matches].find(m=>matchKey(m)===id);if(m)detail(m)}});
+$('content').addEventListener('click',e=>{let b=e.target.closest('button');if(b){if(b.dataset.theme){changeTheme(b.dataset.theme);return}if(b.dataset.formationSide){STATE.formationSide=b.dataset.formationSide;render();return}if(b.dataset.refresh){refresh(true);return}if(b.dataset.topTab){switchTab(b.dataset.topTab);return}if(b.dataset.day!==undefined){window.scrollTo(0,0);STATE.day=Number(b.dataset.day);STATE.tab='today';STATE.filter='Tümü';STATE.match=null;STATE.matches=[];STATE.lastFixtures=0;refresh(true);return}if(b.dataset.filter!==undefined){STATE.filter=decodeURIComponent(b.dataset.filter);render();return}if(b.dataset.star){e.stopPropagation();const key=decodeURIComponent(b.dataset.star);const m=[...STATE.liveMatches,...STATE.matches].find(m=>matchKey(m)===key);if(m){if(saved(m))favorites.delete(key);else favorites.add(key);localStorage.setItem('canliFavorites',JSON.stringify([...favorites]));render()}return}if(b.dataset.detailTab){STATE.detailTab=b.dataset.detailTab;render();if(['lineups','formation'].includes(STATE.detailTab)&&STATE.details&&!STATE.details.lineupsLoaded&&!STATE.details.lineups)loadLineups();return}if(b.dataset.detailRetry){STATE.details=null;render();loadDetail(STATE.match);return}if(b.dataset.back){STATE.match=null;STATE.details=null;window.scrollTo(0,0);render();return}if(b.dataset.saveToken){bsdToken=$('token').value.trim();localStorage.setItem('bsdToken',bsdToken);STATE.source=bsdToken?'bsd':'sportscore';STATE.matches=[];STATE.liveMatches=[];STATE.lastFixtures=0;STATE.lastLive=0;STATE.leagueMap={};STATE.tab='today';STATE.day=0;refresh(true);return}if(b.dataset.clearToken){bsdToken='';localStorage.setItem('bsdToken','');STATE.source='sportscore';STATE.matches=[];STATE.liveMatches=[];STATE.lastFixtures=0;STATE.tab='today';STATE.day=0;refresh(true);return}}let card=e.target.closest('[data-open]');if(card){const id=decodeURIComponent(card.dataset.open);const m=[...STATE.liveMatches,...STATE.matches].find(m=>matchKey(m)===id);if(m)detail(m)}});
 $('content').addEventListener('error',e=>{const img=e.target;if(img?.classList?.contains('team-img'))img.style.display='none'},true);
 $('content').addEventListener('load',e=>{const img=e.target;if(img?.classList?.contains('team-img') && img.naturalWidth>0){const fallback=img.parentElement?.querySelector('.fallback-crest');if(fallback)fallback.style.visibility='hidden'}},true);
 $('content').addEventListener('input',e=>{if(e.target.id==='search'){STATE.term=e.target.value;const box=$('match-results');if(box)box.innerHTML=buildSections()}});
