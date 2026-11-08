@@ -37,6 +37,9 @@ jobs:
           PY
           node --check /tmp/nur-rehberi.js
           node --check nur-rehberi/app/src/main/assets/features.js
+          node --check nur-rehberi/app/src/main/assets/tafsir_reader.js
+          grep -q 'tafsir_reader.js' nur-rehberi/app/src/main/assets/index.html
+          grep -q 'function tefsirKitap()' nur-rehberi/app/src/main/assets/tafsir_reader.js
           python3 - <<'PY'
           import json,pathlib
           root=pathlib.Path('nur-rehberi/app/src/main/assets')
@@ -101,6 +104,21 @@ jobs:
           PY
       - name: Verify and bundle in-app Quran Central streaming catalog
         run: python3 nur-rehberi/scripts/build_premium_reciters.py
+      - name: Verify Turkish tafsir reader data API
+        run: |
+          python3 - <<'PY'
+          import json,urllib.request
+          base='https://raw.githubusercontent.com/spa5k/tafsir_api/main/tafsir/'
+          samples=['turkish-mokhtasar','turkish-tafsir-as-saadi-turkish']
+          for slug in samples:
+            url=base+slug+'/1.json'
+            req=urllib.request.Request(url,headers={'User-Agent':'NurRehberi/1.4 QA'})
+            with urllib.request.urlopen(req,timeout=18) as resp:
+              rows=json.load(resp)
+            assert len(rows)==7,(slug,len(rows))
+            assert all(isinstance(r.get('text'),str) and len(r['text'])>15 for r in rows)
+            print('Verified Turkish in-app tafsir API:',slug,len(rows),'verses')
+          PY
       - name: Build offline licensed adhan audio assets
         shell: bash
         run: |
@@ -143,5 +161,5 @@ jobs:
       - name: Upload test APK
         uses: actions/upload-artifact@v4
         with:
-          name: NurRehberi-3D-Plus-v1.3
+          name: NurRehberi-3D-Plus-v1.4
           path: nur-rehberi/app/build/outputs/apk/debug/app-debug.apk
