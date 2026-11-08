@@ -64,3 +64,10 @@ Takım logoları kullanılmıyor; üçüncü taraf fikri haklarını kontrol edi
 - Gerçek maç verisine bağlı Karşılaştırma ve Maç Bilgisi sekmeleri.
 - Uygulama açıkken gol uyarıları korunur. Arka plan push sistemi henüz yok.
 - API anahtarı açık kaynakta saklanmaz.
+
+## v1.3 Lig Puan Durumu ve Oranlar
+- Lig başlıklarına dokununca BSD güncel sezon puan durumunu açar (10 dakika servis önbelleği, istemcide 5 dakika).
+- Maç detayından Oranlar sekmesi açıldığında BSD konsensüs futbol oranlarını getirir: 1-X-2, Alt/Üst 2.5, KG Var/Yok.
+- Kaynak tarafından yayınlanmayan oranlar uydurulmaz. Bunlar resmî Türkiye İddaa oranları olarak sunulmaz.
+- Yalnızca kullanıldığında API isteği yapar; aynı oranlar sekmesine dönüşte tekrar istemez.
+- Açık/koyu tema, canlı skor ve gol uyarıları korunur. Gizli API anahtarı depoya konulmaz.
