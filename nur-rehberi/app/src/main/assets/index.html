@@ -371,7 +371,7 @@ function section(name,sub=''){return `<div class="section-title">${name}<small>$
 function btn(page,glyph,title){return `<button type="button" class="menu-card" data-page="${page}"><span class="glyph">${glyph}</span><strong>${title}</strong></button>`}
 function drawNav(){document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('selected',b.dataset.page===(st.page==='reader'?'quran':st.page==='settings'?'home':st.page)));document.getElementById('back').hidden=!['reader','settings','worship','adhan','quran','progress','learn','hafizlar','ilmihal','live','books','tefsir','hadis','dualar','esma','elifba','bildirimler'].includes(st.page)}
 function render(){document.body.classList.toggle('on-home',st.page==='home');document.body.classList.toggle('dark',!!st.dark);drawNav();if(st.page==='home')home();else if(st.page==='quran')quran();else if(st.page==='reader')reader();else if(st.page==='worship')worship();else if(st.page==='progress')progress();else if(st.page==='learn')learn();else if(st.page==='adhan')adhan();else if(st.page==='hafizlar')hafizlar();else if(st.page==='ilmihal')ilmihal();else if(st.page==='live')liveHaram();else if(st.page==='books')books();else if(st.page==='tefsir')tefsir();else if(st.page==='hadis')hadis();else if(st.page==='dualar')dualar();else if(st.page==='esma')esma();else if(st.page==='elifba')elifba();else if(st.page==='bildirimler')bildirimler();else if(st.page==='settings')settings();else home();}
-function go(page){if(page==='tefsir' && typeof nrTefsirN!=='undefined')nrTefsirN=st.surah; if(!['home','quran','reader','worship','progress','learn','adhan','hafizlar','ilmihal','live','books','tefsir','hadis','dualar','esma','elifba','bildirimler','settings'].includes(page))return;st.page=page;render();window.scrollTo({top:0,behavior:'instant'});}
+function go(page){if(page==='tefsir' && st.page==='reader' && typeof nrTafsirSurah!=='undefined'){nrTafsirSurah=st.surah;nrTafsirPage=1;}  if(!['home','quran','reader','worship','progress','learn','adhan','hafizlar','ilmihal','live','books','tefsir','hadis','dualar','esma','elifba','bildirimler','settings'].includes(page))return;st.page=page;render();window.scrollTo({top:0,behavior:'instant'});}
 
 /* Detailed decorative SVG icons, drawn locally — not static screenshots. */
 function royalIcon(name){
@@ -739,5 +739,6 @@ render();ensureCatalog();
 
 </script>
 <script src="features.js"></script>
+<script src="tafsir_reader.js"></script>
 </body>
 </html>
