@@ -6,8 +6,8 @@ android {
     applicationId 'com.nurrehberi.v10full'
     minSdk 24
     targetSdk 34
-    versionCode 15
-    versionName '1.5-native-hafiz-kitap'
+    versionCode 16
+    versionName '1.5.1-kitap-hafiz'
   }
   buildTypes { release { minifyEnabled false } }
   compileOptions {
