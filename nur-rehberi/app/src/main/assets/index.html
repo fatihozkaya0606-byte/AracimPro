@@ -271,6 +271,43 @@ body.premium .adhan-float[hidden],body.premium .player[hidden]{display:none!impo
  body.premium .royal-tile strong{font-size:16px!important}
 }
 
+
+/* Nur 3D v1.0: library and Haramain pages */
+.royal-extra{display:grid;grid-template-columns:1fr;gap:11px;margin:24px 3px 7px}
+.royal-extra button{position:relative;border:2px ridge #d8b47b;border-radius:17px;background:linear-gradient(110deg,#145d46,#093c2e 75%,#063426);padding:14px 45px 14px 15px;text-align:left;box-shadow:inset 0 2px #c6e5c05c,0 5px 0 #734d22,0 9px 11px #00160e99;color:#ffedbb}
+.royal-extra button b{display:block;font:700 18px Georgia,serif}.royal-extra button small{display:block;font:12px system-ui,sans-serif;color:#dfd2b2;margin-top:4px}.royal-extra button span{position:absolute;right:20px;top:calc(50% - 17px);font-size:24px;color:#ebca8b}
+.library-panel{margin:15px 0 22px;padding:18px;border:2px solid #d6b172;border-radius:18px;background:linear-gradient(125deg,#fff8df,#eddaaf 65%,#d8b57e);box-shadow:inset 0 2px #fffefa,0 6px 0 #785029,0 10px 18px #00190f8c;color:#2b3728}
+.library-panel h3{margin:4px 0 8px;font:bold 20px Georgia,serif;color:#1d4939}.library-panel p{font:13px/1.6 system-ui,sans-serif;color:#665e4d;margin:9px 0 14px}
+.library-panel .form-label{display:block;color:#28563d;font-weight:700;font-size:12px;margin:10px 0 7px}
+.library-panel .field{display:block;width:100%;height:46px;border:1px solid #bd985f;border-radius:12px;background:#fffaf1;color:#2c392a;padding:11px;font-size:14px;margin:7px 0 13px}
+.library-inline{display:flex;align-items:center;justify-content:space-between;gap:10px;font:12px system-ui,sans-serif;color:#466d55;margin:12px 0}
+.library-inline .btn{padding:8px 11px}
+.library-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:25px}
+.reciter-chip{padding:12px 9px;text-align:left;min-height:70px;font:700 13px system-ui,sans-serif;
+ border:2px solid #d3b070;border-radius:15px;background:linear-gradient(145deg,#fff9e5,#e9d29f);color:#234331;
+ box-shadow:inset 0 2px #fff,0 4px 0 #80592c,0 7px 8px #001a1099}
+.reciter-chip small{display:block;color:#7b6a4f;font-size:10px;margin-top:7px;font-weight:400}
+.turkish-names{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
+.turkish-names span{background:#f8ebc9;border:1px solid #d2b97a;border-radius:30px;color:#3e5a44;font:11px system-ui,sans-serif;padding:6px 10px}
+.library-tag{color:#134f34;background:#e8d7a4;border:1px solid #bba067;padding:7px 10px;border-radius:10px;font-weight:700;font-size:12px}
+.hafiz-item{display:flex;align-items:center;gap:10px;justify-content:space-between;padding:12px 0;border-bottom:1px solid #b79d6d80}
+.hafiz-item strong{display:block;font-size:13px}.hafiz-item small{display:block;color:#856c4b;margin-top:5px;font-size:10px}
+.hafiz-item .btn{flex-shrink:0}
+#hafiz-panel:not([hidden]){position:fixed;bottom:85px;left:50%;transform:translateX(-50%);z-index:49;
+ width:calc(100% - 18px);max-width:515px;display:flex;align-items:center;gap:9px;background:linear-gradient(#17624b,#07382b);
+ border:2px solid #d7ae6b;border-radius:15px;box-shadow:0 5px 0 #724d21,0 8px 15px #001f1899;color:#ffecb8;padding:9px}
+#hafiz-panel>div{flex:1;min-width:0}#hafiz-panel strong{display:block;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#hafiz-panel small{display:block;color:#ded1a7;font-size:10px;margin-top:3px}
+#hafiz-panel button{border:1px solid #d6ae64;background:#084732;color:#ffeac0;font-size:17px;border-radius:10px;padding:7px 9px}
+.haram-live{padding:14px}.live-ratio{width:100%;aspect-ratio:16/9;background:#061d17;border:2px solid #ba9254;box-shadow:0 5px 9px #0005;border-radius:12px;overflow:hidden;margin:13px 0}
+.live-ratio iframe{display:block;width:100%;height:100%;border:0}
+.library-topic-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:18px 0}
+.library-topic{display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:126px;padding:12px 8px;
+ border:2px solid #dbb36c;border-radius:18px;background:linear-gradient(140deg,#fff9e6,#eed7a8);box-shadow:inset 0 2px #fff,0 5px 0 #775228,0 9px 11px #001911a3;color:#254230}
+.library-topic span{font-size:29px;color:#bc8036;min-height:38px}.library-topic strong{font:bold 14px Georgia,serif;text-align:center}
+.library-topic small{font:10px/1.4 system-ui,sans-serif;color:#88704d;text-align:center;margin-top:7px}
+body.premium .library-panel .btn.gold{display:inline-flex;text-decoration:none;font-size:12px;line-height:1.35}
+
 </style>
   <title>Nur Rehberi • Kur'an ve İslam</title>
 </head>
@@ -294,6 +331,11 @@ const API='https://api.alquran.cloud/v1';
 const NAMES=['Fâtiha','Bakara','Âl-i İmrân','Nisâ','Mâide','En‘âm','A‘râf','Enfâl','Tevbe','Yûnus','Hûd','Yûsuf','Ra‘d','İbrâhîm','Hicr','Nahl','İsrâ','Kehf','Meryem','Tâhâ','Enbiyâ','Hac','Mü’minûn','Nûr','Furkân','Şuarâ','Neml','Kasas','Ankebût','Rûm','Lokmân','Secde','Ahzâb','Sebe’','Fâtır','Yâsîn','Sâffât','Sâd','Zümer','Mü’min','Fussilet','Şûrâ','Zuhruf','Duhân','Câsiye','Ahkâf','Muhammed','Fetih','Hucurât','Kâf','Zâriyât','Tûr','Necm','Kamer','Rahmân','Vâkıa','Hadîd','Mücâdele','Haşr','Mümtehine','Saff','Cuma','Münâfikûn','Tegâbün','Talâk','Tahrîm','Mülk','Kalem','Hâkka','Meâric','Nûh','Cin','Müzzemmil','Müddessir','Kıyâme','İnsân','Mürselât','Nebe’','Nâziât','Abese','Tekvîr','İnfitâr','Mutaffifîn','İnşikâk','Bürûc','Târık','A‘lâ','Gâşiye','Fecr','Beled','Şems','Leyl','Duhâ','İnşirâh','Tîn','Alak','Kadir','Beyyine','Zilzâl','Âdiyât','Kâria','Tekâsür','Asr','Hümeze','Fîl','Kureyş','Mâûn','Kevser','Kâfirûn','Nasr','Tebbet','İhlâs','Felak','Nâs'];
 const RECITERS=[
 ['ar.alafasy','Mişari Raşid el-Afasi'],['ar.abdulbasit','Abdülbasit Abdüssamed'],['ar.husary','Mahmud Halil el-Husari'],['ar.minshawi','Muhammed Sıddık el-Minşavi'],['ar.sudais','Abdurrahman es-Südeys'],['ar.shuraim','Suud eş-Şureym'],['ar.ajamy','Ahmed el-Acemi'],['ar.hudhaify','Ali el-Huzeyfi'],['ar.muhammadayoub','Muhammed Eyyûb'],['ar.muhammadjibreel','Muhammed Cibril'],['ar.abdulbasitmujawwad','Abdülbasit – Mücevved'],['ar.minshawimujawwad','Minşavi – Mücevved']];
+
+/* Türkiye il seçici, 81 il; A-Z Türkçe sıralama */
+const TR_ILLER=["Adana","Adıyaman","Afyonkarahisar","Ağrı","Aksaray","Amasya","Ankara","Antalya","Ardahan","Artvin","Aydın","Balıkesir","Bartın","Batman","Bayburt","Bilecik","Bingöl","Bitlis","Bolu","Burdur","Bursa","Çanakkale","Çankırı","Çorum","Denizli","Diyarbakır","Düzce","Edirne","Elazığ","Erzincan","Erzurum","Eskişehir","Gaziantep","Giresun","Gümüşhane","Hakkâri","Hatay","Iğdır","Isparta","İstanbul","İzmir","Kahramanmaraş","Karabük","Karaman","Kars","Kastamonu","Kayseri","Kırıkkale","Kırklareli","Kırşehir","Kilis","Kocaeli","Konya","Kütahya","Malatya","Manisa","Mardin","Mersin","Muğla","Muş","Nevşehir","Niğde","Ordu","Osmaniye","Rize","Sakarya","Samsun","Siirt","Sinop","Sivas","Şanlıurfa","Şırnak","Tekirdağ","Tokat","Trabzon","Tunceli","Uşak","Van","Yalova","Yozgat","Zonguldak"].sort((a,b)=>a.localeCompare(b,'tr'));
+function ilSecenekleri(){return TR_ILLER.map(city=>'<option value="'+esc(city)+'" '+(st.city===city?'selected':'')+'>'+esc(city)+'</option>').join('')}
+
 const CHOICES=[['quran','☷','Kur’an-ı Kerim'],['quran','♫','Sesli Kur’an'],['adhan','♪','Ezanlar'],['worship','☾','Namaz Vakitleri'],['worship','✥','Kıble'],['worship','◉','Dua & Zikir'],['progress','◷','Hatim Takibi'],['learn','✧','Elifba'],['learn','✦','İslami Bilgiler'],['settings','⚙','Ayarlar']];
 const DEFAULT={page:'home',surah:1,search:'',reciter:'ar.alafasy',city:'Ankara',country:'Turkey',dailyGoal:10,dark:false,arabicSize:30,mealSize:14,bookmarks:[],completed:[],lastRead:null,zikr:0,zikrType:'Sübhânallah',todayCount:0,todayStamp:'',playing:null,playerReady:false};
 function fromStore(key,fallback){try{const v=localStorage.getItem(key);return v===null?fallback:JSON.parse(v)}catch{return fallback}}
@@ -314,9 +356,9 @@ function label(n){return catalog[n-1]?.turkishName||NAMES[n-1]||`Sure ${n}`}
 function fmt(n){return Number(n||0).toLocaleString('tr-TR')}
 function section(name,sub=''){return `<div class="section-title">${name}<small>${sub}</small></div>`}
 function btn(page,glyph,title){return `<button type="button" class="menu-card" data-page="${page}"><span class="glyph">${glyph}</span><strong>${title}</strong></button>`}
-function drawNav(){document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('selected',b.dataset.page===(st.page==='reader'?'quran':st.page==='settings'?'home':st.page)));document.getElementById('back').hidden=!['reader','settings','worship','adhan','quran','progress','learn'].includes(st.page)}
-function render(){document.body.classList.toggle('on-home',st.page==='home');document.body.classList.toggle('dark',!!st.dark);drawNav();if(st.page==='home')home();else if(st.page==='quran')quran();else if(st.page==='reader')reader();else if(st.page==='worship')worship();else if(st.page==='progress')progress();else if(st.page==='learn')learn();else if(st.page==='adhan')adhan();else if(st.page==='settings')settings();else home();}
-function go(page){if(!['home','quran','reader','worship','progress','learn','adhan','settings'].includes(page))return;st.page=page;render();window.scrollTo({top:0,behavior:'instant'});}
+function drawNav(){document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('selected',b.dataset.page===(st.page==='reader'?'quran':st.page==='settings'?'home':st.page)));document.getElementById('back').hidden=!['reader','settings','worship','adhan','quran','progress','learn','hafizlar','ilmihal','live'].includes(st.page)}
+function render(){document.body.classList.toggle('on-home',st.page==='home');document.body.classList.toggle('dark',!!st.dark);drawNav();if(st.page==='home')home();else if(st.page==='quran')quran();else if(st.page==='reader')reader();else if(st.page==='worship')worship();else if(st.page==='progress')progress();else if(st.page==='learn')learn();else if(st.page==='adhan')adhan();else if(st.page==='hafizlar')hafizlar();else if(st.page==='ilmihal')ilmihal();else if(st.page==='live')liveHaram();else if(st.page==='settings')settings();else home();}
+function go(page){if(!['home','quran','reader','worship','progress','learn','adhan','hafizlar','ilmihal','live','settings'].includes(page))return;st.page=page;render();window.scrollTo({top:0,behavior:'instant'});}
 
 /* Detailed decorative SVG icons, drawn locally — not static screenshots. */
 function royalIcon(name){
@@ -342,7 +384,7 @@ function home(){
  let pl=prayerData?.timings, last=st.lastRead;
  const tiles=[
  ['quran','quran','Kur’an-ı Kerim'],['quran','meal','Türkçe Meal'],
- ['quran','hafiz','Hafızlar'],['worship','mosque','Namaz Vakitleri'],
+ ['hafizlar','hafiz','Hafızlar'],['worship','mosque','Namaz Vakitleri'],
  ['adhan','ezan','Ezanlar'],['worship','tesbih','Tesbih'],
  ['worship','qibla','Kıble'],['progress','hatim','Hatim Takibi']
  ];
@@ -352,6 +394,7 @@ function home(){
   +'<div class="royal-divider"></div><div class="royal-sub">✦ Maneviyatın huzurlu dünyası ✦</div></div>'
   +'<div class="royal-heading">İBADET & KEŞİF</div>'
   +'<div class="royal-grid">'+tiles.map(x=>royalTile(x[0],x[1],x[2])).join('')+'</div>'
+  +'<div class="royal-extra"><button data-page="live"><b>🕋 Mekke • Medine</b><small>Resmî canlı yayınlar</small><span>▶</span></button><button data-page="ilmihal"><b>📚 İlmihal Kütüphanesi</b><small>Diyanet ve kaynaklı eserler</small><span>›</span></button></div>'
   +'<div class="royal-footline">✦ ❖ ✦</div>'
   +section('Günün Namaz Vakitleri','Şehre göre')+
   '<div class="hero"><div class="gold">✦ HUZURLU BİR GÜN İÇİN</div><h2>'+(pl?'Namaz vakitleri':'Günün vakitleri')+'</h2>'
@@ -397,13 +440,13 @@ async function playIndex(index,token){if(token!==audioToken||index>=audioList.le
 function stopAudio(){audioToken++;audio.pause();audio.removeAttribute('src');audio.load();st.playing=null;audioList=[];playButton();updateActive();}
 function worship(){const t=prayerData?.timings;const times=[['Fajr','İmsak / Sabah'],['Sunrise','Güneş'],['Dhuhr','Öğle'],['Asr','İkindi'],['Maghrib','Akşam'],['Isha','Yatsı']];main.innerHTML=`<div class="royal-prayer-banner"><div class="prayer-mosque">🕌</div><h2>Namaz Vakitleri</h2><p>Vaktinde namaz, gönülde huzur</p></div><div class="eyebrow">İBADET REHBERİ</div><div class="title">Namaz & Zikir</div><p class="sub">Günün vakitleri, kıble yönü, dijital tesbih</p>
 ${section('Namaz vakitleri','Hesaplanan değerler')}
-<div class="card"><div class="row"><label style="flex:1"><span class="form-label" style="margin:0 0 4px">Şehir</span><input id="city" class="field" placeholder="Örn. Ankara" value="${esc(st.city)}"></label><button class="btn" style="align-self:end" data-action="get-prayer">Getir</button></div><p>Hesaplama: AlAdhan • Diyanet yöntemi (13). Resmî ilan edilen vakitlerden birkaç dakika farklı olabilir.</p><div class="prayer-grid">${times.map(([key,name])=>`<div class="prayer-time"><small>${name}</small><b>${esc(t?.[key]?.split(' ')[0]||'--:--')}</b></div>`).join('')}</div>${prayerData?`<p class="muted">${esc(st.city)} için ${esc(prayerDate)} vakitleri</p>`:''}</div>
+<div class="card"><div class="row"><label style="flex:1"><span class="form-label" style="margin:0 0 4px">Şehir</span><select id="city" class="field" aria-label="İl seç">${ilSecenekleri()}</select></label><button class="btn" style="align-self:end" data-action="get-prayer">Getir</button></div><p>Hesaplama: AlAdhan • Diyanet yöntemi (13). Resmî ilan edilen vakitlerden birkaç dakika farklı olabilir.</p><div class="prayer-grid">${times.map(([key,name])=>`<div class="prayer-time"><small>${name}</small><b>${esc(t?.[key]?.split(' ')[0]||'--:--')}</b></div>`).join('')}</div>${prayerData?`<p class="muted">${esc(st.city)} için ${esc(prayerDate)} vakitleri</p>`:''}</div>
 ${section('Kıble bulucu','Konum izni gerekir')}
 <div class="card"><div class="row"><div><h3>🧭 Kıble yönü</h3><p>${geo?.bearing!=null?`Kuzeyden saat yönünde ${geo.bearing.toFixed(1)}°`:'Konumuna göre kıble açısını hesapla.'}</p></div><button class="btn ghost" data-action="qibla">Hesapla</button></div>${geo?'<p class="text-small muted">Bu açı gerçek kuzeye göredir. Telefonda sensörle dönen pusula henüz eklenmedi.</p>':''}</div>
 ${section('Dijital tesbih','Cihazda kaydedilir')}
 <div class="card"><div class="chip-row">${['Sübhânallah','Elhamdülillah','Allahu ekber','Salavat'].map(s=>`<button class="chip ${st.zikrType===s?'active':''}" data-action="zikr-type" data-value="${esc(s)}">${esc(s)}</button>`).join('')}</div><div class="tasbih"><div class="sub">${esc(st.zikrType)}</div><button class="counter-btn" data-action="zikr-add" aria-label="Bir tesbih say">${fmt(st.zikr)}</button><p>Her dokunuşta 1 artar</p><button class="btn ghost tiny" data-action="zikr-reset">Sayacı sıfırla</button></div></div>
 <div class="notice">Ezan bildirimi ve otomatik gerçek zamanlı pusula, ileriki Android sürümlerine planlandı; bu prototipte etkin değildir.</div>`;}
-async function getPrayer(){let city=document.getElementById('city')?.value?.trim()||st.city;if(!city){toast('Şehir gir.');return;}st.city=city;save();try{const today=new Date();let d=`${String(today.getDate()).padStart(2,'0')}-${String(today.getMonth()+1).padStart(2,'0')}-${today.getFullYear()}`;let url=`https://api.aladhan.com/v1/timingsByCity/${d}?city=${encodeURIComponent(city)}&country=Turkey&method=13`;let res=await fetch(url);let j=await res.json();if(!res.ok||j.code!==200||!j.data?.timings)throw Error('No prayer');prayerData=j.data;prayerDate=d;worship();}catch{toast('Vakitler alınamadı. Şehir ve interneti kontrol et.')}}
+async function getPrayer(){let city=document.getElementById('city')?.value?.trim()||st.city;if(!TR_ILLER.includes(city)){toast('81 ilden birini seç.');return;}st.city=city;save();try{const today=new Date();let d=`${String(today.getDate()).padStart(2,'0')}-${String(today.getMonth()+1).padStart(2,'0')}-${today.getFullYear()}`;let url=`https://api.aladhan.com/v1/timingsByCity/${d}?city=${encodeURIComponent(city)}&country=Turkey&method=13`;let res=await fetch(url);let j=await res.json();if(!res.ok||j.code!==200||!j.data?.timings)throw Error('No prayer');prayerData=j.data;prayerDate=d;worship();}catch{toast('Vakitler alınamadı. Şehir ve interneti kontrol et.')}}
 function toRad(x){return x*Math.PI/180}function bearing(lat,lng){const a=toRad(lat),dl=toRad(39.8262-lat),lon=toRad(21.4225-lng);return (Math.atan2(Math.sin(lon),Math.cos(a)*Math.tan(toRad(39.8262))-Math.sin(a)*Math.cos(lon))*180/Math.PI+360)%360}
 function qibla(){if(!navigator.geolocation){toast('Konum özelliği bu tarayıcıda yok.');return;}navigator.geolocation.getCurrentPosition(p=>{geo={bearing:bearing(p.coords.latitude,p.coords.longitude)};worship();},()=>toast('Konum izni verilmedi veya konum alınamadı.'),{enableHighAccuracy:false,timeout:12000});}
 function progress(){const p=Math.round(st.completed.length/114*100);main.innerHTML=`<div class="eyebrow">KİŞİSEL TAKİP</div><div class="title">Hatim Yolculuğum</div><p class="sub">Okumalarını kendi hızında tamamla.</p>
@@ -413,12 +456,158 @@ ${section('Tamamlanan sureler','')}
 <div class="card">${st.completed.length?st.completed.slice().sort((a,b)=>a-b).map(n=>`<div class="row" style="padding:8px 0"><span>✓ ${esc(label(n))}</span><button class="action-link" data-action="open-surah" data-surah="${n}">Aç →</button></div>`).join(''):'<p>Henüz tamamlanan sure işaretlemedin. Sureyi açıp alttaki “Tamamladım” düğmesine bas.</p>'}</div><button class="btn" style="width:100%" data-page="quran">Kur’an okumaya başla →</button>`;}
 function learn(){main.innerHTML=`<div class="eyebrow">İLİM YOLCULUĞU</div><div class="title">Öğrenme Merkezi</div><p class="sub">Sonraki sürümler için planlanan içerikler</p>
 ${[['☷','Elifba ve tecvid','Harfler, mahreç ve adım adım eğitim'],['✦','Dualar ve anlamları','Kaynakları doğrulanmış dua kütüphanesi'],['✧','Peygamberler tarihi','Kaynaklı ders ve anlatımlar'],['☾','Namaz rehberi','Abdest ve namazın öğrenilmesi'],['◎','Esmaül Hüsna','Allah’ın güzel isimleri ve anlamları'],['✺','Yapay zekâ rehberi','Kaynakları doğrulayan dikkatli soru-cevap']].map(([i,t,s])=>`<div class="card"><div class="row"><div class="row" style="justify-content:flex-start"><span style="font-size:26px;color:var(--gold)">${i}</span><div><h3 style="margin:0">${t}</h3><p>${s}</p></div></div><span class="pill">Yakında</span></div></div>`).join('')}<div class="notice">Bu alanlar henüz çalışır eğitim içeriği sunmuyor. Uydurma dini açıklama veya hadis kullanılmıyor.</div>`;}
+
+/* Nur Rehberi additional libraries — sources and rights transparent. */
+const TURK_HAFIZLAR=[
+ 'Emrullah Akbaş','Fatih Karazeybek','Mustafa Orhan','Ahmet Karalı','Davut Kaya','Furkan Tıraşçı',
+ 'Menduh Karslı','Adem Çiftçi','Mustafa Altın','Yakup Okutan','Numan Akbaş','Musa Dağ',
+ 'Halit Nuri Kılıç','Hüseyin Yavuz','Kemal Tosun','Uğur Demirci','Mehmet Atıcı','Ali Turhan',
+ 'Musa Coşkun','Erhan Mete','Ömer Erdem','Ömer Derman','Habip Deveci','Salih Akyüz'
+];
+const TURK_ARŞİV='https://kuran.diyanet.gov.tr/dijital/asri-serifler';
+let hafizCatalog=[],hafizLoading=false,hafizError='',hafizQuery='',hafizShowAll=false,hafizSelected='',hafizAudio=new Audio();
+hafizAudio.preload='none';
+const hafizPanel=document.createElement('div');
+hafizPanel.id='hafiz-panel';
+hafizPanel.hidden=true;
+document.querySelector('.app-shell').appendChild(hafizPanel);
+function drawHafizPanel(){
+ if(!hafizSelected){hafizPanel.hidden=true;return;}
+ const a=hafizCatalog.find(x=>x.id===hafizSelected);
+ if(!a){hafizPanel.hidden=true;return;}
+ hafizPanel.hidden=false;
+ hafizPanel.innerHTML='<div><strong>♫ '+esc(a.name)+'</strong><small>Seçili sure çalınıyor • MP3Quran</small></div>'+
+  '<button data-action="hafiz-toggle">'+(hafizAudio.paused?'▶':'Ⅱ')+'</button>'+
+  '<button data-action="hafiz-stop">✕</button>';
+}
+function stopHafiz(){
+ hafizAudio.pause();hafizAudio.removeAttribute('src');hafizAudio.load();hafizSelected='';drawHafizPanel();
+}
+function toggleHafiz(){
+ if(!hafizSelected)return;
+ if(hafizAudio.paused)hafizAudio.play().catch(()=>toast('Ses açılamadı, internet bağlantını kontrol et.'));
+ else hafizAudio.pause();
+ drawHafizPanel();
+}
+hafizAudio.addEventListener('ended',()=>{stopHafiz()});
+hafizAudio.addEventListener('pause',()=>drawHafizPanel());
+hafizAudio.addEventListener('playing',()=>drawHafizPanel());
+hafizAudio.addEventListener('error',()=>{if(hafizSelected){toast('Bu yayının ses akışı açılamadı.');stopHafiz()}});
+async function playHafiz(id){
+ const r=hafizCatalog.find(x=>x.id===id);if(!r)return;
+ const n=Number(document.getElementById('hafiz-surah')?.value||st.surah||1);
+ if(!r.available.includes(n)){toast('Bu hafızda '+n+'. sure kaydı bulunmuyor.');return}
+ stopAudio();stopAdhan();stopHafiz();
+ const link=r.server+String(n).padStart(3,'0')+'.mp3';
+ if(!/^https:\/\/([a-z0-9-]+\.)*mp3quran\.net\//i.test(link)){toast('Yayın kaynağı güvenilir değil.');return}
+ hafizSelected=id;hafizAudio.src=link;hafizAudio.load();drawHafizPanel();
+ try{await hafizAudio.play();drawHafizPanel()}catch(e){toast('Ses başlayamadı; başka hafız dene.');stopHafiz()}
+}
+async function loadHafizCatalog(force=false){
+ if(hafizLoading)return;
+ if(hafizCatalog.length&&!force)return;
+ hafizLoading=true;hafizError='';
+ if(st.page==='hafizlar')hafizlar();
+ try{
+  const controller=new AbortController(), cancel=setTimeout(()=>controller.abort(),15000);
+  let resp;
+  try{resp=await fetch('https://mp3quran.net/api/v3/reciters?language=tr',{signal:controller.signal,cache:'no-cache'});}
+  finally{clearTimeout(cancel)}
+  if(!resp.ok)throw Error('API '+resp.status);
+  const d=await resp.json();
+  const list=[];
+  for(let c of d.reciters||[]){
+    if(!c.name||!Array.isArray(c.moshaf))continue;
+    for(let m of c.moshaf){
+       const server=String(m.server||'');
+       if(!/^https:\/\/([a-z0-9-]+\.)*mp3quran\.net\//i.test(server))continue;
+       const available=String(m.surah_list||'').split(',').map(Number).filter(n=>n>=1&&n<=114);
+       if(!available.length)continue;
+       list.push({id:String(c.id)+'-'+String(m.id),name:String(c.name),moshaf:String(m.name||''),server:server.endsWith('/')?server:server+'/',available:available});
+    }
+  }
+  if(!list.length)throw Error('Ses kaydı bulunamadı');
+  hafizCatalog=list.sort((a,b)=>a.name.localeCompare(b.name,'tr'));
+ }catch(e){hafizError='Geniş hafız listesine şu an ulaşılamadı. Mevcut 12 hafızın dinleme seçeneği Kur’an bölümünde çalışmaya devam ediyor.';}
+ finally{hafizLoading=false;if(st.page==='hafizlar')hafizlar()}
+}
+function hafizlar(){
+ main.innerHTML='<div class="royal-page-head"><span>🎙</span><h1>Hafızlar</h1><small>Kur’an-ı Kerim dinleme merkezi</small></div>'+
+ '<div class="notice">Eski 12 hafız korunuyor. Kur’an ekranında sureyi açıp “Hafız Seç” alanından ayet ayet dinleyebilirsin. Geniş katalogda sure kayıtları internetten açılır.</div>'+
+ section('Önceki Hafızlar','12 ses seçeneği')+
+ '<div class="library-grid">'+RECITERS.map(r=>'<button class="reciter-chip" data-action="open-reciter" data-id="'+esc(r[0])+'">♫ '+esc(r[1])+'<small>Kur’an sayfasında dinle ›</small></button>').join('')+'</div>'+
+ section('Türk Hafızları','Diyanet resmî arşivi')+
+ '<div class="library-panel"><div class="library-tag">59 aşr-ı şerif kaydı • Seçme tilavetler</div><p>Türk hafızların Diyanet tarafından yayımlanmış kayıtlarını resmî arşivde dinle. Buradaki bağlantılar uygulama içinde kopyalanmış ses dosyaları değildir.</p><div class="turkish-names">'+TURK_HAFIZLAR.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div><a class="btn gold" href="'+TURK_ARŞİV+'">Diyanet’te 59 kaydı dinle ↗</a></div>'+
+ section('Dünya Hafızları','İnternet bağlantısı gerektirir')+
+ '<div class="library-panel"><p>MP3Quran’ın geliştirici kataloğundaki kayıtlar listelenir; sure bulunmayan hafızlar oynatılamaz. Ses hakları sahiplerine aittir.</p>'+
+ '<label class="form-label">Dinlenecek sure</label><select class="field" id="hafiz-surah">'+NAMES.map((name,i)=>'<option value="'+(i+1)+'">'+(i+1)+'. '+esc(name)+'</option>').join('')+'</select>'+
+ '<input id="hafiz-search" class="field" aria-label="Hafız ara" placeholder="Hafız ismi ara" value="'+esc(hafizQuery)+'" />'+
+ '<div class="library-inline"><span>'+(hafizLoading?'Yükleniyor…':hafizCatalog.length?hafizCatalog.length+' farklı kayıt':'Henüz liste yüklenmedi')+'</span><button class="btn ghost" data-action="hafiz-load">'+(hafizCatalog.length?'Yenile':'Listeyi getir')+'</button></div>'+
+ (hafizError?'<div class="notice">'+esc(hafizError)+'</div>':'')+
+ '<div id="hafiz-results"></div></div>'+
+ '<div class="notice">Aradığın Türk okuyucuların tamamına ait açık ve izinli sure sesleri henüz doğrulanmış değildir. Doğrulanmayan kişilerin adını çalışır kayıt gibi göstermiyoruz.</div>';
+ const val=document.getElementById('hafiz-surah');if(val)val.value=String(st.surah);
+ renderHafizResults();
+ if(!hafizCatalog.length&&!hafizLoading&&!hafizError)loadHafizCatalog();
+}
+function renderHafizResults(){
+ const box=document.getElementById('hafiz-results');if(!box)return;
+ const match=hafizCatalog.filter(r=>r.name.toLocaleLowerCase('tr').includes(hafizQuery.toLocaleLowerCase('tr')));
+ const shown=hafizShowAll?match:match.slice(0,40);
+ box.innerHTML=shown.map(r=>'<div class="hafiz-item"><div><strong>'+esc(r.name)+'</strong><small>'+esc(r.moshaf)+' • '+r.available.length+' sure</small></div><button class="btn tiny" data-action="hafiz-play" data-id="'+esc(r.id)+'">▶ Dinle</button></div>').join('')+
+ (!hafizLoading&&!shown.length?'<div class="muted text-small">Bu isimle kayıt bulunamadı.</div>':'')+
+ (!hafizShowAll&&match.length>40?'<button class="btn ghost" data-action="hafiz-more">Diğer '+(match.length-40)+' kaydı da göster</button>':'');
+}
+/* Live feeds are displayed via the broadcasters' official YouTube embedded player.
+No rehosting or rebroadcasting. A failed embed always has an official link fallback. */
+const LIVE_HARAM=[
+ {title:'Mekke • Mescid-i Haram',source:'KSA Quran TV • Suudi Yayın Kurumu',video:'kYqGbBqmp8g',link:'https://www.youtube.com/user/SaudiQuranTv/live',icon:'🕋'},
+ {title:'Medine • Mescid-i Nebevî',source:'Saudi Sunnah TV • Suudi Yayın Kurumu',video:'9A1S0xAPVIs',link:'https://www.youtube.com/user/SaudiSunnahTv/live',icon:'🕌'}
+];
+function liveHaram(){
+ main.innerHTML='<div class="royal-page-head"><span>🕋</span><h1>Haremeyn Canlı</h1><small>Mekke ve Medine • Resmî yayınlar</small></div>'+
+ '<div class="notice">Yayın, resmî YouTube oynatıcısından açılır. Canlı yayın kesilirse veya gömme engellenirse “YouTube’da izle” bağlantısını kullan.</div>'+
+ LIVE_HARAM.map((x,i)=>'<div class="library-panel haram-live"><h3>'+x.icon+' '+esc(x.title)+'</h3><p>'+esc(x.source)+'</p>'+
+ '<div class="live-ratio"><iframe title="'+esc(x.title)+' canlı yayını" src="https://www.youtube-nocookie.com/embed/'+x.video+'?rel=0&playsinline=1" allow="accelerometer;autoplay;encrypted-media;gyroscope;picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe></div>'+
+ '<a class="btn gold" href="'+x.link+'">Resmî kanalda canlı izle ↗</a></div>').join('')+
+ '<div class="notice">Bunlar yayıncıların kendi canlı yayınlarıdır. Uygulama görüntüyü kopyalamaz, yeniden yayınlamaz. Video bağlantıları zamanla değişebilir.</div>';
+}
+/* İlmihal link catalog: open licensed/official digital libraries without copying their copyrighted text. */
+const ILMIHAL_KONULAR=[
+ {id:'iman',name:'İman ve İtikad',short:'İnanç esasları ve akaid',source:'https://kurul.diyanet.gov.tr/',blurb:'İman ve inanç esasları ile ilgili açıklamalar ve resmî Din İşleri Yüksek Kurulu kaynakları.'},
+ {id:'abdest',name:'Abdest ve Gusül',short:'Temizlik, taharet ve ibadete hazırlık',source:'https://fetva.diyanet.gov.tr/',blurb:'Abdest, gusül ve teyemmüm konuları için Diyanet fetva arşivindeki açıklamalar.'},
+ {id:'namaz',name:'Namaz İlmihali',short:'Namazın şartları, kılınışı ve vakitleri',source:'https://fetva.diyanet.gov.tr/',blurb:'Namaza hazırlık, farzlar, vakitler ve günlük ibadet ile ilgili kaynaklar.'},
+ {id:'oruc',name:'Oruç ve Ramazan',short:'Oruç, sahur, iftar, fitre',source:'https://fetva.diyanet.gov.tr/',blurb:'Oruçla ilgili sorular ve Ramazan ibadetleri için resmî açıklamalar.'},
+ {id:'zekat',name:'Zekât ve Sadaka',short:'Paylaşma, infak, zekât ve fitre',source:'https://fetva.diyanet.gov.tr/',blurb:'Zekât, fitre, infak, nisap ve güncel hesaplamalar için kaynaklar.'},
+ {id:'hac',name:'Hac ve Umre',short:'Hac, umre ve ihram',source:'https://kurul.diyanet.gov.tr/',blurb:'Hac ve umrenin temel ibadetleri ile ilgili resmî rehber ve açıklamalar.'},
+ {id:'ahlak',name:'Ahlak ve Günlük Hayat',short:'İslami ahlak ve sorumluluklar',source:'https://islamansiklopedisi.org.tr/ilmihal',blurb:'İlmihal geleneği ve toplumsal hayatta dini sorumlulukların kapsamı hakkında TDV ansiklopedi maddesi.'},
+ {id:'aile',name:'Aile ve Muamelat',short:'Aile hayatı, alışveriş, hukuki meseleler',source:'https://fetva.diyanet.gov.tr/',blurb:'Aile ve sosyal yaşam konularında güncel resmî dini danışma kaynakları.'},
+ {id:'dua',name:'Dua ve Zikir',short:'Dua, zikir ve ibadet adabı',source:'https://yayin.diyanet.gov.tr/Product/Index?category=49',blurb:'Diyanet’in dijital yayınlarını ve ilgili kitaplarını inceleyebilirsin.'},
+ {id:'siyer',name:'Siyer ve Hadis',short:'Peygamberimizin hayatı ve hadisler',source:'https://yayin.diyanet.gov.tr/Product/Index?category=49',blurb:'Diyanet dijital kitaplık; hadis ve siyer eserleri.'},
+ {id:'tecvid',name:'Tecvid ve Elifba',short:'Kur’an okumayı öğrenme',source:'https://kuran.diyanet.gov.tr/dijital',blurb:'Diyanet Kur’an Platformu üzerinde Elifba ve diğer öğrenme içerikleri.'},
+ {id:'ilmihal',name:'İlmihal Kitaplığı',short:'e-Kitap, PDF, sesli ilmihal arşivi',source:'https://yayin.diyanet.gov.tr/Product/Index?category=49',blurb:'Diyanet’in İlmihal–Fıkıh ve ilgili resmî e-kitap kategorileri.'}
+];
+function ilmihal(){
+ main.innerHTML='<div class="royal-page-head"><span>📚</span><h1>İlmihal</h1><small>Kaynaklı dini bilgi kütüphanesi</small></div>'+
+ '<div class="notice">İlmihal, iman, ibadet, ahlak ve günlük hayat bilgilerini kapsar. Kaynakların eser metinleri ve telif hakları yayıncılarına aittir; tam kitapları izinsiz çoğaltmıyoruz.</div>'+
+ '<div class="library-topic-grid">'+ILMIHAL_KONULAR.map((x,i)=>'<button class="library-topic" data-action="ilmihal-topic" data-id="'+x.id+'"><span>'+['✦','◈','☪','☾','❖','🕋','✧','⌂','♡','☷','۞','📖'][i]+'</span><strong>'+esc(x.name)+'</strong><small>'+esc(x.short)+'</small></button>').join('')+'</div>'+
+ '<div class="library-panel"><h3>Diyanet Dijital Kütüphanesi</h3><p>Yayınevinin izin verdiği e-kitapları ve sesli ilmihal içeriklerini resmî sayfasında okuyabilir ya da dinleyebilirsin.</p>'+
+ '<a class="btn gold" href="https://yayin.diyanet.gov.tr/Product/Index?category=49">Diyanet e-Kitap Kütüphanesi ↗</a></div>';
+}
+function openIlmihalTopic(id){
+ const c=ILMIHAL_KONULAR.find(x=>x.id===id);if(!c)return;
+ main.innerHTML='<button class="btn ghost" data-page="ilmihal">‹ İlmihal Kütüphanesi</button>'+
+ '<div class="library-panel"><div class="eyebrow">KAYNAKLI İLMİHAL</div><h2>'+esc(c.name)+'</h2><p>'+esc(c.blurb)+'</p>'+
+ '<p>Bu konuya ilişkin ayrıntılı hükümler için aşağıdaki resmî kaynağı aç. Mezheplere ve durumlara göre değişen uygulamalarda uzman görüşüne başvurulmalıdır.</p>'+
+ '<a class="btn gold" href="'+esc(c.source)+'">Resmî kaynağı aç ↗</a></div>';
+}
+
 function settings(){main.innerHTML=`<div class="eyebrow">KİŞİSELLEŞTİR</div><div class="title">Ayarlar</div><div class="card"><label class="form-label" for="dark">Görünüm</label><button class="btn ghost" data-action="toggle-theme">${st.dark?'☀ Açık temaya geç':'☾ Koyu temaya geç'}</button><label class="form-label" for="dailyGoal">Günlük ayet hedefi</label><select class="field" id="dailyGoal">${[5,10,20,30,50,100].map(n=>`<option ${n===st.dailyGoal?'selected':''} value="${n}">${n} ayet</option>`).join('')}</select><label class="form-label" for="fontSelect">Arapça yazı boyutu</label><select class="field" id="fontSelect">${[24,27,30,34,38,42].map(n=>`<option ${n===st.arabicSize?'selected':''} value="${n}">${n} px</option>`).join('')}</select></div>
 <div class="card"><h3>Veriler ve kaynaklar</h3><p>Kur’an metni: AlQuran.cloud / quran-uthmani. Türkçe meal: AlQuran.cloud / tr.diyanet. Ses kayıtları: AlQuran.cloud / ilgili hafızlar. Namaz vakitleri: AlAdhan, yöntem 13 (Diyanet hesaplama yöntemi, resmî yayın değil).</p><p>Yer işaretleri ve hatim takibi yalnız bu cihazın yerel depolamasındadır; hesap ve bulut yedeği yoktur. Okunan surelerin çevrimdışı önbelleği tarayıcıya bağlıdır.</p><button class="btn ghost" data-action="clear-cache">İndirilen sure önbelleğini temizle</button></div><div class="notice">Google Play için yayımdan önce Diyanet onay süreci ve metin, meal, ses kullanım hakları doğrulanmalıdır. Bu uygulama şimdilik geliştirme prototipidir.</div>`;}
 // Central controls: no fake actions, all visible buttons work or state clearly when planned.
 document.addEventListener('click',async ev=>{
 const page=ev.target.closest('[data-page]');if(page){go(page.dataset.page);return;}
-const b=ev.target.closest('[data-action]');if(!b)return;const act=b.dataset.action,n=Number(b.dataset.ayah||1);if(act==='adhan-play'){playAdhan(b.dataset.id);return;}if(act==='adhan-stop'){stopAdhan();return;}
+const b=ev.target.closest('[data-action]');if(!b)return;const act=b.dataset.action,n=Number(b.dataset.ayah||1);if(act==='hafiz-load'){loadHafizCatalog(true);return;}if(act==='hafiz-more'){hafizShowAll=true;renderHafizResults();return;}if(act==='open-reciter'){st.reciter=b.dataset.id;save();stopAudio();go('quran');toast('Hafız seçildi. Dinlemek için sure aç.');return;}if(act==='hafiz-play'){playHafiz(b.dataset.id);return;}if(act==='hafiz-stop'){stopHafiz();return;}if(act==='hafiz-toggle'){toggleHafiz();return;}if(act==='hafiz-search'){hafizlar();return;}if(act==='ilmihal-topic'){openIlmihalTopic(b.dataset.id);return;}if(act==='adhan-play'){playAdhan(b.dataset.id);return;}if(act==='adhan-stop'){stopAdhan();return;}
 if(act==='open-surah')openSurah(Number(b.dataset.surah),Number(b.dataset.ayah||1));
 else if(act==='next-surah')openSurah(st.surah+1);
 else if(act==='retry-surah')openSurah(st.surah);
@@ -439,8 +628,9 @@ else if(act==='zikr-reset'){st.zikr=0;save();worship();}
 else if(act==='toggle-theme'){st.dark=!st.dark;save();render();}
 else if(act==='clear-cache'){if(confirm('İndirilen sure önbelleği temizlensin mi? Hatim ve ayarların korunur.')){for(let i=1;i<=114;i++)localStorage.removeItem('surah-'+i);toast('Önbellek temizlendi.');}}
 });
-document.addEventListener('input',ev=>{if(ev.target.id==='surah-search'){st.search=ev.target.value;const list=document.getElementById('surah-list');if(list)list.innerHTML=filtered().map(surahMarkup).join('')||'<div class="empty">Aramana uygun sure bulunamadı.</div>';}});
-document.addEventListener('change',ev=>{if(ev.target.id==='reciter'){st.reciter=ev.target.value;save();stopAudio();toast('Hafız değiştirildi.');}else if(ev.target.id==='dailyGoal'){st.dailyGoal=Number(ev.target.value);save();toast('Günlük hedef kaydedildi.')}else if(ev.target.id==='fontSelect'){st.arabicSize=Number(ev.target.value);save();render();}});
+document.addEventListener('input',ev=>{if(ev.target.id==='hafiz-search'){hafizQuery=ev.target.value;renderHafizResults();return;} if(ev.target.id==='surah-search'){st.search=ev.target.value;const list=document.getElementById('surah-list');if(list)list.innerHTML=filtered().map(surahMarkup).join('')||'<div class="empty">Aramana uygun sure bulunamadı.</div>';}});
+document.addEventListener('change',ev=>{if(ev.target.id==='city'){st.city=ev.target.value;save();getPrayer();}
+else if(ev.target.id==='reciter'){st.reciter=ev.target.value;save();stopAudio();toast('Hafız değiştirildi.');}else if(ev.target.id==='dailyGoal'){st.dailyGoal=Number(ev.target.value);save();toast('Günlük hedef kaydedildi.')}else if(ev.target.id==='fontSelect'){st.arabicSize=Number(ev.target.value);save();render();}});
 document.getElementById('back').addEventListener('click',()=>go(st.page==='reader'?'quran':'home'));
 if('serviceWorker' in navigator && window.location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
 
