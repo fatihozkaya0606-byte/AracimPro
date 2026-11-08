@@ -370,6 +370,7 @@ async function loadDetail(m){
    request(url+'stats/',bsdToken),request(url+'incidents/',bsdToken),request(url,bsdToken)
   ]);
   if(STATE.match?.id!==currentId)return;
+  STATE.lastDetailFetch=Date.now();
   STATE.details={stats:results[0].status==='fulfilled'?results[0].value:null,inc:results[1].status==='fulfilled'?results[1].value:null,info:results[2].status==='fulfilled'?results[2].value:null,
    statsErr:results[0].status==='rejected'?str(results[0].reason?.message||'Bağlantı hatası'):'',
    incErr:results[1].status==='rejected'?str(results[1].reason?.message||'Bağlantı hatası'):'',
@@ -380,6 +381,18 @@ async function loadDetail(m){
 async function loadLineups(){const m=STATE.match;if(!m||!bsdToken||m.provider!=='bsd')return;STATE.details.lineupsLoaded=false;render();try{const data=await request(BSD+'/api/v2/events/'+encodeURIComponent(m.id)+'/lineups/',bsdToken);if(STATE.match?.id!==m.id)return;STATE.details.lineups=data;STATE.details.lineupsErr=''}catch(e){if(STATE.match?.id!==m.id)return;STATE.details.lineupsErr=e.message||'Kadro alınamadı'}finally{if(STATE.match?.id===m.id){STATE.details.lineupsLoaded=true;render()}}}
 function lineupPeople(x){if(Array.isArray(x))return x;if(x&&typeof x==='object')for(const k of ['starting_xi','startingXI','starters','players','lineup','starting'])if(Array.isArray(x[k]))return x[k];return []}
 function lineupView(d){if(!d.lineupsLoaded)return '<div class="stat-empty">Kadro bilgileri yükleniyor…</div>';if(d.lineupsErr)return `<div class="stat-empty"><strong>Kadro alınamadı</strong>${escapeHtml(d.lineupsErr)}</div>`;const raw=d.lineups||{},o=raw.lineups||raw;const home=lineupPeople(o.home||o.home_lineup||o.home_team),away=lineupPeople(o.away||o.away_lineup||o.away_team);if(!home.length&&!away.length)return '<div class="stat-empty"><strong>Henüz açıklanan kadro yok</strong>Bu maç için kadro bilgisi API tarafından sağlanmadı.</div>';return [{title:STATE.match.home,rows:home},{title:STATE.match.away,rows:away}].map(side=>`<section class="lineup-card"><h4>${escapeHtml(side.title)}</h4>${side.rows.length?side.rows.map(x=>{const person=x.player||x;return `<div class="lineup-person">${escapeHtml(String(person.number??person.shirt_number??''))}　${escapeHtml(str(textVal(person)||person.name||person.player_name||'Oyuncu'))}</div>`}).join(''):'<p class="muted">Kadro bilgisi yok</p>'}</section>`).join('')}
+async function refreshDetailStats(){
+ const m=STATE.match;if(!m||m.provider!=='bsd'||!bsdToken||STATE.detailLoading||!STATE.details)return;
+ STATE.detailLoading=true;STATE.lastDetailFetch=Date.now();
+ try{
+  const url=BSD+'/api/v2/events/'+encodeURIComponent(m.id)+'/';
+  const [st,inc]=await Promise.allSettled([request(url+'stats/',bsdToken),request(url+'incidents/',bsdToken)]);
+  if(STATE.match?.id!==m.id)return;
+  if(st.status==='fulfilled'){STATE.details.stats=st.value;STATE.details.statsErr=''}
+  if(inc.status==='fulfilled'){STATE.details.inc=inc.value;STATE.details.incErr=''}
+  render();
+ }finally{STATE.detailLoading=false}
+}
 function detailScreen(m){
  const d=STATE.details,tab=STATE.detailTab||'stats',info=d?.info||{};
  const homeId=m.homeId||str(first(info,['home_team_id'],info.home_team?.id||info.home?.id||''));
@@ -407,7 +420,7 @@ function detailScreen(m){
 }
 
 function render(){const count=STATE.liveMatches.length||STATE.matches.filter(isLive).length;$('live-count').textContent=String(count);$('today-count').textContent=String(STATE.matches.length);$('updated-at').textContent=STATE.last?new Date(STATE.last).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}):'—';$('source-label').textContent=STATE.source==='bsd'?'BSD API':'SPORTSCORE';$('content').innerHTML=STATE.match?detailScreen(STATE.match):STATE.tab==='settings'?screenSettings():screenMatches();$('credit').innerHTML=STATE.source==='sportscore'?'<a href="https://sportscore.com/">Powered by SportScore</a> · Maç verilerinde gecikme olabilir':'Kaynak: BSD · Maç verilerinde gecikme olabilir';document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===STATE.tab))}
-async function refreshLive(){if(STATE.liveLoading)return;STATE.liveLoading=true;STATE.liveAttempt=Date.now();try{const data=await liveMatches();STATE.liveMatches=data;STATE.liveChecked=true;STATE.lastLive=Date.now();STATE.liveError='';mergeLiveIntoFixtures();STATE.last=Date.now()}catch(e){STATE.liveError=e.message||'Canlı veri alınamadı';STATE.liveChecked=false}finally{STATE.liveLoading=false;render()}}
+async function refreshLive(){if(STATE.liveLoading)return;STATE.liveLoading=true;STATE.liveAttempt=Date.now();try{const data=await liveMatches();STATE.liveMatches=data;STATE.liveChecked=true;STATE.lastLive=Date.now();STATE.liveError='';mergeLiveIntoFixtures();if(STATE.match){const fresh=data.find(x=>matchKey(x)===matchKey(STATE.match));if(fresh)STATE.match={...STATE.match,...fresh,homeId:fresh.homeId||STATE.match.homeId,awayId:fresh.awayId||STATE.match.awayId};}STATE.last=Date.now()}catch(e){STATE.liveError=e.message||'Canlı veri alınamadı';STATE.liveChecked=false}finally{STATE.liveLoading=false;render()}}
 async function refresh(force=false){if(STATE.loading)return;STATE.loading=true;STATE.lastAttempt=Date.now();STATE.error='';render();try{if(force||!STATE.lastFixtures||Date.now()-STATE.lastFixtures>240000){const data=await fixtures(STATE.day);STATE.matches=data;STATE.lastFixtures=Date.now();}STATE.last=Date.now();if(STATE.day===0||STATE.tab==='live')await refreshLive();}catch(e){STATE.error=e.message||'Maç listesi alınamadı';if(!STATE.matches.length)try{let c=JSON.parse(localStorage.getItem('scoreCacheV4')||'null');if(c&&c.day===STATE.day){STATE.matches=c.matches;STATE.error+=' • Son kaydedilen fikstür gösteriliyor.'}}catch(_){} }finally{STATE.loading=false;try{localStorage.setItem('scoreCacheV4',JSON.stringify({day:STATE.day,matches:STATE.matches.map(({raw,...m})=>m)}))}catch(_){}render()}}
 function switchTab(tab){if(tab===STATE.tab)return;STATE.tab=tab;STATE.match=null;STATE.details=null;STATE.filter='Tümü';STATE.term='';if(tab==='live')STATE.day=0;if(tab==='settings'){render();return}render();if(tab==='live'){refreshLive();if(!STATE.matches.length)refresh(true)}else if(!STATE.matches.length)refresh(true);}
 $('nav').addEventListener('click',e=>{let button=e.target.closest('[data-tab]');if(button)switchTab(button.dataset.tab)});
@@ -416,6 +429,13 @@ $('content').addEventListener('error',e=>{const img=e.target;if(img?.classList?.
 $('content').addEventListener('load',e=>{const img=e.target;if(img?.classList?.contains('team-img') && img.naturalWidth>0){const fallback=img.parentElement?.querySelector('.fallback-crest');if(fallback)fallback.style.visibility='hidden'}},true);
 $('content').addEventListener('input',e=>{if(e.target.id==='search'){STATE.term=e.target.value;const box=$('match-results');if(box)box.innerHTML=buildSections()}});
 setInterval(()=>{if(document.visibilityState==='hidden'||STATE.match||STATE.tab==='settings'||STATE.liveLoading||STATE.loading)return;const watchingLive=STATE.tab==='live'||STATE.matches.some(isLive)||STATE.liveMatches.length>0;const delay=bsdToken?(watchingLive?15000:60000):65000;if((STATE.day===0||STATE.tab==='live')&&Date.now()-Math.max(STATE.liveAttempt,STATE.lastLive)>=delay){refreshLive();return}if(STATE.tab!=='live'&&Date.now()-Math.max(STATE.lastFixtures,STATE.lastAttempt)>=300000)refresh()},1000);
+// While an active live match is open, refresh score every 15s and deeper stats every 120s.
+// No polling when Android WebView is hidden; details are not re-requested every 15 seconds.
+setInterval(()=>{
+ if(document.visibilityState==='hidden'||!STATE.match||!isLive(STATE.match)||!bsdToken)return;
+ if(!STATE.liveLoading&&!STATE.loading&&Date.now()-Math.max(STATE.lastLive,STATE.liveAttempt)>=15000)refreshLive();
+ if(STATE.details&&!STATE.detailLoading&&Date.now()-(STATE.lastDetailFetch||0)>=120000)refreshDetailStats();
+},1000);
 window.onNativeBack=()=>{if(STATE.match){STATE.match=null;STATE.details=null;render();return true}if(STATE.tab!=='today'){STATE.tab='today';render();return true}return false};
 if(bsdToken)STATE.source='bsd';render();refresh(true);
 </script></body></html>
