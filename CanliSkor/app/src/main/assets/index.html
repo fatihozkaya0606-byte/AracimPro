@@ -69,6 +69,34 @@ button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus
 .back{border:0;background:none;color:var(--lime);padding:5px 0 11px}.event{display:flex;gap:10px;align-items:center;border-bottom:1px solid #2b4a53;padding:12px 5px;font-size:12px}.event small{width:35px;color:var(--lime)}
 .stats-row{margin:13px 0}.stats-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}.track{height:8px;border-radius:9px;background:#294152;display:flex;overflow:hidden}.track div:first-child{background:var(--lime)}.track div:last-child{background:#5692d8}
 @media(max-width:360px){.match{grid-template-columns:35px minmax(0,1fr) 45px minmax(0,1fr) 21px;gap:3px;padding:7px 4px}.club{font-size:10.5px}.crest{width:18px;height:18px}.status-pill{max-width:105px}}
+
+.header{padding:calc(6px + env(safe-area-inset-top)) 10px 7px;background:linear-gradient(125deg,#17354d,#0b1d2d)}
+.header:after{opacity:.10}.brand-mark{width:34px;height:34px;font-size:19px;border-radius:9px}.title{font-size:19px}.subtitle{font-size:9px}
+.live-strip{margin-top:7px;min-height:29px;background:#193441}.live-strip .s-item{padding:6px 2px;font-size:9px}
+.live-strip b{font-size:12px}.section{padding:8px 7px}
+.v4-dates{display:flex;gap:4px;margin-bottom:7px;overflow:auto;scrollbar-width:none}
+.v4-date{min-width:47px;flex:1 0 12%;display:flex;flex-direction:column;align-items:center;gap:3px;border:1px solid #304d59;background:#15283a;color:#a8bcc9;border-radius:9px;padding:7px 1px}
+.v4-date small{font-size:9px}.v4-date b{font-size:10px}.v4-date.on{background:#b5fc54;color:#15271b;box-shadow:0 2px 10px #afff4555}
+.top-tabs{gap:4px;margin:7px 0}.top-tab{padding:9px 2px;font-size:11px;border-radius:8px}
+.v4-tools{display:flex;gap:5px;margin:0 0 7px}.v4-tools label{height:35px;border:1px solid #3b5660;background:#102437;border-radius:8px;display:flex;align-items:center;padding:5px 10px;gap:7px;flex:1;min-width:0;color:#9fb4bf}
+.v4-tools input{border:0;outline:0;background:transparent;color:white;min-width:0;width:100%;font-size:11px}
+.v4-tools button{border:1px solid #648d54;background:#254937;border-radius:8px;color:#cfff9b;padding:4px 9px;font-size:11px;font-weight:700}
+.v4-filter{display:flex;gap:5px;overflow:auto;scrollbar-width:none;padding:2px 0 7px}.v4-filter .chip{font-size:10px;padding:6px 10px}
+.v4-summary{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#a6bdc9;margin:4px 2px 8px}
+.v4-league-card{border:1px solid #3b5360;border-radius:9px;overflow:hidden;margin-bottom:9px;background:#102235;box-shadow:0 3px 12px #0005}
+.v4-league-head{background:#293e4a;border-bottom:1px solid #405968;display:flex;justify-content:space-between;gap:8px;align-items:center;padding:9px 10px;font-size:11.5px;font-weight:800}
+.v4-league-head span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.v4-league-head small{font-size:10px;color:#afc5ca;flex-shrink:0}
+.v4-match{display:grid;grid-template-columns:39px minmax(0,1fr) 47px minmax(0,1fr) 23px;gap:3px;align-items:center;min-height:43px;padding:6px;background:#102234;border-bottom:1px solid #2d4452;cursor:pointer}
+.v4-match:last-child{border-bottom:0}.v4-status{font-size:10px;font-weight:800;color:#aebfc8;white-space:nowrap}.v4-status.live{color:#ff5f72}
+.v4-home{font-size:11.5px;text-align:right;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.v4-away{font-size:11.5px;text-align:left;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.v4-score{font-size:12px;text-align:center;white-space:nowrap;font-weight:850;color:#f5f9fd}.v4-score.live{color:#ff6d7c}
+.v4-star{border:0;background:none;font-size:22px;color:#8299a7;padding:0}.v4-star.saved{color:#b5ff51}
+.v4-no-matches{margin:0;padding:9px 11px;font-size:10.5px;color:#92aab8}
+.v4-note{background:#1b3746;border:1px solid #3d5967;border-radius:8px;padding:10px;color:#d5e5e8;font-size:11px;margin:5px 0 9px}
+.nav{background:#0a1827}
+@media(max-width:370px){.v4-match{grid-template-columns:32px minmax(0,1fr) 41px minmax(0,1fr) 20px;gap:2px;padding:4px}.v4-home,.v4-away{font-size:10px}.v4-score{font-size:11px}}
+
 </style></head><body><div id="app">
 <header class="header">
   <div class="titlebar"><div class="brand"><div class="brand-mark">⚽</div><div><div class="title">Canlı Skor<span style="color:var(--lime)">+</span></div><div class="subtitle">Tüm maçlar, tek ekranda</div></div></div>
@@ -190,11 +218,11 @@ $('content').addEventListener('click',e=>{
     if(b.dataset.topTab){switchTab(b.dataset.topTab);return}
     if(b.dataset.day!==undefined){
       let day=Math.max(-10,Math.min(10,Number(b.dataset.day)));
-      if(day!==STATE.day){STATE.day=day;STATE.tab='today';STATE.matches=[];STATE.filter='Tümü';STATE.term='';refresh(true);}
+      if(day!==STATE.day){STATE.day=day;STATE.tab='today';STATE.matches=[];STATE.lastFixtures=0;STATE.filter='Tümü';STATE.term='';refresh(true);}
       return;
     }
     if(b.dataset.filter!==undefined){STATE.filter=decodeURIComponent(b.dataset.filter);render();return}
-    if(b.dataset.star){e.stopPropagation();let key=decodeURIComponent(b.dataset.star);let m=STATE.matches.find(x=>matchKey(x)===key);if(m)saveMatch(m);return}
+    if(b.dataset.star){e.stopPropagation();let key=decodeURIComponent(b.dataset.star);let m=[...STATE.liveMatches,...STATE.matches].find(x=>matchKey(x)===key);if(m)saveMatch(m);return}
     if(b.dataset.back){STATE.match=null;STATE.details=null;render();return}
     if(b.dataset.saveToken){
       let value=$('token').value.trim();bsdToken=value;localStorage.setItem('bsdToken',value);
@@ -206,13 +234,12 @@ $('content').addEventListener('click',e=>{
     }
   }
   let card=e.target.closest('[data-open]');
-  if(card){let key=decodeURIComponent(card.dataset.open);let m=STATE.matches.find(x=>matchKey(x)===key);if(m)openDetail(m)}
+  if(card){let key=decodeURIComponent(card.dataset.open);let m=[...STATE.liveMatches,...STATE.matches].find(x=>matchKey(x)===key);if(m)openDetail(m)}
 });
 $('content').addEventListener('input',e=>{
   if(e.target.id==='search'){
     STATE.term=e.target.value;
-    let a=STATE.matches;
-    if(STATE.tab==='live')a=a.filter(isLive);
+    let a=STATE.tab==='live'?(STATE.liveMatches.length?STATE.liveMatches:STATE.matches.filter(isLive)):STATE.matches;
     if(STATE.tab==='finished')a=a.filter(isFinal);
     if(STATE.tab==='favorites')a=a.filter(saved);
     if(STATE.filter!=='Tümü')a=a.filter(m=>m.league===STATE.filter);
@@ -220,14 +247,192 @@ $('content').addEventListener('input',e=>{
     let box=$('match-results');if(box)box.innerHTML=groupedCards(a);
   }
 });
+
+/* v0.4: Independent live feed, league ID lookup and compact horizontal score rows. */
+Object.assign(STATE,{liveMatches:[],liveChecked:false,liveError:'',lastFixtures:0,lastLive:0,lastLiveAttempt:0,leagueMap:{}});
+const V4_LEAGUES=[
+ ['tr-super','🇹🇷 Türkiye - Trendyol Süper Lig'],
+ ['tr-first','🇹🇷 Türkiye - Trendyol 1. Lig'],
+ ['eng-premier','🏴 İngiltere - Premier League'],
+ ['esp-laliga','🇪🇸 İspanya - LaLiga'],
+ ['ita-seriea','🇮🇹 İtalya - Serie A'],
+ ['ger-bundesliga','🇩🇪 Almanya - Bundesliga'],
+ ['fra-ligue1','🇫🇷 Fransa - Ligue 1'],
+ ['uefa-ucl','🏆 UEFA - Şampiyonlar Ligi'],
+ ['uefa-uel','🏆 UEFA - Avrupa Ligi']
+];
+function getDate(offset=0){return new Date(Date.now()+offset*86400000+10800000).toISOString().slice(0,10)}
+function v4LocalDate(date){if(!date)return '';const d=new Date(date);return isNaN(d)?'':new Date(d.getTime()+10800000).toISOString().slice(0,10)}
+function v4Arr(x){if(Array.isArray(x))return x;for(const v of [x?.results,x?.events,x?.matches,x?.fixtures,x?.live,x?.live_events,x?.data?.results,x?.data?.events,x?.data?.matches,x?.data])if(Array.isArray(v))return v;return []}
+function v4Rows(x,what){const a=v4Arr(x);if(!a.length&&Number(x?.count)>0)throw new Error(what+': Sunucu maç olduğunu bildiriyor ancak veri biçimi çözülemedi');return a}
+function v4LeagueKey(name,country,id){
+ const n=String(name||'').toLocaleLowerCase('tr-TR'),c=String(country||'').toLocaleLowerCase('tr-TR');
+ if(/süper lig|super lig|trendyol super|trendyol süper/.test(n)&&(!c||/turkey|turkiye|türkiye/.test(c)))return 'tr-super';
+ if(/trendyol 1|1\. lig|tff 1/.test(n)&&(!c||/turkey|turkiye|türkiye/.test(c)))return 'tr-first';
+ if(/premier league|premier lig/.test(n)&&(!c||/england|ingiltere|i̇ngiltere/.test(c)))return 'eng-premier';
+ if(/la ?liga|laliga/.test(n))return 'esp-laliga';
+ if(/serie a/.test(n)&&(!c||/ital/.test(c)))return 'ita-seriea';
+ if(/bundesliga/.test(n)&&(!c||/german|almanya/.test(c)))return 'ger-bundesliga';
+ if(/ligue 1/.test(n))return 'fra-ligue1';
+ if(/champions league|şampiyonlar ligi/.test(n)&&!/women|u19|youth/.test(n))return 'uefa-ucl';
+ if(/europa league|avrupa ligi/.test(n))return 'uefa-uel';
+ return 'other:'+String(id||n||'unknown');
+}
+function v4League(row){
+ const id=String(row?.league_id||row?.league?.id||''),l=STATE.leagueMap[id]||{};
+ const obj=first(row,['league','competition','tournament','league_name'],null);
+ const name=String(textVal(obj)||first(row,['league_name','competition_name'],null)||l.name||(id?'Lig #'+id:'Diğer Lig'));
+ const country=String(first(row,['country','country_name'],l.country||obj?.country||''));
+ const key=v4LeagueKey(name,country,id),known=V4_LEAGUES.find(x=>x[0]===key);
+ return {key,title:known?known[1]:(country?country+' - ':'')+name};
+}
+function v4Status(x,forceLive){
+ if(forceLive)return 'live';
+ const s=String(first(x,['status','match_status','state'],x?.time?.status||'upcoming')).toLowerCase().replace(/[\s-]+/g,'_');
+ if(['live','in_progress','in_play','inplay','playing','1h','2h','ht','extra_time','et','penalties','first_half','second_half','half_time','break'].includes(s))return 'live';
+ if(['ft','ended','finished','complete','completed','aet'].includes(s))return 'finished';
+ if(['cancelled','postponed'].includes(s))return s;
+ return 'upcoming';
+}
+function normalize(x,provider,forceLive=false){
+ const ho=first(x,['home_team','home','homeTeam','team_home','home_team_name']);
+ const aw=first(x,['away_team','away','awayTeam','team_away','away_team_name']);
+ const home=String(textVal(ho)||first(x,['home_name'],'Ev sahibi')),away=String(textVal(aw)||first(x,['away_name'],'Deplasman'));
+ const date=first(x,['event_date','start_time','kickoff','kickoff_at','start_at','date'],x?.time?.kickoff_at||'');
+ const status=v4Status(x,forceLive);
+ const minute=first(x,['current_minute','minute','elapsed','status_text'],x?.time?.display??x?.time?.minute??'');
+ const scores=x.score&&typeof x.score==='object'?x.score:{};
+ let hs=first(x,['home_score','score_home','homeGoals'],scores.home??null),as=first(x,['away_score','score_away','awayGoals'],scores.away??null);
+ if(x.extra_time_score&&hs!==null&&as!==null){hs=Number(hs)+Number(x.extra_time_score.home||0);as=Number(as)+Number(x.extra_time_score.away||0)}
+ const id=String(first(x,['id','event_id','match_id','slug'],home+away+date));
+ const leagueObj=v4League(x);
+ return {provider,id,slug:String(x.slug||''),home,away,league:leagueObj.title,leagueKey:leagueObj.key,time:date,status,minute,hs,as,raw:x};
+}
+async function v4EnsureLeagues(){
+ if(!bsdToken)return;
+ try{const cached=JSON.parse(localStorage.getItem('bsdLeaguesV4')||'null');if(cached&&Date.now()-cached.at<86400000){STATE.leagueMap=cached.map||{};return}}catch(_){}
+ try{const response=await request(API_BSD+'/api/v2/leagues/?limit=200',bsdToken);
+ const list=v4Rows(response,'Lig bilgileri'),map={};
+ for(const x of list)if(x.id!==undefined)map[String(x.id)]={name:String(first(x,['name','league_name'],'Lig #'+x.id)),country:String(textVal(x.country||x.country_name||''))};
+ STATE.leagueMap=map;localStorage.setItem('bsdLeaguesV4',JSON.stringify({at:Date.now(),map}));
+ }catch(e){STATE.error='Lig adları alınamadı: '+String(e.message||e)}
+}
+async function v4FixtureRows(day){
+ const target=getDate(day);
+ if(bsdToken){
+  await v4EnsureLeagues();
+  let next=API_BSD+'/api/v2/events/?date_from='+getDate(day-1)+'&date_to='+getDate(day+1)+'&limit=200';
+  let all=[],seen=new Set();
+  for(let i=0;i<5&&next;i++){if(seen.has(next))break;seen.add(next);
+   const data=await request(next,bsdToken);all.push(...v4Rows(data,'Maçlar'));
+   const n=data?.next;
+   next=(typeof n==='string'&&n.startsWith('https://sports.bzzoiro.com/'))?n:(typeof n==='string'&&n.startsWith('/')?API_BSD+n:null);
+  }
+  const unique=new Set();
+  return all.filter(x=>v4LocalDate(first(x,['event_date','start_time','kickoff','kickoff_at'],x?.time?.kickoff_at||''))===target)
+  .map(x=>normalize(x,'bsd')).filter(x=>{let k=matchKey(x);if(unique.has(k))return false;unique.add(k);return true});
+ }
+ const data=await request(API_SS+'/api/v1/fixtures/?sport=football&date='+target+'&limit=200');
+ return v4Rows(data,'Maçlar').map(x=>normalize(x,'sportscore'));
+}
+async function v4LiveRows(){
+ const data=bsdToken?await request(API_BSD+'/api/v2/events/live/?limit=200',bsdToken):
+ await request(API_SS+'/api/widget/matches/?sport=football&limit=100');
+ const result=v4Rows(data,'Canlı maçlar').map(x=>normalize(x,bsdToken?'bsd':'sportscore',!!bsdToken));
+ return bsdToken?result:result.filter(isLive);
+}
+function v4MergeLive(){const live=new Map(STATE.liveMatches.map(m=>[matchKey(m),m]));STATE.matches=STATE.matches.map(m=>{let n=live.get(matchKey(m));return n?{...m,...n,league:n.leagueKey.startsWith('other:')?m.league:n.league,leagueKey:n.leagueKey.startsWith('other:')?m.leagueKey:n.leagueKey}:m})}
+async function v4RefreshLive(){
+ if(STATE.liveLoading)return;STATE.liveLoading=true;STATE.lastLiveAttempt=Date.now();
+ try{STATE.liveMatches=await v4LiveRows();STATE.lastLive=Date.now();STATE.liveChecked=true;STATE.liveError='';v4MergeLive();STATE.last=Date.now();}
+ catch(e){STATE.liveChecked=false;STATE.liveError=String(e.message||e)}
+ finally{STATE.liveLoading=false;render()}
+}
+async function refresh(force=false){
+ if(STATE.loading)return;STATE.loading=true;STATE.error='';render();
+ try{
+  if(force||!STATE.lastFixtures||Date.now()-STATE.lastFixtures>240000||!STATE.matches.length){
+   STATE.matches=await v4FixtureRows(STATE.day);STATE.lastFixtures=Date.now();
+  }
+  if(STATE.day===0||STATE.tab==='live')await v4RefreshLive();
+  STATE.last=Date.now();
+ }catch(e){STATE.error=String(e.message||e)}
+ finally{STATE.loading=false;render()}
+}
+function v4Visible(){
+ let a=STATE.tab==='live'?(STATE.liveMatches.length?STATE.liveMatches:STATE.matches.filter(isLive)):
+ STATE.tab==='favorites'?[...new Map([...STATE.matches,...STATE.liveMatches].map(m=>[matchKey(m),m])).values()].filter(saved):STATE.matches;
+ if(STATE.tab==='finished')a=a.filter(isFinal);
+ if(STATE.filter!=='Tümü')a=a.filter(m=>m.leagueKey===STATE.filter);
+ if(STATE.term)a=a.filter(m=>(m.home+' '+m.away+' '+m.league).toLocaleLowerCase('tr-TR').includes(STATE.term.toLocaleLowerCase('tr-TR')));
+ return a;
+}
+function v4OneMatch(m){
+ const id=encodeURIComponent(matchKey(m)),live=isLive(m);
+ const clock=statusText(m);
+ const score=(live||isFinal(m))?String(m.hs??'–')+' - '+String(m.as??'–'):'v';
+ return '<article class="v4-match" data-open="'+id+'"><span class="v4-status '+(live?'live':'')+'">'+escapeHtml(clock)+'</span>'+
+ '<span class="v4-home">'+escapeHtml(m.home)+'</span><b class="v4-score '+(live?'live':'')+'">'+escapeHtml(score)+'</b>'+
+ '<span class="v4-away">'+escapeHtml(m.away)+'</span><button class="v4-star '+(saved(m)?'saved':'')+'" data-star="'+id+'">'+(saved(m)?'★':'☆')+'</button></article>';
+}
+function groupedCards(items){
+ if(!items.length&&STATE.term)return '<div class="v4-note">Aramada maç bulunamadı.</div>';
+ const map=new Map();
+ for(const m of items){const k=m.leagueKey||'other:unknown';if(!map.has(k))map.set(k,{title:m.league,items:[]});map.get(k).items.push(m)}
+ let used=new Set(),sections=[];
+ for(const [key,title] of V4_LEAGUES){if(STATE.filter!=='Tümü'&&STATE.filter!==key)continue;sections.push({key,title,items:map.get(key)?.items||[]});used.add(key)}
+ for(const [key,g] of map)if(!used.has(key))sections.push({key,title:g.title,items:g.items});
+ if(STATE.tab==='live'&&!items.length&&!STATE.term){
+  const msg=STATE.liveError?'Canlı veri alınamadı: '+STATE.liveError:'BSD şu anda canlı maç bildirmiyor. Maç programını Maçlar sekmesinde görebilirsin.';
+  sections.unshift({notice:msg});
+ }
+ return sections.map(g=>g.notice?'<div class="v4-note">'+escapeHtml(g.notice)+'</div>':
+ '<section class="v4-league-card"><div class="v4-league-head"><span>'+escapeHtml(g.title)+'</span><small>'+g.items.length+' maç</small></div>'+
+ (g.items.length?g.items.sort((a,b)=>Number(isLive(b))-Number(isLive(a))||String(a.time||'').localeCompare(String(b.time||''))).map(v4OneMatch).join(''):
+ '<p class="v4-no-matches">'+(STATE.tab==='live'?'Bu ligde şu anda canlı maç yok.':'Bugün bu ligde maç yok.')+'</p>')+'</section>').join('');
+}
+function screenMatches(){
+ const items=v4Visible();
+ const dates=Array.from({length:7},(_,i)=>i-3).map(n=>'<button class="v4-date '+(STATE.day===n?'on':'')+'" data-day="'+n+'"><small>'+getDate(n).slice(8)+'.'+getDate(n).slice(5,7)+'</small><b>'+(n===0?'Bugün':n===-1?'Dün':n===1?'Yarın':getDate(n).slice(8)+'.'+getDate(n).slice(5,7))+'</b></button>').join('');
+ const tabs=[['today','Tümü'],['live','● Canlı'],['finished','Biten'],['favorites','☆ Favoriler']].map(x=>'<button class="top-tab '+(STATE.tab===x[0]?'on':'')+'" data-top-tab="'+x[0]+'">'+x[1]+'</button>').join('');
+ const extra=new Map();for(const m of [...STATE.matches,...STATE.liveMatches])if(!V4_LEAGUES.some(l=>l[0]===m.leagueKey))extra.set(m.leagueKey,m.league);
+ const filters=[['Tümü','Tüm Ligler'],...V4_LEAGUES,...extra.entries()].map(x=>'<button class="chip '+(STATE.filter===x[0]?'on':'')+'" data-filter="'+encodeURIComponent(x[0])+'">'+escapeHtml(x[1])+'</button>').join('');
+ return '<div class="v4-dates">'+dates+'</div><div class="top-tabs">'+tabs+'</div>'+
+ '<div class="v4-tools"><label>⌕ <input id="search" type="search" placeholder="Takım veya lig ara…" value="'+escapeHtml(STATE.term)+'"></label><button data-refresh="1">↻ Yenile</button></div>'+
+ '<div class="v4-filter">'+filters+'</div>'+
+ '<div class="v4-summary"><span>'+items.length+' maç · '+(bsdToken?'BSD':'SportScore')+'</span><span>'+(STATE.loading?'Güncelleniyor…':STATE.last?new Date(STATE.last).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}):'Veri bekleniyor')+'</span></div>'+
+ (STATE.error?'<div class="errorbox">⚠ '+escapeHtml(STATE.error)+'</div>':'')+
+ '<div id="match-results">'+groupedCards(items)+'</div>';
+}
+function render(){
+ $('live-count').textContent=String(STATE.liveMatches.length||STATE.matches.filter(isLive).length);
+ $('today-count').textContent=String(STATE.matches.length);
+ $('updated-at').textContent=STATE.last?new Date(STATE.last).toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'}):'—';
+ $('source-label').textContent=bsdToken?'BSD API':'SPORTSCORE';
+ $('content').innerHTML=STATE.match?detailScreen(STATE.match):STATE.tab==='settings'?screenSettings():screenMatches();
+ $('credit').innerHTML=bsdToken?'Veri kaynağı: BSD · Anlık veri gecikmeli olabilir':'<a href="https://sportscore.com/">Powered by SportScore</a>';
+ document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===STATE.tab));
+}
+function switchTab(tab){
+ if(tab===STATE.tab)return;
+ STATE.tab=tab;STATE.match=null;STATE.details=null;STATE.filter='Tümü';STATE.term='';
+ if(tab==='settings'){render();return}
+ if(tab==='live')STATE.day=0;
+ render();
+ if(tab==='live'){v4RefreshLive();if(!STATE.matches.length)refresh(true)}
+ else if(!STATE.matches.length)refresh(true);
+}
+
 // Scheduled refresh only while app is visible and while match lists are in use.
 // Poll frequently only while the app is visible and matches are live.
 // lastAttempt prevents retry storms when the data provider is unavailable.
+
 setInterval(()=>{
-  if(document.visibilityState==='hidden'||STATE.match||STATE.tab==='settings'||STATE.loading)return;
-  const shouldFastRefresh=bsdToken && STATE.day===0 && (STATE.tab==='live'||STATE.matches.some(isLive));
-  const intervalMs=bsdToken ? (shouldFastRefresh ? 15000 : 60000) : 65000;
-  if(Date.now()-Math.max(STATE.lastAttempt||0,STATE.last||0)>=intervalMs)refresh();
+ if(document.visibilityState==='hidden'||STATE.match||STATE.tab==='settings'||STATE.loading||STATE.liveLoading)return;
+ const hasLive=STATE.tab==='live'||STATE.liveMatches.length>0||STATE.matches.some(isLive);
+ const liveDelay=bsdToken?(hasLive?15000:60000):65000;
+ if((STATE.day===0||STATE.tab==='live')&&Date.now()-Math.max(STATE.lastLiveAttempt,STATE.lastLive)>=liveDelay){v4RefreshLive();return;}
+ if(STATE.tab!=='live'&&Date.now()-STATE.lastFixtures>=300000)refresh();
 },1000);
 window.onNativeBack=()=>{if(STATE.match){STATE.match=null;STATE.details=null;render();return true}if(STATE.tab!=='today'){STATE.tab='today';render();return true}return false};
 if(bsdToken)STATE.source='bsd';render();refresh();
