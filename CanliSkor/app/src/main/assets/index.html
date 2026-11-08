@@ -462,6 +462,7 @@ body.v09 .v09-team .mini-fallback{font-size:10px;font-weight:900}
 body.v09 .v4-score{padding:7px 1px!important;min-width:0;background:linear-gradient(165deg,#56818a 0%,#1f3948 18%,#091d28 60%,#274c50 100%)!important;border:1px solid #c3e7e4a6!important;border-radius:11px!important;font-size:14px!important;font-weight:1000!important;color:#fafffa!important;text-shadow:0 2px 2px #000d,0 0 6px #efffff68;box-shadow:inset 0 2px #ffffff96,inset 0 -4px #0917238a,0 4px 0 #112932,0 7px 9px #000a!important;text-align:center!important;white-space:nowrap}
 body.v09 .v4-score.now{color:#eaffc1!important;background:linear-gradient(160deg,#5b9e40,#163e2c 32%,#091f1b 68%,#277526)!important;border-color:#b7ff4c!important;box-shadow:inset 0 2px #e2ffd9,inset 0 -4px #193c1c,0 4px 0 #387327,0 6px 12px #89ff3c8c,0 0 9px #a1ff36a3!important;text-shadow:0 0 9px #e4ffb8!important}
 body.v09 .v4-star{font-size:23px!important;color:#d9e5e9!important;text-shadow:0 2px 1px #000c;filter:drop-shadow(0 0 3px #b2d3d7);border:0}
+body.v09 .v4-star{font-size:21px!important;filter:none!important}
 body.v09 .v4-star.saved{color:#b7ff4a!important;filter:drop-shadow(0 0 8px #b6ff4a)!important}
 body.v09 .nav{display:grid!important;grid-template-columns:1fr 1fr 54px 1fr 1fr!important;align-items:center;gap:0!important;min-height:69px;background:linear-gradient(180deg,#24545b 0%,#0f2933 16%,#071b25 60%,#123b36 100%)!important;border:1px solid #9dd1d4bf!important;border-bottom:0!important;border-radius:22px 22px 0 0!important;box-shadow:inset 0 2px #f0ffffa6,0 -4px 0 #173c3d,0 -9px 24px #000c,0 0 13px #9aff4270!important;padding:7px 5px calc(5px + env(safe-area-inset-bottom))!important;position:fixed;max-width:800px}
 body.v09 .nav button{min-width:0;font-size:10px!important;gap:4px!important;color:#e8f6fc!important;text-shadow:0 2px 2px #000d;padding:6px 1px!important;border-radius:12px}
@@ -543,11 +544,88 @@ body.v09[data-theme="light"] .status-pill{background:linear-gradient(155deg,#b0f
 body.v09[data-theme="light"] .nav button.on{color:#e4ffa4!important;text-shadow:0 1px 2px #001c12!important}
 body.v09[data-theme="light"] .live-strip .live-number{color:#245b27!important;text-shadow:0 1px #eaffdd!important}
 body.v09[data-theme="light"] .game-hero .game-date{color:#214a56!important}
-</style></head><body class="v07 v09"><div id="app">
+
+/* 1.0 Premium Steel Edition — restrained metallic 3D, larger readable scores */
+body.v09{--lime:#a9c972;--chrome:#9fafba;--cyan:#7894aa;background-image:radial-gradient(ellipse 76% 20% at 52% 3%,#36526566,transparent 90%),linear-gradient(180deg,#091726,#081826 46%,#06121e)!important}
+body.v09 #app{background:linear-gradient(180deg,#0a1b2a88,transparent 35%,#071521)!important}
+body.v09 .header{background:radial-gradient(ellipse 110% 80% at 78% -30%,#4b688577,transparent 75%),linear-gradient(117deg,#071827,#11283a 60%,#101e2d)!important;border-bottom:1px solid #63788a80!important;box-shadow:inset 0 1px #b8cad140,0 3px 0 #273e4c,0 9px 17px #0009!important}
+body.v09 .header:before{filter:blur(2px);opacity:.34}
+body.v09 .header:after{opacity:.14!important;filter:blur(6px)!important}
+body.v09 .brand-mark{background:linear-gradient(155deg,#dbe4e4,#718c9b 38%,#223b4d)!important;border:1px solid #a4b8b9!important;box-shadow:inset 0 2px #fff7,0 3px 0 #4d6d68,0 6px 8px #000a!important}
+body.v09 .title{font-size:24px!important;text-shadow:0 2px 0 #283644,0 4px 5px #0009}
+body.v09 .subtitle{font-size:10.5px!important;letter-spacing:.45px}
+body.v09 .status-pill{background:linear-gradient(160deg,#324c4f,#1b302c 55%,#14272d)!important;border:1px solid #819e83!important;color:#edf7ec!important;box-shadow:inset 0 2px #ffffff42,0 3px 0 #263d3a,0 5px 9px #0009!important;font-size:10px!important}
+body.v09 .status-pill .dot{background:#a0c673;box-shadow:0 0 3px #9ac678}
+body.v09 .live-strip{background:linear-gradient(172deg,#456579,#273d51 32%,#112330 78%,#385368)!important;border:1px solid #91aebe94!important;box-shadow:inset 0 2px #ffffff8a,inset 0 -3px #06131ec7,0 3px 0 #3b5661,0 7px 13px #0009!important}
+body.v09 .live-strip .s-item{font-size:12px!important}
+body.v09 .live-strip b{font-size:18px!important}
+body.v09 .live-strip .live-number{color:#b6d98d!important;text-shadow:0 1px 3px #051910!important}
+body.v09 .v4-today{font-size:12.5px!important;border:1px solid #648797!important;background:linear-gradient(155deg,#2e4b5d,#122b3b)!important;box-shadow:inset 0 2px #c3dfdf58,0 4px 9px #0009!important}
+body.v09 .v4-today b{color:#b9d990!important;text-shadow:none!important;font-size:16px!important}
+body.v09 .v4-date{background:linear-gradient(155deg,#4c6674,#233c50 22%,#112536 69%,#2e4857)!important;color:#eff4f8!important;border:1px solid #8ea8b3a6!important;box-shadow:inset 0 2px #ffffff74,inset 0 -3px #071827,0 3px 0 #536c77,0 7px 11px #0007!important}
+body.v09 .v4-date small{font-size:11.5px!important}
+body.v09 .v4-date b{font-size:14px!important}
+body.v09 .v4-date.on{background:linear-gradient(155deg,#d7e8a6,#9fbe62 50%,#608645)!important;color:#13251c!important;border-color:#d2deac!important;box-shadow:inset 0 2px #ffffeaa2,0 3px 0 #547648,0 6px 11px #6b91494a!important;transform:none!important}
+body.v09 .top-tab{font-size:14px!important;background:linear-gradient(160deg,#567383,#253e51 22%,#102537 75%,#2e4659)!important;border:1px solid #93aab6a6!important;box-shadow:inset 0 2px #ffffff8c,0 4px 0 #344b58,0 8px 10px #0009!important}
+body.v09 .top-tab.on{background:linear-gradient(155deg,#cde0aa,#8eb263 55%,#5d7d48)!important;color:#183028!important;border-color:#c9d6ad!important;box-shadow:inset 0 2px #ffffffb4,0 3px 0 #486844,0 6px 10px #65834c70!important}
+body.v09 .v4-toolbar label{background:linear-gradient(168deg,#294254,#0e2233 58%,#172e3f)!important;border:1px solid #839eaa!important;box-shadow:inset 0 3px 7px #000a,0 3px #394f5d,0 6px 8px #0008!important}
+body.v09 .v4-toolbar input{font-size:14px!important}
+body.v09 .v4-toolbar button{font-size:13px!important;background:linear-gradient(155deg,#6c867e,#2b4e48 45%,#152d34)!important;color:#e0eed9!important;border-color:#a4bba5!important;box-shadow:inset 0 2px #ffffff83,0 3px 0 #38554e,0 7px 9px #0008!important}
+body.v09 .v4-league-chips .chip{font-size:11.5px!important;background:linear-gradient(150deg,#546e7d,#21384b 40%,#13293a)!important;border:1px solid #849dab!important;box-shadow:inset 0 2px #ffffff80,0 3px 0 #2d4151,0 5px 9px #0008!important}
+body.v09 .v4-league-chips .chip.on{background:linear-gradient(150deg,#cadca9,#a2c371 55%,#6f9958)!important;color:#19352a!important;border-color:#e2eec2!important;box-shadow:inset 0 2px #fff9,0 3px #5c7956,0 6px 9px #0006!important}
+body.v09 .v4-summary{font-size:13px!important;color:#d0dbe5!important}
+body.v09 .v4-group{background:linear-gradient(150deg,#2a4251,#0a1d2b 30%,#0b1d2c 80%,#1c3e4a)!important;border:1px solid #91aaba!important;box-shadow:inset 0 2px #d0f0f54d,0 4px #2b4956,0 9px 14px #0009!important}
+body.v09 .v4-league,body.v09 .v4-group.v09-country-tr .v4-league,body.v09 .v4-group:not(.v09-country-tr) .v4-league{background:linear-gradient(105deg,#5d7587,#263c52 28%,#193047 72%,#425971)!important;border-bottom:1px solid #9bb1bd!important;box-shadow:inset 0 2px #ffffff7a,inset 0 -3px #0a2038,0 3px 7px #0006!important;font-size:14px!important;min-height:44px!important}
+body.v09 .v4-league:before{opacity:.55;background:linear-gradient(116deg,#fff5 0 1%,transparent 20% 77%,#fff3 79%,transparent 82%),repeating-linear-gradient(132deg,transparent 0 8px,#ffffff08 9px,transparent 11px)}
+body.v09 .v4-league small{font-size:12px!important;color:#f3faff!important}
+body.v09 .v4-match{min-height:68px!important;grid-template-columns:43px minmax(0,1fr) 54px minmax(0,1fr) 21px!important;gap:3px!important;padding:7px 4px!important;background:linear-gradient(166deg,#263f50,#0c2231 25%,#0b1f2b 70%,#1c3e4a)!important;border-bottom:1px solid #647f8e8a!important;box-shadow:inset 0 1px #cce5f436,inset 0 -2px #03111c88!important}
+body.v09 .v4-match:before{box-shadow:none;width:3px}
+body.v09 .v4-status{font-size:12px!important;background:linear-gradient(160deg,#405969,#142b3a 75%)!important;color:#e3ecf2!important;border:1px solid #698798a8!important;box-shadow:inset 0 2px #ffffff4f,0 2px #122a37!important}
+body.v09 .v4-status.now{color:#c0e79b!important;background:linear-gradient(165deg,#405d4a,#1b3831)!important;border-color:#6d9779!important;text-shadow:none!important}
+body.v09 .v4-status.now:before{background:#a6c987;box-shadow:none}
+body.v09 .v09-team .team-name{font-size:12px!important;font-weight:850;line-height:1.2;text-shadow:0 1px 2px #000c!important}
+body.v09 .v09-team .mini-crest{width:21px!important;height:21px!important;flex-basis:21px!important;border-color:#b8c9d0!important;box-shadow:0 2px #101e2a!important}
+body.v09 .v4-score{font-size:16px!important;background:linear-gradient(160deg,#5d7888,#243e50 28%,#122b3b 72%,#4b6778)!important;border:1px solid #a8c0ca!important;box-shadow:inset 0 2px #ffffff98,inset 0 -3px #0c2434,0 3px #31495c,0 6px 9px #0009!important;text-shadow:0 1px 3px #000!important}
+body.v09 .v4-score.now{color:#e8f2df!important;background:linear-gradient(160deg,#5d7e67,#2c5143 35%,#142f2b 75%,#436b50)!important;border-color:#a3c29c!important;box-shadow:inset 0 2px #e5ffe68a,inset 0 -3px #152f25,0 3px #4a6853,0 6px 9px #0007!important;text-shadow:0 2px 2px #001b0a!important}
+body.v09 .v4-star{font-size:21px!important;filter:none!important}
+body.v09 .v4-star.saved{color:#accd94!important;filter:none!important}
+body.v09 .nav{background:linear-gradient(170deg,#536e7c,#253e4e 20%,#112735 60%,#1f3a49)!important;border:1px solid #9fb6c0!important;box-shadow:inset 0 2px #ffffff9c,0 -4px #38505b,0 -9px 18px #000a!important}
+body.v09 .nav button{font-size:12px!important}
+body.v09 .nav button.on{color:#b8d897!important;background:linear-gradient(145deg,#3c594c,#193730 70%,#152d2a)!important;box-shadow:inset 0 2px #d6efc477,0 3px #304c3e,0 5px 11px #0007!important}
+body.v09 .nav-core{filter:saturate(.65);box-shadow:inset 0 3px #ffffffa6,0 4px #2f4850,0 6px 13px #000a!important}
+#goal-toast{border:1px solid #a0bcae!important;background:linear-gradient(160deg,#2d4a4d,#142a32 58%,#233c42)!important;box-shadow:inset 0 2px #ffffff61,0 4px #233f42,0 10px 19px #000b!important}
+#goal-toast .goal-head{color:#c9e4ae!important;text-shadow:none!important}
+#goal-toast .goal-match{font-size:14px!important}
+#goal-toast .goal-sub{font-size:12px!important}
+/* Readable, horizontal detail tabs and expanded BSD-only features */
+body.v09 .detail-tabs{display:flex;overflow-x:auto;scrollbar-width:none;gap:7px!important;align-items:stretch;padding:3px 1px 10px}
+body.v09 .detail-tab{flex:0 0 auto;min-width:118px;padding:11px 9px!important;font-size:12.5px!important}
+body.v09 .section-head{font-size:15px!important}
+.v10-fact{display:flex;justify-content:space-between;gap:12px;padding:13px 2px;border-bottom:1px solid #67819555;font-size:13px;align-items:flex-start}
+.v10-fact span{color:#9eb6c3;flex:0 0 116px}
+.v10-fact strong{color:#e8f4f4;text-align:right;overflow-wrap:anywhere}
+.v10-comparison-head{display:flex;justify-content:space-between;gap:8px;font-size:13px;font-weight:800;margin:13px 0;color:#dbecf2}
+.v10-comparison-head span{width:50%;overflow-wrap:anywhere}.v10-comparison-head span:last-child{text-align:right}
+.v10-compare-row{padding:10px 0;border-bottom:1px solid #8da4a43d}
+.v10-compare-values{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;margin-bottom:7px}
+.v10-compare-values b{font-size:16px}
+.v10-compare-rail{height:10px;border-radius:8px;overflow:hidden;background:#587991}
+.v10-compare-rail i{display:block;height:100%;background:#93b98a;border-radius:8px 0 0 8px}
+body.v09[data-theme="light"] .v10-fact strong{color:#1a4451}
+body.v09[data-theme="light"] .v10-fact span{color:#4a7180}
+body.v09[data-theme="light"] .v10-comparison-head{color:#214452}
+@media(max-width:365px){body.v09 .title{font-size:20px!important}body.v09 .v4-match{grid-template-columns:41px minmax(0,1fr) 52px minmax(0,1fr) 19px!important;gap:3px!important;min-height:65px!important;padding:6px 4px!important}body.v09 .v09-team .team-name{font-size:11.4px!important}body.v09 .v4-score{font-size:15px!important}body.v09 .v4-status{font-size:10.5px!important}body.v09 .v4-date small{font-size:10px!important}body.v09 .v4-date b{font-size:12px!important}}
+/* Light theme equivalent with subtle muted accent, no saturated neon */
+body.v09[data-theme="light"] .v4-date.on,body.v09[data-theme="light"] .top-tab.on{background:linear-gradient(165deg,#e1efcb,#adcd8e,#83ad7b)!important;border-color:#a4c49f!important;color:#27432c!important;box-shadow:inset 0 2px #fff,0 3px #7fa080,0 7px 11px #abc8ac9c!important}
+body.v09[data-theme="light"] .v4-league-chips .chip.on{background:linear-gradient(160deg,#e4f0d0,#bed4af,#96bc8f)!important;color:#284a32!important}
+body.v09[data-theme="light"] .v4-score.now{background:linear-gradient(160deg,#ecf5e5,#b2d0ac,#8ebc92)!important;border-color:#8cac8f!important;color:#21492f!important;box-shadow:inset 0 2px #fff,0 3px #8aa990,0 5px 10px #0002!important}
+body.v09[data-theme="light"] .live-strip .live-number{color:#335a37!important;text-shadow:none!important}
+body.v09[data-theme="light"] .nav button.on{color:#ebf6df!important}
+</style></head><body class="v07 v09 v10"><div id="app">
 <header class="header">
   <div class="titlebar"><div class="brand"><div class="brand-mark">⚽</div><div><div class="title">Canlı Skor<span style="color:var(--lime)">+</span></div><div class="subtitle">Tüm maçlar, tek ekranda</div></div></div>
   <div class="header-actions"><button class="theme-switch" id="theme-toggle" title="Açık / koyu tema" aria-label="Temayı değiştir">☀</button><span class="status-pill"><i class="dot"></i><span id="source-label">BAĞLANIYOR</span></span></div></div>
-  <div class="live-strip"><div class="s-item"><b class="live-number" id="live-count">—</b> CANLI</div><div class="s-item"><b id="today-count">—</b> MAÇ</div><div class="s-item">GÜNCELLEME <b id="updated-at">—</b></div></div>
+  <div class="live-strip"><div class="s-item"><b class="live-number" id="live-count">—</b> CANLI</div><div class="s-item"><b id="today-count">—</b> MAÇ</div><div class="s-item"><b id="updated-at" aria-label="Son veri saati">—</b></div></div>
 </header>
 <main id="content" class="section"></main><div class="credit" id="credit"></div></div>
 <nav class="nav" id="nav">
@@ -635,7 +713,17 @@ function normalize(row,provider,fromLive=false){
  const away=str(textVal(aw)||first(row,['away_name','away_team_name'],'Deplasman'));
  const date=first(row,['event_date','start_time','kickoff','kickoff_at','start_at','date'],row?.time?.kickoff_at||'');
  const status=fromLive?'live':normalizeStatus(first(row,['status','match_status','state'],row?.time?.status||'upcoming'));
- const minute=first(row,['current_minute','minute','elapsed','status_text'],row?.time?.display??row?.time?.minute??'');
+ const minuteSource=first(row,['current_minute','minute','elapsed','status_text'],row?.time?.display??row?.time?.minute??'');
+ let minute=minuteSource;
+ if(minute&&typeof minute==='object')minute=first(minute,['display','label','full','text','value','regular'],'');
+ // Use the provider's explicit 90+2 or 45+3 text; do not infer stoppage minutes from a clock.
+ const displayMinute=str(first(row,['minute_display','display_minute','elapsed_display'],row?.time?.display||''));
+ if(/^\d{1,3}\s*\+\s*\d{1,2}'?$/.test(displayMinute))minute=displayMinute;
+ const extra=first(row,['stoppage_time','injury_time','added_time','extra_minute','additional_minute'],first(row?.time||{},['added','extra','stoppage','added_time'],'') );
+ const baseText=str(minute).replace(/'$/, '').trim();
+ if(/^\d{1,3}$/.test(baseText)&&Number(baseText)>=45&&Number(baseText)<=120&&/^\d{1,2}$/.test(str(extra))&&Number(extra)>0){
+   minute=baseText+'+'+str(extra);
+ }
  // Treat halftime as a match phase, never as minute 45. BSD's live shape carries period.
  const rawPhase=first(row,['period','match_period','match_phase','phase','period_name','match_phase_name','stage_text'],
     first(row?.time||{},['phase','period','period_name','status_text'],'') );
@@ -721,7 +809,20 @@ function visibleMatches(){let items=STATE.tab==='live'?(STATE.liveMatches.length
  if(STATE.term.trim()){const term=STATE.term.toLocaleLowerCase('tr-TR').trim();items=items.filter(m=>(m.home+' '+m.away+' '+m.league.title).toLocaleLowerCase('tr-TR').includes(term))}
  return items;
 }
-function formatStatus(m){if(isLive(m)){if(m.phase==='halftime')return 'İY';const t=str(m.minute);if(!t)return 'CANLI';return /^\d+/.test(t)?t.replace(/[^\d+']/g,'').slice(0,8)+(t.includes("'")?'':"'"):'CANLI'}if(isFinal(m))return 'MS';if(m.status==='postponed')return 'ERT';if(m.status==='cancelled')return 'İPT';return timeOf(m.time)}
+function formatStatus(m){
+ if(isLive(m)){
+   if(m.phase==='halftime')return 'İY';
+   const t=str(m.minute).trim();
+   if(!t)return 'CANLI';
+   const normalized=t.replace(/\s+/g,'').replace(/′|’|`/g,"'");
+   const match=normalized.match(/^(\d{1,3})(?:\+(\d{1,2}))?'?$/);
+   return match?match[1]+(match[2]?'+'+match[2]:'')+"'":'CANLI';
+ }
+ if(isFinal(m))return 'MS';
+ if(m.status==='postponed')return 'ERT';
+ if(m.status==='cancelled')return 'İPT';
+ return timeOf(m.time);
+}
 function scoreText(m){return (isLive(m)||isFinal(m)) ? (m.hs??'–')+' - '+(m.as??'–') : 'v';}
 function teamBadge(id,short){
  const safe=String(id||'');const letter=escapeHtml(String(short||'?').trim().charAt(0).toLocaleUpperCase('tr-TR'));
@@ -894,6 +995,41 @@ async function refreshDetailStats(){
   render();
  }finally{STATE.detailLoading=false}
 }
+
+function safeInfoValue(v){
+ if(v===null||v===undefined)return ''; if(Array.isArray(v))return v.map(safeInfoValue).filter(Boolean).join(', ');
+ if(typeof v==='object')return str(first(v,['name','title','label','value','display_name','stadium_name','channel'],'')).trim();
+ return str(v).trim();
+}
+function matchInformation(d,m){
+ const info=d?.info||m.raw||{};
+ const venue=first(info,['venue','stadium','stadium_name','ground'],first(info?.venue||{},['name','title'],''));
+ const referee=first(info,['referee','referee_name','main_referee'],first(info?.officials||{},['referee'],'') );
+ const round=first(info,['round','round_name','matchweek','stage','stage_name'],'');
+ const broadcast=first(info,['broadcast','tv','tv_channel','channels','television'],'');
+ const city=first(info,['city','location','location_name'],'');
+ const rows=[['Tarih',m.time?new Date(m.time).toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Istanbul'}):''],['Başlama saati',timeOf(m.time)],['Organizasyon',m.league.title],['Tur / Hafta',safeInfoValue(round)],['Stadyum',safeInfoValue(venue)],['Şehir',safeInfoValue(city)],['Hakem',safeInfoValue(referee)],['TV / Yayın',safeInfoValue(broadcast)]];
+ const available=rows.filter(x=>x[1]);
+ return '<section class="game-section"><div class="section-head">ℹ Maç bilgileri <small>BSD verileri</small></div>' +
+ available.map(([k,v])=>'<div class="v10-fact"><span>'+escapeHtml(k)+'</span><strong>'+escapeHtml(v)+'</strong></div>').join('') +
+ '<div class="stat-note">Yayıncı, hakem veya stat bilgisi veri kaynağında yoksa gösterilmez.</div></section>';
+}
+function compareTeams(d,m){
+ const st=detailStats(d);
+ let html='<section class="game-section"><div class="section-head">⇄ Takım karşılaştırması</div><div class="v10-comparison-head"><span>'+escapeHtml(m.home)+'</span><span>'+escapeHtml(m.away)+'</span></div>';
+ if(st){const stats=[['Topla oynama','possession','ball_possession'],['Toplam şut','shots_total','total_shots'],['İsabetli şut','shots_on_target'],['Korner','corners','corner_kicks'],['Gol beklentisi (xG)','xg','expected_goals'],['Toplam pas','passes','total_passes'],['Faul','fouls','fouls_committed'],['Sarı kart','yellow_cards']];
+ for(const [label,...keys] of stats){const h=statSide(st.home,keys),a=statSide(st.away,keys);if(h===null||a===null)continue;const total=h+a;const width=total?Math.max(1,Math.min(99,(h/total)*100)):50;html+='<div class="v10-compare-row"><div class="v10-compare-values"><b>'+escapeHtml(String(h))+'</b><span>'+escapeHtml(label)+'</span><b>'+escapeHtml(String(a))+'</b></div><div class="v10-compare-rail"><i style="width:'+width+'%"></i></div></div>'}
+ }else html+='<div class="stat-empty">Bu maç için karşılaştırma istatistikleri henüz sağlanmıyor.</div>';
+ return html+'<p class="stat-note">Yalnızca maç içi mevcut karşılaştırma verileri gösterilir. Sezonluk takım performansı farklı bir veri kaynağı gerektirir.</p></section>';
+}
+function incidentMinute(e){
+ const base=first(e,['minute','match_minute','time'],'—');
+ const plus=first(e,['added_time','injury_time','stoppage_time','extra_minute'],'');
+ const baseText=str(base).replace(/'$/,'');
+ if(/^\d{1,3}$/.test(baseText)&&/^\d{1,2}$/.test(str(plus))&&Number(plus)>0)return baseText+'+'+str(plus)+"'";
+ return str(base).endsWith("'")?str(base):str(base)+"'";
+}
+
 function detailScreen(m){
  const d=STATE.details,tab=STATE.detailTab||'stats',info=d?.info||{};
  const homeId=m.homeId||str(first(info,['home_team_id'],info.home_team?.id||info.home?.id||''));
@@ -905,7 +1041,7 @@ function detailScreen(m){
  <div class="score-podium"><div class="score-values">${escapeHtml(m.hs??'–')} : ${escapeHtml(m.as??'–')}</div><div class="score-status ${isLive(m)?'live':''}">${status}</div></div>
  <div class="game-team away">${detailCrest(awayId,m.away)}<div class="team-name">${escapeHtml(m.away)}</div></div></div></div><div class="kit-legend" style="${kitVars(m.home,m.away,d?.metadata||{})}"><i class="kit-dot"></i>${escapeHtml(m.home)} <span>•</span> <i class="kit-dot away"></i>${escapeHtml(m.away)}</div>
  <div class="mini-score-grid">${statMini(d,'Şut',['shots_total','total_shots','shots'])}${statMini(d,'Korner',['corners','corner_kicks'])}${statMini(d,'Topla oynama %',['possession','ball_possession'])}</div>
- <div class="detail-tabs">${[['stats','📊 İstatistik'],['events','⚽ Olaylar'],['lineups','👕 Kadrolar'],['formation','▦ Diziliş']].map(([id,title])=>`<button class="detail-tab ${tab===id?'on':''}" data-detail-tab="${id}">${title}</button>`).join('')}</div>`;
+ <div class="detail-tabs">${[['stats','📊 İstatistik'],['events','⚽ Olaylar'],['lineups','👕 Kadro'],['formation','▦ Diziliş'],['comparison','⇄ Karşılaştır'],['information','ℹ Maç bilgisi']].map(([id,title])=>`<button class="detail-tab ${tab===id?'on':''}" data-detail-tab="${id}">${title}</button>`).join('')}</div>`;
  if(!d)return html+'<div class="game-section"><div class="stat-empty"><span class="spinner"></span> Maç detayları yükleniyor…</div></div>';
  if(tab==='stats'){
   const rows=renderStatRows(detailStats(d));
@@ -913,11 +1049,13 @@ function detailScreen(m){
  }else if(tab==='events'){
   const raw=d.inc||{};const events=Array.isArray(raw)?raw:arrayOf(raw).length?arrayOf(raw):Array.isArray(raw.incidents)?raw.incidents:[];
   html+=`<section class="game-section"><div class="section-head">⚽ Maç olayları <small>${events.length} olay</small></div>`;
-  if(events.length)html+=events.map(e=>{const [ico,label]=eventLabel(first(e,['type','incident_type','event_type'],'')),person=first(e,['player','player_name','text','description'],'');const time=first(e,['minute','match_minute','time'],'—');return `<div class="timeline-item"><span class="mins">${escapeHtml(str(time))}'</span><span>${ico}</span><div><span class="event-type">${escapeHtml(label)}</span><small>${escapeHtml(str(textVal(person)||''))}</small></div></div>`}).join('');
+  if(events.length)html+=events.map(e=>{const [ico,label]=eventLabel(first(e,['type','incident_type','event_type'],'')),person=first(e,['player','player_name','text','description'],'');const time=incidentMinute(e);return `<div class="timeline-item"><span class="mins">${escapeHtml(time)}</span><span>${ico}</span><div><span class="event-type">${escapeHtml(label)}</span><small>${escapeHtml(str(textVal(person)||''))}</small></div></div>`}).join('');
   else html+=`<div class="stat-empty"><strong>${d.incErr?'Maç olayları alınamadı':'Henüz maç olayı bulunmuyor'}</strong>${escapeHtml(d.incErr||'Gol, kart ve oyuncu değişiklikleri geldikçe burada görünecek.')}</div>`;
   html+='</section>';
  }else if(tab==='lineups')html+=`<section class="game-section"><div class="section-head">👕 Takım kadroları <small>İlk 11 + yedekler</small></div>${lineupView(d)}</section>`;
  else if(tab==='formation')html+=`<section class="game-section"><div class="section-head">▦ Taktik diziliş <small>BSD kadro verileri</small></div>${formationView(d)}</section>`;
+ else if(tab==='comparison')html+=compareTeams(d,m);
+ else if(tab==='information')html+=matchInformation(d,m);
  return html;
 }
 
