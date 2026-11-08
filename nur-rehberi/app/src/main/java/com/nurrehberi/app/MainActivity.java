@@ -26,6 +26,7 @@ public class MainActivity extends Activity {
  private static final int LOCATION_CODE = 3109;
  private static final int NOTIFY_CODE = 3110;
  private Uri pendingPrayerUri;
+ private RecitationPlayer recitationPlayer;
 
  @Override public void onCreate(Bundle state) {
    super.onCreate(state);
@@ -36,6 +37,7 @@ public class MainActivity extends Activity {
       .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
       .build();
    browser = new WebView(this);
+   recitationPlayer = new RecitationPlayer(browser);
    browser.setBackgroundColor(Color.rgb(246,247,243));
    WebSettings settings = browser.getSettings();
    settings.setJavaScriptEnabled(true);
@@ -76,7 +78,18 @@ public class MainActivity extends Activity {
  }
  private boolean goExternal(Uri uri) {
    if (uri==null) return true;
-   if("nur".equals(uri.getScheme())) { handlePrayerAction(uri); return true; }
+   if("nur".equals(uri.getScheme())) {
+     String action=uri.getHost();
+     if("audio-play".equals(action)){
+       String url=uri.getQueryParameter("src");
+       if(recitationPlayer!=null)recitationPlayer.play(url);
+     }else if("audio-toggle".equals(action)){
+       if(recitationPlayer!=null)recitationPlayer.toggle();
+     }else if("audio-stop".equals(action)){
+       if(recitationPlayer!=null)recitationPlayer.stop();
+     }else handlePrayerAction(uri);
+     return true;
+   }
    if("appassets.androidplatform.net".equals(uri.getHost())) return false;
    String scheme=uri.getScheme();
    if ("https".equalsIgnoreCase(scheme) || "http".equalsIgnoreCase(scheme)) {
@@ -136,6 +149,7 @@ public class MainActivity extends Activity {
    });
  }
  @Override protected void onDestroy() {
+   if(recitationPlayer!=null){recitationPlayer.close();recitationPlayer=null;}
    if(browser!=null){browser.destroy();browser=null;}
    super.onDestroy();
  }
