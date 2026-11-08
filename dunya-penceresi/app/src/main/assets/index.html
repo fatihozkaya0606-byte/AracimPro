@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="tr">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Dünya Penceresi</title>
+<style>
+:root{color-scheme:dark;--bg:#06111e;--card:#112236;--edge:#283b50;--fg:#f2f8ff;--dim:#9db2c6;--lime:#57e4b8;--cyan:#64bce8}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font:15px/1.45 system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--fg)}
+body{background:radial-gradient(circle at 92% 2%,#164b61 0,transparent 36%),#06111e}
+main{max-width:700px;margin:auto;padding:22px 18px 105px}
+header{display:flex;justify-content:space-between;align-items:center;margin:4px 0 25px;gap:10px}
+.mark{width:47px;height:47px;display:grid;place-items:center;background:linear-gradient(135deg,#086a8b,#20b9ac);border:1px solid #62c6d1;border-radius:14px;font-size:27px}
+.logo{display:flex;gap:10px;align-items:center}
+.logo strong{font-size:19px;letter-spacing:-.5px}.tiny{font-size:11px;color:var(--dim)}
+.pill{font-size:11px;padding:6px 10px;border:1px solid #45616a;background:#11353b;color:#9ce9d9;border-radius:50px;font-weight:700}
+h1{font-size:35px;line-height:1.13;letter-spacing:-1px;margin:11px 0}h2{font-size:20px;margin:22px 0 12px}p{color:var(--dim);line-height:1.55}
+.overline{font-size:11px;color:var(--lime);font-weight:800;letter-spacing:2px}
+.hero{padding:22px;border-radius:24px;background:linear-gradient(140deg,#13394d,#102337 65%,#0e2b2f);border:1px solid #335363;box-shadow:0 15px 35px #020a1266}
+.hero p{margin:0 0 20px;font-size:14px}.hero-illustration{font-size:51px;opacity:.95;text-align:right;margin-top:-19px;height:46px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;background:#4ce3b2;color:#09291f;text-decoration:none;padding:12px 14px;border-radius:13px;font:700 13px system-ui;cursor:pointer}
+.btn.ghost{background:#1c3649;color:#e6f6fc;border:1px solid #345168}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin:15px 0}
+.stat{background:#0e2133;border:1px solid var(--edge);padding:14px 9px;border-radius:16px;text-align:center}
+.stat b{display:block;font-size:25px;line-height:1.1;color:#fff}.stat small{display:block;font-size:10px;margin-top:5px;color:var(--dim)}
+.note{padding:13px 14px;background:#102b31;border:1px solid #30605c;border-radius:14px;color:#badbd5;font-size:12px;margin:15px 0}
+input{display:block;width:100%;padding:14px;border:1px solid #31495c;background:#102437;color:white;font-size:15px;border-radius:13px;outline:0}
+.cards{display:grid;gap:13px;margin-top:15px}.card{border:1px solid #2b4154;background:#102235;border-radius:18px;overflow:hidden}
+.art{height:115px;background:radial-gradient(circle at 75% 40%,#2f7373,#173f4c 45%,#0b283a);display:flex;align-items:center;justify-content:center;font-size:55px;position:relative}
+.sticker{position:absolute;top:10px;right:10px;background:#483b22;border:1px solid #7b663a;color:#ffe2a5;border-radius:30px;padding:5px 9px;font-weight:750;font-size:10px}
+.content{padding:16px}.eyebrow{font-size:12px;color:#76ddbd;font-weight:700}.content h3{font-size:17px;margin:5px 0}.content p{font-size:13px;margin:4px 0 13px;min-height:38px}
+.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.fav{margin-left:auto;background:#1e3447;color:#c4d8e9;border:1px solid #385467;border-radius:12px;padding:12px;cursor:pointer}
+.subhead{display:flex;align-items:center;justify-content:space-between;margin-top:12px}.muted{color:var(--dim);font-size:12px}
+.empty{border:1px dashed #456071;background:#102337;border-radius:16px;color:var(--dim);padding:28px 18px;text-align:center}
+.info{background:#11263a;border:1px solid #304e63;padding:17px;border-radius:17px;margin:15px 0}.info p{font-size:13px;margin:8px 0}.info strong{color:white}
+.bottom{position:fixed;bottom:0;left:0;right:0;border-top:1px solid #31485b;background:#091927ee;backdrop-filter:blur(12px);display:flex;justify-content:space-around;padding:9px 6px max(12px,env(safe-area-inset-bottom));z-index:10}
+.bottom button{display:grid;gap:4px;place-items:center;background:none;border:0;color:#98acbf;font:600 11px system-ui;padding:4px 8px;min-width:67px;cursor:pointer}.bottom button span{font-size:21px}.bottom button.active{color:#59e8bc}
+[hidden]{display:none!important}a{color:#8ce9ce}
+</style>
+</head><body>
+<main>
+<header><div class="logo"><div class="mark">🌍</div><div><strong>Dünya Penceresi</strong><div class="tiny">Dünyayı keşfet • Test v0.1</div></div></div><span class="pill">ÖN İZLEME</span></header>
+<section id="discover">
+<div class="hero"><div class="overline">DÜNYA SENİN EKRANINDA</div><h1>Her pencere,<br>başka bir dünya.</h1><div class="hero-illustration">🌏</div><p>İzinli canlı yayın kaynaklarını tek bir yerde toplayan keşif platformu. Yalnızca onaylanan ve oynatılması test edilen kameralar canlı listesine alınır.</p><button class="btn" onclick="switchTab('sources')">Kaynakları keşfet ↗</button></div>
+<div class="stats"><div class="stat"><b>3</b><small>Kaynak adayı</small></div><div class="stat"><b>0</b><small>Testli canlı yayın</small></div><div class="stat"><b>0</b><small>OBS'ye hazır</small></div></div>
+<div class="note">🛡️ Yayın izni veya çalışma testi olmayan kameraları canlıymış gibi göstermiyoruz. Bu ilk test sürümünde kaynakları resmî sayfalarında açabilirsin.</div>
+<h2>🌋 İlk keşif: Hawaii</h2><p>USGS'nin Kīlauea yanardağı için sunduğu üç resmî kaynağı kontrol listesine aldık. Canlı bağlantılar uygulama içinden değil, resmî kaynakta açılır.</p><button class="btn ghost" onclick="switchTab('sources')">3 kaynağı görüntüle</button>
+</section>
+<section id="sources" hidden><div class="overline">KAMERA KATALOĞU</div><h1>Kaynaklar</h1><p>Doğrulanmış yayınlar ayrı gösterilecek. Şimdilik aşağıdaki kaynaklar incelemede.</p>
+<input id="search" placeholder="Ülke veya kamera ara..." oninput="renderCards()" autocomplete="off"><div class="subhead"><h2>İnceleme listesi</h2><span class="muted">3 kaynak</span></div><div id="cards" class="cards"></div>
+</section>
+<section id="favorites" hidden><div class="overline">KAYDETTİKLERİN</div><h1>Favoriler</h1><p>Daha sonra tekrar bakmak istediğin resmî kamera kaynakları.</p><div id="favoriteCards" class="cards"></div></section>
+<section id="about" hidden><div class="overline">PROJE HAKKINDA</div><h1>Güvenli yayın</h1>
+<div class="info"><strong>✅ Kime ait?</strong><p>USGS'nin resmî kamera sayfaları kaynak olarak gösterilir. Uygulamamız bu kameralara sahip olduğunu iddia etmez.</p></div>
+<div class="info"><strong>📺 OBS ile yayın</strong><p>Resmî kaynak sayfasının herkese açık olması, OBS ile yeniden yayın izni vermez. Doğrudan erişilebilir akış ve yeniden yayın hakkı ayrıca doğrulanır.</p></div>
+<div class="info"><strong>🔎 Kamera neden açılmıyor?</strong><p>Gerçek kameraların bağlantısı geçici olarak kopabilir. Bu uygulama kaynak bağlantısını gösterir; şu an canlı video oynatıcısı bulunmuyor.</p></div>
+<div class="info"><strong>📱 Sürüm 0.1</strong><p>Android üzerinde kaynak keşfi, arama, favoriler ve resmî sayfalara yönlendirme. Reklam, hesap veya konum erişimi yok.</p></div>
+</section>
+</main>
+<nav class="bottom" aria-label="Alt menü">
+<button data-tab="discover" class="active" onclick="switchTab('discover')"><span>🧭</span>Keşfet</button>
+<button data-tab="sources" onclick="switchTab('sources')"><span>📡</span>Kaynaklar</button>
+<button data-tab="favorites" onclick="switchTab('favorites')"><span>♡</span>Favoriler</button>
+<button data-tab="about" onclick="switchTab('about')"><span>ⓘ</span>Bilgi</button>
+</nav>
+<script>
+const cams=[
+{id:'v1',name:'Kīlauea V1 · Batı Krateri',place:'Hawaii · ABD',text:'USGS Kīlauea yanardağı batı kraterinin resmî canlı kamera kaynak sayfası.',url:'https://www.usgs.gov/volcanoes/kilauea/summit-webcams'},
+{id:'v2',name:'Kīlauea V2 · Doğu Krateri',place:'Hawaii · ABD',text:'USGS doğu krateri kamera kaynak sayfası. Video erişimi ayrıca doğrulanacaktır.',url:'https://url.usgs.gov/v2cam'},
+{id:'v3',name:'Kīlauea V3 · Güney Krateri',place:'Hawaii · ABD',text:'USGS güney krateri kamera kaynak sayfası. Video erişimi ayrıca doğrulanacaktır.',url:'https://url.usgs.gov/v3cam'}
+];
+let saved=[];
+try{saved=JSON.parse(localStorage.getItem('dp_fav')||'[]')}catch(e){saved=[]}
+function switchTab(name){for(let id of ['discover','sources','favorites','about'])document.getElementById(id).hidden=(id!==name);for(let b of document.querySelectorAll('[data-tab]'))b.classList.toggle('active',b.dataset.tab===name);renderCards();window.scrollTo(0,0);}
+function toggleFavorite(id){saved=saved.includes(id)?saved.filter(x=>x!==id):saved.concat(id);localStorage.setItem('dp_fav',JSON.stringify(saved));renderCards();}
+function itemNode(cam){let card=document.createElement('div');card.className='card';let art=document.createElement('div');art.className='art';art.textContent='🌋';let badge=document.createElement('span');badge.className='sticker';badge.textContent='DOĞRULAMA BEKLİYOR';art.appendChild(badge);let body=document.createElement('div');body.className='content';let place=document.createElement('div');place.className='eyebrow';place.textContent=cam.place;let h=document.createElement('h3');h.textContent=cam.name;let p=document.createElement('p');p.textContent=cam.text;let actions=document.createElement('div');actions.className='actions';let a=document.createElement('a');a.className='btn';a.textContent='Resmî kaynağı aç ↗';a.href=cam.url;let fav=document.createElement('button');fav.className='fav';fav.textContent=saved.includes(cam.id)?'♥ Kaydedildi':'♡ Kaydet';fav.onclick=()=>toggleFavorite(cam.id);actions.append(a,fav);body.append(place,h,p,actions);card.append(art,body);return card;}
+function renderCards(){let q=(document.getElementById('search').value||'').toLocaleLowerCase('tr');let matches=cams.filter(x=>(x.name+' '+x.place).toLocaleLowerCase('tr').includes(q));let list=document.getElementById('cards');list.replaceChildren(...matches.map(itemNode));if(!matches.length){let e=document.createElement('div');e.className='empty';e.textContent='Bu aramada kaynak bulunamadı.';list.appendChild(e);}let favs=cams.filter(x=>saved.includes(x.id));let f=document.getElementById('favoriteCards');f.replaceChildren(...favs.map(itemNode));if(!favs.length){let e=document.createElement('div');e.className='empty';e.textContent='Henüz favori kaynak eklemedin.';f.appendChild(e);}}
+renderCards();
+</script></body></html>
