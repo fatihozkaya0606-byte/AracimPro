@@ -35,11 +35,27 @@ const NR_HADIS=[
 let nrBookQuery='',nrHadisQuery='',nrEsmaQuery='',nrEsmaNames=null,nrLetter=0,nrQuizN=0,nrTefsirN=1,nrTefsirA=1,nrReminderStatus='';
 function nrTop(icon,title,sub){return '<div class="royal-page-head"><span>'+icon+'</span><h1>'+title+'</h1><small>'+sub+'</small></div>'}
 function nrLink(url,title){return '<a class="btn gold nr-link" href="'+esc(url)+'" target="_blank" rel="noopener">'+esc(title)+' ↗</a>'}
-function nrItems(rows){return rows.map(r=>'<div class="nr-entry"><div><strong>'+esc(r[0])+'</strong><small>'+esc(r[1])+'</small></div>'+nrLink(r[2],'Oku')+'</div>').join('')}
+const NR_BOOK_ROUTES=[
+ ['guide',0],['tefsir',null],['quran',null],['guide',3],
+ ['guide',4],['guide',5],['elifba',null],['hafizlar',null],
+ ['guide',8],['guide',9],['dualar',null],['guide',11]
+];
+function nrLibraryButton(route){
+ const [page,index]=route;
+ return page==='guide'?
+  '<button class="btn gold nr-link" data-library="'+index+'">İçeriği aç</button>':
+  '<button class="btn gold nr-link" data-page="'+page+'">Bölümü aç</button>';
+}
 function nrBookItems(rows){
- return rows.map(r=>r[0]==='Kur’an Tefsiri'?
-  '<div class="nr-entry"><div><strong>Kur’an Tefsiri</strong><small>Türkçe açıklamaları kitap gibi sayfa sayfa oku</small></div><button class="btn gold nr-link" data-page="tefsir">Kitapta oku ›</button></div>'
-  :nrItems([r])).join('');
+ return rows.map(r=>{
+  const i=NR_LIBRARY.findIndex(row=>row[0]===r[0]),route=NR_BOOK_ROUTES[i]||['guide',0];
+  return '<div class="nr-entry"><div><strong>'+esc(r[0])+'</strong><small>'+esc(r[1])+'</small></div>'+
+   nrLibraryButton(route)+'</div>';
+ }).join('');
+}
+function nrItems(rows){
+ return rows.map(r=>'<div class="nr-entry"><div><strong>'+esc(r[0])+'</strong><small>'+
+  esc(r[1])+'</small></div><button class="btn gold nr-link" data-library="3">Konuya gir</button></div>').join('');
 }
 function books(){
  const rows=NR_LIBRARY.filter(r=>(r[0]+' '+r[1]).toLocaleLowerCase('tr').includes(nrBookQuery.toLocaleLowerCase('tr')));
