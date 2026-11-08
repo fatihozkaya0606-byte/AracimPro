@@ -99,6 +99,8 @@ jobs:
             if any(n in r['name'].lower() for n in ['basit','afasi','sudais','meaqli','minshawi']):
               print(r['name'],len(r['available']),r['server'])
           PY
+      - name: Verify and bundle in-app Quran Central streaming catalog
+        run: python3 nur-rehberi/scripts/build_premium_reciters.py
       - name: Build offline licensed adhan audio assets
         shell: bash
         run: |
@@ -141,5 +143,5 @@ jobs:
       - name: Upload test APK
         uses: actions/upload-artifact@v4
         with:
-          name: NurRehberi-3D-Plus-v1.2
+          name: NurRehberi-3D-Plus-v1.3
           path: nur-rehberi/app/build/outputs/apk/debug/app-debug.apk
