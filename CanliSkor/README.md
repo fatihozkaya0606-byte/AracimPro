@@ -42,3 +42,10 @@ Takım logoları kullanılmıyor; üçüncü taraf fikri haklarını kontrol edi
 - Maç detayında İstatistikler, Maç olayları ve Kadro sekmeleri.
 - Resmî BSD şemasındaki possession, shots_total, corners, xg gibi alanlar desteklenir.
 - Canlı kontrol 15 saniyede bir; API anahtarı kodda veya APK içerisinde yoktur.
+
+## v0.6 — Tema / Forma renkleri / Diziliş
+- Açık/koyu tema (üstteki ikon ve Ayarlar), seçilen tema kalıcıdır.
+- Maç skor kutularında kırmızı çerçeve yerine nötr renkler, takımların bilinen forma renklerine göre çizgiler ve isim vurguları.
+- Maç detayında istatistik, olaylar, ilk 11 + yedekler ve API formasyonuyla saha dizilişi.
+- Eksik ilk 11 veya diziliş uydurulmaz; şema varsa oyuncu yerleşimi yaklaşık olarak işaretlenir.
+- BSD anahtarı aynı cihazda önceki kurulumdan korunur; genel GitHub koduna veya paylaşılan APK'ya gömülmez.
