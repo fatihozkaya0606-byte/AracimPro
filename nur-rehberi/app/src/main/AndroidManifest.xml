@@ -4,7 +4,7 @@
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
   <application
-     android:label="Nur Rehberi 3D"
+     android:label="Nur Rehberi 3D HD"
      android:allowBackup="true"
      android:usesCleartextTraffic="false"
      android:theme="@android:style/Theme.Material.Light.NoActionBar"
