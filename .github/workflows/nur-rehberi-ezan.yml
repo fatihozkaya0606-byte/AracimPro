@@ -39,6 +39,19 @@ jobs:
           node --check nur-rehberi/app/src/main/assets/features.js
           node --check nur-rehberi/app/src/main/assets/tafsir_reader.js
           node --check nur-rehberi/app/src/main/assets/premium_hafiz.js
+          node --check nur-rehberi/app/src/main/assets/book_reader.js
+          grep -q 'book_reader.js' nur-rehberi/app/src/main/assets/index.html
+          python3 - <<'PY'
+          import pathlib,re
+          root=pathlib.Path('nur-rehberi/app/src/main/assets')
+          features=(root/'features.js').read_text(encoding='utf-8')
+          book=(root/'book_reader.js').read_text(encoding='utf-8')
+          assert "nrLibraryButton(route)" in features
+          assert "'Oku'" not in features
+          assert len(re.findall(r"^ \{name:",book,flags=re.MULTILINE))>=12
+          assert 'nrGuideChange' in book
+          assert 'RecitationPlayer' in pathlib.Path('nur-rehberi/app/src/main/java/com/nurrehberi/app/MainActivity.java').read_text()
+          PY
           grep -q 'tafsir_reader.js' nur-rehberi/app/src/main/assets/index.html
           grep -q 'function tefsirKitap()' nur-rehberi/app/src/main/assets/tafsir_reader.js
           python3 - <<'PY'
@@ -129,6 +142,34 @@ jobs:
             assert all(isinstance(r.get('text'),str) and len(r['text'])>15 for r in rows)
             print('Verified Turkish in-app tafsir API:',slug,len(rows),'verses')
           PY
+      - name: Verify featured Quran reciter MP3 streams
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,urllib.request,concurrent.futures,pathlib
+          ids=['51-51','125-288','112-113','106-10912','9-9','121-122','241-241','118-119','128-128','4-4']
+          src=pathlib.Path('nur-rehberi/app/src/main/assets')
+          records={r['id']:r for r in json.loads((src/'reciters.json').read_text(encoding='utf-8'))}
+          def check(id):
+            r=records.get(id)
+            if not r or not r['available']:return (id,False,'missing catalog')
+            n=r['available'][0]
+            url=r['server']+str(n).zfill(3)+'.mp3'
+            try:
+              request=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 NurRehberi','Range':'bytes=0-1023','Accept':'audio/mpeg,*/*'})
+              with urllib.request.urlopen(request,timeout=17) as resp:
+                data=resp.read(1024)
+                ctype=resp.headers.get('Content-Type','')
+                valid=(resp.status in (200,206) and len(data)>=128 and ('audio/' in ctype or 'octet-stream' in ctype or data[:3] in (b'ID3',)))
+              return (id,valid,ctype)
+            except Exception as e:return (id,False,str(e)[:90])
+          with concurrent.futures.ThreadPoolExecutor(max_workers=8) as exe:
+            result=list(exe.map(check,ids))
+          verified=[id for id,ok,_ in result if ok]
+          for id,ok,detail in result:print('verified' if ok else 'unverified',id,detail)
+          (src/'featured_verified.json').write_text(json.dumps(verified),encoding='utf-8')
+          print('Featured live MP3 streams tested:',len(verified),'/',len(ids))
+          PY
       - name: Build offline licensed adhan audio assets
         shell: bash
         run: |
@@ -171,5 +212,5 @@ jobs:
       - name: Upload test APK
         uses: actions/upload-artifact@v4
         with:
-          name: NurRehberi-3D-Plus-v1.4-Tefsir
+          name: NurRehberi-3D-Plus-v1.5-Fix
           path: nur-rehberi/app/build/outputs/apk/debug/app-debug.apk
