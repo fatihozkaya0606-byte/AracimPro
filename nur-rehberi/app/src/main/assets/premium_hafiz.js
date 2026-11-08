@@ -16,6 +16,7 @@ const NR_SIMILAR_RECITERS=[
  {id:'4-4',name:'Ebubekir eş-Şâtırî',desc:'Akıcı tilavet'}
 ];
 let nrSadienCatalog=null,nrSadienError='',nrCurrentTrack=null,nrNativeState='stopped',nrNativeError='',nrFeaturedVerified=null;
+let nrCuratedReaders=[],nrCuratedError='',nrSadienExpanded=false,nrSelectedCuratedId=null,nrCuratedSurah=36;
 const nrSadienAudio=new Audio();nrSadienAudio.preload='none';
 const nrSadienBar=document.createElement('div');nrSadienBar.id='nr-sadien-bar';nrSadienBar.hidden=true;
 document.querySelector('.app-shell').appendChild(nrSadienBar);
@@ -70,61 +71,102 @@ function nrOpenSadienTrack(index){
  const entry=r?.tracks?.[index];if(!entry)return;
  nrStartRecitation(entry.url,entry.title,'Abdurrahmaan Sadien');
 }
-function nrOpenSimilar(id){
+
+function nrCuratedEntry(id){
+ const entry=nrCuratedReaders.find(x=>x.id===id);
+ if(entry)return entry;
  const m=NR_SIMILAR_RECITERS.find(x=>x.id===id);
  const r=hafizCatalog.find(x=>x.id===id);
- if(!r||!m){toast('Bu hafızın ses listesi yüklenmedi. Yenile.');return;}
- const select=document.getElementById('hafiz-surah');
- const preferred=Number(select?.value||hafizSurah||1);
- const n=r.available.includes(preferred)?preferred:r.available[0];
- if(!n){toast('Bu hafız için oynatılabilir sure bulunamadı.');return}
- if(n!==preferred)toast('Seçilen sure yok; mevcut '+n+'. sure açılıyor.');
- const url=r.server+String(n).padStart(3,'0')+'.mp3';
- nrStartRecitation(url,m.name+' — '+(NAMES[n-1]||n)+ ' Suresi',m.name);
+ return m&&r?{...r,name:m.name,style:m.desc,count:r.available.length}:null;
+}
+function nrPreferredSurah(reader){
+ const preferred=nrCuratedSurah;
+ return reader.available.includes(preferred)?preferred:
+   (reader.available.includes(1)?1:reader.available[0]);
+}
+function nrOpenSimilar(id){
+ const entry=nrCuratedEntry(id);
+ if(!entry||!entry.available?.length){toast('Bu hafız için ses kaydı bulunamadı.');return}
+ const n=nrPreferredSurah(entry);
+ const url=entry.server+String(n).padStart(3,'0')+'.mp3';
+ nrStartRecitation(url,entry.name+' — '+(NAMES[n-1]||n)+ ' Suresi',entry.name);
+}
+function nrCuratedDetails(){
+ const reader=nrCuratedEntry(nrSelectedCuratedId);
+ if(!reader)return '';
+ const options=reader.available.map(n=>'<option value="'+n+'"'+(n===nrPreferredSurah(reader)?' selected':'')+'>'+
+ n+'. '+esc(NAMES[n-1]||'Sure')+'</option>').join('');
+ const selected=nrPreferredSurah(reader);
+ const quick=[1,18,19,36,55,56,67,78,112,113,114].filter(n=>reader.available.includes(n));
+ return '<div class="nr-curated-details" id="nr-curated-details"><div class="nr-curated-details-title">'+
+ '<div><strong>♪ '+esc(reader.name)+'</strong><small>'+reader.available.length+' mevcut sure • '+esc(reader.moshaf||reader.style||'')+'</small></div>'+
+ '<button data-sadien="hide-curated" aria-label="Kapat">✕</button></div>'+
+ '<label>Dinlemek istediğin sureyi seç</label><select class="nr-input" id="nr-curated-surah">'+options+'</select>'+
+ '<button class="btn gold nr-curated-mainplay" data-sadien="play-selected">▶ '+selected+'. sureyi dinle</button>'+
+ '<div class="nr-curated-quick">'+quick.map(n=>'<button data-sadien="quick" data-n="'+n+'">'+
+ '▶ '+esc(NAMES[n-1]||'Sure')+'</button>').join('')+'</div></div>';
 }
 function nrRenderPremium(){
  const node=document.getElementById('nr-premium-hafiz');if(!node)return;
  const source=nrSadienCatalog?.readers?.find(x=>x.id==='sadien');
  const tracks=source?.tracks||[];
+ const similar=nrCuratedReaders.length?nrCuratedReaders:NR_SIMILAR_RECITERS.map(m=>nrCuratedEntry(m.id)).filter(Boolean);
+ const short=nrSadienExpanded?tracks:tracks.slice(0,3);
+ const total=similar.reduce((n,r)=>n+(r.available?.length||0),0);
  node.innerHTML=
  '<div class="sadien-star">✦ ÖNE ÇIKAN HAFIZ</div><h2>Abdurrahmaan Sadien</h2>'+
- '<p>Güney Afrikalı kârî • Kaynak: Quran Central. Kayıtları başka bir siteye gitmeden uygulamada dinle.</p>'+
- (!tracks.length?'<div class="nr-premium-msg">'+esc(nrSadienError||'Ses kataloğu yükleniyor…')+'</div>':
- '<div class="nr-premium-status">'+tracks.length+' yayıncı ses kaydı</div><div class="nr-premium-tracks">'+
- tracks.map((x,i)=>'<button data-sadien="play" data-idx="'+i+'"><span class="nr-premium-play">▶</span>'+
- '<span><strong>'+esc(x.title)+'</strong><small>'+esc(x.duration||'Kayıt')+' • Quran Central</small></span></button>').join('')+'</div>')+
- '<p class="nr-premium-small">Sesler uygulamada açılır, internete ihtiyaç duyar. Kayıtlar hak sahibinin sunucusundadır.</p>'+
- '<div class="nr-premium-divider">✦ BENZER GÜZEL SESLER ✦</div>'+
- '<p>Abdülbasit, Mustafa İsmail, Minşavî ve başka etkileyici kıraatler. Yukarıdaki “Dinlenecek sure” seçimin kullanılır.</p>'+
- '<div class="nr-similar-grid">'+NR_SIMILAR_RECITERS.map(m=>{
-  const entry=hafizCatalog.find(x=>x.id===m.id);
-  const verified=Array.isArray(nrFeaturedVerified)&&nrFeaturedVerified.includes(m.id);
-  return '<div class="nr-similar-card"><b>'+esc(m.name)+'</b><small>'+esc(m.desc)+'</small>'+
-  '<span>'+(entry?entry.available.length+' sure • '+(verified?'MP3 erişimi doğrulandı':'Yayın testi kesin değil'):'Katalog yükleniyor…')+'</span>'+
-  '<button data-sadien="similar" data-id="'+esc(m.id)+'" '+(!entry?'disabled':'')+'>▶ Uygulamada dinle</button></div>';
- }).join('')+'</div>';
+ '<p>Güney Afrikalı kârî. Doğrudan uygulamada dinle; kaynak: Quran Central.</p>'+
+ (!tracks.length?'<div class="nr-premium-msg">'+esc(nrSadienError||'Ses kayıtları yükleniyor…')+'</div>':
+ '<div class="nr-premium-status">'+tracks.length+' Sadien kaydı • Sonraki hafızlar hemen aşağıda</div>'+
+ '<div class="nr-premium-tracks">'+short.map((x,i)=>'<button data-sadien="play" data-idx="'+i+'">'+
+ '<span class="nr-premium-play">▶</span><span><strong>'+esc(x.title)+'</strong><small>'+
+ esc(x.duration||'Ses kaydı')+' • Quran Central</small></span></button>').join('')+'</div>'+
+ (tracks.length>3?'<button class="nr-sadien-more" data-sadien="more">'+
+ (nrSadienExpanded?'Sadien kayıtlarını daralt ↑':'Sadien’in '+tracks.length+' kaydının tamamını göster ↓')+'</button>':''))+
+ '<div class="nr-premium-divider">✦ SADİEN GİBİ ETKİLEYİCİ HAFIZLAR ✦</div>'+
+ '<div class="nr-premium-status">'+
+ (similar.length?similar.length+' hafız · '+total+' sure kaydı listelendi':'Hafız kataloğu yükleniyor…')+'</div>'+
+ '<p>İsim seç, mevcut sureleri görüntüle ve istediğin sureyi uygulamadan çıkmadan dinle.</p>'+
+ nrCuratedDetails()+
+ '<div class="nr-similar-grid">'+similar.map(r=>{
+   const safe=(r.available||[]);
+   return '<div class="nr-similar-card"><b>'+esc(r.name)+'</b>'+
+   '<small>'+esc(r.style||r.desc||r.moshaf||'Kıraat')+'</small>'+
+   '<span>'+safe.length+' mevcut sure'+(r.checked_surah?' • bağlantı testli':'')+'</span>'+
+   '<div class="nr-similar-buttons"><button data-sadien="similar" data-id="'+esc(r.id)+'"'+(!safe.length?' disabled':'')+'>▶ Dinle</button>'+
+   '<button data-sadien="choose" data-id="'+esc(r.id)+'"'+(!safe.length?' disabled':'')+'>Sureler</button></div></div>';
+ }).join('')+'</div>'+
+ (nrCuratedError?'<div class="nr-premium-msg">'+esc(nrCuratedError)+'</div>':'')+
+ '<p class="nr-premium-small">Kayıtlar yayıncılarının MP3 sunucularından çalınır. Sadien arşivindeki 24 bölüm dışında ona ait doğrulanmış yeni kayıt yoktur. Diğer hafızların mevcut sureleri ayrı listelenir.</p>';
 }
-
 async function nrLoadFeaturedVerified(){
  try{
-  const r=await fetch('featured_verified.json');
-  if(r.ok){const x=await r.json();nrFeaturedVerified=Array.isArray(x)?x:[];}
- }catch(e){nrFeaturedVerified=[];}
+  const r=await fetch('featured_reciters.json');
+  if(!r.ok)throw Error('Öne çıkan hafız kataloğu bulunamadı.');
+  const data=await r.json();
+  nrCuratedReaders=(data.readers||[]).filter(x=>x.id&&x.server&&Array.isArray(x.available)&&x.available.length);
+  if(nrCuratedReaders.length<15)throw Error('Yalnızca '+nrCuratedReaders.length+' okuyucuya ait erişilebilir kayıt bulundu.');
+  nrFeaturedVerified=nrCuratedReaders.map(x=>x.id);
+ }catch(e){
+  nrCuratedError=String(e.message||'Hafız listesi yüklenemedi.');
+  nrCuratedReaders=[];
+  nrFeaturedVerified=[];
+ }
  nrRenderPremium();
 }
-
 async function nrLoadPremiumHafiz(){
- if(nrSadienCatalog){nrRenderPremium();if(nrFeaturedVerified===null)nrLoadFeaturedVerified();return;}
+ if(nrSadienCatalog){nrRenderPremium();if(nrFeaturedVerified===null)nrLoadFeaturedVerified();return}
  try{
   const r=await fetch('premium_recitations.json');
-  if(!r.ok)throw Error('Hafız kataloğu yüklenemedi.');
+  if(!r.ok)throw Error('Sadien ses kataloğu yüklenemedi.');
   const c=await r.json();
-  if(!c.readers?.some(x=>x.id==='sadien'&&x.tracks?.length))throw Error('Kayıtlar bu sürümde doğrulanamadı.');
+  if(!c.readers?.some(x=>x.id==='sadien'&&x.tracks?.length))throw Error('Sadien kayıtları bu sürümde bulunamadı.');
   nrSadienCatalog=c;
- }catch(e){nrSadienError=String(e.message||'Kayıt bulunamadı.');}
+ }catch(e){nrSadienError=String(e.message||'Sadien kayıtları bulunamadı.')}
  nrRenderPremium();
  if(nrFeaturedVerified===null)nrLoadFeaturedVerified();
 }
+
 nrSadienAudio.addEventListener('playing',nrDrawSadienBar);
 nrSadienAudio.addEventListener('pause',nrDrawSadienBar);
 nrSadienAudio.addEventListener('ended',nrStopSadien);
@@ -134,6 +176,19 @@ document.addEventListener('click',ev=>{
  const action=b.dataset.sadien;
  if(action==='play')nrOpenSadienTrack(Number(b.dataset.idx));
  else if(action==='similar')nrOpenSimilar(b.dataset.id);
+ else if(action==='more'){nrSadienExpanded=!nrSadienExpanded;nrRenderPremium();}
+ else if(action==='choose'){
+   nrSelectedCuratedId=b.dataset.id;
+   const r=nrCuratedEntry(nrSelectedCuratedId);if(r)nrCuratedSurah=nrPreferredSurah(r);
+   nrRenderPremium();
+   document.getElementById('nr-curated-details')?.scrollIntoView({behavior:'smooth',block:'center'});
+ }
+ else if(action==='hide-curated'){nrSelectedCuratedId=null;nrRenderPremium();}
+ else if(action==='play-selected'){nrOpenSimilar(nrSelectedCuratedId);}
+ else if(action==='quick'){
+   nrCuratedSurah=Number(b.dataset.n);
+   nrOpenSimilar(nrSelectedCuratedId);
+ }
  else if(action==='toggle'){
    if(NR_NATIVE){if(nrNativeState==='error'&&nrCurrentTrack)nrSendNative('audio-play',nrCurrentTrack.url);
      else nrSendNative('audio-toggle');}
@@ -141,3 +196,7 @@ document.addEventListener('click',ev=>{
    else nrSadienAudio.pause();
  }else if(action==='stop')nrStopSadien();
 });
+
+ document.addEventListener('change',ev=>{
+  if(ev.target.id==='nr-curated-surah')nrCuratedSurah=Number(ev.target.value)||1;
+ });
