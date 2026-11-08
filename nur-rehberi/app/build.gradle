@@ -3,11 +3,11 @@ android {
   namespace 'com.nurrehberi.app'
   compileSdk 35
   defaultConfig {
-    applicationId 'com.nurrehberi.ezantest'
+    applicationId 'com.nurrehberi.royal3d'
     minSdk 24
     targetSdk 34
-    versionCode 6
-    versionName '0.6-test'
+    versionCode 8
+    versionName '0.8-3d'
   }
   buildTypes { release { minifyEnabled false } }
   compileOptions {
