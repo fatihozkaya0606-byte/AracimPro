@@ -25,3 +25,49 @@ gradle assembleDebug
 - [SportScore geliştirici şartları](https://sportscore.com/developers/terms/)
 
 Takım logoları kullanılmıyor; üçüncü taraf fikri haklarını kontrol edin. Canlı sonuç verileri her zaman gecikmeli olabilir.
+
+## v0.4 — Maçkolik tarzı liste ve canlı veri düzeltmeleri
+- Lig başlıkları maç yokken de gösterilir, ilk 9 lig önceliklidir.
+- Kompakt maç satırı: saat/dakika | ev sahibi | skor | deplasman | favori.
+- Lig adları ayrı BSD `/api/v2/leagues/` çağrısından alınır ve league_id ile eşleştirilir.
+- Canlı maçlar bağımsız BSD `/api/v2/events/live/` uç noktasından çekilir.
+- Canlı maçlar ekrandayken 15 saniyede bir sorgu; arka planda otomatik sorgu yok.
+- Türkiye saatine göre günün maçları gösterilir, tarihi etkileyen UTC sınırları ele alınır.
+- BSD hesabı anahtarı APK ve GitHub'a eklenmemiştir; kullanıcı yalnızca kendi cihazında Ayarlar üzerinden girer.
+- Test yapılacak noktalar: gerçek cihazda BSD API yanıtları, lig kapsama ve skor gecikmesi.
+
+## v0.5 — 3D canlı skor ekranı ve geniş istatistikler
+- Kompakt lig ve maç satırları korunur; 3D derinlikli tasarım uygulanır.
+- BSD kimliği mevcut takımların resmî logo görselleri yüklenir; yoksa baş harf gösterilir.
+- Maç detayında İstatistikler, Maç olayları ve Kadro sekmeleri.
+- Resmî BSD şemasındaki possession, shots_total, corners, xg gibi alanlar desteklenir.
+- Canlı kontrol 15 saniyede bir; API anahtarı kodda veya APK içerisinde yoktur.
+
+## v0.6 — Tema / Forma renkleri / Diziliş
+- Açık/koyu tema (üstteki ikon ve Ayarlar), seçilen tema kalıcıdır.
+- Maç skor kutularında kırmızı çerçeve yerine nötr renkler, takımların bilinen forma renklerine göre çizgiler ve isim vurguları.
+- Maç detayında istatistik, olaylar, ilk 11 + yedekler ve API formasyonuyla saha dizilişi.
+- Eksik ilk 11 veya diziliş uydurulmaz; şema varsa oyuncu yerleşimi yaklaşık olarak işaretlenir.
+- BSD anahtarı aynı cihazda önceki kurulumdan korunur; genel GitHub koduna veya paylaşılan APK'ya gömülmez.
+
+## v0.9 Arena Edition
+- Metalik 3D yükseltilmiş maç listesi, lig başlıkları, canlı skor ve alt menü
+- BSD takımlarının mevcut armalarını kullanır; veri ve skor uydurmaz
+- Uygulama görünürken daha önce gözlenen maç skorunun değişiminden GOL toast gösterebilir
+- Açık/koyu tema ve maç detayları korunur; arka plan push bildirimleri bu sürümde yoktur
+- Özel BSD anahtarı public source'a eklenmemiştir
+
+## v1.0 Premium Steel
+- Azaltılmış neon, kabartmalı çelik arayüz ve büyük yazılar.
+- Üstte Güncelleme etiketi kaldırıldı.
+- Uzatma dakikası yalnızca BSD'nin bildirdiği 90+2 gibi değerlerden alınır.
+- Gerçek maç verisine bağlı Karşılaştırma ve Maç Bilgisi sekmeleri.
+- Uygulama açıkken gol uyarıları korunur. Arka plan push sistemi henüz yok.
+- API anahtarı açık kaynakta saklanmaz.
+
+## v1.3 Lig Puan Durumu ve Oranlar
+- Lig başlıklarına dokununca BSD güncel sezon puan durumunu açar (10 dakika servis önbelleği, istemcide 5 dakika).
+- Maç detayından Oranlar sekmesi açıldığında BSD konsensüs futbol oranlarını getirir: 1-X-2, Alt/Üst 2.5, KG Var/Yok.
+- Kaynak tarafından yayınlanmayan oranlar uydurulmaz. Bunlar resmî Türkiye İddaa oranları olarak sunulmaz.
+- Yalnızca kullanıldığında API isteği yapar; aynı oranlar sekmesine dönüşte tekrar istemez.
+- Açık/koyu tema, canlı skor ve gol uyarıları korunur. Gizli API anahtarı depoya konulmaz.
