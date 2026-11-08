@@ -38,6 +38,7 @@ jobs:
           node --check /tmp/nur-rehberi.js
           node --check nur-rehberi/app/src/main/assets/features.js
           node --check nur-rehberi/app/src/main/assets/tafsir_reader.js
+          node --check nur-rehberi/app/src/main/assets/premium_hafiz.js
           grep -q 'tafsir_reader.js' nur-rehberi/app/src/main/assets/index.html
           grep -q 'function tefsirKitap()' nur-rehberi/app/src/main/assets/tafsir_reader.js
           python3 - <<'PY'
@@ -103,7 +104,16 @@ jobs:
               print(r['name'],len(r['available']),r['server'])
           PY
       - name: Verify and bundle in-app Quran Central streaming catalog
-        run: python3 nur-rehberi/scripts/build_premium_reciters.py
+        run: |
+          python3 nur-rehberi/scripts/build_premium_reciters.py
+          python3 - <<'PY'
+          import json
+          data=json.load(open('nur-rehberi/app/src/main/assets/premium_recitations.json'))
+          tracks=data.get('readers',[{}])[0].get('tracks',[]) if data.get('readers') else []
+          assert len(tracks)>=15,"Publisher stream verification insufficient: "+str(len(tracks))
+          assert all(t['url'].startswith('https://') for t in tracks)
+          print('Verified in-app Sadien tracks:',len(tracks))
+          PY
       - name: Verify Turkish tafsir reader data API
         run: |
           python3 - <<'PY'
@@ -161,5 +171,5 @@ jobs:
       - name: Upload test APK
         uses: actions/upload-artifact@v4
         with:
-          name: NurRehberi-3D-Plus-v1.4
+          name: NurRehberi-3D-Plus-v1.4-Tefsir
           path: nur-rehberi/app/build/outputs/apk/debug/app-debug.apk
