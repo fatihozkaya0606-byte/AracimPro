@@ -446,7 +446,7 @@ current=data;try{localStorage.setItem('surah-'+n,JSON.stringify(data))}catch{};i
 function playButton(){if(!st.playing){playerBox.hidden=true;return;}playerBox.hidden=false;const p=st.playing;playerBox.innerHTML=`<div class="meta"><b>♫ ${esc(label(p.surah))} • ${p.ayah}. ayet</b><small>${esc(RECITERS.find(x=>x[0]===st.reciter)?.[1]||'Hafız')}</small></div><button data-action="toggle-audio" aria-label="${audio.paused?'Oynat':'Duraklat'}">${audio.paused?'▶':'Ⅱ'}</button><button class="close" data-action="stop-audio" aria-label="Kapat">×</button>`;}
 function updateActive(scroll=false){document.querySelectorAll('.ayah').forEach(el=>el.classList.toggle('active',Number(el.id.slice(5))===st.playing?.ayah&&st.surah===st.playing?.surah));if(scroll&&st.playing?.surah===st.surah)document.getElementById('ayah-'+st.playing.ayah)?.scrollIntoView({block:'center',behavior:'smooth'});}
 async function fetchAudioList(n,reciter){const data=await requestJson(`${API}/surah/${n}/${encodeURIComponent(reciter)}`);if(!data?.ayahs?.length)throw new Error('Bu hafızın kaydı bulunamadı.');return data.ayahs.map(x=>x.audio);}
-async function startAudio(ayah){stopAdhan();stopHafiz();if(!current?.ayahs?.length){toast('Önce surenin yüklenmesini bekle.');return;}let n=st.surah;const edition=st.reciter;let token=++audioToken;audio.pause();audio.removeAttribute('src');audio.load();st.playing={surah:n,ayah};playButton();updateActive(true);
+async function startAudio(ayah){stopAdhan();stopHafiz();nrStopSadien();if(!current?.ayahs?.length){toast('Önce surenin yüklenmesini bekle.');return;}let n=st.surah;const edition=st.reciter;let token=++audioToken;audio.pause();audio.removeAttribute('src');audio.load();st.playing={surah:n,ayah};playButton();updateActive(true);
 try{let urls=await fetchAudioList(n,edition);if(token!==audioToken)return;audioList=urls;await playIndex(ayah-1,token);}catch(e){if(token!==audioToken)return;st.playing=null;playButton();toast('Ses kaydı yüklenemedi. Başka hafız seçebilir veya tekrar deneyebilirsin.');}}
 let audioToken=0;
 async function playIndex(index,token){if(token!==audioToken||index>=audioList.length){stopAudio();return;}st.playing={surah:st.surah,ayah:index+1};const url=audioList[index];if(!url){stopAudio();toast('Bu ayetin ses kaydı yok.');return;}audio.src=url;audio.playbackRate=1;audio.onended=()=>{if(token===audioToken)playIndex(index+1,token).catch(()=>stopAudio())};audio.onerror=()=>{if(token===audioToken){stopAudio();toast('Ses akışı kesildi.')}};playButton();updateActive(true);try{await audio.play();playButton()}catch{toast('Ses oynatılamadı; yeniden oynatmayı dene.');playButton();}}
@@ -522,7 +522,7 @@ async function playHafiz(id){
  const n=r.available.includes(preferred)?preferred:r.available[0];
  if(!n){toast('Bu hafız için kayıtlı sure bulunamadı.');return}
  if(n!==preferred)toast('Seçtiğin sure yok; mevcut '+n+'. sure açılıyor.');
- stopAudio();stopAdhan();stopHafiz();
+ stopAudio();stopAdhan();stopHafiz();nrStopSadien();
  const link=r.server+String(n).padStart(3,'0')+'.mp3';
  if(!/^https:\/\/([a-z0-9-]+\.)*mp3quran\.net\//i.test(link)){toast('Yayın kaynağı güvenilir değil.');return}
  hafizSelected=id;hafizAudio.src=link;hafizAudio.load();drawHafizPanel();
@@ -575,7 +575,7 @@ async function loadHafizCatalog(force=false){
 function hafizlar(){
  main.innerHTML='<div class="royal-page-head"><span>🎙</span><h1>Hafızlar</h1><small>Kur’an-ı Kerim dinleme merkezi</small></div>'+
  '<div class="notice">Ses kayıtları, hafızın mevcut surelerine göre gösterilir. Dinleme için internet gerekir; bağlantı başarısız olursa başka sure veya hafız seçebilirsin.</div>'+
- '<div class="sadien-feature"><div class="sadien-star">✦ ÖNE ÇIKAN HAFIZ</div><h2>Abdurrahmaan Sadien</h2><p>Güney Afrika • Abdülbasit üslubuyla tanınan kârî. Quran Central’da 24 kayıt mevcut. Malezyalı Saidin Abdulrahman ile aynı kişi değildir.</p><div class="sadien-embed"><iframe title="Abdurrahmaan Sadien Quran Central Apple Podcasts oynatıcı" src="https://embed.podcasts.apple.com/za/podcast/abdurrahmaan-sadien/id1087814219" loading="lazy" allow="autoplay; encrypted-media" referrerpolicy="no-referrer-when-downgrade"></iframe></div><a class="btn gold" href="https://qurancentral.com/audio/abdurrahmaan-sadien/">24 kaydı resmî kaynaktan dinle ↗</a><small>Oynatıcı açılmazsa yukarıdaki resmî bağlantıyı kullan. Kayıtlar Quran Central’a aittir.</small></div>'+
+ '<div class="sadien-feature" id="nr-premium-hafiz">Ses listesi yükleniyor…</div>'+
  section('Önceki Hafızlar','12 alternatif ayet kaydı')+
  '<div class="library-grid">'+RECITERS.map(r=>'<button class="reciter-chip" data-action="open-reciter" data-id="'+esc(r[0])+'">♫ '+esc(r[1])+'<small>Kur’an sayfasında dinle ›</small></button>').join('')+'</div>'+
  section('Türk Hafızları','Diyanet resmî arşivi')+
@@ -590,6 +590,7 @@ function hafizlar(){
  '<div class="notice">Aradığın Türk okuyucuların tamamına ait açık ve izinli sure sesleri henüz doğrulanmış değildir. Doğrulanmayan kişilerin adını çalışır kayıt gibi göstermiyoruz.</div>';
  const val=document.getElementById('hafiz-surah');if(val)val.value=String(hafizSurah);
  renderHafizResults();
+ nrLoadPremiumHafiz();
  if(!hafizCatalog.length&&!hafizLoading&&!hafizError)loadHafizCatalog();
 }
 function renderHafizResults(){
@@ -740,5 +741,6 @@ render();ensureCatalog();
 </script>
 <script src="features.js"></script>
 <script src="tafsir_reader.js"></script>
+<script src="premium_hafiz.js"></script>
 </body>
 </html>
