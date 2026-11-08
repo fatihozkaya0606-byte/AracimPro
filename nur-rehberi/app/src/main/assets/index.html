@@ -32,15 +32,112 @@
 .adhan-float-name{flex:1;font-size:11px;line-height:1.4;font-weight:750}
 .adhan-float-name small{display:block;font-size:11px;color:#c3e6da}
 .adhan-float button{background:#2a705a;border:0;border-radius:10px;color:white;min-width:36px;padding:9px}
+
+/* Nur Rehberi — Emerald Royal 3D Visual System v0.7 */
+body.premium,body.premium.dark {
+ --bg:#062c24;--surface:#fff1d7;--surface2:#f0d8a9;--ink:#183a2d;--muted:#87785f;
+ --green:#063b2c;--green2:#075743;--gold:#dfba72;--line:#c49a55;
+ --shadow:0 11px 0 -5px #936928,0 17px 22px #00140f91;
+ background:#031c15;color:#f7ecd2;font-family:Georgia,"Times New Roman",serif;
+}
+body.premium .app-shell {
+ background:
+  radial-gradient(ellipse at 50% 3%,#22725a68,transparent 41%),
+  repeating-conic-gradient(from 45deg at 50% 50%,#ecd08f04 0deg 10deg,transparent 10deg 45deg),
+  linear-gradient(165deg,#0b4838,#062d24 48%,#03251e);
+ border-inline:1px solid #98704030;
+ box-shadow:0 0 0 2px #2d180b,0 0 40px #000b;
+}
+body.premium .app-shell:before{content:'';pointer-events:none;position:absolute;z-index:0;inset:0;background:repeating-linear-gradient(60deg,transparent 0 36px,#bda76b09 37px 38px,transparent 39px 73px),repeating-linear-gradient(-60deg,transparent 0 36px,#bda76b07 37px 38px,transparent 39px 73px);opacity:.6}
+body.premium .topbar {height:73px;padding:10px 16px;background:linear-gradient(180deg,#033222ea,#053a2eea);border-bottom:2px ridge #bd98528c;box-shadow:0 6px 18px #001b16bb;z-index:50}
+body.premium .brand{min-width:0}
+body.premium .brand-icon{border:2px solid #edca82;border-radius:13px;background:radial-gradient(at 28% 20%,#277b5a,#053e2d 70%);color:#f8d68d;box-shadow:inset 0 2px 2px #eeecb690,inset 0 -5px 8px #001c13,0 5px 8px #001b14;font-size:24px}
+body.premium .brand b{font-family:Georgia,serif;color:#ffebb5;font-size:19px;text-shadow:0 2px 1px #533515,0 0 11px #cb994a75;letter-spacing:.4px}
+body.premium .brand b span{color:#f1cb7c}
+body.premium .brand small{font-family:system-ui,sans-serif;color:#d7d2b4;font-size:10px}
+body.premium .small-icon{color:#f7cf75;border:1px solid #9c7845;background:linear-gradient(135deg,#185643,#09382a);box-shadow:inset 0 1px #a6c49b78,0 4px 5px #001d16}
+body.premium .main-content{position:relative;z-index:1;padding:9px 13px 40px}
+body.premium .main-content>.eyebrow,body.premium .intro .eyebrow{color:#efc57b}
+body.premium .intro{background:linear-gradient(110deg,#07392ccc,#104a39aa);border:1px solid #a27b4a80;border-radius:19px;margin:11px 0 18px;padding:17px}
+body.premium .intro .title,body.premium .main-content>.title{color:#ffe6ad;font-family:Georgia,serif;font-size:27px;text-shadow:0 2px 1px #6e4a1e}
+body.premium .sub{color:#e0cda8;font-family:system-ui,sans-serif}
+body.premium .section-title{color:#ffe3ac;font-size:21px;text-shadow:0 2px 2px #001d13;letter-spacing:.1px}
+body.premium .section-title small{font-family:system-ui,sans-serif;color:#e3c992;font-size:11px}
+body.premium .hero{border:2px solid #d4b775;box-shadow:0 7px 0 -3px #6e4a20,0 15px 20px #001b15b8,inset 0 2px 2px #d6f1ca70;background:radial-gradient(circle at 80% 10%,#34745c,#0b4637 55%,#02281f);margin-top:10px}
+body.premium .hero h2{color:#ffe5af;text-shadow:0 2px 1px #544221;font-size:25px}
+body.premium .hero .gold{color:#f9d48a}
+body.premium .hero p,body.premium .hero-foot span{color:#e7dfca}
+body.premium .hero-foot button{background:linear-gradient(#ffedd0,#e4bd6d);border:1px solid #e9cf91;box-shadow:inset 0 2px #fff9df,0 5px 0 #815826,0 10px 12px #001f1755;color:#20432f}
+body.premium .card,body.premium .surah,body.premium .adhan-card {background:linear-gradient(145deg,#fff8e4,#f1dfb9 58%,#d9bd86);border:2px solid #d6b477;box-shadow:inset 0 2px #fffdf4,0 6px 0 #8c6029,0 12px 17px #00150fa0;color:#263828}
+body.premium .card p,body.premium .surah small,body.premium .adhan-card p{color:#74694e}
+body.premium .btn{background:linear-gradient(180deg,#297962,#064531);border:1px solid #daa95c;box-shadow:inset 0 1px #d6dfbb91,0 4px 0 #052e22,0 7px 8px #00170b80;color:#fff8d6;border-radius:13px}
+body.premium .btn.gold{background:linear-gradient(180deg,#fff6d3,#e5b961);color:#243b2a}
+body.premium .btn.ghost{background:linear-gradient(#fdf3d8,#e6c688);color:#164c3d}
+body.premium .search,body.premium .field{background:#fff4db;color:#283b31;border:1px solid #ba985b}
+body.premium .search input{color:#173d2d}
+body.premium .surah-num{background:linear-gradient(#1f7456,#08412f);border:1px solid #b99852;box-shadow:inset 0 1px #cde9c8,0 3px 1px #053525;color:#f5d88e}
+body.premium .bottom-nav {height:79px;background:linear-gradient(180deg,#033626e8,#022b20f8);border-top:2px solid #b58e4e;box-shadow:0 -7px 24px #021d18c8;z-index:35}
+body.premium .bottom-nav button{color:#e5d4b1;font-family:system-ui,sans-serif;padding:6px 1px;min-width:0;flex:1;font-size:11px}
+body.premium .bottom-nav button span{font-size:22px;color:#ddc58e;filter:drop-shadow(0 2px 1px #001c13)}
+body.premium .bottom-nav button.selected{color:#fff2cb}
+body.premium .bottom-nav button.selected span{background:linear-gradient(135deg,#e6c87a,#ad7a33);border:1px solid #ffe5ad;border-radius:13px;color:#094c37;box-shadow:0 5px 0 #67421c,0 7px 8px #00130ba0}
+body.premium .adhan-hero{border:2px solid #d6b273;background:radial-gradient(at 82% 0,#338c64,#07513b 51%,#01251b);box-shadow:0 8px 0 -3px #86552a,0 15px 21px #00130d8c}
+body.premium .adhan-hero h2{font-family:Georgia,serif;text-shadow:0 2px 2px #593315}
+body.premium .adhan-hero p{color:#f2e2c0}
+body.premium .adhan-hero span{color:#f8d49a}
+body.premium .adhan-card .adhan-name{font-size:19px;color:#18382a;font-family:Georgia,serif}
+body.premium .adhan-card .adhan-icon{background:linear-gradient(140deg,#176744,#073c2c);border:2px solid #c69a55;box-shadow:inset 0 2px #fff8d787,0 4px 0 #805324;color:#f4d88b}
+body.premium .adhan-card .adhan-license{color:#174c3c;background:#e2c68f}
+body.premium .adhan-card .adhan-credit{color:#696049}
+body.premium .adhan-card .adhan-link,body.premium .adhan-card a{color:#0d6048}
+body.premium .adhan-float{background:linear-gradient(#195b42,#073626);border:2px solid #d4ac60;bottom:84px;box-shadow:0 5px 0 #533b1a,0 9px 15px #0009}
+body.premium .prayer-grid .prayer-time{border:1px solid #be9558;background:linear-gradient(160deg,#fff9e6,#edcfa0);color:#1a4434;box-shadow:0 3px 0 #a87d44}
+body.premium .tasbih .counter-btn{background:radial-gradient(at 34% 25%,#3c9871,#07523c 65%,#063528);border:8px ridge #d5b26f;box-shadow:inset 0 5px 13px #d1f7cc66,0 7px 0 #745027,0 15px 20px #00170fa8;color:#ffe6a6}
+body.premium .chip{background:#f4e7c9;color:#2b523f;border:1px solid #cfb57c}
+body.premium .chip.active{background:#1d6a4c;color:#f5deaa}
+body.premium .pill{background:#e6cb93;color:#5e441e}
+body.premium .notice{background:#0b4c3b;border:1px solid #a78c56;color:#e9d6ad}
+body.premium .player{background:#073c2e;border:1px solid #c6a365;color:#ffe6b0}
+body.premium .player p{color:#e7cf99}
+/* Rich reference-matching feature dashboard */
+.royal-showcase{position:relative;min-height:244px;border-radius:26px 26px 16px 16px;overflow:hidden;margin:0 0 18px;
+ background:linear-gradient(to bottom,transparent 0%,#023c2b52 50%,#073725 98%),radial-gradient(ellipse at 50% 52%,#d4a66a9e 0,#67927a88 26%,#06513c 67%,#03291f 100%);
+ border:2px ridge #d2a75c;box-shadow:inset 0 3px 3px #fff1be73,0 7px 0 -2px #75502b,0 17px 25px #000c09af}
+.royal-showcase:before{content:'';pointer-events:none;position:absolute;inset:8px 9px 5px;border:2px solid #c59a53a9;border-bottom:0;border-radius:49% 49% 0 0/35% 35% 0 0;box-shadow:inset 0 0 23px #e3c07420}
+.royal-showcase:after{content:'';pointer-events:none;position:absolute;left:0;right:0;bottom:0;height:59%;background:linear-gradient(transparent,#00291f);z-index:1}
+.royal-skyline{position:absolute;width:100%;height:120px;bottom:0;left:0;opacity:.9;filter:drop-shadow(0 -2px 2px #e7b56a66);z-index:0}
+.royal-title{position:absolute;z-index:3;top:48px;left:8px;right:8px;text-align:center;color:#ffeac0;text-shadow:0 2px 2px #4b290d,0 0 18px #d4a65b8c;font-size:38px;line-height:1;font-weight:700;letter-spacing:-.3px}
+.royal-crown{position:absolute;z-index:3;top:8px;left:0;right:0;text-align:center;font-size:30px;color:#f3ca78;text-shadow:0 3px 4px #000}
+.royal-caption{position:absolute;z-index:3;top:109px;left:20px;right:20px;text-align:center;font-size:12px;font-family:system-ui,sans-serif;line-height:1.5;color:#ffefc9;text-shadow:0 1px 5px #000}
+.royal-divider{position:absolute;z-index:3;top:163px;left:19%;width:62%;height:1px;background:linear-gradient(90deg,transparent,#f2d18b,transparent)}
+.royal-sub{position:absolute;z-index:3;top:177px;left:8px;right:8px;text-align:center;font-size:11px;font-family:system-ui,sans-serif;color:#ffdda7}
+.royal-heading{margin:22px 0 14px;display:flex;justify-content:center;align-items:center;gap:12px;color:#f3d898;font-size:17px;letter-spacing:.8px}
+.royal-heading:before,.royal-heading:after{content:'';height:1px;flex:1;background:linear-gradient(90deg,transparent,#cfa65f)}
+.royal-heading:after{transform:scaleX(-1)}
+.royal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px;padding:0 3px 5px}
+.royal-tile {position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:156px;padding:8px 7px 15px;overflow:hidden;
+ background:linear-gradient(145deg,#fffced 0%,#fff4d5 34%,#f5dfb0 78%,#d2af72 100%);border:2px solid #e2bb70;border-bottom:4px solid #8d5e29;border-radius:26px;color:#182b21;
+ box-shadow:inset 0 3px 0 #fffefa,inset 2px 0 2px #fff5d2, inset -4px -5px 6px #aa804059,0 7px 0 #775027,0 12px 14px #00130aa6;
+ transition:transform .12s,box-shadow .12s}
+.royal-tile:before{content:'';pointer-events:none;position:absolute;inset:6px;border:1px solid #cead6eb3;border-radius:20px;box-shadow:inset 0 1px 2px #fffefa92}
+.royal-tile:after{content:'';pointer-events:none;position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent 0 25px,#ae873018 26px 27px,transparent 28px 50px),repeating-linear-gradient(-45deg,transparent 0 25px,#ae873013 26px 27px,transparent 28px 50px);opacity:.35}
+.royal-tile:active{transform:translateY(4px);box-shadow:inset 0 3px 0 #fffefa,0 3px 0 #775027,0 7px 12px #00130aa6}
+.royal-symbol {position:relative;z-index:1;height:93px;width:93px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(1px 5px 3px #48362183)}
+.royal-symbol svg{height:90px;width:90px;overflow:visible}
+.royal-tile strong{position:relative;z-index:2;font:bold 18px/1.13 Georgia,serif;color:#1d291d;text-shadow:0 1px #fffdf0,0 2px 2px #ad9e82;text-align:center}
+.royal-tile small{position:relative;z-index:2;font:10px system-ui,sans-serif;color:#645a42}
+.royal-footline{text-align:center;color:#ccaa65;margin:25px 0 10px;font-size:23px;letter-spacing:12px}
+@media(max-width:370px){.royal-grid{gap:11px}.royal-tile{min-height:142px}.royal-symbol{height:83px}.royal-symbol svg{width:79px;height:79px}.royal-tile strong{font-size:16px}.royal-title{font-size:34px}}
+
 </style>
   <title>Nur Rehberi • Kur'an ve İslam</title>
 </head>
-<body>
+<body class="premium">
   <div class="app-shell" id="appShell">
     <header class="topbar"><button class="small-icon" id="back" hidden aria-label="Geri">←</button><div class="brand" id="brandMark"><div class="brand-icon">☪</div><div><b>NUR <span>REHBERİ</span></b><small>Kur'an • İbadet • Huzur</small></div></div><div class="top-actions"><button class="small-icon" data-page="settings" aria-label="Ayarlar">⚙</button></div></header>
     <main id="main" class="main-content" aria-live="polite"></main>
     <div id="player" class="player" hidden></div>
-    <nav class="bottom-nav" id="nav" aria-label="Ana gezinme"><button data-page="home" class="selected"><span>⌂</span><small>Ana Sayfa</small></button><button data-page="quran"><span>☷</span><small>Kur'an</small></button><button data-page="worship"><span>☾</span><small>İbadet</small></button><button data-page="learn"><span>✧</span><small>Öğren</small></button><button data-page="adhan"><span>♫</span><small>Ezanlar</small></button><button data-page="progress"><span>◎</span><small>Hatim</small></button></nav>
+    <nav class="bottom-nav" id="nav" aria-label="Ana gezinme"><button data-page="home" class="selected"><span>⌂</span><small>Ana Sayfa</small></button><button data-page="quran"><span>▣</span><small>Kur'an</small></button><button data-page="worship"><span>♟</span><small>Namaz</small></button><button data-page="adhan"><span>♫</span><small>Ezanlar</small></button><button data-page="settings"><span>♙</span><small>Profil</small></button></nav>
     <div id="toast" role="status"></div>
   </div>
   <script>
