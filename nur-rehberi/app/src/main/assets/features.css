@@ -1,0 +1,32 @@
+
+/* Nur Rehberi v1.2 module extensions — matches embossed green and gold design */
+.nr-note{margin:16px 0;padding:14px 15px;background:#0b4b39;border:1px solid #be9855;border-radius:14px;color:#f0dec1;line-height:1.6;font:13px/1.6 system-ui,sans-serif;box-shadow:inset 0 1px #f9ddaa40}
+.nr-actions{display:flex;flex-wrap:wrap;gap:10px;margin:17px 0}
+.nr-actions button,.nr-actions a{flex:1;min-width:114px;text-align:center}
+.nr-link{display:inline-flex!important;align-items:center;justify-content:center;text-decoration:none;font:700 12px/1.35 system-ui,sans-serif;min-width:72px;padding:9px 11px!important;white-space:normal;text-align:center}
+.nr-input{display:block;min-width:0;width:100%;padding:12px 14px;border:2px solid #b18d51;border-radius:13px;background:linear-gradient(#fffbed,#f6e6c3);color:#173729;font:15px system-ui,sans-serif;margin:10px 0 14px;outline-color:#2d9371}
+.nr-list{display:flex;flex-direction:column;gap:13px;margin:15px 0}
+.nr-entry{display:flex;align-items:center;gap:12px;justify-content:space-between;min-height:86px;padding:15px 12px;border:2px solid #cba76b;border-bottom:4px solid #896230;border-radius:17px;
+ background:linear-gradient(145deg,#fff9e5,#edd3a3 87%,#dfc08c);box-shadow:inset 0 2px #fffef7,0 6px 11px #001c1269;color:#193729}
+.nr-entry>div{flex:1;min-width:0}.nr-entry strong{display:block;font:700 16px Georgia,serif}.nr-entry small{display:block;color:#765f43;font:11px/1.5 system-ui,sans-serif;margin-top:5px}
+.nr-panel{background:linear-gradient(145deg,#fff8de,#eed6a5);color:#2b382c;border:2px ridge #cda667;border-radius:18px;padding:17px;margin:17px 0;box-shadow:inset 0 2px #fffcf0,0 5px 0 #795225,0 10px 15px #001c1255}
+.nr-panel h3{color:#1b5036;margin:0 0 13px;font:bold 20px Georgia,serif}
+.nr-panel p{font:14px/1.65 system-ui,sans-serif;color:#504d3b}.nr-panel small{font:11px/1.5 system-ui,sans-serif;color:#74694d}
+.nr-panel label{display:block;color:#27533b;font-weight:750;font-size:12px}
+.nr-ar{font:30px/2.2 "Noto Naskh Arabic","Noto Sans Arabic",serif;text-align:right;background:#fffaf0;border:1px solid #d3b783;padding:15px;border-radius:14px;margin:12px 0;color:#163c28}
+.nr-duas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:15px 0}
+.nr-duas button{padding:14px 10px;min-height:90px;border:2px solid #d6b477;border-bottom:4px solid #8c602d;border-radius:17px;background:linear-gradient(145deg,#fff9e4,#e8cc92);color:#244632;text-align:left;box-shadow:inset 0 2px #fffef2,0 5px 7px #001a1066}
+.nr-duas strong{display:block;font:700 14px Georgia,serif;line-height:1.25}.nr-duas small{font:11px system-ui,sans-serif;color:#927746;display:block;margin-top:10px}
+.nr-esma-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin:16px 0}
+.nr-esma{background:linear-gradient(145deg,#fff9e6,#e9cc90);color:#243a2b;border:2px ridge #d1a863;border-radius:18px;min-height:150px;padding:12px;display:flex;flex-direction:column;box-shadow:inset 0 2px #fff,0 5px 0 #875b2d}
+.nr-esma small{font:11px system-ui,sans-serif;color:#927441}.nr-esma strong{display:block;color:#1e553a;font:bold 18px Georgia,serif;margin:10px 0 5px}.nr-esma span{font:12px/1.5 system-ui,sans-serif;color:#65563f;flex:1}
+.nr-esma button{border:1px solid #ac8b58;color:#1e5d3e;background:#f8edd0;border-radius:8px;padding:6px;font-size:11px;margin-top:9px}
+.nr-letters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:20px 0}
+.nr-letters button{border:2px solid #cba66c;border-bottom:4px solid #8f672d;border-radius:13px;background:linear-gradient(#fdf6db,#e4c58e);color:#284334;padding:5px 3px;min-width:0}
+.nr-letters button.selected{background:linear-gradient(#1e7958,#05503b);color:#ffedba;border-color:#efc674}
+.nr-letters b{font:29px/1.5 "Noto Naskh Arabic",serif;display:block}.nr-letters small{display:block;font:10px system-ui,sans-serif}
+.nr-big-ar{font:68px/1.5 "Noto Naskh Arabic",serif;text-align:center;color:#11583d}
+.nr-inline-ar{font:24px "Noto Naskh Arabic",serif;color:#224b36;white-space:nowrap}
+.nr-answer{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:10px 0}
+.nr-answer button{font:700 14px system-ui,sans-serif;border:1px solid #b5975a;border-radius:11px;padding:12px;background:#fff6df;color:#17563c}
+@media (max-width:380px){.nr-duas,.nr-esma-list{gap:8px}.nr-entry{padding:11px 8px}.nr-entry strong{font-size:14px}.nr-letters{grid-template-columns:repeat(4,minmax(0,1fr))}}
