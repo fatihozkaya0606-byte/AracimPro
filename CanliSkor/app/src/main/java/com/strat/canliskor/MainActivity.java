@@ -10,6 +10,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.view.KeyEvent;
+import android.view.View;
 import android.graphics.Color;
 import org.json.JSONObject;
 import java.net.URL;
@@ -50,6 +51,16 @@ public class MainActivity extends Activity {
         web.loadUrl("file:///android_asset/index.html");
     }
     public class ScoresBridge {
+    @JavascriptInterface public void setLightTheme(boolean enabled){
+        runOnUiThread(()->{
+            getWindow().setStatusBarColor(enabled?Color.rgb(224,241,236):Color.rgb(8,16,30));
+            getWindow().setNavigationBarColor(enabled?Color.rgb(232,242,246):Color.rgb(13,24,40));
+            int flags=getWindow().getDecorView().getSystemUiVisibility();
+            if(enabled) flags|=View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            else flags&=~(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR|View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+            getWindow().getDecorView().setSystemUiVisibility(flags);
+        });
+    }
         @JavascriptInterface public void request(String rawUrl, String token, String reqId){
             pool.submit(()->{
                 HttpURLConnection conn=null;
