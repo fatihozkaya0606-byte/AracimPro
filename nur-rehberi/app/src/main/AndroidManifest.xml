@@ -4,12 +4,12 @@
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
   <application
-     android:label="Nur Rehberi"
+     android:label="Nur Rehberi Ezan Test"
      android:allowBackup="true"
      android:usesCleartextTraffic="false"
      android:theme="@android:style/Theme.Material.Light.NoActionBar"
      android:icon="@drawable/ic_nur">
-    <activity android:name=".MainActivity"
+    <activity android:name="com.nurrehberi.app.MainActivity"
        android:exported="true"
        android:configChanges="orientation|screenSize|keyboardHidden">
       <intent-filter>
