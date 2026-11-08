@@ -242,7 +242,7 @@ $('content').addEventListener('input',e=>{
     let a=STATE.tab==='live'?(STATE.liveMatches.length?STATE.liveMatches:STATE.matches.filter(isLive)):STATE.matches;
     if(STATE.tab==='finished')a=a.filter(isFinal);
     if(STATE.tab==='favorites')a=a.filter(saved);
-    if(STATE.filter!=='Tümü')a=a.filter(m=>m.league===STATE.filter);
+    if(STATE.filter!=='Tümü')a=a.filter(m=>m.leagueKey===STATE.filter);
     a=a.filter(m=>(m.home+' '+m.away+' '+m.league).toLocaleLowerCase('tr-TR').includes(STATE.term.toLocaleLowerCase('tr-TR')));
     let box=$('match-results');if(box)box.innerHTML=groupedCards(a);
   }
@@ -263,7 +263,7 @@ const V4_LEAGUES=[
 ];
 function getDate(offset=0){return new Date(Date.now()+offset*86400000+10800000).toISOString().slice(0,10)}
 function v4LocalDate(date){if(!date)return '';const d=new Date(date);return isNaN(d)?'':new Date(d.getTime()+10800000).toISOString().slice(0,10)}
-function v4Arr(x){if(Array.isArray(x))return x;for(const v of [x?.results,x?.events,x?.matches,x?.fixtures,x?.live,x?.live_events,x?.data?.results,x?.data?.events,x?.data?.matches,x?.data])if(Array.isArray(v))return v;return []}
+function v4Arr(x){if(Array.isArray(x))return x;for(const v of [x?.results,x?.events,x?.matches,x?.fixtures,x?.live,x?.live_events,x?.live_matches,x?.data?.results,x?.data?.events,x?.data?.matches,x?.data])if(Array.isArray(v))return v;return []}
 function v4Rows(x,what){const a=v4Arr(x);if(!a.length&&Number(x?.count)>0)throw new Error(what+': Sunucu maç olduğunu bildiriyor ancak veri biçimi çözülemedi');return a}
 function v4LeagueKey(name,country,id){
  const n=String(name||'').toLocaleLowerCase('tr-TR'),c=String(country||'').toLocaleLowerCase('tr-TR');
@@ -336,7 +336,7 @@ async function v4FixtureRows(day){
  return v4Rows(data,'Maçlar').map(x=>normalize(x,'sportscore'));
 }
 async function v4LiveRows(){
- const data=bsdToken?await request(API_BSD+'/api/v2/events/live/?limit=200',bsdToken):
+ const data=bsdToken?await request(API_BSD+'/api/v2/events/live/',bsdToken):
  await request(API_SS+'/api/widget/matches/?sport=football&limit=100');
  const result=v4Rows(data,'Canlı maçlar').map(x=>normalize(x,bsdToken?'bsd':'sportscore',!!bsdToken));
  return bsdToken?result:result.filter(isLive);
