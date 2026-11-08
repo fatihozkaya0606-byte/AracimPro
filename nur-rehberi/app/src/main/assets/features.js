@@ -36,12 +36,17 @@ let nrBookQuery='',nrHadisQuery='',nrEsmaQuery='',nrEsmaNames=null,nrLetter=0,nr
 function nrTop(icon,title,sub){return '<div class="royal-page-head"><span>'+icon+'</span><h1>'+title+'</h1><small>'+sub+'</small></div>'}
 function nrLink(url,title){return '<a class="btn gold nr-link" href="'+esc(url)+'" target="_blank" rel="noopener">'+esc(title)+' ↗</a>'}
 function nrItems(rows){return rows.map(r=>'<div class="nr-entry"><div><strong>'+esc(r[0])+'</strong><small>'+esc(r[1])+'</small></div>'+nrLink(r[2],'Oku')+'</div>').join('')}
+function nrBookItems(rows){
+ return rows.map(r=>r[0]==='Kur’an Tefsiri'?
+  '<div class="nr-entry"><div><strong>Kur’an Tefsiri</strong><small>Türkçe açıklamaları kitap gibi sayfa sayfa oku</small></div><button class="btn gold nr-link" data-page="tefsir">Kitapta oku ›</button></div>'
+  :nrItems([r])).join('');
+}
 function books(){
  const rows=NR_LIBRARY.filter(r=>(r[0]+' '+r[1]).toLocaleLowerCase('tr').includes(nrBookQuery.toLocaleLowerCase('tr')));
  main.innerHTML=nrTop('📚','İslami Kitaplık','Diyanet ve TDV yayınları')+
  '<p class="nr-note">Telifli eserler izinsiz kopyalanmıyor. Yayıncıların sunduğu okuma, PDF ve indirme seçenekleri resmî sayfalarda açılır.</p>'+
  '<input id="nr-book-search" class="nr-input" placeholder="Kitaplıkta ara" value="'+esc(nrBookQuery)+'"/>'+
- '<div class="nr-list" id="nr-book-results">'+nrItems(rows)+'</div>'+
+ '<div class="nr-list" id="nr-book-results">'+nrBookItems(rows)+'</div>'+
  '<div class="nr-actions"><button data-page="ilmihal" class="btn gold">İlmihal konuları</button><button data-page="tefsir" class="btn ghost">Tefsir</button><button data-page="hadis" class="btn ghost">Hadisler</button></div>';
 }
 function hadis(){
@@ -51,15 +56,7 @@ function hadis(){
  '<input id="nr-hadis-search" class="nr-input" placeholder="Hadis konusu ara" value="'+esc(nrHadisQuery)+'"/>'+
  '<div id="nr-hadis-results" class="nr-list">'+nrItems(rows)+'</div>';
 }
-function tefsir(){
- main.innerHTML=nrTop('📖','Tefsir','Ayet ve sure seçimi')+
- '<p class="nr-note">Burada Kur’an ayetleri ve Diyanet meali gösterilir; detaylı tefsir için resmî Diyanet sayfasına yönlendirilir.</p>'+
- '<div class="nr-panel"><label>Sure<select class="nr-input" id="nr-sure">'+NAMES.map((x,i)=>'<option value="'+(i+1)+'"'+(i+1===nrTefsirN?' selected':'')+'>'+(i+1)+'. '+esc(x)+'</option>').join('')+'</select></label>'+
- '<label>Ayet<input id="nr-ayet" class="nr-input" type="number" min="1" max="286" value="'+nrTefsirA+'"/></label>'+
- '<button class="btn gold" data-nr="verse">Ayet ve meali oku</button></div>'+
- '<div id="nr-verse-result" class="nr-panel">Önce sure ve ayet seç.</div>'+
- '<div class="nr-list">'+nrItems([['Diyanet Tefsir','Resmî sure tefsirleri','https://kuran.diyanet.gov.tr/tefsir/sure/1-fatiha-suresi']])+'</div>';
-}
+function tefsir(){tefsirKitap();}
 async function nrReadVerse(){
  const n=Number(document.getElementById('nr-sure')?.value||1),a=Number(document.getElementById('nr-ayet')?.value||1);
  if(!Number.isInteger(n)||n<1||n>114||!Number.isInteger(a)||a<1||a>286){toast('Geçerli sure ve ayet seç.');return}
@@ -175,7 +172,7 @@ document.addEventListener('click',ev=>{
  else if(act==='alarm-disable')window.location.href='nur://disable';
 });
 document.addEventListener('input',ev=>{
- if(ev.target.id==='nr-book-search'){nrBookQuery=ev.target.value;document.getElementById('nr-book-results').innerHTML=nrItems(NR_LIBRARY.filter(x=>(x[0]+' '+x[1]).toLocaleLowerCase('tr').includes(nrBookQuery.toLocaleLowerCase('tr'))))}
+ if(ev.target.id==='nr-book-search'){nrBookQuery=ev.target.value;document.getElementById('nr-book-results').innerHTML=nrBookItems(NR_LIBRARY.filter(x=>(x[0]+' '+x[1]).toLocaleLowerCase('tr').includes(nrBookQuery.toLocaleLowerCase('tr'))))}
  else if(ev.target.id==='nr-hadis-search'){nrHadisQuery=ev.target.value;document.getElementById('nr-hadis-results').innerHTML=nrItems(NR_HADIS.filter(x=>(x[0]+' '+x[1]).toLocaleLowerCase('tr').includes(nrHadisQuery.toLocaleLowerCase('tr'))))}
  else if(ev.target.id==='nr-esma-search'){nrEsmaQuery=ev.target.value;nrRenderEsma()}
 });
