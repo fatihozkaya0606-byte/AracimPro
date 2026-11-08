@@ -433,7 +433,7 @@ current=data;try{localStorage.setItem('surah-'+n,JSON.stringify(data))}catch{};i
 function playButton(){if(!st.playing){playerBox.hidden=true;return;}playerBox.hidden=false;const p=st.playing;playerBox.innerHTML=`<div class="meta"><b>♫ ${esc(label(p.surah))} • ${p.ayah}. ayet</b><small>${esc(RECITERS.find(x=>x[0]===st.reciter)?.[1]||'Hafız')}</small></div><button data-action="toggle-audio" aria-label="${audio.paused?'Oynat':'Duraklat'}">${audio.paused?'▶':'Ⅱ'}</button><button class="close" data-action="stop-audio" aria-label="Kapat">×</button>`;}
 function updateActive(scroll=false){document.querySelectorAll('.ayah').forEach(el=>el.classList.toggle('active',Number(el.id.slice(5))===st.playing?.ayah&&st.surah===st.playing?.surah));if(scroll&&st.playing?.surah===st.surah)document.getElementById('ayah-'+st.playing.ayah)?.scrollIntoView({block:'center',behavior:'smooth'});}
 async function fetchAudioList(n,reciter){const data=await requestJson(`${API}/surah/${n}/${encodeURIComponent(reciter)}`);if(!data?.ayahs?.length)throw new Error('Bu hafızın kaydı bulunamadı.');return data.ayahs.map(x=>x.audio);}
-async function startAudio(ayah){stopAdhan();if(!current?.ayahs?.length){toast('Önce surenin yüklenmesini bekle.');return;}let n=st.surah;const edition=st.reciter;let token=++audioToken;audio.pause();audio.removeAttribute('src');audio.load();st.playing={surah:n,ayah};playButton();updateActive(true);
+async function startAudio(ayah){stopAdhan();stopHafiz();if(!current?.ayahs?.length){toast('Önce surenin yüklenmesini bekle.');return;}let n=st.surah;const edition=st.reciter;let token=++audioToken;audio.pause();audio.removeAttribute('src');audio.load();st.playing={surah:n,ayah};playButton();updateActive(true);
 try{let urls=await fetchAudioList(n,edition);if(token!==audioToken)return;audioList=urls;await playIndex(ayah-1,token);}catch(e){if(token!==audioToken)return;st.playing=null;playButton();toast('Ses kaydı yüklenemedi. Başka hafız seçebilir veya tekrar deneyebilirsin.');}}
 let audioToken=0;
 async function playIndex(index,token){if(token!==audioToken||index>=audioList.length){stopAudio();return;}st.playing={surah:st.surah,ayah:index+1};const url=audioList[index];if(!url){stopAudio();toast('Bu ayetin ses kaydı yok.');return;}audio.src=url;audio.playbackRate=1;audio.onended=()=>{if(token===audioToken)playIndex(index+1,token).catch(()=>stopAudio())};audio.onerror=()=>{if(token===audioToken){stopAudio();toast('Ses akışı kesildi.')}};playButton();updateActive(true);try{await audio.play();playButton()}catch{toast('Ses oynatılamadı; yeniden oynatmayı dene.');playButton();}}
@@ -462,7 +462,7 @@ const TURK_HAFIZLAR=[
  'Emrullah Akbaş','Fatih Karazeybek','Mustafa Orhan','Ahmet Karalı','Davut Kaya','Furkan Tıraşçı',
  'Menduh Karslı','Adem Çiftçi','Mustafa Altın','Yakup Okutan','Numan Akbaş','Musa Dağ',
  'Halit Nuri Kılıç','Hüseyin Yavuz','Kemal Tosun','Uğur Demirci','Mehmet Atıcı','Ali Turhan',
- 'Musa Coşkun','Erhan Mete','Ömer Erdem','Ömer Derman','Habip Deveci','Salih Akyüz'
+ 'Musa Coşkun','Erhan Mete','Ömer Erdem','Ali Derman','Habip Deveci','Salih Akyüz'
 ];
 const TURK_ARŞİV='https://kuran.diyanet.gov.tr/dijital/asri-serifler';
 let hafizCatalog=[],hafizLoading=false,hafizError='',hafizQuery='',hafizShowAll=false,hafizSelected='',hafizAudio=new Audio();
@@ -675,7 +675,7 @@ async function playAdhan(id){
   const a=ADHANS.find(x=>x.id===id);if(!a)return;
   if(currentAdhan===id&&!adhanAudio.paused){adhanAudio.pause();drawAdhanFloat();if(st.page==='adhan')adhan();return}
   if(currentAdhan!==id){
-    stopAudio();
+    stopAudio();stopHafiz();
     adhanAudio.pause();
     currentAdhan=id;
     adhanError=false;
