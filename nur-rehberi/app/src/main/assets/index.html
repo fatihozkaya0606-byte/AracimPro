@@ -322,6 +322,7 @@ body.premium .library-panel .btn.gold{display:inline-flex;text-decoration:none;f
 
 </style>
   <title>Nur Rehberi • Kur'an ve İslam</title>
+  <link rel="stylesheet" href="features.css">
 </head>
 <body class="premium">
   <div class="app-shell" id="appShell">
@@ -368,9 +369,9 @@ function label(n){return catalog[n-1]?.turkishName||NAMES[n-1]||`Sure ${n}`}
 function fmt(n){return Number(n||0).toLocaleString('tr-TR')}
 function section(name,sub=''){return `<div class="section-title">${name}<small>${sub}</small></div>`}
 function btn(page,glyph,title){return `<button type="button" class="menu-card" data-page="${page}"><span class="glyph">${glyph}</span><strong>${title}</strong></button>`}
-function drawNav(){document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('selected',b.dataset.page===(st.page==='reader'?'quran':st.page==='settings'?'home':st.page)));document.getElementById('back').hidden=!['reader','settings','worship','adhan','quran','progress','learn','hafizlar','ilmihal','live'].includes(st.page)}
-function render(){document.body.classList.toggle('on-home',st.page==='home');document.body.classList.toggle('dark',!!st.dark);drawNav();if(st.page==='home')home();else if(st.page==='quran')quran();else if(st.page==='reader')reader();else if(st.page==='worship')worship();else if(st.page==='progress')progress();else if(st.page==='learn')learn();else if(st.page==='adhan')adhan();else if(st.page==='hafizlar')hafizlar();else if(st.page==='ilmihal')ilmihal();else if(st.page==='live')liveHaram();else if(st.page==='settings')settings();else home();}
-function go(page){if(!['home','quran','reader','worship','progress','learn','adhan','hafizlar','ilmihal','live','settings'].includes(page))return;st.page=page;render();window.scrollTo({top:0,behavior:'instant'});}
+function drawNav(){document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('selected',b.dataset.page===(st.page==='reader'?'quran':st.page==='settings'?'home':st.page)));document.getElementById('back').hidden=!['reader','settings','worship','adhan','quran','progress','learn','hafizlar','ilmihal','live','books','tefsir','hadis','dualar','esma','elifba','bildirimler'].includes(st.page)}
+function render(){document.body.classList.toggle('on-home',st.page==='home');document.body.classList.toggle('dark',!!st.dark);drawNav();if(st.page==='home')home();else if(st.page==='quran')quran();else if(st.page==='reader')reader();else if(st.page==='worship')worship();else if(st.page==='progress')progress();else if(st.page==='learn')learn();else if(st.page==='adhan')adhan();else if(st.page==='hafizlar')hafizlar();else if(st.page==='ilmihal')ilmihal();else if(st.page==='live')liveHaram();else if(st.page==='books')books();else if(st.page==='tefsir')tefsir();else if(st.page==='hadis')hadis();else if(st.page==='dualar')dualar();else if(st.page==='esma')esma();else if(st.page==='elifba')elifba();else if(st.page==='bildirimler')bildirimler();else if(st.page==='settings')settings();else home();}
+function go(page){if(page==='tefsir' && typeof nrTefsirN!=='undefined')nrTefsirN=st.surah; if(!['home','quran','reader','worship','progress','learn','adhan','hafizlar','ilmihal','live','books','tefsir','hadis','dualar','esma','elifba','bildirimler','settings'].includes(page))return;st.page=page;render();window.scrollTo({top:0,behavior:'instant'});}
 
 /* Detailed decorative SVG icons, drawn locally — not static screenshots. */
 function royalIcon(name){
@@ -405,7 +406,7 @@ function home(){
   +'<div class="royal-caption">Kur’an, namaz, ezan ve ibadetleriniz için<br>kapsamlı İslâmî rehberinize hoş geldiniz.</div>'
   +'<div class="royal-divider"></div><div class="royal-sub">✦ Maneviyatın huzurlu dünyası ✦</div></div>'
   +'<div class="royal-heading">İBADET & KEŞİF</div>'
-  +'<div class="royal-grid">'+tiles.map(x=>royalTile(x[0],x[1],x[2])).join('')+'</div>'
+  +'<div class="royal-grid">'+tiles.map(x=>royalTile(x[0],x[1],x[2])).join('')+'</div>' +'<div class="royal-extra nr-shortcuts"><button data-page="books"><b>📚 Dev İslami Kitaplık</b><small>İlmihal • tefsir • hadis • eserler</small><span>›</span></button><button data-page="elifba"><b>۞ Elifba ve Tecvid</b><small>28 harf • 30 ders • sınav</small><span>›</span></button><button data-page="dualar"><b>🤲 Dua & Zikir</b><small>Kur’an kaynaklı dualar</small><span>›</span></button><button data-page="esma"><b>✦ Esmaül Hüsna</b><small>99 isim • çevrimdışı</small><span>›</span></button><button data-page="bildirimler"><b>🔔 Ezan Bildirimleri</b><small>Şehir seç • bildirimi aç</small><span>›</span></button></div>'
   +'<div class="royal-extra"><button data-page="live"><b>🕋 Mekke • Medine</b><small>Resmî canlı yayınlar</small><span>▶</span></button><button data-page="ilmihal"><b>📚 İlmihal Kütüphanesi</b><small>Diyanet ve kaynaklı eserler</small><span>›</span></button></div>'
   +'<div class="royal-footline">✦ ❖ ✦</div>'
   +section('Günün Namaz Vakitleri','Şehre göre')+
@@ -426,7 +427,7 @@ function home(){
 function surahMarkup(x){return `<button type="button" class="surah" data-action="open-surah" data-surah="${x.number}"><span class="surah-num">${x.number}</span><span class="surah-details"><strong>${esc(x.turkishName)}</strong><small>${x.numberOfAyahs?`${x.numberOfAyahs} ayet • `:''}${x.number===1?'Fâtiha':x.number===2?'Bakara':'Kur’an-ı Kerim'}</small></span><span class="surah-ar" lang="ar" dir="rtl">${esc(x.arabicName||'۞')}</span></button>`}
 function filtered(){return catalog.filter(x=>norm(x.turkishName).includes(norm(st.search))||String(x.number)===st.search.trim())}
 function quran(){main.innerHTML=`<div class="intro"><div><div class="eyebrow">KUR’AN-I KERİM</div><div class="title">Sureler</div><p class="sub">114 sure • Arapça metin ve Türkçe meal</p></div><div class="moon">۞</div></div><label class="search">⌕ <input id="surah-search" autocomplete="off" placeholder="Sure adı veya numarası ara" value="${esc(st.search)}" aria-label="Sure ara"></label><div class="surah-list" id="surah-list">${filtered().map(surahMarkup).join('')||'<div class="empty">Aramana uygun sure bulunamadı.</div>'}</div>`;}
-function reader(){const n=st.surah,meta=catalog[n-1];const completed=st.completed.includes(n);let t=`<div class="reading-head"><div class="ar-heading" dir="rtl" lang="ar">${esc(meta.arabicName||'۞')}</div><h2>${esc(label(n))} Suresi</h2><small>${n}. sure${meta.numberOfAyahs?' • '+meta.numberOfAyahs+' ayet':''} • Diyanet meali</small></div><div class="reader-tools"><select id="reciter" aria-label="Hafız seç">${RECITERS.map(x=>`<option value="${x[0]}" ${x[0]===st.reciter?'selected':''}>${esc(x[1])}</option>`).join('')}</select><button id="play-surah" data-action="play-surah">▶ Dinle</button><button data-action="font-up" title="Arapça yazıyı büyüt">A+</button><button data-action="font-down" title="Arapça yazıyı küçült">A−</button></div><div class="notice">Altın çerçeveli ayet dinlenen veya seçilen ayettir. Okuma hatırlatıcın cihazda saklanır.</div><div id="verses">`;
+function reader(){const n=st.surah,meta=catalog[n-1];const completed=st.completed.includes(n);let t=`<div class="reading-head"><div class="ar-heading" dir="rtl" lang="ar">${esc(meta.arabicName||'۞')}</div><h2>${esc(label(n))} Suresi</h2><small>${n}. sure${meta.numberOfAyahs?' • '+meta.numberOfAyahs+' ayet':''} • Diyanet meali</small></div><div class="reader-tools"><select id="reciter" aria-label="Hafız seç">${RECITERS.map(x=>`<option value="${x[0]}" ${x[0]===st.reciter?'selected':''}>${esc(x[1])}</option>`).join('')}</select><button id="play-surah" data-action="play-surah">▶ Dinle</button><button data-page="tefsir">📖 Tefsir</button><button data-action="font-up" title="Arapça yazıyı büyüt">A+</button><button data-action="font-down" title="Arapça yazıyı küçült">A−</button></div><div class="notice">Altın çerçeveli ayet dinlenen veya seçilen ayettir. Okuma hatırlatıcın cihazda saklanır.</div><div id="verses">`;
 if(!current||current.number!==n)t+='<div class="empty"><span class="spinner"></span><p>Arapça ayetler ve Türkçe meal yükleniyor…</p></div>';
 else t+=versesHTML(current);
 t+='</div><div class="reader-footer"><button data-action="mark-completed" class="btn '+(completed?'ghost':'')+'">'+(completed?'✓ Sure tamamlandı • Geri al':'✓ Bu sureyi tamamladım')+'</button><div class="spacer"></div><button data-action="next-surah" class="btn ghost" '+(n>=114?'disabled':'')+'>Sonraki sure →</button></div>';
@@ -452,6 +453,7 @@ async function playIndex(index,token){if(token!==audioToken||index>=audioList.le
 function stopAudio(){audioToken++;audio.pause();audio.removeAttribute('src');audio.load();st.playing=null;audioList=[];playButton();updateActive();}
 function worship(){const t=prayerData?.timings;const times=[['Fajr','İmsak / Sabah'],['Sunrise','Güneş'],['Dhuhr','Öğle'],['Asr','İkindi'],['Maghrib','Akşam'],['Isha','Yatsı']];main.innerHTML=`<div class="royal-prayer-banner"><div class="prayer-mosque">🕌</div><h2>Namaz Vakitleri</h2><p>Vaktinde namaz, gönülde huzur</p></div><div class="eyebrow">İBADET REHBERİ</div><div class="title">Namaz & Zikir</div><p class="sub">Günün vakitleri, kıble yönü, dijital tesbih</p>
 ${section('Namaz vakitleri','Hesaplanan değerler')}
+<div class="nr-actions"><button class="btn gold" data-page="bildirimler">🔔 Ezanlı namaz bildirimlerini ayarla</button></div>
 <div class="card"><div class="row"><label style="flex:1"><span class="form-label" style="margin:0 0 4px">Şehir</span><select id="city" class="field" aria-label="İl seç">${ilSecenekleri()}</select></label><button class="btn" style="align-self:end" data-action="get-prayer">Getir</button></div><p>Hesaplama: AlAdhan • Diyanet yöntemi (13). Resmî ilan edilen vakitlerden birkaç dakika farklı olabilir.</p><div class="prayer-grid">${times.map(([key,name])=>`<div class="prayer-time"><small>${name}</small><b>${esc(t?.[key]?.split(' ')[0]||'--:--')}</b></div>`).join('')}</div>${prayerData?`<p class="muted">${esc(st.city)} için ${esc(prayerDate)} vakitleri</p>`:''}</div>
 ${section('Kıble bulucu','Konum izni gerekir')}
 <div class="card"><div class="row"><div><h3>🧭 Kıble yönü</h3><p>${geo?.bearing!=null?`Kuzeyden saat yönünde ${geo.bearing.toFixed(1)}°`:'Konumuna göre kıble açısını hesapla.'}</p></div><button class="btn ghost" data-action="qibla">Hesapla</button></div>${geo?'<p class="text-small muted">Bu açı gerçek kuzeye göredir. Telefonda sensörle dönen pusula henüz eklenmedi.</p>':''}</div>
@@ -466,174 +468,19 @@ function progress(){const p=Math.round(st.completed.length/114*100);main.innerHT
 <div class="card"><div class="row"><div><div class="eyebrow">BUGÜN OKUNDU İŞARETLENEN</div><h3 style="font-size:29px;margin:0">${st.todayCount} <span class="muted" style="font-size:14px">/ ${st.dailyGoal} ayet</span></h3></div><span class="tag">Günlük hedef</span></div><div class="progress-bar" style="margin-top:12px"><span style="width:${Math.min(100,st.todayCount/st.dailyGoal*100)}%"></span></div><p>Okuma ekranındaki ✓ butonuyla ayetleri işaretleyebilirsin.</p></div>
 ${section('Tamamlanan sureler','')}
 <div class="card">${st.completed.length?st.completed.slice().sort((a,b)=>a-b).map(n=>`<div class="row" style="padding:8px 0"><span>✓ ${esc(label(n))}</span><button class="action-link" data-action="open-surah" data-surah="${n}">Aç →</button></div>`).join(''):'<p>Henüz tamamlanan sure işaretlemedin. Sureyi açıp alttaki “Tamamladım” düğmesine bas.</p>'}</div><button class="btn" style="width:100%" data-page="quran">Kur’an okumaya başla →</button>`;}
-function learn(){main.innerHTML=`<div class="eyebrow">İLİM YOLCULUĞU</div><div class="title">Öğrenme Merkezi</div><p class="sub">Sonraki sürümler için planlanan içerikler</p>
-${[['☷','Elifba ve tecvid','Harfler, mahreç ve adım adım eğitim'],['✦','Dualar ve anlamları','Kaynakları doğrulanmış dua kütüphanesi'],['✧','Peygamberler tarihi','Kaynaklı ders ve anlatımlar'],['☾','Namaz rehberi','Abdest ve namazın öğrenilmesi'],['◎','Esmaül Hüsna','Allah’ın güzel isimleri ve anlamları'],['✺','Yapay zekâ rehberi','Kaynakları doğrulayan dikkatli soru-cevap']].map(([i,t,s])=>`<div class="card"><div class="row"><div class="row" style="justify-content:flex-start"><span style="font-size:26px;color:var(--gold)">${i}</span><div><h3 style="margin:0">${t}</h3><p>${s}</p></div></div><span class="pill">Yakında</span></div></div>`).join('')}<div class="notice">Bu alanlar henüz çalışır eğitim içeriği sunmuyor. Uydurma dini açıklama veya hadis kullanılmıyor.</div>`;}
-
-/* Nur Rehberi additional libraries — sources and rights transparent. */
-const TURK_HAFIZLAR=[
- 'Emrullah Akbaş','Fatih Karazeybek','Mustafa Orhan','Ahmet Karalı','Davut Kaya','Furkan Tıraşçı',
- 'Menduh Karslı','Adem Çiftçi','Mustafa Altın','Yakup Okutan','Numan Akbaş','Musa Dağ',
- 'Halit Nuri Kılıç','Hüseyin Yavuz','Kemal Tosun','Uğur Demirci','Mehmet Atıcı','Ali Turhan',
- 'Musa Coşkun','Erhan Mete','Ömer Erdem','Ali Derman','Habip Deveci','Salih Akyüz'
-];
-const TURK_ARŞİV='https://kuran.diyanet.gov.tr/dijital/asri-serifler';
-let hafizCatalog=[],hafizLoading=false,hafizError='',hafizQuery='',hafizShowAll=false,hafizSelected='',hafizSurah=1,hafizAudio=new Audio();
-hafizAudio.preload='none';
-const hafizPanel=document.createElement('div');
-hafizPanel.id='hafiz-panel';
-hafizPanel.hidden=true;
-document.querySelector('.app-shell').appendChild(hafizPanel);
-function drawHafizPanel(){
- if(!hafizSelected){hafizPanel.hidden=true;return;}
- const a=hafizCatalog.find(x=>x.id===hafizSelected);
- if(!a){hafizPanel.hidden=true;return;}
- hafizPanel.hidden=false;
- hafizPanel.innerHTML='<div><strong>♫ '+esc(a.name)+'</strong><small>Seçili sure çalınıyor • MP3Quran</small></div>'+
-  '<button data-action="hafiz-toggle">'+(hafizAudio.paused?'▶':'Ⅱ')+'</button>'+
-  '<button data-action="hafiz-stop">✕</button>';
-}
-function stopHafiz(){
- hafizAudio.pause();hafizAudio.removeAttribute('src');hafizAudio.load();hafizSelected='';drawHafizPanel();
-}
-function toggleHafiz(){
- if(!hafizSelected)return;
- if(hafizAudio.paused)hafizAudio.play().catch(()=>toast('Ses açılamadı, internet bağlantını kontrol et.'));
- else hafizAudio.pause();
- drawHafizPanel();
-}
-hafizAudio.addEventListener('ended',()=>{stopHafiz()});
-hafizAudio.addEventListener('pause',()=>drawHafizPanel());
-hafizAudio.addEventListener('playing',()=>drawHafizPanel());
-hafizAudio.addEventListener('error',()=>{if(hafizSelected){toast('Bu yayının ses akışı açılamadı.');stopHafiz()}});
-async function playHafiz(id){
- const r=hafizCatalog.find(x=>x.id===id);if(!r)return;
- const preferred=Number(document.getElementById('hafiz-surah')?.value||hafizSurah||1);
- const n=r.available.includes(preferred)?preferred:r.available[0];
- if(!n){toast('Bu hafız için kayıtlı sure bulunamadı.');return}
- if(n!==preferred)toast('Seçtiğin sure yok; mevcut '+n+'. sure açılıyor.');
- stopAudio();stopAdhan();stopHafiz();
- const link=r.server+String(n).padStart(3,'0')+'.mp3';
- if(!/^https:\/\/([a-z0-9-]+\.)*mp3quran\.net\//i.test(link)){toast('Yayın kaynağı güvenilir değil.');return}
- hafizSelected=id;hafizAudio.src=link;hafizAudio.load();drawHafizPanel();
- try{await hafizAudio.play();drawHafizPanel()}catch(e){toast('Ses başlayamadı; başka hafız dene.');stopHafiz()}
-}
-async function loadHafizCatalog(force=false){
- if(hafizLoading)return;
- if(hafizCatalog.length&&!force)return;
- hafizLoading=true;hafizError='';
- if(st.page==='hafizlar')hafizlar();
- try{
-  let list=[];
-  // Stable, prevalidated snapshot bundled in APK to avoid external API CORS failures.
-  try{
-   const res=await fetch('reciters.json',{cache:'no-store'});
-   if(!res.ok)throw Error('Katalog dosyası yok');
-   const d=await res.json();
-   list=Array.isArray(d)?d:Array.isArray(d.reciters)?d.reciters:[];
-  }catch(_){list=[];}
-  if(!list.length){
-   const controller=new AbortController(),cancel=setTimeout(()=>controller.abort(),14000);
-   try{
-    const res=await fetch('https://www.mp3quran.net/api/v3/reciters?language=tr',{signal:controller.signal});
-    if(!res.ok)throw Error('API '+res.status);
-    const d=await res.json();
-    for(let r of d.reciters||[]){
-     for(let m of r.moshaf||[]){
-      const server=String(m.server||'');
-      const available=String(m.surah_list||'').split(',').map(Number).filter(x=>x>=1&&x<=114);
-      if(!/^https:\/\/([a-z0-9-]+\.)*mp3quran\.net\//i.test(server)||!available.length)continue;
-      list.push({id:String(r.id)+'-'+String(m.id),name:String(r.name),moshaf:String(m.name),server,available});
-     }
-    }
-   }finally{clearTimeout(cancel);}
-  }
-  list=list.filter(r=>r&&r.name&&typeof r.server==='string'&&/^https:\/\/([a-z0-9-]+\.)*mp3quran\.net\//i.test(r.server)&&Array.isArray(r.available)&&r.available.length);
-  if(!list.length)throw Error('Katalog verisi alınamadı');
-  const featured=/abdulbasit|abdulbasit|abdülbasit|maher|mahir|meaq|mishary|mi[şs]ari|yasser|nasser|sudais|südeys|minshawi|min[şs]avi|shatri|şatri|qatami|husary|huzeyfi|huthaify|f[aâ]res|f[aâ]ris|mus[ta]fa|saad|salah|sal[aâ]h/i;
-  hafizCatalog=list.sort((a,b)=>{
-   const aa=featured.test(a.name)?0:1,bb=featured.test(b.name)?0:1;
-   return aa-bb||b.available.length-a.available.length||a.name.localeCompare(b.name,'tr');
-  });
- }catch(e){
-  hafizError='Ses kataloğuna ulaşılamadı. İnternet bağlantını kontrol et veya resmî hafız arşivini aç.';
- }finally{
-  hafizLoading=false;
-  if(st.page==='hafizlar')hafizlar();
- }
-}
-function hafizlar(){
- main.innerHTML='<div class="royal-page-head"><span>🎙</span><h1>Hafızlar</h1><small>Kur’an-ı Kerim dinleme merkezi</small></div>'+
- '<div class="notice">Ses kayıtları, hafızın mevcut surelerine göre gösterilir. Dinleme için internet gerekir; bağlantı başarısız olursa başka sure veya hafız seçebilirsin.</div>'+
- '<div class="sadien-feature"><div class="sadien-star">✦ ÖNE ÇIKAN HAFIZ</div><h2>Abdurrahmaan Sadien</h2><p>Güney Afrika • Abdülbasit üslubuyla tanınan kârî. Quran Central’da 24 kayıt mevcut. Malezyalı Saidin Abdulrahman ile aynı kişi değildir.</p><div class="sadien-embed"><iframe title="Abdurrahmaan Sadien Quran Central Apple Podcasts oynatıcı" src="https://embed.podcasts.apple.com/za/podcast/abdurrahmaan-sadien/id1087814219" loading="lazy" allow="autoplay; encrypted-media" referrerpolicy="no-referrer-when-downgrade"></iframe></div><a class="btn gold" href="https://qurancentral.com/audio/abdurrahmaan-sadien/">24 kaydı resmî kaynaktan dinle ↗</a><small>Oynatıcı açılmazsa yukarıdaki resmî bağlantıyı kullan. Kayıtlar Quran Central’a aittir.</small></div>'+
- section('Önceki Hafızlar','12 alternatif ayet kaydı')+
- '<div class="library-grid">'+RECITERS.map(r=>'<button class="reciter-chip" data-action="open-reciter" data-id="'+esc(r[0])+'">♫ '+esc(r[1])+'<small>Kur’an sayfasında dinle ›</small></button>').join('')+'</div>'+
- section('Türk Hafızları','Diyanet resmî arşivi')+
- '<div class="library-panel"><div class="library-tag">59 aşr-ı şerif kaydı • Seçme tilavetler</div><p>Türk hafızların Diyanet tarafından yayımlanmış kayıtlarını resmî arşivde dinle. Buradaki bağlantılar uygulama içinde kopyalanmış ses dosyaları değildir.</p><div class="turkish-names">'+TURK_HAFIZLAR.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div><a class="btn gold" href="'+TURK_ARŞİV+'">Diyanet’te 59 kaydı dinle ↗</a></div>'+
- section('Dünya Hafızları','İnternet bağlantısı gerektirir')+
- '<div class="library-panel"><p>MP3Quran’ın geliştirici kataloğundaki kayıtlar listelenir; sure bulunmayan hafızlar oynatılamaz. Ses hakları sahiplerine aittir.</p>'+
- '<label class="form-label">Dinlenecek sure</label><select class="field" id="hafiz-surah">'+NAMES.map((name,i)=>'<option value="'+(i+1)+'">'+(i+1)+'. '+esc(name)+'</option>').join('')+'</select>'+
- '<input id="hafiz-search" class="field" aria-label="Hafız ara" placeholder="Hafız ismi ara" value="'+esc(hafizQuery)+'" />'+
- '<div class="library-inline"><span>'+(hafizLoading?'Yükleniyor…':hafizCatalog.length?hafizCatalog.length+' farklı kayıt':'Henüz liste yüklenmedi')+'</span><button class="btn ghost" data-action="hafiz-load">'+(hafizCatalog.length?'Yenile':'Listeyi getir')+'</button></div>'+
- (hafizError?'<div class="notice">'+esc(hafizError)+'</div>':'')+
- '<div id="hafiz-results"></div></div>'+
- '<div class="notice">Aradığın Türk okuyucuların tamamına ait açık ve izinli sure sesleri henüz doğrulanmış değildir. Doğrulanmayan kişilerin adını çalışır kayıt gibi göstermiyoruz.</div>';
- const val=document.getElementById('hafiz-surah');if(val)val.value=String(hafizSurah);
- renderHafizResults();
- if(!hafizCatalog.length&&!hafizLoading&&!hafizError)loadHafizCatalog();
-}
-function renderHafizResults(){
- const box=document.getElementById('hafiz-results');if(!box)return;
- const match=hafizCatalog.filter(r=>r.name.toLocaleLowerCase('tr').includes(hafizQuery.toLocaleLowerCase('tr')));
- const shown=hafizShowAll?match:match.slice(0,40);
- box.innerHTML=shown.map(r=>'<div class="hafiz-item"><div><strong>'+esc(r.name)+'</strong><small>'+esc(r.moshaf)+' • '+r.available.length+' sure'+(r.available.includes(hafizSurah)?'':' • Seçili sure yok; '+r.available[0]+'. sure açılır')+'</small></div><button class="btn tiny" data-action="hafiz-play" data-id="'+esc(r.id)+'">▶ Dinle</button></div>').join('')+
- (!hafizLoading&&!shown.length?'<div class="muted text-small">Bu isimle kayıt bulunamadı.</div>':'')+
- (!hafizShowAll&&match.length>40?'<button class="btn ghost" data-action="hafiz-more">Diğer '+(match.length-40)+' kaydı da göster</button>':'');
-}
-/* Live feeds are displayed via the broadcasters' official YouTube embedded player.
-No rehosting or rebroadcasting. A failed embed always has an official link fallback. */
-const LIVE_HARAM=[
- {title:'Mekke • Mescid-i Haram',source:'KSA Quran TV • Suudi Yayın Kurumu',video:'kYqGbBqmp8g',link:'https://www.youtube.com/user/SaudiQuranTv/live',icon:'🕋'},
- {title:'Medine • Mescid-i Nebevî',source:'Saudi Sunnah TV • Suudi Yayın Kurumu',video:'9A1S0xAPVIs',link:'https://www.youtube.com/user/SaudiSunnahTv/live',icon:'🕌'}
-];
-function liveHaram(){
- main.innerHTML='<div class="royal-page-head"><span>🕋</span><h1>Haremeyn Canlı</h1><small>Mekke ve Medine • Resmî yayınlar</small></div>'+
- '<div class="notice">Yayın, resmî YouTube oynatıcısından açılır. Canlı yayın kesilirse veya gömme engellenirse “YouTube’da izle” bağlantısını kullan.</div>'+
- LIVE_HARAM.map((x,i)=>'<div class="library-panel haram-live"><h3>'+x.icon+' '+esc(x.title)+'</h3><p>'+esc(x.source)+'</p>'+
- '<div class="live-ratio"><iframe title="'+esc(x.title)+' canlı yayını" src="https://www.youtube-nocookie.com/embed/'+x.video+'?rel=0&playsinline=1" allow="accelerometer;autoplay;encrypted-media;gyroscope;picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe></div>'+
- '<a class="btn gold" href="'+x.link+'">Resmî kanalda canlı izle ↗</a></div>').join('')+
- '<div class="notice">Bunlar yayıncıların kendi canlı yayınlarıdır. Uygulama görüntüyü kopyalamaz, yeniden yayınlamaz. Video bağlantıları zamanla değişebilir.</div>';
-}
-/* İlmihal link catalog: open licensed/official digital libraries without copying their copyrighted text. */
-const ILMIHAL_KONULAR=[
- {id:'iman',name:'İman ve İtikad',short:'İnanç esasları ve akaid',source:'https://kurul.diyanet.gov.tr/',blurb:'İman ve inanç esasları ile ilgili açıklamalar ve resmî Din İşleri Yüksek Kurulu kaynakları.'},
- {id:'abdest',name:'Abdest ve Gusül',short:'Temizlik, taharet ve ibadete hazırlık',source:'https://fetva.diyanet.gov.tr/',blurb:'Abdest, gusül ve teyemmüm konuları için Diyanet fetva arşivindeki açıklamalar.'},
- {id:'namaz',name:'Namaz İlmihali',short:'Namazın şartları, kılınışı ve vakitleri',source:'https://fetva.diyanet.gov.tr/',blurb:'Namaza hazırlık, farzlar, vakitler ve günlük ibadet ile ilgili kaynaklar.'},
- {id:'oruc',name:'Oruç ve Ramazan',short:'Oruç, sahur, iftar, fitre',source:'https://fetva.diyanet.gov.tr/',blurb:'Oruçla ilgili sorular ve Ramazan ibadetleri için resmî açıklamalar.'},
- {id:'zekat',name:'Zekât ve Sadaka',short:'Paylaşma, infak, zekât ve fitre',source:'https://fetva.diyanet.gov.tr/',blurb:'Zekât, fitre, infak, nisap ve güncel hesaplamalar için kaynaklar.'},
- {id:'hac',name:'Hac ve Umre',short:'Hac, umre ve ihram',source:'https://kurul.diyanet.gov.tr/',blurb:'Hac ve umrenin temel ibadetleri ile ilgili resmî rehber ve açıklamalar.'},
- {id:'ahlak',name:'Ahlak ve Günlük Hayat',short:'İslami ahlak ve sorumluluklar',source:'https://islamansiklopedisi.org.tr/ilmihal',blurb:'İlmihal geleneği ve toplumsal hayatta dini sorumlulukların kapsamı hakkında TDV ansiklopedi maddesi.'},
- {id:'aile',name:'Aile ve Muamelat',short:'Aile hayatı, alışveriş, hukuki meseleler',source:'https://fetva.diyanet.gov.tr/',blurb:'Aile ve sosyal yaşam konularında güncel resmî dini danışma kaynakları.'},
- {id:'dua',name:'Dua ve Zikir',short:'Dua, zikir ve ibadet adabı',source:'https://yayin.diyanet.gov.tr/Product/Index?category=49',blurb:'Diyanet’in dijital yayınlarını ve ilgili kitaplarını inceleyebilirsin.'},
- {id:'siyer',name:'Siyer ve Hadis',short:'Peygamberimizin hayatı ve hadisler',source:'https://yayin.diyanet.gov.tr/Product/Index?category=49',blurb:'Diyanet dijital kitaplık; hadis ve siyer eserleri.'},
- {id:'tecvid',name:'Tecvid ve Elifba',short:'Kur’an okumayı öğrenme',source:'https://kuran.diyanet.gov.tr/dijital',blurb:'Diyanet Kur’an Platformu üzerinde Elifba ve diğer öğrenme içerikleri.'},
- {id:'ilmihal',name:'İlmihal Kitaplığı',short:'e-Kitap, PDF, sesli ilmihal arşivi',source:'https://yayin.diyanet.gov.tr/Product/Index?category=49',blurb:'Diyanet’in İlmihal–Fıkıh ve ilgili resmî e-kitap kategorileri.'}
-];
-function ilmihal(){
- main.innerHTML='<div class="royal-page-head"><span>📚</span><h1>İlmihal</h1><small>Kaynaklı dini bilgi kütüphanesi</small></div>'+
- '<div class="notice">İlmihal, iman, ibadet, ahlak ve günlük hayat bilgilerini kapsar. Kaynakların eser metinleri ve telif hakları yayıncılarına aittir; tam kitapları izinsiz çoğaltmıyoruz.</div>'+
- '<div class="library-topic-grid">'+ILMIHAL_KONULAR.map((x,i)=>'<button class="library-topic" data-action="ilmihal-topic" data-id="'+x.id+'"><span>'+['✦','◈','☪','☾','❖','🕋','✧','⌂','♡','☷','۞','📖'][i]+'</span><strong>'+esc(x.name)+'</strong><small>'+esc(x.short)+'</small></button>').join('')+'</div>'+
- '<div class="library-panel"><h3>Diyanet Dijital Kütüphanesi</h3><p>Yayınevinin izin verdiği e-kitapları ve sesli ilmihal içeriklerini resmî sayfasında okuyabilir ya da dinleyebilirsin.</p>'+
- '<a class="btn gold" href="https://yayin.diyanet.gov.tr/Product/Index?category=49">Diyanet e-Kitap Kütüphanesi ↗</a></div>';
-}
-function openIlmihalTopic(id){
- const c=ILMIHAL_KONULAR.find(x=>x.id===id);if(!c)return;
- main.innerHTML='<button class="btn ghost" data-page="ilmihal">‹ İlmihal Kütüphanesi</button>'+
- '<div class="library-panel"><div class="eyebrow">KAYNAKLI İLMİHAL</div><h2>'+esc(c.name)+'</h2><p>'+esc(c.blurb)+'</p>'+
- '<p>Bu konuya ilişkin ayrıntılı hükümler için aşağıdaki resmî kaynağı aç. Mezheplere ve durumlara göre değişen uygulamalarda uzman görüşüne başvurulmalıdır.</p>'+
- '<a class="btn gold" href="'+esc(c.source)+'">Resmî kaynağı aç ↗</a></div>';
-}
-
-function settings(){main.innerHTML=`<div class="eyebrow">KİŞİSELLEŞTİR</div><div class="title">Ayarlar</div><div class="card"><label class="form-label" for="dark">Görünüm</label><button class="btn ghost" data-action="toggle-theme">${st.dark?'☀ Açık temaya geç':'☾ Koyu temaya geç'}</button><label class="form-label" for="dailyGoal">Günlük ayet hedefi</label><select class="field" id="dailyGoal">${[5,10,20,30,50,100].map(n=>`<option ${n===st.dailyGoal?'selected':''} value="${n}">${n} ayet</option>`).join('')}</select><label class="form-label" for="fontSelect">Arapça yazı boyutu</label><select class="field" id="fontSelect">${[24,27,30,34,38,42].map(n=>`<option ${n===st.arabicSize?'selected':''} value="${n}">${n} px</option>`).join('')}</select></div>
+function learn(){main.innerHTML='<div class="royal-page-head"><span>✧</span><h1>Öğrenme Merkezi</h1><small>Kur’an • iman • ibadet • ilim</small></div>'+
+'<div class="library-topic-grid">'+[
+['elifba','۞','Elifba & Tecvid','28 harf ve alıştırmalar'],
+['books','📚','Kitaplık','Diyanet • TDV'],
+['tefsir','📖','Tefsir','Ayet ve meal'],
+['hadis','📜','Hadisler','Kaynaklı arşiv'],
+['dualar','🤲','Dua & Zikir','12 Kur’an duası'],
+['esma','✦','Esmaül Hüsna','99 isim'],
+['ilmihal','☪','İlmihal','İman • ibadet • ahlak'],
+['bildirimler','🔔','Ezan Bildirimleri','Şehir seç ve ayarla'],
+['live','🕋','Haremeyn','Mekke & Medine canlı']
+].map(r=>'<button data-page="'+r[0]+'" class="library-topic"><span>'+r[1]+'</span><strong>'+r[2]+'</strong><small>'+r[3]+'</small></button>').join('')+'</div>'; }
+function settings(){main.innerHTML=`<div class="nr-actions"><button class="btn gold" data-page="learn">✧ Öğrenme Merkezi</button><button class="btn ghost" data-page="books">📚 Kitaplık</button></div><div class="eyebrow">KİŞİSELLEŞTİR</div><div class="title">Ayarlar</div><div class="card"><label class="form-label" for="dark">Görünüm</label><button class="btn ghost" data-action="toggle-theme">${st.dark?'☀ Açık temaya geç':'☾ Koyu temaya geç'}</button><label class="form-label" for="dailyGoal">Günlük ayet hedefi</label><select class="field" id="dailyGoal">${[5,10,20,30,50,100].map(n=>`<option ${n===st.dailyGoal?'selected':''} value="${n}">${n} ayet</option>`).join('')}</select><label class="form-label" for="fontSelect">Arapça yazı boyutu</label><select class="field" id="fontSelect">${[24,27,30,34,38,42].map(n=>`<option ${n===st.arabicSize?'selected':''} value="${n}">${n} px</option>`).join('')}</select></div>
 <div class="card"><h3>Veriler ve kaynaklar</h3><p>Kur’an metni: AlQuran.cloud / quran-uthmani. Türkçe meal: AlQuran.cloud / tr.diyanet. Ses kayıtları: AlQuran.cloud / ilgili hafızlar. Namaz vakitleri: AlAdhan, yöntem 13 (Diyanet hesaplama yöntemi, resmî yayın değil).</p><p>Yer işaretleri ve hatim takibi yalnız bu cihazın yerel depolamasındadır; hesap ve bulut yedeği yoktur. Okunan surelerin çevrimdışı önbelleği tarayıcıya bağlıdır.</p><button class="btn ghost" data-action="clear-cache">İndirilen sure önbelleğini temizle</button></div><div class="notice">Google Play için yayımdan önce Diyanet onay süreci ve metin, meal, ses kullanım hakları doğrulanmalıdır. Bu uygulama şimdilik geliştirme prototipidir.</div>`;}
 // Central controls: no fake actions, all visible buttons work or state clearly when planned.
 document.addEventListener('click',async ev=>{
@@ -726,5 +573,6 @@ adhanAudio.addEventListener('error',()=>{if(!adhanError){adhanError=true;toast('
 render();ensureCatalog();
 
 </script>
+<script src="features.js"></script>
 </body>
 </html>
