@@ -50,6 +50,7 @@ jobs:
           assert "'Oku'" not in features
           assert len(re.findall(r"^ \{name:",book,flags=re.MULTILINE))>=12
           assert 'nrGuideChange' in book
+          assert "'live','books','guide','tefsir'" in (root/'index.html').read_text(encoding='utf-8')
           assert 'RecitationPlayer' in pathlib.Path('nur-rehberi/app/src/main/java/com/nurrehberi/app/MainActivity.java').read_text()
           PY
           grep -q 'tafsir_reader.js' nur-rehberi/app/src/main/assets/index.html
@@ -212,5 +213,5 @@ jobs:
       - name: Upload test APK
         uses: actions/upload-artifact@v4
         with:
-          name: NurRehberi-3D-Plus-v1.5-Fix
+          name: NurRehberi-3D-Plus-v1.5.1-Fix
           path: nur-rehberi/app/build/outputs/apk/debug/app-debug.apk
