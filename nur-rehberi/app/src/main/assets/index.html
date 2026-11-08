@@ -603,7 +603,7 @@ function renderHafizResults(){
 /* Live feeds are displayed via the broadcasters' official YouTube embedded player.
 No rehosting or rebroadcasting. A failed embed always has an official link fallback. */
 const LIVE_HARAM=[
- {title:'Mekke • Mescid-i Haram',source:'KSA Quran TV • Suudi Yayın Kurumu',video:'kYqGbBqmp8g',link:'https://www.youtube.com/user/SaudiQuranTv/live',icon:'🕋'},
+ {title:'Mekke • Mescid-i Haram',source:'KSA Quran TV • Suudi Yayın Kurumu',video:'XcjKDB1bj1w',link:'https://www.youtube.com/user/SaudiQuranTv/live',icon:'🕋'},
  {title:'Medine • Mescid-i Nebevî',source:'Saudi Sunnah TV • Suudi Yayın Kurumu',video:'9A1S0xAPVIs',link:'https://www.youtube.com/user/SaudiSunnahTv/live',icon:'🕌'}
 ];
 function liveHaram(){
@@ -611,7 +611,7 @@ function liveHaram(){
  '<div class="notice">Yayın, resmî YouTube oynatıcısından açılır. Canlı yayın kesilirse veya gömme engellenirse “YouTube’da izle” bağlantısını kullan.</div>'+
  LIVE_HARAM.map((x,i)=>'<div class="library-panel haram-live"><h3>'+x.icon+' '+esc(x.title)+'</h3><p>'+esc(x.source)+'</p>'+
  '<div class="live-ratio"><iframe title="'+esc(x.title)+' canlı yayını" src="https://www.youtube-nocookie.com/embed/'+x.video+'?rel=0&playsinline=1" allow="accelerometer;autoplay;encrypted-media;gyroscope;picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe></div>'+
- '<a class="btn gold" href="'+x.link+'">Resmî kanalda canlı izle ↗</a></div>').join('')+
+ '<div class="nr-actions"><button class="btn ghost" data-page="live">↻ Yenile</button><a class="btn gold" href="'+x.link+'">Resmî kanalda canlı izle ↗</a></div></div>').join('')+
  '<div class="notice">Bunlar yayıncıların kendi canlı yayınlarıdır. Uygulama görüntüyü kopyalamaz, yeniden yayınlamaz. Video bağlantıları zamanla değişebilir.</div>';
 }
 /* İlmihal link catalog: open licensed/official digital libraries without copying their copyrighted text. */
