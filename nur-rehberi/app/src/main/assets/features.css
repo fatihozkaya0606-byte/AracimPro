@@ -105,3 +105,30 @@
 .nr-premium-divider{font:700 15px Georgia,serif;color:#ffe2a0;text-align:center;letter-spacing:.5px;margin-top:26px;padding-top:18px;border-top:1px solid #dfbf8570}
 .nr-premium-small{font:11px/1.5 system-ui,sans-serif;color:#e6d0a1!important}
 @media(max-width:360px){.nr-guide-page>p{font-size:15px}.nr-similar-grid{gap:7px}.nr-similar-card{padding:9px}}
+
+
+/* Hafızlar 1.6: 20+ visible reciters and optional 24-track Sadien archive */
+.nr-sadien-more{display:block;width:100%;min-height:45px;margin:11px 0 22px;padding:10px;background:linear-gradient(#fff2cf,#dcb66b);
+ color:#1e4d37;font:700 13px system-ui,sans-serif;border:2px solid #ffd795;border-bottom:4px solid #9a6c30;border-radius:13px;box-shadow:0 4px 12px #00190e88}
+.nr-premium-divider{margin:16px 0 8px!important;padding-top:17px!important;font-size:17px!important}
+.nr-similar-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px}
+.nr-similar-card{padding:11px!important;gap:7px!important;min-height:167px!important}
+.nr-similar-card>b{font-size:15px!important;line-height:1.3!important}
+.nr-similar-card>small{min-height:29px;flex:0}
+.nr-similar-card>span{margin-top:auto;font:700 10px/1.5 system-ui,sans-serif!important}
+.nr-similar-buttons{display:grid;grid-template-columns:1fr;gap:6px}
+.nr-similar-buttons button{width:100%;min-height:35px;border:1px solid #ba8e52;border-radius:9px;
+ background:#0d593c;color:#fff0c6;font:700 12px system-ui,sans-serif;padding:7px 3px}
+.nr-similar-buttons button:last-child{background:linear-gradient(145deg,#fff6d8,#e2ba73);color:#1c5137}
+.nr-curated-details{border:2px solid #e9c77b;border-radius:18px;background:linear-gradient(#fff9e7,#e9cea0);
+ color:#164432;box-shadow:0 6px 0 #805b2f,inset 0 2px #fff;margin:14px 0 23px;padding:17px 12px}
+.nr-curated-details-title{display:flex;align-items:flex-start;gap:9px;justify-content:space-between}
+.nr-curated-details-title>div{flex:1}
+.nr-curated-details-title strong{display:block;font:700 21px Georgia,serif}
+.nr-curated-details-title small{display:block;font:11px system-ui,sans-serif;color:#71593c;margin-top:5px}
+.nr-curated-details-title>button{border:1px solid #cb9f5e;background:#fff7dc;color:#23573f;border-radius:10px;padding:7px 11px}
+.nr-curated-details label{display:block;margin-top:14px;font:700 12px system-ui,sans-serif}
+.nr-curated-mainplay{width:100%;margin:6px 0 10px}
+.nr-curated-quick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.nr-curated-quick button{padding:8px 6px;border:1px solid #ab8244;background:#fff2d2;color:#20513b;border-radius:10px;font:700 11px/1.3 system-ui,sans-serif}
+@media(max-width:360px){.nr-similar-grid{gap:7px}.nr-similar-card{padding:8px!important}.nr-similar-card>b{font-size:13px!important}}
