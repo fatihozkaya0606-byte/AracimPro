@@ -87,3 +87,21 @@
 #nr-sadien-bar strong{display:block;font:700 12px system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #nr-sadien-bar small{display:block;font:10px system-ui,sans-serif;color:#e5d09d;margin-top:4px}
 #nr-sadien-bar button{padding:9px 12px;border:1px solid #dcbe7d;border-radius:10px;background:#124f3a;color:#ffe5ad;font-size:17px}
+
+
+/* All in-app books: crisp page typography and embossed 3D navigation */
+.nr-guide-page{min-height:360px;padding:26px 20px!important;background:linear-gradient(135deg,#fffaf0,#f5e5c6 72%,#e9c992)!important}
+.nr-guide-page h2{margin:12px 0 20px;font:700 25px/1.25 Georgia,serif;color:#164f38}
+.nr-guide-page>p{font:17px/1.85 Georgia,serif;color:#2e4130;text-align:left;margin:17px 0;overflow-wrap:anywhere}
+.nr-guide-page>small{display:block;font:11px/1.65 system-ui,sans-serif;color:#786243;border-top:1px solid #d1bc8a;padding-top:12px;margin-top:22px}
+.nr-guide-number{color:#a47837;font:700 12px system-ui,sans-serif;letter-spacing:1px;text-align:center}
+.nr-similar-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}
+.nr-similar-card{border:2px ridge #c6a26a;border-radius:15px;padding:12px;background:linear-gradient(145deg,#fff3d3,#e4c48c);color:#213c2c;box-shadow:inset 0 2px #fffbea,0 4px 0 #76502c;display:flex;flex-direction:column;gap:6px;min-height:150px}
+.nr-similar-card>b{font:700 14px/1.2 Georgia,serif}
+.nr-similar-card>small{font:11px/1.4 system-ui,sans-serif;color:#745c3c;flex:1}
+.nr-similar-card>span{font:11px system-ui,sans-serif;color:#276146}
+.nr-similar-card>button{background:#12583d;color:#fff0c7;font:700 11px system-ui,sans-serif;border-radius:10px;border:1px solid #c09e64;padding:10px 7px}
+.nr-similar-card>button[disabled]{opacity:.55}
+.nr-premium-divider{font:700 15px Georgia,serif;color:#ffe2a0;text-align:center;letter-spacing:.5px;margin-top:26px;padding-top:18px;border-top:1px solid #dfbf8570}
+.nr-premium-small{font:11px/1.5 system-ui,sans-serif;color:#e6d0a1!important}
+@media(max-width:360px){.nr-guide-page>p{font-size:15px}.nr-similar-grid{gap:7px}.nr-similar-card{padding:9px}}
