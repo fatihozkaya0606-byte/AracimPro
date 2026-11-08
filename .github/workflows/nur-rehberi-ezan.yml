@@ -36,6 +36,19 @@ jobs:
           assert "function home()" in page and "function adhan()" in page
           PY
           node --check /tmp/nur-rehberi.js
+          node --check nur-rehberi/app/src/main/assets/features.js
+          python3 - <<'PY'
+          import json,pathlib
+          root=pathlib.Path('nur-rehberi/app/src/main/assets')
+          esma=json.loads((root/'esma.json').read_text(encoding='utf-8'))
+          assert len(esma)==99,len(esma)
+          names={row['name'] for row in esma}
+          assert len(names)==99
+          html=(root/'index.html').read_text(encoding='utf-8')
+          for feature in ['books','tefsir','hadis','dualar','esma','elifba','bildirimler']:
+            assert "'"+feature+"'" in html,feature
+          assert 'features.js' in html
+          PY
       - name: Bundle verified MP3Quran reciter catalog
         shell: bash
         run: |
@@ -118,11 +131,15 @@ jobs:
             test "$(stat -c%s "$file")" -gt 100000 || exit 1
             ffprobe -v error -show_entries format=duration -of default=nokey=1:noprint_wrappers=1 "$file"
           done
-          ls -lh "$out"/*.mp3
+          mkdir -p "$GITHUB_WORKSPACE/nur-rehberi/app/src/main/res/raw"
+          # 14-second licensed excerpt, for notification-channel sound only.
+          ffmpeg -nostdin -v error -y -ss 00:00:18 -i mecca_2013.webm -t 14 -vn -ac 1 -ar 44100 -c:a libmp3lame -b:a 96k "$GITHUB_WORKSPACE/nur-rehberi/app/src/main/res/raw/ezan_notify.mp3"
+          test "$(stat -c%s "$GITHUB_WORKSPACE/nur-rehberi/app/src/main/res/raw/ezan_notify.mp3")" -gt 20000
+                    ls -lh "$out"/*.mp3
       - name: Build debug APK
         run: gradle -p nur-rehberi :app:assembleDebug --stacktrace --no-daemon
       - name: Upload test APK
         uses: actions/upload-artifact@v4
         with:
-          name: NurRehberi-Ezan-Test-v0.6
+          name: NurRehberi-3D-Plus-v1.2
           path: nur-rehberi/app/build/outputs/apk/debug/app-debug.apk
