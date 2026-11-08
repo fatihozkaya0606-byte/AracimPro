@@ -36,6 +36,56 @@ jobs:
           assert "function home()" in page and "function adhan()" in page
           PY
           node --check /tmp/nur-rehberi.js
+      - name: Bundle verified MP3Quran reciter catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json,re,time,urllib.request,pathlib
+          sources=[
+            'https://www.mp3quran.net/api/v3/reciters?language=tr',
+            'https://mp3quran.net/api/v3/reciters?language=eng',
+            'https://www.mp3quran.net/api/v3/reciters?language=eng',
+          ]
+          errors=[]
+          payload=None
+          for url in sources:
+            try:
+              req=urllib.request.Request(url,headers={'User-Agent':'Mozilla/5.0 (compatible; NurRehberiQA/1.1)','Accept':'application/json'})
+              with urllib.request.urlopen(req,timeout=28) as resp:
+                payload=json.load(resp)
+              if len(payload.get('reciters',[]))>=90:
+                print('Catalog fetched:',url,len(payload['reciters']))
+                break
+              errors.append(f'{url}: Too few reciters')
+              payload=None
+            except Exception as exc:
+              errors.append(f'{url}: {str(exc)[:140]}')
+          if not payload:
+            print('ERR:',*errors,sep='\n')
+            raise SystemExit('Cannot fetch authorized reciter catalog: refusing a broken APK')
+          entries=[]
+          for reciter in payload['reciters']:
+            name=reciter.get('name')
+            if not name: continue
+            for mashaf in reciter.get('moshaf') or []:
+              server=str(mashaf.get('server') or '')
+              if not re.match(r'^https://(?:[a-z0-9-]+\.)*mp3quran\.net/',server,re.I): continue
+              available=sorted(set(int(x) for x in str(mashaf.get('surah_list') or '').split(',') if x.strip().isdigit() and 1<=int(x)<=114))
+              if not available: continue
+              entries.append({'id':str(reciter['id'])+'-'+str(mashaf.get('id','0')),
+                 'name':name,'moshaf':str(mashaf.get('name') or ''),'server':server.rstrip('/')+'/',
+                 'available':available})
+          if len(entries)<90:raise SystemExit(f'Only {len(entries)} valid recordings')
+          dest=pathlib.Path('nur-rehberi/app/src/main/assets/reciters.json')
+          dest.parent.mkdir(parents=True,exist_ok=True)
+          dest.write_text(json.dumps(entries,ensure_ascii=False,separators=(',',':')),encoding='utf-8')
+          print(f'Bundled {len(entries)} recitation variants / {len(set(r["name"] for r in entries))} reciters; {dest.stat().st_size} bytes')
+          print('Selected reciters:')
+          for r in entries:
+            if any(n in r['name'].lower() for n in ['basit','afasi','sudais','meaqli','minshawi']):
+              print(r['name'],len(r['available']),r['server'])
+          PY
       - name: Build offline licensed adhan audio assets
         shell: bash
         run: |
