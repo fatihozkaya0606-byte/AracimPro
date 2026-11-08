@@ -3,11 +3,11 @@ android {
   namespace 'com.nurrehberi.app'
   compileSdk 35
   defaultConfig {
-    applicationId 'com.nurrehberi.v152test'
+    applicationId 'com.nurrehberi.v160test'
     minSdk 24
     targetSdk 34
-    versionCode 17
-    versionName '1.5.2-kitap-hafiz-test'
+    versionCode 18
+    versionName '1.6-hafizlar'
   }
   buildTypes { release { minifyEnabled false } }
   compileOptions {
