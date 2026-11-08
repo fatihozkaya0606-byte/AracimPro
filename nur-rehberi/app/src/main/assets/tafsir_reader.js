@@ -50,7 +50,8 @@ function tefsirKitap(){
  '<div class="nr-note">Kaynak: <a style="color:#ffde98" href="https://github.com/spa5k/tafsir_api">Tafsir API</a> / QUL. Diyanet tefsiri için <a style="color:#ffde98" href="https://kuran.diyanet.gov.tr/tefsir/sure/1-fatiha-suresi">resmî tefsir arşivi</a>. Bu sayfalar dijital okuma sayfasıdır; basılı kitabın özgün sayfa numaraları değildir.</div>';
  nrTafsirFetchAndDraw();
 }
-function nrTafsirPageCount(){return Math.max(1,Math.ceil(nrTafsirCurrent.length/NR_TAFSIR_PER_PAGE))}
+function nrTafsirPerPage(){return nrTafsirEdition==='turkish-tafsir-as-saadi-turkish'?1:NR_TAFSIR_PER_PAGE}
+function nrTafsirPageCount(){return Math.max(1,Math.ceil(nrTafsirCurrent.length/nrTafsirPerPage()))}
 function nrTafsirReadPage(){
  if(st.page!=='tefsir')return;
  const box=document.getElementById('nr-tafsir-book');if(!box)return;
@@ -63,18 +64,18 @@ function nrTafsirReadPage(){
  }
  const count=nrTafsirPageCount();
  nrTafsirPage=Math.max(1,Math.min(nrTafsirPage,count));
- const start=(nrTafsirPage-1)*NR_TAFSIR_PER_PAGE;
- const rows=nrTafsirCurrent.slice(start,start+NR_TAFSIR_PER_PAGE);
+ const start=(nrTafsirPage-1)*nrTafsirPerPage();
+ const rows=nrTafsirCurrent.slice(start,start+nrTafsirPerPage());
  const edition=NR_TAFSIR_EDITIONS.find(x=>x.id===nrTafsirEdition);
  const nav='<div class="nr-tafsir-nav"><button data-treader="prev"'+(nrTafsirPage<=1?' disabled':'')+'>‹ Önceki</button>'+
  '<strong>'+nrTafsirPage+' / '+count+'. sayfa</strong>'+
  '<button data-treader="next"'+(nrTafsirPage>=count?' disabled':'')+'>Sonraki ›</button></div>';
  box.innerHTML='<div class="nr-tafsir-sheet">'+
  '<div class="nr-tafsir-sheet-header">❖ <span>'+esc(NAMES[nrTafsirSurah-1])+' Suresi</span> ❖</div>'+
- '<div class="nr-tafsir-sheet-sub">'+esc(edition.name)+' · '+(start+1)+'–'+Math.min(start+NR_TAFSIR_PER_PAGE,nrTafsirCurrent.length)+'. ayet açıklamaları</div>'+
+ '<div class="nr-tafsir-sheet-sub">'+esc(edition.name)+' · '+(rows[0]?.ayah||'—')+'–'+(rows[rows.length-1]?.lastAyah||rows[rows.length-1]?.ayah||'—')+'. ayet açıklamaları</div>'+
  rows.map((r,i)=>{
    const text=String(r.text||'').replace(/<[^>]*>/g,' ').trim();
-   return '<article class="nr-tafsir-verse"><div class="nr-tafsir-marker">'+(Number(r.ayah)||start+i+1)+'. AYET</div>'+
+   return '<article class="nr-tafsir-verse"><div class="nr-tafsir-marker">'+(Number(r.ayah)||start+i+1)+(r.lastAyah&&r.lastAyah!==r.ayah?'–'+r.lastAyah:'')+'. AYET'+(r.part?' · BÖLÜM '+r.part+'/'+r.parts:'')+'</div>'+
       '<p style="font-size:'+nrTafsirFont+'px">'+esc(text||'Bu ayetin tefsir metni kaynakta bulunmuyor.')+'</p></article>';
  }).join('')+
  '<div class="nr-tafsir-sheet-end">✦ Nur Rehberi • '+nrTafsirPage+'. sayfa ✦</div></div>'+
@@ -99,7 +100,30 @@ async function nrTafsirFetchAndDraw(){
    if(!Array.isArray(rows)||!rows.length)throw new Error('Bu sure için metin bulunamadı.');
    // Old stale asynchronous fetches cannot overwrite a newly-selected edition.
    if(nrTafsirEdition!==edition||nrTafsirSurah!==surah||st.page!=='tefsir')return;
-   nrTafsirCurrent=rows.filter(x=>x&&typeof x.text==='string').sort((a,b)=>Number(a.ayah)-Number(b.ayah));
+   const raw=rows.filter(x=>x&&typeof x.text==='string').sort((a,b)=>Number(a.ayah)-Number(b.ayah));
+   const grouped=[];
+   for(const row of raw){
+      const text=String(row.text||'').replace(/<[^>]*>/g,' ').trim();
+      if(!text)continue;
+      const n=Number(row.ayah);
+      const prev=grouped[grouped.length-1];
+      if(prev && prev.text===text && n===prev.lastAyah+1)prev.lastAyah=n;
+      else grouped.push({ayah:n,lastAyah:n,text});
+   }
+   nrTafsirCurrent=[];
+   for(const entry of grouped){
+      if(entry.text.length<=1750){nrTafsirCurrent.push(entry);continue;}
+      const chunks=[];
+      let remain=entry.text;
+      while(remain.length>1750){
+        let idx=remain.lastIndexOf(' ',1650);
+        if(idx<950)idx=1650;
+        chunks.push(remain.slice(0,idx).trim());
+        remain=remain.slice(idx).trim();
+      }
+      if(remain)chunks.push(remain);
+      chunks.forEach((part,i)=>nrTafsirCurrent.push({...entry,text:part,part:i+1,parts:chunks.length}));
+   }
    if(!nrTafsirCurrent.length)throw new Error('Kaynakta tefsir metni bulunamadı.');
    nrTafsirCache.set(key,nrTafsirCurrent);
  }catch(err){
