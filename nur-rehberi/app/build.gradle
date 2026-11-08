@@ -3,7 +3,7 @@ android {
   namespace 'com.nurrehberi.app'
   compileSdk 35
   defaultConfig {
-    applicationId 'com.nurrehberi.app'
+    applicationId 'com.nurrehberi.ezantest'
     minSdk 24
     targetSdk 34
     versionCode 6
