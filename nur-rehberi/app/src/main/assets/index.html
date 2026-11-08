@@ -129,6 +129,40 @@ body.premium .player p{color:#e7cf99}
 .royal-footline{text-align:center;color:#ccaa65;margin:25px 0 10px;font-size:23px;letter-spacing:12px}
 @media(max-width:370px){.royal-grid{gap:11px}.royal-tile{min-height:142px}.royal-symbol{height:83px}.royal-symbol svg{width:79px;height:79px}.royal-tile strong{font-size:16px}.royal-title{font-size:34px}}
 
+
+/* 3D adhan page and golden prayer timetable */
+.royal-page-head{text-align:center;padding:17px 10px 20px;border:2px ridge #e2c07c;border-radius:60px 60px 18px 18px/34px 34px 18px 18px;background:radial-gradient(at 50% 0,#338a63,#073d30 68%);box-shadow:inset 0 2px #e8dd9d80,0 7px 0 #7d5324,0 12px 14px #00170d90;color:#f5ce80}
+.royal-page-head span{font-size:34px}.royal-page-head h1{color:#ffe2a1;text-shadow:0 3px 2px #40280d;font:700 34px Georgia,serif;margin:3px}
+.royal-page-head small{font:12px system-ui,sans-serif;color:#efddbb}
+.royal-audio-frame{margin:25px 0 30px;border:2px ridge #d3ae65;border-radius:75px 75px 20px 20px/48px 48px 20px 20px;padding:15px;background:linear-gradient(148deg,#0e6246,#064532 70%,#023023);box-shadow:inset 0 2px 2px #f3dca375,0 7px 0 #775027,0 12px 17px #00190eab;text-align:center}
+.royal-audio-top{height:98px;display:grid;place-items:center;font-size:72px;filter:drop-shadow(0 4px 4px #001911)}
+.royal-audio-top svg{height:92px;width:114px}
+.royal-audio-frame h2{font:bold 24px Georgia,serif;color:#f7d58e;text-shadow:0 2px 2px #38260b;margin:2px}
+.royal-audio-frame p{font:12px/1.5 system-ui,sans-serif;color:#e9dec6;margin:8px 0 14px}
+.royal-audio-tracks{background:linear-gradient(140deg,#fff9e6,#edd5a4);padding:5px 12px;border-radius:17px;border:2px ridge #be9456;box-shadow:inset 0 2px #fffdf4,0 5px 0 #674321}
+.royal-audio-row{display:flex;align-items:center;gap:9px;min-height:78px;text-align:left;padding:11px 0;border-bottom:1px solid #ae854c80}
+.royal-audio-row:last-child{border-bottom:0}
+.royal-audio-play{width:44px;height:44px;flex-shrink:0;border-radius:50%;border:2px solid #b28947;color:#f7d88d;font-size:20px;background:radial-gradient(at 26% 16%,#2a8663,#053827);box-shadow:inset 0 2px #f7e8bb80,0 4px 0 #754e25,0 7px 8px #39290d66}
+.royal-audio-info{flex:1;min-width:0;color:#323321;font-family:system-ui,sans-serif}
+.royal-audio-info strong{display:block;font-size:12px;line-height:1.3}
+.royal-audio-info small{display:block;color:#77654c;font-size:10px;margin-top:4px}
+.royal-audio-info em{display:block;color:#27734e;font-size:10px;margin-top:3px;font-style:normal}
+.royal-audio-source{color:#987444;text-decoration:none;font-size:25px}
+body.premium .prayer-grid{display:grid;grid-template-columns:1fr;gap:0;border:2px solid #bb965e;border-radius:17px;overflow:hidden}
+body.premium .prayer-grid .prayer-time{position:relative;display:flex;align-items:center;justify-content:space-between;min-height:49px;background:linear-gradient(115deg,#fff9e5,#e8d0a7);color:#26432f;border:0;border-radius:0;border-bottom:1px solid #b89b68;padding:8px 15px 8px 43px;box-shadow:none;font-family:system-ui,sans-serif}
+body.premium .prayer-grid .prayer-time:nth-child(5){background:linear-gradient(#24805e,#06472f);color:#ffe6a5}
+body.premium .prayer-grid .prayer-time:last-child{border:0}
+body.premium .prayer-grid .prayer-time small{color:inherit;font-size:13px}
+body.premium .prayer-grid .prayer-time b{color:inherit;font-size:17px}
+body.premium .prayer-grid .prayer-time:before{content:'☀';position:absolute;left:13px;color:#bd9148;font-size:21px}
+body.premium .prayer-grid .prayer-time:nth-child(1):before{content:'◒'}
+body.premium .prayer-grid .prayer-time:nth-child(5):before{content:'◕';color:#e2b359}
+body.premium .prayer-grid .prayer-time:nth-child(6):before{content:'☾'}
+.royal-prayer-banner{background:radial-gradient(at 50% 12%,#3e9271,#0b4b38 64%,#023529);border:2px ridge #e0bd74;border-radius:72px 72px 18px 18px/40px 40px 18px 18px;padding:21px 12px;box-shadow:inset 0 3px #fbde9950,0 6px 0 #735226,0 13px 20px #00180eb1;text-align:center;margin:0 0 22px}
+.royal-prayer-banner h2{color:#ffe1a8;font:bold 26px Georgia,serif;text-shadow:0 2px 2px #55331a;margin:0}
+.royal-prayer-banner p{color:#ecd8ae;font:12px system-ui,sans-serif}
+.royal-prayer-banner .prayer-mosque{font-size:64px;line-height:1.4}
+
 </style>
   <title>Nur Rehberi • Kur'an ve İslam</title>
 </head>
@@ -253,7 +287,7 @@ try{let urls=await fetchAudioList(n,edition);if(token!==audioToken)return;audioL
 let audioToken=0;
 async function playIndex(index,token){if(token!==audioToken||index>=audioList.length){stopAudio();return;}st.playing={surah:st.surah,ayah:index+1};const url=audioList[index];if(!url){stopAudio();toast('Bu ayetin ses kaydı yok.');return;}audio.src=url;audio.playbackRate=1;audio.onended=()=>{if(token===audioToken)playIndex(index+1,token).catch(()=>stopAudio())};audio.onerror=()=>{if(token===audioToken){stopAudio();toast('Ses akışı kesildi.')}};playButton();updateActive(true);try{await audio.play();playButton()}catch{toast('Ses oynatılamadı; yeniden oynatmayı dene.');playButton();}}
 function stopAudio(){audioToken++;audio.pause();audio.removeAttribute('src');audio.load();st.playing=null;audioList=[];playButton();updateActive();}
-function worship(){const t=prayerData?.timings;const times=[['Fajr','İmsak / Sabah'],['Sunrise','Güneş'],['Dhuhr','Öğle'],['Asr','İkindi'],['Maghrib','Akşam'],['Isha','Yatsı']];main.innerHTML=`<div class="eyebrow">İBADET REHBERİ</div><div class="title">Namaz & Zikir</div><p class="sub">Günün vakitleri, kıble yönü, dijital tesbih</p>
+function worship(){const t=prayerData?.timings;const times=[['Fajr','İmsak / Sabah'],['Sunrise','Güneş'],['Dhuhr','Öğle'],['Asr','İkindi'],['Maghrib','Akşam'],['Isha','Yatsı']];main.innerHTML=`<div class="royal-prayer-banner"><div class="prayer-mosque">🕌</div><h2>Namaz Vakitleri</h2><p>Vaktinde namaz, gönülde huzur</p></div><div class="eyebrow">İBADET REHBERİ</div><div class="title">Namaz & Zikir</div><p class="sub">Günün vakitleri, kıble yönü, dijital tesbih</p>
 ${section('Namaz vakitleri','Hesaplanan değerler')}
 <div class="card"><div class="row"><label style="flex:1"><span class="form-label" style="margin:0 0 4px">Şehir</span><input id="city" class="field" placeholder="Örn. Ankara" value="${esc(st.city)}"></label><button class="btn" style="align-self:end" data-action="get-prayer">Getir</button></div><p>Hesaplama: AlAdhan • Diyanet yöntemi (13). Resmî ilan edilen vakitlerden birkaç dakika farklı olabilir.</p><div class="prayer-grid">${times.map(([key,name])=>`<div class="prayer-time"><small>${name}</small><b>${esc(t?.[key]?.split(' ')[0]||'--:--')}</b></div>`).join('')}</div>${prayerData?`<p class="muted">${esc(st.city)} için ${esc(prayerDate)} vakitleri</p>`:''}</div>
 ${section('Kıble bulucu','Konum izni gerekir')}
@@ -310,19 +344,23 @@ const ADHANS=[{"id":"mecca2013","title":"Mekke Ezanı — Mescid-i Haram","sub":
 const adhanAudio=document.createElement('audio');adhanAudio.preload='metadata';document.body.appendChild(adhanAudio);
 let currentAdhan=null;let adhanError=false;
 const adhanFloat=document.createElement('div');adhanFloat.className='adhan-float';adhanFloat.hidden=true;document.querySelector('.app-shell').appendChild(adhanFloat);
+
+function royalAudioRow(a){
+ const playing=currentAdhan===a.id&&!adhanAudio.paused;
+ return '<div class="royal-audio-row"><button type="button" class="royal-audio-play" data-action="adhan-play" data-id="'+a.id+'">'+(playing?'Ⅱ':'▶')+'</button>'
+ +'<div class="royal-audio-info"><strong>'+esc(a.title)+'</strong><small>'+esc(a.sub)+'</small><em>♫ '+esc(a.duration)+' · Çevrimdışı</em></div>'
+ +'<a class="royal-audio-source" href="'+esc(a.page)+'" target="_blank" rel="noopener" aria-label="Kaynağı gör">ⓘ</a></div>';
+}
 function adhan(){
-  const cards=ADHANS.map(a=>`<div class="adhan-card">
-  <div class="adhan-top"><span class="adhan-icon">${a.kind==='mekke'?'🕋':'♪'}</span><span class="adhan-license">${esc(a.license)}</span></div>
-  <div class="adhan-name">${esc(a.title)}</div><p>${esc(a.sub)}</p>
-  <div class="adhan-tags"><span>♫ ${esc(a.duration)}</span><span>✓ Çevrimdışı kayıt</span></div>
-  <div class="adhan-actions"><button class="btn ${currentAdhan===a.id&&!adhanAudio.paused?'gold':'ghost'}" data-action="adhan-play" data-id="${a.id}">${currentAdhan===a.id&&!adhanAudio.paused?'Ⅱ Duraklat':'▶ Dinle'}</button><a class="adhan-link" href="${esc(a.page)}" target="_blank" rel="noopener">Kaynağı gör ↗</a></div>
-  <div class="adhan-credit">Kaydı yükleyen / hak sahibi: ${esc(a.credit)} · <a href="${esc(a.licurl)}" target="_blank" rel="noopener">${esc(a.license)}</a> · MP3 biçimine dönüştürüldü.</div>
-  </div>`).join('');
-  main.innerHTML=`<div class="intro"><div><div class="eyebrow">HUZURA DAVET</div><div class="title">Ezan Dinle</div><p class="sub">Mekke ezanları ve etkileyici farklı ezan kayıtları.</p></div><div class="moon">♪</div></div>
-  <div class="adhan-hero"><span>🕋 MEKKE • MESCİD-İ HARAM</span><h2>Gönüllere dokunan ezanlar</h2><p>Gerçek tarihî ses kayıtları. İnternet gerekmeden dinle.</p></div>
-  ${section('Mekke Ezanları','Tarihî kayıtlar')}
-  ${cards}
-  <div class="notice">Bu kayıtlar canlı yayın değildir. Sesler Creative Commons izinlerine göre sunulur. Ezanların müezzinlerini doğrulamadığımız yerlerde isim atfetmiyoruz. Namaz vakti bildirimi bu sürümde henüz etkin değildir.</div>`;
+ const mekke=ADHANS.filter(x=>x.kind==='mekke');
+ const guzel=ADHANS.filter(x=>x.kind!=='mekke');
+ main.innerHTML=
+ '<div class="royal-page-head"><span>☪</span><h1>Ezanlar</h1><small>Gönüllere huzur veren sesler</small></div>'
+ +'<div class="royal-audio-frame"><div class="royal-audio-top">🕋</div><h2>Mekke Ezanları</h2>'
+ +'<p>Harem-i Şerif’ten (Mekke) tarihî ezan kayıtları</p><div class="royal-audio-tracks">'+mekke.map(royalAudioRow).join('')+'</div></div>'
+ +'<div class="royal-audio-frame"><div class="royal-audio-top">'+royalIcon('hafiz')+'</div><h2>Güzel Ezan Okuyanlar</h2>'
+ +'<p>Farklı makamlarda açık lisanslı ezanlar</p><div class="royal-audio-tracks">'+guzel.map(royalAudioRow).join('')+'</div></div>'
+ +'<div class="notice">Bunlar canlı değil, lisanslı tarihî ses kayıtlarıdır. Müezzin kimliği doğrulanmamış sesler yanlış kişilere atfedilmez. Kaynak sayfasını ⓘ ile açabilirsin.</div>';
 }
 function drawAdhanFloat(){
   const a=ADHANS.find(x=>x.id===currentAdhan);
