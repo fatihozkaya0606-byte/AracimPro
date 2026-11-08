@@ -41,15 +41,16 @@ public class MainActivity extends Activity {
    settings.setMediaPlaybackRequiresUserGesture(true);
    settings.setGeolocationEnabled(true);
    settings.setDefaultTextEncodingName("UTF-8");
+   settings.setSupportMultipleWindows(false);
    browser.setWebViewClient(new WebViewClient() {
      @Override public WebResourceResponse shouldInterceptRequest(WebView v, WebResourceRequest req) {
         return loader.shouldInterceptRequest(req.getUrl());
      }
      @Override public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest req) {
-        return goExternal(req.getUrl());
+        return req.isForMainFrame() && goExternal(req.getUrl());
      }
      @Override public boolean shouldOverrideUrlLoading(WebView v, String address) {
-        return goExternal(Uri.parse(address));
+        Uri uri=Uri.parse(address); if("www.youtube-nocookie.com".equals(uri.getHost()) || "www.youtube.com".equals(uri.getHost())) return false; return goExternal(uri);
      }
    });
    browser.setWebChromeClient(new WebChromeClient() {
