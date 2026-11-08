@@ -32,7 +32,7 @@ const NR_HADIS=[
 ['Hadislerle İslâm 1. Cilt','Diyanet PDF eser','https://hadislerleislam.diyanet.gov.tr/pdf/hadislerle_islam_cilt1.pdf'],
 ['Hadislerle İslâm arşivi','Bütün yayın kataloğu','https://hadislerleislam.diyanet.gov.tr/']
 ];
-let nrBookQuery='',nrHadisQuery='',nrEsmaQuery='',nrEsmaNames=null,nrLetter=0,nrQuizN=0,nrQuizCorrect=0,nrTefsirN=1,nrTefsirA=1,nrReminderStatus='';
+let nrBookQuery='',nrHadisQuery='',nrEsmaQuery='',nrEsmaNames=null,nrLetter=0,nrQuizN=0,nrTefsirN=1,nrTefsirA=1,nrReminderStatus='';
 function nrTop(icon,title,sub){return '<div class="royal-page-head"><span>'+icon+'</span><h1>'+title+'</h1><small>'+sub+'</small></div>'}
 function nrLink(url,title){return '<a class="btn gold nr-link" href="'+esc(url)+'" target="_blank" rel="noopener">'+esc(title)+' ↗</a>'}
 function nrItems(rows){return rows.map(r=>'<div class="nr-entry"><div><strong>'+esc(r[0])+'</strong><small>'+esc(r[1])+'</small></div>'+nrLink(r[2],'Oku')+'</div>').join('')}
