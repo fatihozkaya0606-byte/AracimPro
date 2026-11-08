@@ -39,6 +39,8 @@ jobs:
           node --check nur-rehberi/app/src/main/assets/features.js
           node --check nur-rehberi/app/src/main/assets/tafsir_reader.js
           node --check nur-rehberi/app/src/main/assets/premium_hafiz.js
+          grep -q 'nrCuratedDetails' nur-rehberi/app/src/main/assets/premium_hafiz.js
+          grep -q 'nrSadienExpanded' nur-rehberi/app/src/main/assets/premium_hafiz.js
           node --check nur-rehberi/app/src/main/assets/book_reader.js
           grep -q 'book_reader.js' nur-rehberi/app/src/main/assets/index.html
           python3 - <<'PY'
@@ -143,6 +145,20 @@ jobs:
             assert all(isinstance(r.get('text'),str) and len(r['text'])>15 for r in rows)
             print('Verified Turkish in-app tafsir API:',slug,len(rows),'verses')
           PY
+      - name: Build verified 20+ prominent Quran reciters and Surah list
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 nur-rehberi/scripts/build_featured_reciters.py
+          python3 - <<'PY'
+          import json
+          path='nur-rehberi/app/src/main/assets/featured_reciters.json'
+          a=json.load(open(path,encoding='utf-8'))['readers']
+          assert len(a)>=18, 'Fewer than 18 reader streams verified'
+          assert len(set(r['name'] for r in a))==len(a)
+          assert all(r.get('checked_surah') in r.get('available',[]) for r in a)
+          print('APP SHOWS',len(a),'individually selectable readers,',sum(len(r['available']) for r in a),'available sura recordings')
+          PY
       - name: Verify featured Quran reciter MP3 streams
         shell: bash
         run: |
@@ -213,5 +229,5 @@ jobs:
       - name: Upload test APK
         uses: actions/upload-artifact@v4
         with:
-          name: NurRehberi-3D-Plus-v1.5.1-Fix
+          name: NurRehberi-3D-v1.6-Hafizlar
           path: nur-rehberi/app/build/outputs/apk/debug/app-debug.apk
