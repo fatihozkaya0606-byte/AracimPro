@@ -172,17 +172,60 @@ function label(n){return catalog[n-1]?.turkishName||NAMES[n-1]||`Sure ${n}`}
 function fmt(n){return Number(n||0).toLocaleString('tr-TR')}
 function section(name,sub=''){return `<div class="section-title">${name}<small>${sub}</small></div>`}
 function btn(page,glyph,title){return `<button type="button" class="menu-card" data-page="${page}"><span class="glyph">${glyph}</span><strong>${title}</strong></button>`}
-function drawNav(){document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('selected',b.dataset.page===(st.page==='reader'?'quran':st.page==='settings'?'home':st.page)));document.getElementById('back').hidden=!['reader','settings'].includes(st.page)}
+function drawNav(){document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('selected',b.dataset.page===(st.page==='reader'?'quran':st.page==='settings'?'home':st.page)));document.getElementById('back').hidden=!['reader','settings','worship','adhan','quran','progress','learn'].includes(st.page)}
 function render(){document.body.classList.toggle('dark',!!st.dark);drawNav();if(st.page==='home')home();else if(st.page==='quran')quran();else if(st.page==='reader')reader();else if(st.page==='worship')worship();else if(st.page==='progress')progress();else if(st.page==='learn')learn();else if(st.page==='adhan')adhan();else if(st.page==='settings')settings();else home();}
 function go(page){if(!['home','quran','reader','worship','progress','learn','adhan','settings'].includes(page))return;st.page=page;render();window.scrollTo({top:0,behavior:'instant'});}
-function home(){let last=st.lastRead;let pl=prayerData?.timings;main.innerHTML=`<div class="intro"><div><div class="eyebrow">${dateText()}</div><div class="title">Selâmün aleyküm</div><p class="sub">Kur’an ile gönlüne ışık kat.</p></div><div class="moon">☪</div></div>
-<div class="hero"><div class="gold">✦ HUZURLU BİR GÜN İÇİN</div><h2>${pl?'Namaz Vakitleri':'Günün vakitleri'}</h2><p>${esc(st.city)} • ${pl?'Bugünün vakitleri hazır':'Şehrine göre vakitleri öğren'}</p><div class="hero-foot"><span>${pl?`Akşam: ${esc(pl.Maghrib||'--:--')}`:'Konumunu seç ve vakitleri gör'}</span><button data-page="worship">Vakitleri gör →</button></div></div>
-${section('Keşfet','Hızlı erişim')}<div class="grid">${CHOICES.map(x=>btn(...x)).join('')}</div>
-${section('Kaldığın yerden devam','')}
-<div class="card last-card"><div><div class="eyebrow">SON OKUMA</div><h3>${last?esc(label(last.surah)):'Kur’an okumaya başla'}</h3><p>${last?`${last.ayah}. ayette kaldın`:'114 surenin tamamına ulaş'}</p></div><button class="btn gold tiny" data-action="open-surah" data-surah="${last?.surah||1}" data-ayah="${last?.ayah||1}">Devam et →</button></div>
-${section('Hatim hedefin','')}
-<div class="card"><div class="row"><b>${st.completed.length} / 114 sure</b><span class="pill">%${Math.round(st.completed.length/114*100)}</span></div><div class="spacer"></div><div class="progress-bar"><span style="width:${st.completed.length/114*100}%"></span></div><p>Okumayı tamamladığın sureleri işaretleyerek takip et.</p></div>
-<div class="notice">Bu sürümde Kur’an metni ve meal internet üzerinden yüklenir, açılan sureler cihazda önbelleğe alınır. Hatim kaydı bu cihazda saklanır.</div>`;}
+
+/* Detailed decorative SVG icons, drawn locally — not static screenshots. */
+function royalIcon(name){
+ const art={
+ quran:'<path d="M29 67L51 52L71 65L89 52" fill="none" stroke="#885619" stroke-width="7" stroke-linecap="round"/><path d="M28 76L58 61L88 76" fill="none" stroke="#c68a32" stroke-width="7" stroke-linecap="round"/><path d="M15 26L55 10L99 27L60 55Z" fill="#c68d34" stroke="#754514" stroke-width="3"/><path d="M16 26L57 14L96 29L57 48Z" fill="#14563b" stroke="#e6c46f" stroke-width="3"/><path d="M25 27L56 18L88 29L56 40Z" fill="none" stroke="#d6bb78" stroke-width="1.8"/><path d="M56 20L67 29L56 38L45 29Z" fill="#cda456"/><path d="M56 25L60 29L56 33L52 29Z" fill="#0a4b38"/>',
+ meal:'<path d="M59 29Q38 11 9 18L10 70Q35 62 59 80L59 29Z" fill="#fff6d9" stroke="#a56a2d" stroke-width="3"/><path d="M61 29Q83 11 109 18L109 70Q85 62 61 80L61 29Z" fill="#fff6d9" stroke="#a56a2d" stroke-width="3"/><path d="M59 28V80M15 26Q36 22 52 32M15 35Q36 31 52 41M16 44Q36 41 52 51M68 33Q85 25 102 27M68 42Q87 33 102 37M68 51Q88 43 102 46" fill="none" stroke="#c0924b" stroke-width="2"/><path d="M11 75Q36 65 60 84Q82 65 108 75" fill="none" stroke="#d7af60" stroke-width="5"/>',
+ hafiz:'<rect x="42" y="8" width="36" height="51" rx="17" fill="#c38a37" stroke="#644119" stroke-width="3"/><rect x="48" y="13" width="24" height="38" rx="12" fill="#ffe3a0"/><path d="M51 23H69M51 29H69M51 35H69M51 41H69" stroke="#9a692a" stroke-width="2.2"/><path d="M34 37C34 72 86 72 86 37M60 68V82M41 83H79" fill="none" stroke="#b78036" stroke-width="7" stroke-linecap="round"/><path d="M42 83H78" stroke="#ffdc8e" stroke-width="2"/>',
+ mosque:'<path d="M16 71V49H28V71M92 71V49H104V71" fill="#bd852f" stroke="#5b3c16" stroke-width="2"/><path d="M20 20H24V50H20ZM96 20H100V50H96Z" fill="#d1a048" stroke="#845c24" stroke-width="2"/><path d="M21 9L16 19H28L22 9ZM99 9L93 19H105L99 9Z" fill="#d4a454"/><path d="M31 69V51Q60 10 89 51V69Z" fill="#087057" stroke="#b48b36" stroke-width="3"/><path d="M42 47Q60 22 78 47V66H42Z" fill="#0f9268" stroke="#d1a75d" stroke-width="2"/><path d="M58 27V19M51 19H65" stroke="#e6bd65" stroke-width="3"/><path d="M13 73H108" stroke="#976322" stroke-width="7"/><path d="M53 73V55Q61 48 69 55V73" fill="#153b2e" stroke="#c99750" stroke-width="2"/>',
+ ezan:'<path d="M46 76L50 28L68 28L73 76Z" fill="#c48a35" stroke="#7d5222" stroke-width="3"/><path d="M39 28H79L73 20H45Z" fill="#e8bf6c" stroke="#7e531f" stroke-width="2"/><path d="M44 19L59 5L74 19Z" fill="#bd8c37"/><path d="M58 4V0" stroke="#e6c56e" stroke-width="3"/><path d="M41 53H78" stroke="#f6dd9e" stroke-width="5"/><path d="M54 55H65V74H54Z" fill="#1e6c4d" stroke="#e8bd68" stroke-width="2"/><path d="M81 20Q102 31 81 42M86 12Q115 31 86 50" fill="none" stroke="#d2a157" stroke-width="4" stroke-linecap="round"/><path d="M36 78H82" stroke="#d5a251" stroke-width="5"/>',
+ tesbih:'<circle cx="58" cy="40" r="27" fill="none" stroke="#ae692e" stroke-width="2"/><circle cx="58" cy="13" r="6" fill="#b6752c" stroke="#ffd484" stroke-width="2"/><circle cx="78" cy="21" r="6" fill="#976025" stroke="#f0bf65" stroke-width="2"/><circle cx="84" cy="42" r="6" fill="#b6752c" stroke="#f0bf65" stroke-width="2"/><circle cx="77" cy="60" r="6" fill="#976025" stroke="#f0bf65" stroke-width="2"/><circle cx="55" cy="67" r="6" fill="#a96b29" stroke="#f0bf65" stroke-width="2"/><circle cx="36" cy="57" r="6" fill="#a96b29" stroke="#f0bf65" stroke-width="2"/><circle cx="31" cy="37" r="6" fill="#996026" stroke="#f0bf65" stroke-width="2"/><circle cx="39" cy="20" r="6" fill="#b6752c" stroke="#f0bf65" stroke-width="2"/><path d="M55 70L56 80M56 80L47 89M56 80L65 89" stroke="#bc873b" stroke-width="4" stroke-linecap="round"/><path d="M45 89Q55 97 67 89" fill="#d0a052" />',
+ qibla:'<path d="M27 29L62 10L98 28L63 46Z" fill="#4b4d41" stroke="#efc668" stroke-width="2"/><path d="M27 29L63 46V82L27 63Z" fill="#111a16" stroke="#c79d4a" stroke-width="2"/><path d="M63 46L98 28V63L63 82Z" fill="#23271d" stroke="#c79d4a" stroke-width="2"/><path d="M27 42L63 60L98 43V49L63 66L27 48Z" fill="#dcad54"/><path d="M63 48L63 81" stroke="#bd8e40" stroke-width="1.5"/><path d="M37 51L55 59M72 60L91 51" stroke="#f8db87" stroke-width="2"/>',
+ hatim:'<path d="M17 69L40 23H103L82 68Z" fill="#d7a04a" stroke="#9a6524" stroke-width="3"/><path d="M25 64L44 23H93L75 64Z" fill="#fff5d7" stroke="#c0994d" stroke-width="2"/><path d="M17 73L81 73" stroke="#ae812f" stroke-width="6"/><path d="M28 59H75M33 50H80M39 40H85" stroke="#c4a36a" stroke-width="2"/><circle cx="88" cy="70" r="19" fill="#178454" stroke="#e5bd60" stroke-width="4"/><path d="M79 69L87 76L98 63" fill="none" stroke="#fff6ca" stroke-width="6" stroke-linecap="round"/>'
+ };
+ return '<svg viewBox="0 0 120 95" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">'+(art[name]||art.quran)+'</svg>';
+}
+function royalTile(page,icon,title,subtitle){
+ return '<button type="button" class="royal-tile" data-page="'+page+'" aria-label="'+title+'"><span class="royal-symbol">'+royalIcon(icon)+'</span><strong>'+title+'</strong></button>';
+}
+const royalSkyline='<svg class="royal-skyline" viewBox="0 0 410 130" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="mosqueShade" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#165944"/><stop offset="1" stop-color="#001d15"/></linearGradient></defs><path d="M0 103H410V130H0Z" fill="#02291d"/><path d="M80 115V64H110V115M300 115V64H330V115M183 115V62Q206 18 229 62V115M130 115V88Q152 48 173 88V115M237 115V88Q258 48 281 88V115" fill="url(#mosqueShade)" stroke="#c7ab7265" stroke-width="1.5"/><path d="M91 0V115M318 0V115M85 19H97L91 0ZM312 19H324L318 0Z" stroke="#ab955f88" stroke-width="3" fill="#9d8145"/><path d="M206 15V39M192 38H220" stroke="#bca471" stroke-width="2"/><path d="M0 117H410" stroke="#907c4a" stroke-width="2"/></svg>';
+
+
+function home(){
+ let pl=prayerData?.timings, last=st.lastRead;
+ const tiles=[
+ ['quran','quran','Kur’an-ı Kerim'],['quran','meal','Türkçe Meal'],
+ ['quran','hafiz','Hafızlar'],['worship','mosque','Namaz Vakitleri'],
+ ['adhan','ezan','Ezanlar'],['worship','tesbih','Tesbih'],
+ ['worship','qibla','Kıble'],['progress','hatim','Hatim Takibi']
+ ];
+ main.innerHTML='<div class="royal-showcase"><div class="royal-crown">☪ ✦</div>'
+  +royalSkyline+'<div class="royal-title">Nur Rehberi</div>'
+  +'<div class="royal-caption">Kur’an, namaz, ezan ve ibadetleriniz için<br>kapsamlı İslâmî rehberinize hoş geldiniz.</div>'
+  +'<div class="royal-divider"></div><div class="royal-sub">✦ Maneviyatın huzurlu dünyası ✦</div></div>'
+  +'<div class="royal-heading">İBADET & KEŞİF</div>'
+  +'<div class="royal-grid">'+tiles.map(x=>royalTile(x[0],x[1],x[2])).join('')+'</div>'
+  +'<div class="royal-footline">✦ ❖ ✦</div>'
+  +section('Günün Namaz Vakitleri','Şehre göre')+
+  '<div class="hero"><div class="gold">✦ HUZURLU BİR GÜN İÇİN</div><h2>'+(pl?'Namaz vakitleri':'Günün vakitleri')+'</h2>'
+  +'<p>'+esc(st.city)+' • '+(pl?'Bugünün vakitleri hazır':'Şehrine göre vakitleri öğren')+'</p><div class="hero-foot">'
+  +'<span>'+(pl?'Akşam: '+esc(pl.Maghrib||'--:--'):'Konumunu seç ve vakitleri gör')+'</span>'
+  +'<button data-page="worship">Vakitleri gör →</button></div></div>'
+  +section('Kaldığın yerden devam','')+
+  '<div class="card last-card"><div><div class="eyebrow">SON OKUMA</div><h3>'+(last?esc(label(last.surah)):'Kur’an okumaya başla')+'</h3>'
+  +'<p>'+(last?last.ayah+'. ayette kaldın':'114 surenin tamamına ulaş')+'</p></div>'
+  +'<button class="btn gold tiny" data-action="open-surah" data-surah="'+(last?.surah||1)+'" data-ayah="'+(last?.ayah||1)+'">Devam et →</button></div>'
+  +section('Hatim hedefin','')+
+  '<div class="card"><div class="row"><b>'+st.completed.length+' / 114 sure</b><span class="pill">%'+Math.round(st.completed.length/114*100)+'</span></div><div class="spacer"></div><div class="progress-bar"><span style="width:'+(st.completed.length/114*100)+'%"></span></div>'
+  +'<p>Okumayı tamamladığın sureleri işaretleyerek takip et.</p></div>'
+  +'<div class="notice">Kur’an metni ve meal internet üzerinden yüklenir. Ezandaki dört kayıt internetsiz oynatılabilir.</div>';
+}
+
 function surahMarkup(x){return `<button type="button" class="surah" data-action="open-surah" data-surah="${x.number}"><span class="surah-num">${x.number}</span><span class="surah-details"><strong>${esc(x.turkishName)}</strong><small>${x.numberOfAyahs?`${x.numberOfAyahs} ayet • `:''}${x.number===1?'Fâtiha':x.number===2?'Bakara':'Kur’an-ı Kerim'}</small></span><span class="surah-ar" lang="ar" dir="rtl">${esc(x.arabicName||'۞')}</span></button>`}
 function filtered(){return catalog.filter(x=>norm(x.turkishName).includes(norm(st.search))||String(x.number)===st.search.trim())}
 function quran(){main.innerHTML=`<div class="intro"><div><div class="eyebrow">KUR’AN-I KERİM</div><div class="title">Sureler</div><p class="sub">114 sure • Arapça metin ve Türkçe meal</p></div><div class="moon">۞</div></div><label class="search">⌕ <input id="surah-search" autocomplete="off" placeholder="Sure adı veya numarası ara" value="${esc(st.search)}" aria-label="Sure ara"></label><div class="surah-list" id="surah-list">${filtered().map(surahMarkup).join('')||'<div class="empty">Aramana uygun sure bulunamadı.</div>'}</div>`;}
