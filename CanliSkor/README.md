@@ -64,3 +64,9 @@ Takım logoları kullanılmıyor; üçüncü taraf fikri haklarını kontrol edi
 - Gerçek maç verisine bağlı Karşılaştırma ve Maç Bilgisi sekmeleri.
 - Uygulama açıkken gol uyarıları korunur. Arka plan push sistemi henüz yok.
 - API anahtarı açık kaynakta saklanmaz.
+
+## v1.4 — Tam ekran canlı puan durumu
+- Lig başlığı açıldığında mobil genişliğe sığan sıralama, takım adı, oynadığı maç, averaj ve puan.
+- BSD canlı maçlardan rakip, skor ve dakika her takımın altında gösterilir.
+- Canlı maç sonucu ile hesaplanan puan tahmini açıkça geçici olarak etiketlenir; resmî puan ayrıca görünür.
+- Ayrıntılı fikstür ve oran ekranları korunur. API anahtarı halka açık kaynak dosyalarında tutulmaz.
