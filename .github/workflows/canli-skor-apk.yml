@@ -1,6 +1,9 @@
 name: Canli Skor Test APK
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [canli-skor-app]
+    paths: ['CanliSkor/**', '.github/workflows/canli-skor-apk.yml']
   push:
     branches: [canli-skor-app]
     paths: [ 'CanliSkor/**', '.github/workflows/canli-skor-apk.yml' ]
