@@ -3,7 +3,7 @@ android {
     namespace 'com.strat.canliskor'
     compileSdk 35
     defaultConfig {
-        applicationId 'com.strat.canliskor'
+        applicationId 'com.strat.canliskor.v25test'
         minSdk 24
         targetSdk 35
         versionCode 25
