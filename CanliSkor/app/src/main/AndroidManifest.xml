@@ -3,13 +3,13 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <application android:label="Canlı Skor+ v2.5 Test" android:allowBackup="false" android:usesCleartextTraffic="false" android:theme="@android:style/Theme.Material.NoActionBar" android:supportsRtl="true">
-        <activity android:name=".MainActivity" android:exported="true" android:configChanges="orientation|screenSize">
+        <activity android:name="com.strat.canliskor.MainActivity" android:exported="true" android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <service android:name=".GoalCheckJobService" android:exported="true"
+        <service android:name="com.strat.canliskor.GoalCheckJobService" android:exported="true"
             android:permission="android.permission.BIND_JOB_SERVICE"/>
     </application>
 </manifest>
