@@ -58,6 +58,17 @@ public class MainActivity extends Activity {
         }
     }
     public class ScoresBridge {
+        @JavascriptInterface public void setTrackedMatches(String json) {
+            runOnUiThread(() -> GoalCheckJobService.setTracked(MainActivity.this, json));
+        }
+        @JavascriptInterface public void testNotification() {
+            runOnUiThread(() -> {
+                if (android.os.Build.VERSION.SDK_INT >= 33 &&
+                    checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != android.content.pm.PackageManager.PERMISSION_GRANTED)
+                    requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 9137);
+                else GoalCheckJobService.testNotification(MainActivity.this);
+            });
+        }
         @JavascriptInterface public void setBackgroundGoals(boolean enabled, String token) {
             runOnUiThread(() -> activateBackgroundGoals(enabled, token == null ? "" : token));
         }
