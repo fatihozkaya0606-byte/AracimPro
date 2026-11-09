@@ -85,7 +85,7 @@ document.addEventListener('click',event=>{
  if(event.target.closest('[data-v26-test-alert]')){
   try{window.AndroidApi?.testNotification?.()}catch(_){window.alert('Cihazda deneme bildirimi çalıştırılamadı.')}
  }
-});
+},true);
 const oldSettings=screenSettings;
 screenSettings=function(){
  return oldSettings()+'<section class="setting"><h3>🔔 Favori maç bildirimleri</h3><p>Yıldızladığın veya zilini açtığın maçlar Android takibine aktarılır. Gol, kırmızı kart, devre arası ve maç sonu desteklenir. Telefon uygulamayı kapattığında Android yaklaşık 15 dakikada bir kontrol edebilir. Anlık bildirim için ayrıca sunucu ve Firebase gerekir.</p><p>Takip edilen, bu kaynaklarda desteklenen maç: <b>'+tracked().length+'</b>. Bildirim izni ve pil tasarrufu ayarlarını da kontrol et.</p><button class="secondary" data-v26-test-alert="1">🔔 Deneme bildirimi gönder</button></section>';
