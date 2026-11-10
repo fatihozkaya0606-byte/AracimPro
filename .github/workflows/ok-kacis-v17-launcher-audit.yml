@@ -16,8 +16,8 @@ jobs:
           set -euo pipefail
           mkdir -p game-src audit/icons
           unzip -q OkKacis_4_2_KaynakKod.zip -d game-src
-          find game-src/OkKacis/app/src/main -type f | grep -Ei 'icon|logo|mipmap|splash|badge' | head -90
-          cat game-src/OkKacis/app/src/main/AndroidManifest.xml | head -100
+          find game-src/OkKacis/app/src/main -type f | grep -Ei 'icon|logo|mipmap|splash|badge' | head -90 || true
+          cat game-src/OkKacis/app/src/main/AndroidManifest.xml | head -100 || true
           grep -E 'versionCode|versionName|applicationId' game-src/OkKacis/app/build.gradle
           python3 - <<'PY'
           from pathlib import Path
