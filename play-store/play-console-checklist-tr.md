@@ -1,32 +1,29 @@
-# Aracım Pro — Google Play yayın kontrol listesi
+# Aracım Pro — güncel Google Play Veri Güvenliği kontrol listesi
 
-## Teknik
-- [x] targetSdk 36
-- [x] compileSdk 36
-- [x] Android App Bundle (AAB) release workflow
-- [x] Ayrı upload key ile imzalama
-- [x] versionCode 11 / versionName 5.0.0
-- [x] Release build debuggable=false
-- [x] Upload key dosyaları .gitignore ile dışarıda
+**Kaynak sürümü:** 7.12.7 / versionCode 255 (10 Kasım 2026)  
+**Uyarı:** Yayındaki sürümün AAB'si farklıysa Play Console beyanını o AAB'nin gerçek davranışına göre doldurun.
+
+## Kod ve ağ güvenliği
+
+- [x] Android Manifest içinde `usesCleartextTraffic="false"`.
+- [x] `network_security_config.xml` içinde `cleartextTrafficPermitted="false"`.
+- [x] WebView içinde karma içerik engeli.
+- [x] FuelDataClient doğrudan isteklerinde kullanıcı kaynaklı HTTP uç noktalarının HTTPS kontrolü (güvenlik dalında).
+- [ ] Release AAB birleştirilmiş manifest ve tüm SDK'lar test edildi.
+- [ ] Reklam aracılık SDK'larının aktarım şifrelemesi doğrulandı.
+- [ ] HTTPS ağ çağrıları, giriş, yorum, fiyat, AI ve reklamlar cihaz üzerinde test edildi.
 
 ## Play Console
-- [ ] Geliştirici hesabı doğrulaması tamamlandı
-- [ ] Yeni uygulama oluştur: Aracım Pro
-- [ ] Varsayılan dil: Türkçe
-- [ ] Uygulama / oyun: Uygulama
-- [ ] Ücretsiz başlat
-- [ ] İletişim e-postası gir
-- [ ] Gizlilik politikası URL'si gir
-- [ ] Veri Güvenliği formunu son kodla karşılaştırıp doldur
-- [ ] İlk sürüm reklam içeriyor mu? Hayır
-- [ ] İçerik derecelendirme anketi
-- [ ] Hedef kitle beyanı
-- [ ] Uygulama erişimi: giriş zorunlu değil
-- [ ] Mağaza açıklaması ve görseller
-- [ ] İç testte imzalı AAB
-- [ ] Yeni kişisel hesap gerektiriyorsa kapalı test
 
-## Görseller
-- [ ] Uygulama simgesi 512×512
-- [ ] Özellik grafiği 1024×500
-- [ ] Telefon ekran görüntüleri
+- [ ] **Politika ve programlar → Uygulama içeriği → Veri Güvenliği** açıldı.
+- [ ] Veri toplama ve paylaşım: Firebase, konum, yorumlar, reklam kimliği, cihaz bilgileri ve üçüncü taraf sağlayıcılar değerlendirildi.
+- [ ] **Aktarım sırasında şifreleme:** yalnız tüm ilgili veri trafiği doğrulandıktan sonra Evet.
+- [ ] Reklam içerir: Evet; gerçek SDK'larla ve aracılık yapılandırmasıyla tutarlı.
+- [ ] Firebase hesap silme akışı ve web üzerinden silme talebi gerçekten test edildi.
+- [ ] Gizlilik politikası ve hesap silme sayfası herkesin erişimine açık.
+- [ ] Mağaza beyanları ile kod/SDK ve gizlilik politikası uyumlu.
+- [ ] Form kaydedildi, incelemeye gönderildi, mağaza sayfasında güncellendi.
+
+**Daha ayrıntılı kategori/SDK incelemesi:** `play-store/data-safety-draft-tr.md`.
+
+**Not:** Bu dosyanın düzeltilmesi Google Play'deki etiketi kendiliğinden değiştirmez. Play Console formu ayrıca güncellenmelidir.
