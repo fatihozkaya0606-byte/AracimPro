@@ -23,8 +23,6 @@ import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.rewarded.RewardedAd;
-import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.android.ump.ConsentInformation;
@@ -40,18 +38,16 @@ import com.google.android.ump.UserMessagingPlatform;
 public final class MainActivity extends Activity {
     // Google's official development/test IDs. Never ship these for monetization.
     private static final String TEST_BANNER_ID = "ca-app-pub-3940256099942544/9214589741";
-    private static final String TEST_REWARDED_ID = "ca-app-pub-3940256099942544/5224354917";
     private static final String TEST_INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712";
 
     private WebView game;
     private FrameLayout bannerContainer;
     private AdView banner;
-    private RewardedAd rewarded;
     private InterstitialAd interstitial;
     private ConsentInformation consentInformation;
     private boolean adsInitialized = false;
     private boolean bannerLoaded = false;
-    private boolean wantsBanner = false;
+    private boolean wantsBanner = true;
     private boolean pageLoaded = false;
 
     private final class AdsBridge {
@@ -61,11 +57,6 @@ public final class MainActivity extends Activity {
                 wantsBanner = visible;
                 refreshBannerVisibility();
             });
-        }
-
-        @JavascriptInterface
-        public void showRewarded() {
-            runOnUiThread(() -> showRewardedOnUi());
         }
 
         @JavascriptInterface
@@ -108,7 +99,7 @@ public final class MainActivity extends Activity {
         banner.setAdUnitId(TEST_BANNER_ID);
         int dpWidth = (int) (getResources().getDisplayMetrics().widthPixels /
                 getResources().getDisplayMetrics().density);
-        // Compact anchored adaptive (rather than large banner) to protect 7x7 board.
+        // Anchored adaptive banner remains outside the 9x9 WebView board.
         banner.setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, Math.max(320, dpWidth)));
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT,
@@ -125,22 +116,6 @@ public final class MainActivity extends Activity {
             }
         });
         banner.loadAd(new AdRequest.Builder().build());
-    }
-
-    private void loadRewarded() {
-        rewarded = null;
-        notifyGame("onReady", "false");
-        RewardedAd.load(this, TEST_REWARDED_ID, new AdRequest.Builder().build(),
-                new RewardedAdLoadCallback() {
-                    @Override public void onAdLoaded(RewardedAd ad) {
-                        rewarded = ad;
-                        notifyGame("onReady", "true");
-                    }
-                    @Override public void onAdFailedToLoad(LoadAdError error) {
-                        rewarded = null;
-                        notifyGame("onReady", "false");
-                    }
-                });
     }
 
     private void loadInterstitial() {
@@ -180,7 +155,6 @@ public final class MainActivity extends Activity {
         MobileAds.initialize(this, status -> runOnUiThread(() -> {
             if (isFinishing() || isDestroyed()) return;
             loadBanner();
-            loadRewarded();
             loadInterstitial();
         }));
     }
@@ -197,28 +171,6 @@ public final class MainActivity extends Activity {
             },
             requestError -> initializeAdsIfAllowed()
         );
-    }
-
-    private void showRewardedOnUi() {
-        if (rewarded == null) {
-            notifyGame("onFailed");
-            return;
-        }
-        final RewardedAd current = rewarded;
-        rewarded = null;
-        notifyGame("onReady", "false");
-        current.setFullScreenContentCallback(new FullScreenContentCallback() {
-            @Override public void onAdDismissedFullScreenContent() {
-                notifyGame("onClosed");
-                loadRewarded();
-            }
-            @Override public void onAdFailedToShowFullScreenContent(AdError error) {
-                notifyGame("onFailed");
-                loadRewarded();
-            }
-        });
-        // Only this SDK callback authorizes the +5 heart credit in game.js.
-        current.show(this, rewardItem -> notifyGame("onRewardEarned"));
     }
 
     @Override public void onCreate(Bundle saved) {
@@ -258,7 +210,7 @@ public final class MainActivity extends Activity {
         game.setWebViewClient(new WebViewClient() {
             @Override public void onPageFinished(WebView view, String url) {
                 pageLoaded = true;
-                notifyGame("onReady", rewarded == null ? "false" : "true");
+                // Banner-only initialization; no rewarded ad callbacks.
             }
         });
         root.addView(game, new LinearLayout.LayoutParams(

@@ -1,0 +1,11 @@
+const test=require("node:test");
+const assert=require("node:assert/strict");
+const fs=require("node:fs");
+const p=require("node:path");
+const js=fs.readFileSync(p.join(__dirname,"game.js"),"utf8");
+const java=fs.readFileSync(p.join(__dirname,"native/MainActivity.java"),"utf8");
+const html=fs.readFileSync(p.join(__dirname,"index.html"),"utf8");
+test("every page has a banner",()=>{assert.match(js,/setBannerVisible\(true\)/);assert.match(java,/wantsBanner = true/);});
+test("first completion of each 10th level triggers interstitial on Continue",()=>{assert.match(js,/pendingMilestoneInterstitial=\(previous===0 && currentLevel%10===0\)\?currentLevel:0/);assert.match(js,/\$\('continueBtn'\)\.onclick=advanceFromVictory/);assert.match(js,/onInterstitialClosed:\(\)=>finishInterstitialStep/);});
+test("no rewarded ad is requested or shown",()=>{assert.doesNotMatch(java,/RewardedAd|loadRewarded|showRewarded/);assert.doesNotMatch(js,/showRewarded|watchRewardNoLives|watchRewardLives/);assert.doesNotMatch(html,/openRewardLives/);});
+test("9x9 remains",()=>assert.match(js,/const SIZE = 9, TOTAL_LEVELS = 540/));

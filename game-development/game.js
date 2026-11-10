@@ -61,8 +61,6 @@
     if($('lostLives'))$('lostLives').textContent=`❤️ ${save.lives}/${MAX_LIVES}`;
     if($('lostRefill'))$('lostRefill').textContent=save.lives===MAX_LIVES?'Canların dolu':`Sonraki can: ${timeUntilHeart()}`;
     if($('retryLevel'))$('retryLevel').disabled=save.lives<=0;
-    if($('openRewardLives'))$('openRewardLives').dataset.earnable=save.lives<MAX_LIVES?'yes':'no';
-    updateRewardButton();
     updateHome();
   }
   function consumeLife(){
@@ -71,64 +69,39 @@
     if(save.lives===MAX_LIVES || !save.nextLifeAt)save.nextLifeAt=Date.now()+LIFE_REGEN_MS;
     save.lives--;persist();updateLifeUI();return true;
   }
-  // Optional rewarded ads: never grant hearts for launching, skipping, or failing an ad.
-  // Native bridge is available only in the Android debug/production shell with AdMob.
-  const REWARDED_HEARTS = 5;
-  let rewardedReady = false;
-  let rewardedPending = false;
-  let rewardedGranted = false;
+  // Only a banner on every page and an interstitial after the 10th NEW level.
+  // Test ads only in this separate preview build.
   const nativeAds = () => typeof window.AndroidAds !== 'undefined' ? window.AndroidAds : null;
-  function adBannerForScreen(next){
+  function adBannerForScreen(){
     const bridge=nativeAds();
     if(bridge && typeof bridge.setBannerVisible==='function'){
-      try{bridge.setBannerVisible(next==='playing');}catch(_){}
+      try{bridge.setBannerVisible(true);}catch(_){}
     }
   }
-  function updateRewardButton(){
-    const buttons=['watchRewardLives','watchRewardNoLives'].map(id=>$(id)).filter(Boolean);
-    for(const b of buttons){
-      b.disabled=!rewardedReady||rewardedPending||save.lives>=MAX_LIVES;
-      b.textContent=save.lives>=MAX_LIVES?'❤️ Canların dolu':rewardedPending?'Reklam açılıyor...':rewardedReady?'🎬 Reklam izle · +5 can':'Reklam hazırlanıyor...';
-    }
+  let pendingMilestoneInterstitial=0;
+  let pendingNextLevel=null;
+  function finishInterstitialStep(){
+    if(pendingNextLevel===null)return;
+    const next=pendingNextLevel;pendingNextLevel=null;
+    if(screen==='victory')transitionToLevel(next);
   }
-  function requestRewardedLives(){
-    refreshLives();
-    if(save.lives>=MAX_LIVES){toast('❤️ Canların zaten dolu!');return;}
+  function advanceFromVictory(){
+    const next=Math.min(TOTAL_LEVELS,save.highest);
+    if(pendingMilestoneInterstitial!==currentLevel){transitionToLevel(next);return;}
+    pendingMilestoneInterstitial=0;
+    pendingNextLevel=next;
     const bridge=nativeAds();
-    if(!bridge || !rewardedReady || rewardedPending){toast('Reklam şu an hazır değil. Biraz sonra dene.');return;}
-    rewardedPending=true;rewardedGranted=false;rewardedReady=false;timerLastAt=performance.now();
-    updateRewardButton();
-    try{bridge.showRewarded();}catch(_){rewardedPending=false;updateRewardButton();toast('Reklam açılamadı.');}
+    if(bridge && typeof bridge.showInterstitial==='function'){
+      try{bridge.showInterstitial();return;}catch(_){}
+    }
+    finishInterstitialStep();
   }
-  function rewardLivesGranted(){
-    if(!rewardedPending || rewardedGranted)return;
-    rewardedGranted=true;
-    const old=save.lives;
-    refreshLives();
-    save.lives=Math.min(MAX_LIVES,save.lives+REWARDED_HEARTS);
-    if(save.lives===MAX_LIVES)save.nextLifeAt=0;
-    else if(!save.nextLifeAt)save.nextLifeAt=Date.now()+LIFE_REGEN_MS;
-    persist();
-    updateLifeUI();
-    if(modalType==='reward-lives'||modalType==='no-lives')closeModal();
-    playSound('coin');vibrate([25,40,30]);
-    toast('❤️ +' +(save.lives-old) +' can kazandın!');
-  }
-  window.OkKacisAdCallbacks = Object.freeze({
-    onReady: ready=>{rewardedReady=!!ready;updateRewardButton();adBannerForScreen(screen);},
-    onRewardEarned: ()=>{rewardLivesGranted();},
-    onClosed: ()=>{if(rewardedPending&&!rewardedGranted)toast('Reklam ödülü kazanılmadı.');rewardedPending=false;timerLastAt=performance.now();updateRewardButton();},
-    onFailed: ()=>{rewardedPending=false;rewardedReady=false;updateRewardButton();toast('Reklam açılamadı. Daha sonra tekrar dene.');}
+  window.OkKacisAdCallbacks=Object.freeze({
+    onInterstitialShown:()=>{},
+    onInterstitialClosed:()=>finishInterstitialStep(),
+    onInterstitialFailed:()=>finishInterstitialStep()
   });
-  function openRewardLives(){
-    refreshLives();
-    if(save.lives>=MAX_LIVES){toast('❤️ Canların dolu!');return;}
-    modal('❤️ Reklam izle, can kazan',`<p>İstersen bir ödüllü reklam izleyerek <strong>+5 can</strong> kazanabilirsin. Reklamı izlemezsen veya ödül kazanılmazsa can eklenmez.</p><p>❤️ ${save.lives}/${MAX_LIVES} · En fazla ${MAX_LIVES} can</p><button id="watchRewardLives" class="btn medium green" style="width:100%;margin-bottom:8px">🎬 Reklam izle · +5 can</button><button id="skipReward" class="btn medium blue" style="width:100%">Şimdi değil</button>`,'reward-lives');
-    $('watchRewardLives').onclick=requestRewardedLives;
-    $('skipReward').onclick=closeModal;
-    updateRewardButton();
-  }
-
+  function updateRewardButton() {} // compatibility stub; no rewarded ads
   // One lightweight ticker updates only displayed countdowns.
   setInterval(updateLifeUI,1000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateLifeUI();});
@@ -147,7 +120,7 @@
     if(n<=249)return 245;
     return 270;
   }
-  function timerRunning(){return !rewardedPending && screen==='playing' && $('modal').hidden && !document.hidden && !lostThisRun && !levelTransitioning && !busy && !!levelData;}
+  function timerRunning(){return screen==='playing' && $('modal').hidden && !document.hidden && !lostThisRun && !levelTransitioning && !busy && !!levelData;}
   function clockString(milliseconds){const seconds=Math.max(0,Math.ceil(milliseconds/1000));return `${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;}
   function drawTimer(){
     if(!$('timerText'))return;
@@ -441,8 +414,7 @@
     refreshLives();
     if(save.lives<=0){
       show('levels');
-      modal('Canların Bitti',`<div class="life-big">❤️ 0/${MAX_LIVES}</div><p>Her 2 dakikada bir can yenilenir. Sonraki cana <strong id="lostRefill">${timeUntilHeart()}</strong> kaldı.</p><button class="btn medium green" id="watchRewardNoLives" style="width:100%;margin-bottom:10px">🎬 Reklam izle · +5 can</button><button class="btn medium blue" id="noLivesBack" style="width:100%">Bölümlere Dön</button>`,'no-lives');
-      $('watchRewardNoLives').onclick=requestRewardedLives;
+      modal('Canların Bitti',`<div class="life-big">❤️ 0/${MAX_LIVES}</div><p>Her 2 dakikada bir can yenilenir. Sonraki cana <strong id="lostRefill">${timeUntilHeart()}</strong> kaldı.</p><button class="btn medium blue" id="noLivesBack" style="width:100%">Bölümlere Dön</button>`,'no-lives');
       $('noLivesBack').onclick=closeModal;
       updateLifeUI();return;
     }
@@ -597,7 +569,9 @@
     save.totalWins++;if(grade===3)save.perfectWins++;ensureDaily();save.dailyQuests.wins++;if(grade===3)save.dailyQuests.perfect++;
     if(currentLevel>=save.highest)save.highest=Math.min(TOTAL_LEVELS,currentLevel+1);
     const reward=previous?25:100;save.coins+=reward;save.undos=Math.max(save.undos,2);save.hints=Math.max(save.hints,2);
-    levelData.reward=reward;levelData.grade=grade;persist();vibrate([25,35,40]);show('victory');
+    levelData.reward=reward;levelData.grade=grade;
+    pendingMilestoneInterstitial=(previous===0 && currentLevel%10===0)?currentLevel:0;
+    persist();vibrate([25,35,40]);show('victory');
   }
   function renderVictory(){if(!levelData)return;
     $('victory').classList.remove('celebrating');void $('victory').offsetWidth;$('victory').classList.add('celebrating');
@@ -609,7 +583,7 @@
   }
   function modal(title,body,kind){timerLastAt=performance.now();modalType=kind;$('modalClose').textContent=(kind==='lose'?'Bölümlere Dön':'Kapat');$('modalTitle').textContent=title;$('modalContent').innerHTML=body;$('modal').hidden=false;playSound()}
   function closeModal(){$('modal').hidden=true;modalType='';timerLastAt=performance.now();}
-  function openSettings(){modal('Ayarlar',`<div class="setting-line"><span>🔊 Ses efektleri</span><button id="soundToggle">${save.sound?'Açık':'Kapalı'}</button></div><div class="setting-line"><span>🎵 Fon müziği</span><button id="musicToggle">${save.music?'Açık':'Kapalı'}</button></div><div class="setting-line"><span>📳 Titreşim</span><button id="vibrateToggle">${save.vibrate?'Açık':'Kapalı'}</button></div><div class="setting-line"><span>🌍 Dil</span><span>Türkçe</span></div><p>Ok Kaçış · Sürüm 4.2<br>Çevrimdışı oynanır • ilerleme telefonda saklanır.</p>`,'settings');
+  function openSettings(){modal('Ayarlar',`<div class="setting-line"><span>🔊 Ses efektleri</span><button id="soundToggle">${save.sound?'Açık':'Kapalı'}</button></div><div class="setting-line"><span>🎵 Fon müziği</span><button id="musicToggle">${save.music?'Açık':'Kapalı'}</button></div><div class="setting-line"><span>📳 Titreşim</span><button id="vibrateToggle">${save.vibrate?'Açık':'Kapalı'}</button></div><div class="setting-line"><span>🌍 Dil</span><span>Türkçe</span></div><p>Ok Kaçış · 9×9 reklam test<br>Çevrimdışı oynanır • ilerleme telefonda saklanır.</p>`,'settings');
     $('soundToggle').onclick=()=>{save.sound=!save.sound;persist();$('soundToggle').textContent=save.sound?'Açık':'Kapalı'};
     $('musicToggle').onclick=()=>{setMusic(!save.music);$('musicToggle').textContent=save.music?'Açık':'Kapalı'};
     $('vibrateToggle').onclick=()=>{save.vibrate=!save.vibrate;persist();$('vibrateToggle').textContent=save.vibrate?'Açık':'Kapalı'};
@@ -661,9 +635,8 @@
   document.querySelectorAll('[data-nav]').forEach(btn=>btn.onclick=()=>show(btn.dataset.nav));
   $('prevPage').onclick=()=>{page=Math.max(0,page-1);renderLevels()};
   $('nextPage').onclick=()=>{page=Math.min(Math.ceil(TOTAL_LEVELS/12)-1,page+1);renderLevels()};
-  if($('openRewardLives'))$('openRewardLives').onclick=openRewardLives;
   $('pauseBtn').onclick=pause;$('gameSettings').onclick=openSettings;$('undoBtn').onclick=undo;$('hintBtn').onclick=hint;$('restartBtn').onclick=restart;
-  $('victoryHome').onclick=()=>show('home');$('continueBtn').onclick=()=>transitionToLevel(Math.min(TOTAL_LEVELS,save.highest));$('replayBtn').onclick=()=>transitionToLevel(currentLevel);
+  $('victoryHome').onclick=()=>show('home');$('continueBtn').onclick=advanceFromVictory;$('replayBtn').onclick=()=>transitionToLevel(currentLevel);
   $('dailyBtn').onclick=openDaily;$('settingsBtn').onclick=openSettings;$('shopBtn').onclick=openShop;
   $('gameShop').onclick=openShop;$('shopBack').onclick=()=>show(shopReturn==='shop'?'home':shopReturn);
   $('missionsBtn').onclick=()=>show('challenges');$('achievementsBtn').onclick=showAchievements;

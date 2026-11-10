@@ -1,0 +1,1 @@
+Isolated Google test-ads only 9x9 build. Banner displayed at bottom on ALL screens. Interstitial AFTER first clear of every 10th level, on Continue; gracefully skips unavailable ads. Rewarded ads disabled and UI removed. Current Play V18 unchanged. Uses Google's sample banner and interstitial IDs. No live AdMob revenue or release activation while account restricted.
