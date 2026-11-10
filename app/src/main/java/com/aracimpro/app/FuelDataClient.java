@@ -513,8 +513,19 @@ public final class FuelDataClient {
         return d != null ? mergeMeta(root, d) : root;
     }
 
+    // Validate user-configured endpoints before any vehicle/fuel data is sent.
+    // Android's network_security_config.xml also blocks cleartext traffic.
+    private static URL requireHttpsUrl(String address) throws Exception {
+        URL parsed = new URL(address);
+        if (!"https".equalsIgnoreCase(parsed.getProtocol())
+                || parsed.getHost() == null || parsed.getHost().isEmpty()) {
+            throw new IllegalArgumentException("Güvenlik nedeniyle yalnız HTTPS bağlantılarına izin verilir");
+        }
+        return parsed;
+    }
+
     private static String postSoap(String url, String body, String soapAction, int timeout) throws Exception {
-        HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+        HttpURLConnection c = (HttpURLConnection) requireHttpsUrl(url).openConnection();
         c.setConnectTimeout(timeout);
         c.setReadTimeout(timeout);
         c.setRequestMethod("POST");
@@ -535,7 +546,7 @@ public final class FuelDataClient {
     }
 
     private static String get(String url, int timeout) throws Exception {
-        HttpURLConnection c = (HttpURLConnection) new URL(url).openConnection();
+        HttpURLConnection c = (HttpURLConnection) requireHttpsUrl(url).openConnection();
         c.setConnectTimeout(timeout);
         c.setReadTimeout(timeout);
         c.setRequestProperty("User-Agent", "AracimPro/5.5.6 Android");
