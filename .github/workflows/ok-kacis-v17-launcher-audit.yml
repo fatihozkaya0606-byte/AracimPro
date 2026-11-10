@@ -1,0 +1,37 @@
+name: Ok Kacis v17 Launcher Asset Audit
+on:
+  push:
+    branches: [ok-kacis-game-v1]
+    paths: ['.github/workflows/ok-kacis-v17-launcher-audit.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect-icons:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore game source and list icon resources
+        run: |
+          set -euo pipefail
+          mkdir -p game-src audit/icons
+          unzip -q OkKacis_4_2_KaynakKod.zip -d game-src
+          find game-src/OkKacis/app/src/main -type f | grep -Ei 'icon|logo|mipmap|splash|badge' | head -90
+          cat game-src/OkKacis/app/src/main/AndroidManifest.xml | head -100
+          grep -E 'versionCode|versionName|applicationId' game-src/OkKacis/app/build.gradle
+          python3 - <<'PY'
+          from pathlib import Path
+          import shutil
+          src=Path("game-src/OkKacis/app/src/main")
+          allfiles=[p for p in src.rglob('*') if p.is_file() and (any(word in p.name.lower() for word in ['icon','logo','launcher']) or '/mipmap' in str(p))]
+          for i,p in enumerate(allfiles):
+              dest=Path("audit/icons")/(f"{i:02d}_"+p.name)
+              shutil.copyfile(p,dest)
+          Path('audit/paths.txt').write_text('\n'.join(map(str,allfiles)))
+          print("Files:", len(allfiles))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: OkKacis-V17-Icon-Audit
+          path: audit/
+          if-no-files-found: error
