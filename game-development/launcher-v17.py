@@ -53,8 +53,7 @@ center('OK',286,big,(255,244,185),3)
 center('KAÇIŞ',389,small,(255,255,255),2)
 d.rounded_rectangle((115,486,397,492),radius=3,fill=(239,204,83))
 out=Path(sys.argv[2]);out.mkdir(parents=True,exist_ok=True)
-rgb=base.convert('RGB')
-rgb.save(out/'OkKacis_GooglePlay_512.png',optimize=True)
+base.save(out/'OkKacis_GooglePlay_512.png',optimize=True)
 # Android launcher icons use exact same full artwork as the store icon.
 for density,size in [('mdpi',48),('hdpi',72),('xhdpi',96),('xxhdpi',144),('xxxhdpi',192)]:
  loc=res/('mipmap-'+density);loc.mkdir(parents=True,exist_ok=True)
