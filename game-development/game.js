@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const MAX_LIVES = 20, LIFE_REGEN_MS = 2 * 60 * 1000;
-  const SIZE = 7, TOTAL_LEVELS = 540, COLORS = ['red','green','orange','purple','yellow','blue'];
+  const SIZE = 9, TOTAL_LEVELS = 540, COLORS = ['red','green','orange','purple','yellow','blue'];
   const WORLDS=[{id:'forest',name:'🌿 Yeşil Vadi',emoji:'🌲'},{id:'desert',name:'🏜️ Altın Çöl',emoji:'🌵'},{id:'snow',name:'❄️ Buz Tepeleri',emoji:'❄️'},{id:'sunset',name:'🌅 Günbatımı',emoji:'🌅'},{id:'neon',name:'🌌 Neon Evren',emoji:'💜'}];
   const SKINS=[{id:'classic',name:'Klasik Parlak',icon:'🌈',price:0},{id:'crystal',name:'Kristal Ok',icon:'💎',price:850},{id:'metal',name:'Altın Ok',icon:'🏆',price:1200},{id:'neon',name:'Neon Ok',icon:'⚡',price:1800},{id:'candy',name:'Şeker Ok',icon:'🍬',price:2400}];
   const THEME_PRICES={auto:0,forest:0,desert:900,snow:1100,sunset:1500,neon:2000};

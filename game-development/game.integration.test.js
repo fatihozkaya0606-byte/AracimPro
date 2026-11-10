@@ -6,7 +6,7 @@ const src=fs.readFileSync(__dirname+"/game.js","utf8");
 const from=src.indexOf("  function rngFor(level){");
 const to=src.indexOf("  function startLevel(n){",from);
 assert.ok(from>0&&to>from,"Cannot find actual level generator");
-const code="const SIZE=7,COLORS=['red','green','orange','purple','yellow','blue'];\n"+src.slice(from,to)+"\n({difficulty,makeLevel,availableCount,createSpecialTiles,occupancy,key,cells,freeExit});";
+const code="const SIZE=9,COLORS=['red','green','orange','purple','yellow','blue'];\n"+src.slice(from,to)+"\n({difficulty,makeLevel,availableCount,createSpecialTiles,occupancy,key,cells,freeExit});";
 const game=vm.runInNewContext(code,{});
 const level=n=>game.makeLevel(n);
 
@@ -49,9 +49,22 @@ test("special tokens occupy only empty cells, away from obstacles",()=>{
     const occupied=game.occupancy(b.pieces,b.rocks);
     assert.ok(gems.length>=1,"no gems at "+n);
     for(const gem of gems){
-      assert.ok(gem.x>=0&&gem.x<7&&gem.y>=0&&gem.y<7);
+      assert.ok(gem.x>=0&&gem.x<9&&gem.y>=0&&gem.y<9);
       assert.equal(occupied.has(game.key(gem.x,gem.y)),false,"overlap at "+n);
       assert.ok(["bomb","lightning","spin","gift"].includes(gem.type));
+    }
+  }
+});
+
+test("all 540 levels have 9x9 bounded coordinates and accessible first move",()=>{
+  for(let n=1;n<=540;n++){
+    const b=level(n);
+    assert.ok(b.pieces.length>0,"no arrows "+n);
+    assert.ok(game.availableCount(b)>=1,"no playable arrow "+n);
+    for(const p of b.pieces){
+      for(const [x,y] of game.cells(p)){
+        assert.ok(x>=0&&x<9&&y>=0&&y<9,"piece outside 9x9 "+n);
+      }
     }
   }
 });

@@ -1,0 +1,1 @@
+Ok Kacis: Android 9x9 test build on isolated ok-kacis-v18-9x9-test-apk branch. Uses original 4.2 source pack plus updated isolated assets, corrected SIZE=9, corrected 9x9 cell CSS and 540-level validation. Installs as com.okkacis.game.dev, with Google sample AdMob test IDs. Debug APK only; never use for Google Play production. Old production and v17 AAB remain unchanged.
