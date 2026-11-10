@@ -1,0 +1,102 @@
+name: OK Kacis 9x9 Banner All Screens + Interstitial Every 10 - TEST APK
+on:
+  push:
+    branches: [ok-kacis-v19-ads-test]
+    paths:
+      - '.github/workflows/ok-kacis-v19-ads-test.yml'
+      - 'game-development/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-debug:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Install Android 36 and Pillow
+        run: |
+          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+          python3 -m pip install --quiet --user 'Pillow>=10,<13'
+      - name: Extract production game's full original assets, replace 9x9 and ad bridge
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p test-source
+          unzip -q OkKacis_4_2_KaynakKod.zip -d test-source
+          root=test-source/OkKacis
+          for f in game.js index.html style.css; do
+            test -s "game-development/$f"
+            cp "game-development/$f" "$root/app/src/main/assets/$f"
+          done
+          cp game-development/native/MainActivity.java "$root/app/src/main/java/com/okkacis/game/MainActivity.java"
+          node --check "$root/app/src/main/assets/game.js"
+          grep -Fq 'const SIZE = 9, TOTAL_LEVELS = 540' "$root/app/src/main/assets/game.js"
+          grep -Fq 'pendingMilestoneInterstitial=(previous===0 && currentLevel%10===0)?currentLevel:0;' "$root/app/src/main/assets/game.js"
+          if grep -Eq 'RewardedAd|loadRewarded|showRewarded' "$root/app/src/main/java/com/okkacis/game/MainActivity.java"; then echo "Rewarded ads not allowed"; exit 1; fi
+          python3 game-development/launcher-v17.py "$root" test-icon
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path("test-source/OkKacis")
+          p=root/"app/build.gradle"
+          s=p.read_text(encoding="utf-8")
+          for old,new in [
+              ("compileSdk 35","compileSdk 36"),
+              ("targetSdk 35","targetSdk 36"),
+              ("versionCode 14","versionCode 19"),
+              ("versionName '4.2.0'","versionName '4.3.4'")
+          ]:
+              assert s.count(old)==1,old
+              s=s.replace(old,new,1)
+          # Standalone test: different package ID; cannot overwrite production.
+          s+="""
+          android {
+            buildTypes {
+              debug {
+                applicationIdSuffix '.ads'
+                versionNameSuffix '-preview'
+              }
+            }
+          }
+          dependencies {
+            implementation 'com.google.android.gms:play-services-ads:25.5.0'
+            implementation 'com.google.android.ump:user-messaging-platform:4.0.0'
+          }
+          """
+          p.write_text(s,encoding="utf-8")
+          m=root/"app/src/main/AndroidManifest.xml"
+          x=m.read_text()
+          assert x.count("<application ")==1
+          x=x.replace("<application ",'''<uses-permission android:name="android.permission.INTERNET" />
+          <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+          <application android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" ''',1)
+          x=x.replace("</application>",'''  <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-3940256099942544~3347511713" />
+          </application>''',1)
+          m.write_text(x)
+          PY
+      - name: Test all 540 9x9 levels and ad controls
+        run: node --test game-development/*.test.js
+      - name: Build Android installable ads test APK
+        working-directory: test-source/OkKacis
+        run: gradle --no-daemon :app:assembleDebug
+      - name: Verify APK integrity and package
+        run: |
+          set -euo pipefail
+          apk=test-source/OkKacis/app/build/outputs/apk/debug/app-debug.apk
+          test -s "$apk"
+          unzip -tq "$apk"
+          test -s test-source/OkKacis/app/src/main/assets/game.js
+          cp "$apk" OkKacis_9x9_V19_Banner_10Bolum_TEST.apk
+          sha256sum OkKacis_9x9_V19_Banner_10Bolum_TEST.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: OkKacis-9x9-V19-Banner-10Bolum-Test-APK
+          path: OkKacis_9x9_V19_Banner_10Bolum_TEST.apk
+          if-no-files-found: error
