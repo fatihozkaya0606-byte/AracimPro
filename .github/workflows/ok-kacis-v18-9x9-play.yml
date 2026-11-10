@@ -1,0 +1,146 @@
+name: Ok Kacis 9x9 v18 - Google Play Signed AAB
+on:
+  push:
+    branches: [ok-kacis-v18-9x9-play-aab]
+    paths: [".github/workflows/ok-kacis-v18-9x9-play.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+
+jobs:
+  signed-play-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout isolated 9x9 release sources
+        uses: actions/checkout@v4
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "9.1.0"
+      - name: Android SDK
+        uses: android-actions/setup-android@v4
+      - name: Install compile SDK 36 and image generator
+        run: |
+          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+          python3 -m pip install --quiet --user "Pillow>=10,<13"
+
+      - name: Assemble game sources, genuine 9x9 board and matching store icon
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-src Play-files
+          unzip -q OkKacis_4_2_KaynakKod.zip -d release-src
+          root=release-src/OkKacis
+          test -s "$root/app/src/main/assets/game.js"
+          grep -Fq "applicationId 'com.okkacis.game'" "$root/app/build.gradle"
+          for asset in game.js index.html style.css; do
+            cp "game-development/$asset" "$root/app/src/main/assets/$asset"
+          done
+          node --check "$root/app/src/main/assets/game.js"
+          grep -Fq "const SIZE = 9, TOTAL_LEVELS = 540" "$root/app/src/main/assets/game.js"
+          grep -Fq -- "--cell:calc(100% / 9)" "$root/app/src/main/assets/style.css"
+          if grep -Fq "14.285714%" "$root/app/src/main/assets/style.css"; then echo "::error::Old 7x7 board in CSS"; exit 1; fi
+          if grep -Fq "calc(100% / 7)" "$root/app/src/main/assets/style.css"; then echo "::error::Old cell geometry"; exit 1; fi
+          python3 game-development/launcher-v17.py "$root" Play-files
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          root=Path("release-src/OkKacis")
+          p=root/"app/build.gradle"
+          s=p.read_text(encoding="utf-8")
+          for old,new in [
+            ("compileSdk 35","compileSdk 36"),
+            ("targetSdk 35","targetSdk 36"),
+            ("versionCode 14","versionCode 18"),
+            ("versionName '4.2.0'","versionName '4.3.3'"),
+          ]:
+            assert s.count(old)==1, f"Unexpected old gradle version: {old}"
+            s=s.replace(old,new,1)
+          assert "applicationId 'com.okkacis.game'" in s
+          assert "applicationIdSuffix" not in s
+          p.write_text(s,encoding="utf-8")
+          m=root/"app/src/main/AndroidManifest.xml"
+          xml=m.read_text(encoding="utf-8")
+          assert xml.count("<application ")==1
+          assert "android:icon=" not in xml
+          xml=xml.replace("<application ",'<application android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" ',1)
+          m.write_text(xml,encoding="utf-8")
+          store=Path("Play-files/OkKacis_GooglePlay_512.png")
+          icon=Image.open(store)
+          assert icon.size==(512,512), icon.size
+          assert icon.mode=="RGBA", icon.mode
+          assert store.stat().st_size < 1_000_000, store.stat().st_size
+          for dpi in ("mdpi","hdpi","xhdpi","xxhdpi","xxxhdpi"):
+            assert (root/f"app/src/main/res/mipmap-{dpi}/ic_launcher.png").is_file(), dpi
+            assert (root/f"app/src/main/res/mipmap-{dpi}/ic_launcher_round.png").is_file(), dpi
+          print("COMPLIANCE PRECHECK PASSED: Android 36, versionCode18, exact package, 9x9, launcher icon, 512x512 RGBA.")
+          PY
+
+      - name: Run gameplay regression tests for all 540 levels
+        run: |
+          set -euo pipefail
+          node --test game-development/*.test.js
+          echo "540 levels: 9x9 bounds and available starting move tests passed."
+
+      - name: Recover original Google Play signing key securely
+        env:
+          STORE_B64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_B64 }}
+        run: |
+          set -euo pipefail
+          test -n "$STORE_B64" || { echo "::error::Existing Play upload key missing"; exit 1; }
+          printf '%s' "$STORE_B64" | base64 --decode > "$RUNNER_TEMP/okk-play-upload.jks"
+          test -s "$RUNNER_TEMP/okk-play-upload.jks"
+          chmod 600 "$RUNNER_TEMP/okk-play-upload.jks"
+
+      - name: Configure original Google Play upload signing
+        run: |
+          cat >> release-src/OkKacis/app/build.gradle <<'EOF'
+          android {
+            signingConfigs {
+              playRelease {
+                storeFile file(System.getenv('RUNNER_TEMP') + '/okk-play-upload.jks')
+                storePassword System.getenv('SIGNING_STORE_PASSWORD')
+                keyAlias System.getenv('SIGNING_KEY_ALIAS')
+                keyPassword System.getenv('SIGNING_KEY_PASSWORD')
+              }
+            }
+            buildTypes { release { signingConfig signingConfigs.playRelease } }
+          }
+          EOF
+
+      - name: Build 9x9 Google Play signed release AAB
+        working-directory: release-src/OkKacis
+        env:
+          SIGNING_STORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_STORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$SIGNING_STORE_PASSWORD" && test -n "$SIGNING_KEY_ALIAS" && test -n "$SIGNING_KEY_PASSWORD"
+          gradle --no-daemon :app:bundleRelease
+
+      - name: Validate signed bundle contains real 9x9 game and icon
+        run: |
+          set -euo pipefail
+          f=release-src/OkKacis/app/build/outputs/bundle/release/app-release.aab
+          test -s "$f"
+          unzip -tq "$f"
+          jarsigner -verify -verbose "$f" | grep -q "jar verified"
+          unzip -p "$f" base/assets/game.js | grep -Fq "const SIZE = 9, TOTAL_LEVELS = 540"
+          unzip -p "$f" base/assets/style.css | grep -Fq -- "--cell:calc(100% / 9)"
+          unzip -Z1 "$f" | grep -Fq "base/res/mipmap-mdpi-v4/ic_launcher.png"
+          unzip -Z1 "$f" | grep -Fq "base/manifest/AndroidManifest.xml"
+          cp "$f" Play-files/OkKacis_9x9_V18_4_3_3_GooglePlay_Imzali.aab
+          sha256sum Play-files/*
+
+      - name: Export upload-ready files (AAB + same icon)
+        uses: actions/upload-artifact@v4
+        with:
+          name: OkKacis-9x9-V18-PLAY-AAB-and-Icon
+          path: Play-files/
+          if-no-files-found: error
