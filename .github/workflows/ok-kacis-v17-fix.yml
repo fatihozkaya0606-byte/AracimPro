@@ -1,0 +1,114 @@
+name: Ok Kacis 4.3.1 v17 Icon Policy Fix - Signed AAB
+on:
+  push:
+    branches: [ok-kacis-v17-icon-fix]
+    paths: ['.github/workflows/ok-kacis-v17-fix.yml','game-development/launcher-v17.py']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  signed-aab:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout isolated release branch
+        uses: actions/checkout@v4
+      - name: Checkout updated game assets (isolated preview branch)
+        uses: actions/checkout@v4
+        with:
+          ref: ok-kacis-powerups-dev
+          path: dev-assets
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.1.0'
+      - uses: android-actions/setup-android@v4
+      - name: Android SDK and Python imaging
+        run: |
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
+          python3 -m pip install --user 'Pillow>=10,<13'
+      - name: Extract game sources and prepare v17
+        run: |
+          set -euo pipefail
+          mkdir -p release-src Play-assets
+          unzip -q OkKacis_4_2_KaynakKod.zip -d release-src
+          test -f release-src/OkKacis/app/src/main/assets/game.js
+          grep -Fq "applicationId 'com.okkacis.game'" release-src/OkKacis/app/build.gradle
+          for p in game.js index.html style.css; do
+            test -s "dev-assets/game-development/$p"
+            cp "dev-assets/game-development/$p" "release-src/OkKacis/app/src/main/assets/$p"
+          done
+          node --check release-src/OkKacis/app/src/main/assets/game.js
+          node --test dev-assets/game-development/*.test.js
+          python3 game-development/launcher-v17.py release-src/OkKacis Play-assets
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('release-src/OkKacis/app/build.gradle')
+          txt=p.read_text()
+          for old,new in [
+            ('compileSdk 35','compileSdk 36'),
+            ('targetSdk 35','targetSdk 36'),
+            ('versionCode 14','versionCode 17'),
+            ("versionName '4.2.0'","versionName '4.3.1'")
+          ]:
+            assert txt.count(old)==1, f'missing or duplicated: {old}'
+            txt=txt.replace(old,new,1)
+          p.write_text(txt)
+          m=Path('release-src/OkKacis/app/src/main/AndroidManifest.xml')
+          xml=m.read_text()
+          assert xml.count('<application ')==1
+          assert 'android:icon=' not in xml
+          xml=xml.replace('<application ','<application android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher_round" ',1)
+          m.write_text(xml)
+          print('v17, app package and launcher icon manifest verified')
+          PY
+      - name: Restore existing Google Play upload signing key
+        env:
+          STORE_B64: ${{ secrets.PLAY_UPLOAD_KEYSTORE_B64 }}
+        run: |
+          set -euo pipefail
+          test -n "$STORE_B64" || { echo "::error::The existing Play upload key secret is missing"; exit 1; }
+          printf '%s' "$STORE_B64" | base64 --decode > "$RUNNER_TEMP/okk-play-upload.jks"
+          chmod 600 "$RUNNER_TEMP/okk-play-upload.jks"
+      - name: Inject signing config (without exposing credentials)
+        run: |
+          cat >> release-src/OkKacis/app/build.gradle <<'EOF'
+          android {
+            signingConfigs {
+              playRelease {
+                storeFile file(System.getenv('RUNNER_TEMP') + '/okk-play-upload.jks')
+                storePassword System.getenv('SIGNING_STORE_PASSWORD')
+                keyAlias System.getenv('SIGNING_KEY_ALIAS')
+                keyPassword System.getenv('SIGNING_KEY_PASSWORD')
+              }
+            }
+            buildTypes { release { signingConfig signingConfigs.playRelease } }
+          }
+          EOF
+      - name: Build signed v17 AAB
+        working-directory: release-src/OkKacis
+        env:
+          SIGNING_STORE_PASSWORD: ${{ secrets.PLAY_UPLOAD_STORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.PLAY_UPLOAD_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.PLAY_UPLOAD_KEY_PASSWORD }}
+        run: |
+          test -n "$SIGNING_STORE_PASSWORD" && test -n "$SIGNING_KEY_ALIAS" && test -n "$SIGNING_KEY_PASSWORD"
+          gradle --no-daemon :app:bundleRelease
+      - name: Validate signed v17 Android bundle and launcher
+        run: |
+          set -euo pipefail
+          input=release-src/OkKacis/app/build/outputs/bundle/release/app-release.aab
+          test -s "$input"
+          jarsigner -verify "$input"
+          unzip -tq "$input"
+          unzip -Z1 "$input" | grep -Fq "base/res/mipmap-mdpi"
+          cp "$input" Play-assets/OkKacis_4_3_1_v17_GooglePlay_Imzali.aab
+          sha256sum Play-assets/*
+      - name: Publish ready-to-upload bundle and matching 512 icon
+        uses: actions/upload-artifact@v4
+        with:
+          name: OkKacis-v17-Signed-AAB-and-Play-Icon
+          path: Play-assets/
+          if-no-files-found: error
