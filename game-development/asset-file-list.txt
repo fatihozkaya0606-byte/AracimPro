@@ -1,0 +1,17 @@
+opening-jingle.ogg
+world-sunset.svg
+world-neon.svg
+world-forest.svg
+world-desert.jpg
+world-forest.jpg
+world-neon.jpg
+index.html
+world-snow.jpg
+bg-music.ogg
+world-desert.svg
+world-sunset.jpg
+world-snow.svg
+style.css
+world-forest-sharp.webp
+game.js
+world-forest-premium.webp

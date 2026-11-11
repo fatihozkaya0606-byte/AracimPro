@@ -1,0 +1,11 @@
+name: OK Kacis manual source-inspection helper (disabled)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Source inspection completed
+        run: echo "Game source is already in game-development/game.js; no automated overwrites."

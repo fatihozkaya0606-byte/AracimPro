@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#168edc"><meta name="description" content="Ok Kaçış - renkli, offline ok bulmaca macerası">
+  <title>Ok Kaçış</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app" class="app theme-forest">
+  <div class="world-backdrop" aria-hidden="true"><div class="sun-halo"></div><div class="cloud cl1"></div><div class="cloud cl2"></div><div class="cloud cl3"></div><div class="mountain m1"></div><div class="mountain m2"></div><div class="ridge trees-back"></div><div class="water"></div><div class="shore"></div><div class="coast-path"></div><div class="village v1"></div><div class="village v2"></div><div class="village v3"></div><div class="water-shine"></div><div class="tree t1">🌳</div><div class="tree t2">🌲</div><div class="tree t3">🌳</div><div class="spark-field"></div></div>
+
+  <div id="splash" class="splash loading" role="status" aria-label="Ok Kaçış açılıyor">
+    <div class="splash-atmosphere" aria-hidden="true"><span>➜</span><span>➜</span><span>➜</span></div>
+    <div class="splash-logo"><strong>OK</strong><strong>KAÇIŞ</strong><em>OKLARIN SIRRINI ÇÖZ!</em></div>
+    <div class="splash-footer"><div class="splash-status">MACERA HAZIRLANIYOR <b id="splashPercent">0%</b></div><div class="splash-track"><div class="splash-fill"></div></div><span>540 BULMACA • ZORLAŞAN MACERA</span><button id="skipSplash" type="button">Atla ❯</button></div>
+  </div>
+  <div id="levelTransition" class="level-transition" hidden aria-live="polite"><div class="level-enter-icons" aria-hidden="true">➜ ✦ ➜</div><div class="level-enter-title">YENİ MACERA</div><strong id="transitionLevel">Seviye 2</strong><div class="enter-track"><div></div></div></div>
+
+  <section id="home" class="screen active" aria-label="Ana menü">
+    <div class="home-sky"><span class="floating-arrow fa1">➜</span><span class="floating-arrow fa2">➜</span><span class="floating-arrow fa3">➜</span><span class="floating-arrow fa4">➜</span><span class="floating-arrow fa5">➜</span></div>
+    <header class="logo-container"><div class="logo-top">Ok</div><div class="logo-bottom">Kaçış</div><div class="logo-shine">✦</div></header>
+    <div class="island-scene" aria-hidden="true"><div class="portal-glow"></div><div class="portal"><div class="portal-hole"></div></div><div class="block-scene bs1"></div><div class="block-scene bs2"></div><div class="block-scene bs3"></div><div class="block-scene bs4"></div><div class="block-scene bs5"></div><div class="sceneflower">🌼</div></div>
+    <div class="home-bottom"><div class="home-status" id="homeStatus">✦ 500+ bölüm • Günlük mücadele</div>
+      <button class="btn huge orange" id="startBtn"><span class="playicon">▶</span> Başla</button>
+      <div class="menu-buttons">
+        <button class="btn square blue" id="dailyBtn"><span class="menu-icon">🎁</span><span>Günlük<br>Ödül</span></button>
+        <button class="btn square blue" id="settingsBtn"><span class="menu-icon">⚙️</span><span>Ayarlar</span></button>
+        <button class="btn square blue" id="shopBtn"><span class="menu-icon">🏪</span><span>Mağaza</span></button>
+      </div>
+      <div class="extra-buttons"><button id="missionsBtn">🎯 Görevler</button><button id="achievementsBtn">🏆 Başarılar</button></div>
+    </div>
+  </section>
+
+  <section id="levels" class="screen" aria-label="Bölümler">
+    <div class="resource-bar" id="resourcesLevels"></div>
+    <div class="levels-head"><button class="circle-btn" data-nav="home" aria-label="Geri">❮</button><div class="wooden-title">Bölümler</div></div>
+    <div class="levels-scroll">
+      <div class="levels-grid" id="levelGrid"></div>
+      <div class="level-pages"><button class="circle-btn small" id="prevPage" aria-label="Önceki bölümler">❮</button><div id="pageDots" class="page-dots"></div><button class="circle-btn small" id="nextPage" aria-label="Sonraki bölümler">❯</button></div>
+      <p class="level-tip" id="levelTip">Yeni bölümler oynadıkça açılır.</p>
+    </div>
+  </section>
+
+  <section id="playing" class="screen" aria-label="Oyun ekranı">
+    <div class="game-top"><button class="circle-btn" id="pauseBtn" aria-label="Duraklat">Ⅱ</button><div class="wooden-title small-title" id="currentLevelTitle">Seviye 1</div><div class="game-tools"><button class="circle-btn game-shop-icon" id="gameShop" aria-label="Mağaza">🏪</button><button class="circle-btn" id="gameSettings" aria-label="Ayarlar">⚙</button></div></div>
+    <div class="objective-bar"><div class="objective-card"><div class="objective-label">Hedef</div><div class="objective-value"><span class="goal-arrow" aria-hidden="true">➜</span><span id="progressTxt">0/6</span></div></div><div class="objective-card"><div class="objective-label">Hamle</div><div class="objective-value"><span>👣</span><span id="movesTxt">12</span></div></div><button type="button" id="openRewardLives" class="objective-card lives-card reward-lives-tap" aria-label="Can kazanma seçeneklerini aç"><div class="objective-label">Can</div><div class="objective-value"><span>❤️</span><span id="livesTxt">20/20</span></div><div id="lifeTimer" class="life-timer">Canlar dolu</div></button></div>
+    <div class="timer-panel" id="timerPanel" aria-label="Kalan süre"><span class="timer-face">⏱ <strong id="timerText">02:00</strong></span><div class="timer-rail"><div class="timer-fill" id="timerFill"></div></div><span class="timer-level" id="timerLevel">Süreli</span></div>
+    <div class="game-center"><div class="world-label"><span id="worldLabel">🌿 Yeşil Vadi</span><span id="difficultyLabel" class="difficulty-label">Başlangıç</span></div><div id="boardFrame" class="board-frame"><div class="corner-ornament c1"></div><div class="corner-ornament c2"></div><div class="corner-ornament c3"></div><div class="corner-ornament c4"></div><div id="gameBoard" class="game-board" role="group" aria-label="Yönlerine dokunarak okları çıkar"></div></div><p class="game-tip" id="gameTip">Yolu açık oka dokun, onu tahtadan çıkar!</p></div>
+    <div class="play-utilities"><button class="powers-strip" id="powersBtn" type="button">⚡ Güçler</button><button id="musicToggleFloat" class="music-toggle-float" type="button" aria-label="Fon müziğini aç veya kapat" aria-pressed="true" hidden>♫ Müzik Açık</button></div>
+    <div class="game-bottom"><button class="btn action blue" id="undoBtn"><span class="bubble" id="undoBadge">3</span><span class="action-icon">↶</span><span>Geri Al</span></button><button class="btn action blue" id="hintBtn"><span class="bubble" id="hintBadge">3</span><span class="action-icon">💡</span><span>İpucu</span></button><button class="btn action blue" id="restartBtn"><span class="action-icon">↻</span><span>Yeniden</span></button></div>
+  </section>
+
+  <section id="shop" class="screen" aria-label="Mağaza">
+    <div class="shop-header"><button class="circle-btn" id="shopBack" aria-label="Geri">❮</button><div class="wooden-title">🏪 Mağaza</div><div class="shop-wallet" id="shopWallet">🪙 0</div></div>
+    <div class="shop-scroll" id="shopItems"></div>
+  </section>
+
+  <section id="challenges" class="screen" aria-label="Günlük görevler">
+    <div class="shop-header"><button class="circle-btn" data-nav="home" aria-label="Geri">❮</button><div class="wooden-title">🎯 Görevler</div><div class="shop-wallet" id="challengeWallet">🪙 0</div></div>
+    <div class="shop-scroll" id="challengeItems"></div>
+  </section>
+
+  <section id="victory" class="screen" aria-label="Bölüm tamamlandı">
+    <div class="victory-rays"></div><div class="confetti" id="confetti"></div>
+    <button class="circle-btn victory-home" id="victoryHome" aria-label="Ana menü">⌂</button>
+    <div class="victory-body"><div class="big-stars"><span>★</span><span>★</span><span>★</span></div><div class="ribbon"><span>Harika!</span></div><div class="reward-stone"><h2 id="victoryLevel">Seviye 1<br>Tamamlandı!</h2><div class="coin-pile"><span>🪙</span><span>🪙</span><span>🪙</span></div><div class="reward-number" id="rewardNumber">🟡 +100</div></div><button class="btn huge green" id="continueBtn"><span class="playicon">▶</span> Devam</button><button class="btn medium blue" id="replayBtn">↻ Tekrar Oyna</button></div>
+  </section>
+
+  <div class="modal-cover" id="modal" hidden><div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><h2 id="modalTitle">Ayarlar</h2><div id="modalContent"></div><button id="modalClose" class="btn medium blue">Kapat</button></div></div>
+  <div class="toast" id="toast" aria-live="polite"></div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
