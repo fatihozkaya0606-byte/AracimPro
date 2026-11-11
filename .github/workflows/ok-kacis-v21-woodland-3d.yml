@@ -96,9 +96,9 @@ jobs:
           unzip -tq "$apk"
           test -s test-source/OkKacis/app/src/main/assets/game.js
           cp "$apk" OkKacis_V21_Woodland_3D_TEST.apk
-          sha256sum OkKacis_9x9_V20_AltBanner_AdMob_Unity_TEST.apk
+          sha256sum OkKacis_V21_Woodland_3D_TEST.apk
       - uses: actions/upload-artifact@v4
         with:
           name: OkKacis-V21-Woodland-3D-Test-APK
-          path: OkKacis_9x9_V20_AltBanner_AdMob_Unity_TEST.apk
+          path: OkKacis_V21_Woodland_3D_TEST.apk
           if-no-files-found: error
