@@ -476,3 +476,322 @@
 .piece-inner{border-width:1px;border-radius:6px}
 .piece-arrow{font-size:clamp(18px,6.8vw,31px)}
 .power-gem{font-size:clamp(12px,4.3vw,18px)}
+
+
+/* ==== OK KACIS V21 • WOODLAND 3D GLOBAL DESIGN SYSTEM ====
+   Offline CSS-only materials; 9x9 coordinates and gameplay untouched.
+   Warm oak grid, walnut trim, raised candy-gloss arrows; no image dependency.
+   Keep selectors scoped to game elements so existing store/boosters survive. */
+#app{
+  --wood-oak:#d9a35f;--wood-walnut:#764020;--wood-shadow:#392318;
+  --wood-cream:#fff1d6;--wood-gold:#ffd47b;
+  --wood-highlight:rgba(255,250,216,.74);
+}
+#app button{touch-action:manipulation}
+#app button:focus-visible{
+  outline:3px solid #fff5a8!important;outline-offset:3px;
+}
+/* Wooden signage and common surfaces throughout the entire application. */
+#app .wooden-title{
+  color:#fff0cf!important;
+  text-shadow:0 2px 1px #583119,0 4px 5px #2a1208a6!important;
+  border:3px solid #e7ba7b!important;
+  background:
+    linear-gradient(155deg,#fff9dd55 0%,transparent 28%,#32170635 87%),
+    repeating-linear-gradient(97deg,#8044221a 0 2px,#c8833a12 3px 7px,transparent 8px 15px),
+    linear-gradient(180deg,#bd7c3d,#7f4424 53%,#592d19)!important;
+  box-shadow:inset 0 3px #ffddad8c,inset 0 -5px #44231099,0 5px 0 #532a18,0 9px 15px #30180577!important;
+}
+#app .btn,#app .circle-btn,#app .extra-buttons button{
+  transition:transform .13s cubic-bezier(.2,.75,.2,1),filter .18s ease,box-shadow .18s ease;
+}
+#app .btn:active,#app .circle-btn:active{filter:brightness(1.08)}
+#app .btn:not(.action){
+  border-color:#fce2a4!important;
+  box-shadow:inset 0 3px #ffffffa6,inset 0 -6px #14296066,0 5px 0 #815026,0 9px 12px #2c1a1166!important;
+}
+#home .home-status,#levels .level-tip{
+  border:1.5px solid #efce99!important;
+  background:linear-gradient(180deg,#fff5deed,#f5d8a4f2)!important;
+  color:#62391d!important;
+  text-shadow:0 1px #fff9e6!important;
+  box-shadow:0 5px 12px #4d2a2055!important;
+}
+#levels .level-card{
+  border:3px solid #f1c782!important;
+  border-radius:17px!important;
+  box-shadow:inset 0 2px #fff7dfb8,inset 0 -5px #40241144,0 5px 0 #794620,0 9px 13px #26160d52!important;
+}
+#levels .levels-scroll:before{
+  border:4px ridge #dcac70!important;
+  background:
+    repeating-linear-gradient(101deg,#aa744a30 0 3px,transparent 4px 18px),
+    linear-gradient(145deg,#f1d4a4,#d4a76f)!important;
+}
+#shop .shop-card,#challenges .mission-card,#app .modal-dialog{
+  border-color:#e8b977!important;
+  background:linear-gradient(160deg,#fff9e8,#ffe5b8 62%,#e3b579)!important;
+  color:#57331b!important;
+  box-shadow:inset 0 3px #fffdf2,0 8px 0 #986036,0 14px 22px #2f170d73!important;
+}
+#app .shop-card .shop-buy,#app .setting-line button{
+  border:2px solid #ffe3a2!important;
+  box-shadow:inset 0 2px #fff7,0 4px 0 #855028!important;
+}
+#playing .game-top{position:relative;z-index:3}
+#playing .game-top .circle-btn{
+  border:2.5px solid #ffdf91!important;
+  background:radial-gradient(circle at 30% 22%,#9eeaff,#28a7ed 46%,#075baf 82%,#083f83)!important;
+  box-shadow:inset 0 3px #ffffffe0,inset 0 -5px #073e8d,0 4px 0 #9b622d,0 6px 10px #1c241f7a!important;
+}
+#playing .objective-card{
+  border:2px solid #dbab68!important;
+  background:linear-gradient(168deg,#fffdf1,#fff3da 53%,#eecb96)!important;
+  box-shadow:inset 0 3px #fff,0 4px 0 #946036,0 8px 12px #47351a52!important;
+}
+#playing .objective-label{color:#654027!important}
+#playing .objective-value{color:#382c25!important;text-shadow:0 1px #fff8ec!important}
+#playing .timer-panel{
+  border:2px solid #b99160!important;
+  background:linear-gradient(180deg,#274f70,#0e3455 62%,#08263f)!important;
+  box-shadow:inset 0 2px #b3e5ff8c,0 4px 0 #80562f,0 8px 12px #2e1f1370!important;
+}
+#playing .timer-rail{
+  background:linear-gradient(#061826,#223d4b)!important;
+  border:1px solid #b4dafa!important;
+  box-shadow:inset 0 2px 3px #000b!important;
+}
+#playing .timer-fill{
+  background:linear-gradient(180deg,#f2ffb1 0%,#8af76a 38%,#1cc965 68%,#058958)!important;
+  box-shadow:inset 0 2px #fffbd0a6,0 0 11px #79ff9b8c!important;
+}
+#playing .world-label{
+  border:2px solid #ce9955!important;
+  background:linear-gradient(180deg,#fff9e7f5,#ffe6b4f3 65%,#e7be81f5)!important;
+  color:#56361d!important;
+  text-shadow:0 1px #fff!important;
+  box-shadow:inset 0 2px #fffef0,0 4px 0 #946039,0 8px 12px #241e1b51!important;
+}
+#playing .difficulty-label{
+  border:1px solid #b9ebff!important;
+  background:linear-gradient(180deg,#8bc8f9,#357db8 61%,#1d4b89)!important;
+  color:white!important;text-shadow:0 1px 2px #174a78!important;
+}
+/* Realistic wooden carved board: dark walnut rails, organic grain, brass corners. */
+#playing .board-frame{
+  border:10px solid #8e542e!important;
+  border-radius:19px!important;
+  background:
+    repeating-linear-gradient(96deg,#3e200f33 0 2px,#c9955625 3px 6px,transparent 8px 21px),
+    linear-gradient(138deg,#be884a,#824924 44%,#63351e 78%,#b87b3c)!important;
+  outline:2px solid #ffdfa2!important;
+  box-shadow:
+    inset 0 0 0 2px #f9d395,
+    inset 0 0 0 5px #63351f,
+    inset 0 0 12px #321a0fae,
+    0 7px 0 #5e321b,
+    0 14px 16px #24160da6!important;
+}
+#playing .board-frame:before{
+  display:block!important;
+  content:""!important;
+  inset:-9px!important;
+  border-radius:18px!important;
+  z-index:7!important;
+  background:linear-gradient(132deg,#fff3c281,transparent 22%,transparent 74%,#48240a44)!important;
+  box-shadow:inset 3px 3px 2px #ffe9b27a,inset -3px -3px 2px #42250b91!important;
+  pointer-events:none!important;
+}
+#playing .corner-ornament{
+  border:2px solid #ffebb7!important;
+  border-radius:10px!important;
+  background:radial-gradient(circle at 34% 25%,#fffbd7,#f9c85d 40%,#c58027 77%,#6d3b16)!important;
+  box-shadow:inset 0 2px #fffcce,0 4px 0 #734419,0 5px 9px #26150d88!important;
+}
+#playing .game-board{
+  inset:3px!important;
+  border-radius:8px!important;
+  background:
+    repeating-linear-gradient(92deg,#64401e23 0 1px,transparent 2px 14px,#fff2b014 15px 16px),
+    linear-gradient(125deg,#d6a875,#a16e3d 62%,#6d4328)!important;
+  box-shadow:inset 0 4px 11px #3b1d0cbb,inset 0 -2px 3px #ffe0a77d!important;
+}
+/* 81 carved sockets: soft oak wood, inner shadow, lower reflected lip. */
+#playing .grid-rock{padding:1.6px!important;z-index:1!important}
+#playing .grid-rock span{
+  display:block!important;
+  position:relative!important;
+  border:1px solid #f3d39e!important;
+  border-radius:8px!important;
+  background:
+    linear-gradient(154deg,#42271430 0%,transparent 29%,#f5d59a30 80%,#fff3c673 100%),
+    repeating-linear-gradient(97deg,#6e432b13 0 1px,transparent 2px 6px,#fff0c516 7px 8px,transparent 10px 17px),
+    linear-gradient(145deg,#e5bd87 0%,#d0a066 41%,#ba8650 70%,#9a6639 100%)!important;
+  background-blend-mode:multiply,multiply,normal!important;
+  box-shadow:
+    inset 2px 3px 4px #45280f8a,
+    inset 1px 1px 1px #67401e77,
+    inset -2px -2px 1px #fff5d29c,
+    0 1px 0 #f8d8a874!important;
+}
+#playing .grid-rock span:after{
+  display:block!important;content:""!important;
+  position:absolute!important;inset:5% 8% 68%!important;
+  border-radius:5px!important;background:linear-gradient(#45291428,transparent)!important;
+}
+#playing .grid-rock.fixed span{
+  border:1.5px solid #deb887!important;
+  background:
+    repeating-linear-gradient(98deg,#321c1460 0 2px,transparent 3px 11px),
+    linear-gradient(145deg,#a4754c,#734629 47%,#493024 87%)!important;
+  box-shadow:inset 2px 3px 4px #21130cbb,inset -2px -2px 1px #f6d3a084,0 2px 2px #30190a7b!important;
+}
+/* Raised lacquered arrows are vector, not bitmap sprites, so all lengths stay sharp. */
+#playing .piece{
+  padding:1.6px!important;
+  overflow:visible!important;
+  filter:drop-shadow(0 2px 2px #4124158a)!important;
+  transition:transform .26s cubic-bezier(.18,.72,.18,1),opacity .26s ease,filter .18s ease!important;
+  -webkit-tap-highlight-color:transparent;
+}
+#playing .piece.red{--tile-light:#ffd8c2;--tile-mid:#ff6267;--tile-deep:#bc213c;--tile-foot:#80142d}
+#playing .piece.orange{--tile-light:#fff0a8;--tile-mid:#ff9221;--tile-deep:#db5709;--tile-foot:#8d350c}
+#playing .piece.yellow{--tile-light:#fff6a1;--tile-mid:#ffc928;--tile-deep:#e49a05;--tile-foot:#986107}
+#playing .piece.blue{--tile-light:#baf8ff;--tile-mid:#149be8;--tile-deep:#0963c0;--tile-foot:#153f82}
+#playing .piece.green{--tile-light:#d3ffb5;--tile-mid:#28c963;--tile-deep:#078d56;--tile-foot:#12633d}
+#playing .piece.purple{--tile-light:#f3ccff;--tile-mid:#aa46e9;--tile-deep:#7a2cb9;--tile-foot:#4f2185}
+#playing .piece .piece-inner{
+  display:grid!important;
+  place-items:center!important;
+  position:relative!important;
+  width:100%!important;height:100%!important;
+  border:1.5px solid #fff4ca!important;
+  border-radius:8px!important;
+  overflow:hidden!important;
+  background:
+    linear-gradient(158deg,#ffffff69,transparent 29%,#24132226 76%,#240d2f38),
+    repeating-linear-gradient(100deg,#ffffff08 0 3px,transparent 4px 13px),
+    linear-gradient(180deg,var(--tile-light) 0%,var(--tile-mid) 35%,var(--tile-deep) 76%,var(--tile-foot) 100%)!important;
+  background-image:
+    linear-gradient(158deg,#ffffff69,transparent 29%,#24132226 76%,#240d2f38),
+    repeating-linear-gradient(100deg,#ffffff08 0 3px,transparent 4px 13px),
+    linear-gradient(180deg,var(--tile-light) 0%,var(--tile-mid) 35%,var(--tile-deep) 76%,var(--tile-foot) 100%)!important;
+  background-size:100% 100%!important;
+  box-shadow:
+    inset 1px 2px 0 #ffffffc9,
+    inset 0 -3px 1px #2b172b61,
+    0 2px 0 var(--tile-foot),
+    0 4px 5px #2e1a2075!important;
+  transform:none!important;
+  isolation:isolate!important;
+}
+#playing .piece .piece-inner:before{
+  content:""!important;display:block!important;
+  position:absolute!important;
+  inset:5% 5% 48%!important;z-index:1!important;
+  border-radius:7px 7px 40% 35%!important;
+  background:linear-gradient(180deg,#ffffffe8,#ffffff4a 44%,transparent)!important;
+  pointer-events:none!important;
+}
+#playing .piece .piece-inner:after{
+  content:""!important;display:block!important;
+  position:absolute!important;inset:auto 6% 6% 6%!important;
+  height:12%!important;z-index:1!important;border-radius:50%!important;
+  background:linear-gradient(transparent,#25112e44)!important;
+  pointer-events:none!important;
+}
+#playing .piece .juicy-arrow{
+  display:block!important;
+  position:relative!important;z-index:3!important;
+  width:min(79%,55px)!important;height:min(82%,54px)!important;
+  max-width:100%!important;max-height:100%!important;
+  overflow:visible!important;
+  filter:drop-shadow(0 2px 0 #28527790) drop-shadow(0 3px 2px #18293e74)!important;
+  transition:transform .18s ease!important;
+}
+#playing .piece[data-dir="U"] .juicy-arrow{transform:rotate(-90deg)!important}
+#playing .piece[data-dir="D"] .juicy-arrow{transform:rotate(90deg)!important}
+#playing .piece[data-dir="L"] .juicy-arrow{transform:rotate(180deg)!important}
+#playing .piece[data-dir="R"] .juicy-arrow{transform:rotate(0deg)!important}
+#playing .piece .juicy-arrow .arrow-depth{fill:#7a96a6;stroke:#1a476c;stroke-width:3}
+#playing .piece .juicy-arrow .arrow-main{fill:#ffffff;stroke:#e0faff;stroke-width:2.5;stroke-linejoin:round}
+#playing .piece .juicy-arrow .arrow-light{fill:none;stroke:#ffffff;stroke-width:5;stroke-linecap:round;opacity:.85}
+#playing .piece:active .piece-inner{
+  transform:translateY(2px) scale(.965)!important;
+  filter:brightness(1.1)!important;
+  box-shadow:inset 0 2px #fff9,inset 0 -2px #22131a77,0 1px 0 var(--tile-foot)!important;
+}
+#playing .piece.hinted .piece-inner{
+  animation:woodland-hint .75s ease-in-out 3!important;
+}
+@keyframes woodland-hint{
+  0%,100%{filter:brightness(1)}
+  50%{filter:brightness(1.36) drop-shadow(0 0 9px #fff3a9)}
+}
+#playing .piece.blocked .piece-inner{animation:woodland-blocked .28s ease-in-out!important}
+@keyframes woodland-blocked{
+  0%,100%{translate:0 0;filter:brightness(1)}
+  25%,75%{translate:-3px 0;filter:brightness(1.1)}
+  50%{translate:3px 0;filter:brightness(1.12)}
+}
+#playing .piece.escaping{z-index:12!important;opacity:0!important}
+#playing .piece.escaping .piece-inner{filter:brightness(1.13)!important}
+/* A successful removal emits a restrained golden particle burst without affecting moves. */
+#playing .juicy-burst{
+  position:absolute;z-index:35;pointer-events:none;
+  width:1px;height:1px;
+}
+#playing .juicy-burst:before{
+  content:"";position:absolute;left:-5px;top:-5px;width:10px;height:10px;
+  border:2px solid #fff3a3;border-radius:50%;
+  box-shadow:0 0 13px #fff39b;
+  animation:woodland-ring .42s ease-out forwards;
+}
+#playing .juicy-burst i{
+  position:absolute;left:-3px;top:-3px;width:6px;height:6px;
+  border-radius:2px;transform:rotate(45deg);
+  background:linear-gradient(135deg,#fffde9,#ffd35e 65%,#f39b20);
+  box-shadow:0 0 6px #ffeec9;
+  animation:woodland-spark .48s cubic-bezier(.18,.6,.35,1) var(--delay,0ms) forwards;
+}
+@keyframes woodland-ring{to{transform:scale(6);opacity:0}}
+@keyframes woodland-spark{to{transform:translate(var(--dx),var(--dy)) rotate(180deg) scale(.15);opacity:0}}
+/* Supporting UI uses restrained raised wood/glass controls instead of competing neon. */
+#playing .game-tip{
+  border:1.5px solid #d5a05f!important;
+  background:linear-gradient(180deg,#fffae6f5,#f6d6a0f7)!important;
+  color:#604024!important;
+  box-shadow:inset 0 2px #fffcf3,0 3px 0 #9b693b,0 6px 9px #3e250f50!important;
+}
+#playing .game-bottom .btn.action{
+  border:2.5px solid #f5d28a!important;
+  background:linear-gradient(180deg,#9aecff 0%,#2fc5ff 21%,#178ddd 61%,#0750a8 100%)!important;
+  box-shadow:inset 0 3px #ffffffbd,inset 0 -6px #08417e,0 4px 0 #8e5b2c,0 8px 9px #241c1a80!important;
+}
+#playing .play-utilities .powers-strip{
+  border:2px solid #e8cb8e!important;
+  background:linear-gradient(180deg,#b671e8,#7936c1 56%,#55238c)!important;
+  box-shadow:inset 0 2px #fff9,0 4px 0 #6f4127,0 7px 9px #3d1e3078!important;
+}
+#playing .play-utilities .music-toggle-float{
+  border:1.5px solid #ffe0a9!important;
+  box-shadow:inset 0 2px #fff9,0 3px 0 #8f592b!important;
+}
+#playing .power-gem{
+  z-index:5!important;border:1px solid #f8d9a2!important;border-radius:9px!important;
+  box-shadow:inset 0 2px #fff9,0 3px 0 #5a341f,0 5px 8px #24170d7b!important;
+}
+/* Keep the actual board readable and the bottom ad area unobstructed on short phones. */
+@media(max-height:790px){
+  #playing .board-frame{width:min(89vw,410px,43dvh)!important;height:min(89vw,410px,43dvh)!important}
+}
+@media(max-height:720px){
+  #playing .board-frame{width:min(87vw,370px,40dvh)!important;height:min(87vw,370px,40dvh)!important}
+}
+@media(max-height:630px){
+  #playing .board-frame{width:min(84vw,340px,37dvh)!important;height:min(84vw,340px,37dvh)!important}
+}
+@media(prefers-reduced-motion:reduce){
+  #playing .piece,#playing .piece .piece-inner,#playing .piece .juicy-arrow{transition:none!important;animation:none!important}
+  #playing .juicy-burst{display:none!important}
+}

@@ -401,6 +401,7 @@
     history=[];busy=false;lostThisRun=false;show('playing');$('gameTip').textContent=`${levelData.difficulty.name} • Önce birbirini engelleyen okları çöz!`;playSound();
   }
   function renderRock(x,y){return `<div class="grid-rock" style="left:${x/SIZE*100}%;top:${y/SIZE*100}%"><span></span></div>`}
+  const ARROW_VECTOR = '<svg class="juicy-arrow" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path class="arrow-depth" d="M9 38H56V19L94 51 56 83V65H9Z" transform="translate(0 3)"/><path class="arrow-main" d="M9 35H56V16L94 48 56 80V62H9Z"/><path class="arrow-light" d="M16 40H60L73 49"/></svg>';
   function drawBoard(){
     if(!levelData)return;
     $('currentLevelTitle').textContent=`Seviye ${currentLevel}`;
@@ -418,7 +419,7 @@
     for(const gem of specialTiles){const ico={bomb:'💣',lightning:'⚡',spin:'🔄',gift:'🎁'}[gem.type];html.push(`<button type="button" class="power-gem" data-gem="${gem.id}" data-kind="${gem.type}" style="left:${gem.x/SIZE*100}%;top:${gem.y/SIZE*100}%;width:${100/SIZE}%;height:${100/SIZE}%" aria-label="Özel güç ${gem.type}">${ico}</button>`);}
     for(const p of pieces){
       const horizontal=p.dir==='R'||p.dir==='L';
-      html.push(`<button class="piece ${p.color} ${p.isKey?'key-piece':''} ${p.needsKey&&pieces.some(q=>q.id===p.needsKey)?'locked-piece':''} ${p.id===hintId?'hinted':''}" data-dir="${p.dir}" data-id="${p.id}" style="left:${p.x/SIZE*100}%;top:${p.y/SIZE*100}%;width:${(horizontal?p.length:1)/SIZE*100}%;height:${(horizontal?1:p.length)/SIZE*100}%;--tile-image:url('sprites/${p.color}-${p.length===1?'s':p.length===2?'l':'xl'}-${p.dir}.webp')" aria-label="${p.dir==='R'?'Sağa':p.dir==='L'?'Sola':p.dir==='U'?'Yukarı':'Aşağı'} giden ok"><span class="piece-inner">${p.isKey?'<span class="key-icon">🔑</span>':''}${p.needsKey&&pieces.some(q=>q.id===p.needsKey)?'<span class="lock-icon">🔒</span>':''}</span></button>`);
+      html.push(`<button class="piece ${p.color} ${p.isKey?'key-piece':''} ${p.needsKey&&pieces.some(q=>q.id===p.needsKey)?'locked-piece':''} ${p.id===hintId?'hinted':''}" data-dir="${p.dir}" data-id="${p.id}" style="left:${p.x/SIZE*100}%;top:${p.y/SIZE*100}%;width:${(horizontal?p.length:1)/SIZE*100}%;height:${(horizontal?1:p.length)/SIZE*100}%;--tile-image:url('sprites/${p.color}-${p.length===1?'s':p.length===2?'l':'xl'}-${p.dir}.webp')" aria-label="${p.dir==='R'?'Sağa':p.dir==='L'?'Sola':p.dir==='U'?'Yukarı':'Aşağı'} giden ok"><span class="piece-inner">${ARROW_VECTOR}${p.isKey?'<span class="key-icon">🔑</span>':''}${p.needsKey&&pieces.some(q=>q.id===p.needsKey)?'<span class="lock-icon">🔒</span>':''}</span></button>`);
     }
     $('gameBoard').innerHTML=html.join('');
     $('gameBoard').querySelectorAll('.piece').forEach(el=>el.addEventListener('click',()=>tapPiece(Number(el.dataset.id),el)));
@@ -448,6 +449,19 @@
     setTimeout(()=>counter.classList.remove('mistake-pulse'),430);
     if(movesLeft===0)failLevel('Hamle hakkın bitti!');
   }
+  function spawnMoveSparkle(element,color){
+    // Decoration only. Never changes game state, movement or timer.
+    if(!element || !element.isConnected || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches))return;
+    const frame=$('boardFrame');if(!frame)return;
+    const a=element.getBoundingClientRect(),b=frame.getBoundingClientRect();
+    const spark=document.createElement('span');spark.className='juicy-burst '+color;
+    spark.style.left=(a.left-b.left+a.width/2)+'px';
+    spark.style.top=(a.top-b.top+a.height/2)+'px';
+    const directions=[[0,-26],[21,-21],[29,0],[20,21],[0,27],[-21,20],[-29,0],[-20,-21]];
+    spark.innerHTML=directions.map(([dx,dy],i)=>'<i style="--dx:'+dx+'px;--dy:'+dy+'px;--delay:'+(i%3*15)+'ms"></i>').join('');
+    frame.appendChild(spark);
+    setTimeout(()=>spark.remove(),620);
+  }
   function tapPiece(id,element){
     if(busy)return;
     const p=pieces.find(p=>p.id===id);if(!p)return;
@@ -456,7 +470,7 @@
       element.classList.add('blocked');setTimeout(()=>element.classList.remove('blocked'),310);
       playSound('bad');vibrate(35);penalizeMistake('Önce bu okun önündeki engeli kaldır!');return;
     }
-    if(movesLeft<1)return;busy=true;playSound();vibrate(12);
+    if(movesLeft<1)return;busy=true;spawnMoveSparkle(element,p.color);playSound();vibrate(12);
     history.push(snapshot());
     if(history.length>9)history.shift();
     element.classList.add('escaping');
