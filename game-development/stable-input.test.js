@@ -5,13 +5,14 @@ const path=require('node:path');
 const js=fs.readFileSync(path.join(__dirname,'game.js'),'utf8');
 const css=fs.readFileSync(path.join(__dirname,'style.css'),'utf8');
 const tap=js.slice(js.indexOf('  function tapPiece(id,element){'),js.indexOf('  function undo(){'));
-test('V21 stable move sequence restored; logical state changes only after exit animation',()=>{
-  assert.match(tap,/busy=true;spawnMoveSparkle\(element,p\.color\)/);
+test('V23 graphics are stable while V24 immediately commits valid touch input',()=>{
+  assert.match(tap,/history\.push\(snapshot\(\)\)/);
+  assert.match(tap,/pieces=pieces\.filter\(q=>q\.id!==id\)/);
   assert.match(tap,/element\.classList\.add\('escaping'\)/);
-  assert.match(tap,/setTimeout\(\(\)=>\{\s*pieces=pieces\.filter/);
-  assert.match(tap,/\},135\);/);
-  assert.match(tap,/drawBoard\(\)/);
-  assert.doesNotMatch(tap,/refreshLiveBoardHud/);
+  assert.match(tap,/refreshAfterArrow\(\)/);
+  assert.doesNotMatch(tap,/busy=true;spawnMoveSparkle\(element,p\.color\)/);
+  assert.doesNotMatch(tap,/\},135\);/);
+  assert.doesNotMatch(tap,/drawBoard\(\)/);
 });
 test('V22 visual and interaction overrides are completely absent',()=>{
   assert.match(css,/WOODLAND 3D GLOBAL DESIGN SYSTEM/);
