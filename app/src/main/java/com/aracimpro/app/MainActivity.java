@@ -376,7 +376,9 @@ public class MainActivity extends Activity {
                 getWindow().setAttributes(windowParams);
             }
         }
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        // AndroidX Core 1.17+ official edge-to-edge setup (Android 15/16 and older).
+        // Insets listener below still gives WebView and banner safe system-bar space.
+        WindowCompat.enableEdgeToEdge(getWindow());
         androidx.core.view.WindowInsetsControllerCompat barsController =
                 WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
         barsController.setAppearanceLightStatusBars(true);
