@@ -821,3 +821,14 @@
 @media(prefers-reduced-motion:reduce){
   #playing .piece.escaping{transition:none!important}
 }
+
+
+/* V25 touch surface: transparent pointer capture, graphics unchanged. */
+#playing .game-board{touch-action:manipulation!important}
+#playing .piece{touch-action:manipulation!important}
+#playing .board-touch-layer{
+  position:absolute;inset:3px;z-index:30;display:block;
+  background:transparent!important;touch-action:none!important;
+  pointer-events:auto;cursor:pointer;border-radius:8px;
+}
+#playing .board-touch-layer:focus{outline:none}

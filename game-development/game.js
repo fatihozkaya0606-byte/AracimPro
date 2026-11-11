@@ -427,29 +427,60 @@
   }
   // Also catch blank/stone tile taps. Clicks on arrow buttons do NOT bubble
   // into a second penalty, because their target is inside .piece.
-  // V24: a real finger contact is processed on pointerdown, not delayed click.
-  // Keyboard and older WebViews use the delegated click fallback.
+  // V25: full-board transparent finger capture, independent of individual SVG tiles.
   const inputBoard=$('gameBoard');
-  inputBoard.addEventListener('pointerdown',event=>{
-    if(event.isPrimary===false || (event.pointerType==='mouse'&&event.button!==0))return;
-    const arrow=event.target.closest('.piece');
-    if(!arrow || !inputBoard.contains(arrow))return;
-    event.preventDefault(); // avoids compatibility mouse events on touch
-    tapPiece(Number(arrow.dataset.id),arrow);
-  },{passive:false});
-  inputBoard.addEventListener('click',event=>{
-    const arrow=event.target.closest('.piece');
-    if(arrow){
-      // Pointer clicks were handled at contact time. detail===0 is keyboard/AT.
-      if(event.detail===0 || !window.PointerEvent)tapPiece(Number(arrow.dataset.id),arrow);
-      return;
+  const boardTouchLayer=$('boardTouchLayer');
+  function nearbyArrow(x,y){
+    const grid=inputBoard.getBoundingClientRect();
+    if(x<grid.left||x>grid.right||y<grid.top||y>grid.bottom)return null;
+    const slop=Math.min(14,Math.max(7,grid.width/SIZE*.36));
+    let best=null,bestDist=Infinity,runnerUp=Infinity;
+    for(const el of inputBoard.querySelectorAll('.piece:not(.escaping)')){
+      if(el.style.pointerEvents==='none')continue;
+      const r=el.getBoundingClientRect();
+      const dx=Math.max(r.left-x,0,x-r.right),dy=Math.max(r.top-y,0,y-r.bottom);
+      if(dx===0&&dy===0)return el;
+      const dist=Math.hypot(dx,dy);
+      if(dist>slop)continue;
+      if(dist<bestDist){runnerUp=bestDist;bestDist=dist;best=el;}
+      else if(dist<runnerUp)runnerUp=dist;
     }
+    // Fingers between two adjacent arrows should never choose one randomly.
+    return runnerUp-bestDist<2.5?null:best;
+  }
+  function boardBlankTap(){
+    if(busy||screen!=='playing'||movesLeft<=0||!$('modal').hidden)return;
+    playSound('bad');vibrate(20);penalizeMistake('Boş kareye dokundun!');
+  }
+  function findTouchGem(x,y){
+    for(const gem of inputBoard.querySelectorAll('.power-gem')){
+      const r=gem.getBoundingClientRect();
+      const slop=Math.min(11,inputBoard.clientWidth/SIZE*.32);
+      if(x>=r.left-slop&&x<=r.right+slop&&y>=r.top-slop&&y<=r.bottom+slop)return gem;
+    }
+    return null;
+  }
+  function handleBoardPointer(event){
+    if(event.isPrimary===false||(event.pointerType==='mouse'&&event.button!==0))return;
+    if(screen!=='playing'||!$('modal').hidden)return;
+    event.preventDefault();
+    const x=event.clientX,y=event.clientY;
+    const gem=findTouchGem(x,y);
+    if(gem){useSpecialTile(gem.dataset.gem);return;}
+    const arrow=nearbyArrow(x,y);
+    if(arrow){tapPiece(Number(arrow.dataset.id),arrow);return;}
+    if(event.target===boardTouchLayer||event.target.closest('.grid-rock'))boardBlankTap();
+  }
+  boardTouchLayer.addEventListener('pointerdown',handleBoardPointer,{passive:false});
+  inputBoard.addEventListener('pointerdown',handleBoardPointer,{passive:false});
+  // Screen-reader/keyboard clicks still work, pointer-produced clicks are ignored.
+  inputBoard.addEventListener('click',event=>{
+    if(window.PointerEvent&&event.detail!==0)return;
+    const arrow=event.target.closest('.piece');
+    if(arrow){tapPiece(Number(arrow.dataset.id),arrow);return;}
     const gem=event.target.closest('.power-gem');
     if(gem){useSpecialTile(gem.dataset.gem);return;}
-    if(!event.target.closest('.grid-rock'))return;
-    if(busy || screen!=='playing' || movesLeft<=0 || !$('modal').hidden)return;
-    playSound('bad');vibrate(30);
-    penalizeMistake('Boş kareye dokundun!');
+    if(event.target.closest('.grid-rock'))boardBlankTap();
   });
   function penalizeMistake(reason='Bu okun çıkış yolu kapalı!'){
     // Wrong taps cost one move at EVERY level, including levels 1–5.
