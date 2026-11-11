@@ -431,34 +431,34 @@
   const inputBoard=$('gameBoard');
   const boardTouchLayer=$('boardTouchLayer');
   function nearbyArrow(x,y){
-    const grid=inputBoard.getBoundingClientRect();
-    if(x<grid.left||x>grid.right||y<grid.top||y>grid.bottom)return null;
-    const slop=Math.min(14,Math.max(7,grid.width/SIZE*.36));
+    // Screen model and renderer share one 9x9 coordinate space; avoid DOM layout reads for each arrow.
+    const rect=inputBoard.getBoundingClientRect();
+    const ux=(x-rect.left)/rect.width*SIZE,uy=(y-rect.top)/rect.height*SIZE;
+    if(ux<0||ux>SIZE||uy<0||uy>SIZE)return null;
     let best=null,bestDist=Infinity,runnerUp=Infinity;
-    for(const el of inputBoard.querySelectorAll('.piece:not(.escaping)')){
-      if(el.style.pointerEvents==='none')continue;
-      const r=el.getBoundingClientRect();
-      const dx=Math.max(r.left-x,0,x-r.right),dy=Math.max(r.top-y,0,y-r.bottom);
-      if(dx===0&&dy===0)return el;
+    for(const p of pieces){
+      const horizontal=p.dir==='R'||p.dir==='L';
+      const width=horizontal?p.length:1,height=horizontal?1:p.length;
+      const dx=Math.max(p.x-ux,0,ux-p.x-width),dy=Math.max(p.y-uy,0,uy-p.y-height);
+      if(dx===0&&dy===0){best=p;break;}
       const dist=Math.hypot(dx,dy);
-      if(dist>slop)continue;
-      if(dist<bestDist){runnerUp=bestDist;bestDist=dist;best=el;}
+      if(dist>.36)continue;
+      if(dist<bestDist){runnerUp=bestDist;bestDist=dist;best=p;}
       else if(dist<runnerUp)runnerUp=dist;
     }
-    // Fingers between two adjacent arrows should never choose one randomly.
-    return runnerUp-bestDist<2.5?null:best;
+    if(!best||runnerUp-bestDist<.065)return null;
+    return inputBoard.querySelector('.piece[data-id="'+best.id+'"]:not(.escaping)');
   }
   function boardBlankTap(){
     if(busy||screen!=='playing'||movesLeft<=0||!$('modal').hidden)return;
     playSound('bad');vibrate(20);penalizeMistake('Boş kareye dokundun!');
   }
   function findTouchGem(x,y){
-    for(const gem of inputBoard.querySelectorAll('.power-gem')){
-      const r=gem.getBoundingClientRect();
-      const slop=Math.min(11,inputBoard.clientWidth/SIZE*.32);
-      if(x>=r.left-slop&&x<=r.right+slop&&y>=r.top-slop&&y<=r.bottom+slop)return gem;
-    }
-    return null;
+    // Power gems own a whole logical tile, independent of their 0.78 visual scale.
+    const rect=inputBoard.getBoundingClientRect();
+    const col=Math.floor((x-rect.left)/rect.width*SIZE),row=Math.floor((y-rect.top)/rect.height*SIZE);
+    if(col<0||col>=SIZE||row<0||row>=SIZE)return null;
+    return specialTiles.find(g=>g.x===col&&g.y===row)||null;
   }
   function handleBoardPointer(event){
     if(event.isPrimary===false||(event.pointerType==='mouse'&&event.button!==0))return;
@@ -466,7 +466,7 @@
     event.preventDefault();
     const x=event.clientX,y=event.clientY;
     const gem=findTouchGem(x,y);
-    if(gem){useSpecialTile(gem.dataset.gem);return;}
+    if(gem){useSpecialTile(gem.id);return;}
     const arrow=nearbyArrow(x,y);
     if(arrow){tapPiece(Number(arrow.dataset.id),arrow);return;}
     if(event.target===boardTouchLayer||event.target.closest('.grid-rock'))boardBlankTap();

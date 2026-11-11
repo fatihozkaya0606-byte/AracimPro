@@ -7,13 +7,16 @@ const source=js.slice(from,to);
 function setup(){
  const calls=[],listeners={};
  const rect=(l,t,r,b)=>({left:l,top:t,right:r,bottom:b,width:r-l,height:b-t});
- const piece=(id,r)=>({dataset:{id:String(id)},style:{},getBoundingClientRect:()=>r,classList:{contains:()=>false}});
+ const piece=(id,r)=>({dataset:{id:String(id)},style:{},classList:{contains:()=>false}});
  const a=piece(3,rect(100,100,136,136)),b=piece(5,rect(160,100,196,136));
  const gem={dataset:{gem:'gift_1'},getBoundingClientRect:()=>rect(230,100,263,133)};
  const board={clientWidth:360,getBoundingClientRect:()=>rect(10,10,370,370),
+  querySelector:s=>s.includes('[data-id="3"]')?a:s.includes('[data-id="5"]')?b:null,
   querySelectorAll:s=>s==='.power-gem'?[gem]:[a,b],addEventListener:(n,fn)=>listeners['board-'+n]=fn};
  const overlay={addEventListener:(n,fn)=>listeners['overlay-'+n]=fn,closest:()=>null};
  const sandbox={SIZE:9,screen:'playing',busy:false,movesLeft:10,window:{PointerEvent:function(){}},
+  pieces:[{id:3,x:2.25,y:2.25,length:1,dir:'R'},{id:5,x:3.75,y:2.25,length:1,dir:'L'}],
+  specialTiles:[{id:'gift_1',x:6,y:2}],
   $:id=>({gameBoard:board,boardTouchLayer:overlay,modal:{hidden:true}}[id]),
   tapPiece:id=>calls.push('arrow:'+id),useSpecialTile:id=>calls.push('gem:'+id),
   playSound(){},vibrate(){},penalizeMistake:()=>calls.push('blank'),toast(){}};
@@ -38,7 +41,7 @@ test('10 px off a 36px arrow and two rapid sequential taps are processed',()=>{
  assert.deepEqual(c.calls,['arrow:3','arrow:5']);
 });
 test('special gems are reachable through the overlay',()=>{
- const c=setup();c.listeners['overlay-pointerdown'](c.event(247,119));
+ const c=setup();c.listeners['overlay-pointerdown'](c.event(269,119));
  assert.deepEqual(c.calls,['gem:gift_1']);
 });
 test('keyboard fallback remains enabled',()=>{
