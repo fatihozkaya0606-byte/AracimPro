@@ -3,7 +3,7 @@ on:
   push:
     branches: [ok-kacis-v21-woodland-3d-test]
     paths:
-      - '.github/workflows/ok-kacis-v21-woodland-3d-test.yml'
+      - '.github/workflows/ok-kacis-v21-woodland-3d.yml'
       - 'game-development/**'
   workflow_dispatch:
 permissions:
