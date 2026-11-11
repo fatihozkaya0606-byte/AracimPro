@@ -808,3 +808,16 @@
 @media(prefers-reduced-motion:reduce){
   #playing .piece.escaping{transition:none!important}
 }
+
+
+/* V24 input latency fix: V23 wooden graphics and arrow geometry are unchanged.
+   Only the leaving element is animated; subsequent arrows remain interactive. */
+#playing .piece{touch-action:manipulation; -webkit-user-select:none;user-select:none}
+#playing .piece.escaping{
+  pointer-events:none!important;
+  opacity:0!important;
+  transition:opacity .12s ease-out,transform .12s ease-out!important;
+}
+@media(prefers-reduced-motion:reduce){
+  #playing .piece.escaping{transition:none!important}
+}

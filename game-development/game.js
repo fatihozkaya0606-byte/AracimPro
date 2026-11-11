@@ -422,13 +422,31 @@
       html.push(`<button class="piece ${p.color} ${p.isKey?'key-piece':''} ${p.needsKey&&pieces.some(q=>q.id===p.needsKey)?'locked-piece':''} ${p.id===hintId?'hinted':''}" data-dir="${p.dir}" data-id="${p.id}" style="left:${p.x/SIZE*100}%;top:${p.y/SIZE*100}%;width:${(horizontal?p.length:1)/SIZE*100}%;height:${(horizontal?1:p.length)/SIZE*100}%;--tile-image:url('sprites/${p.color}-${p.length===1?'s':p.length===2?'l':'xl'}-${p.dir}.webp')" aria-label="${p.dir==='R'?'Sağa':p.dir==='L'?'Sola':p.dir==='U'?'Yukarı':'Aşağı'} giden ok"><span class="piece-inner">${ARROW_VECTOR}${p.isKey?'<span class="key-icon">🔑</span>':''}${p.needsKey&&pieces.some(q=>q.id===p.needsKey)?'<span class="lock-icon">🔒</span>':''}</span></button>`);
     }
     $('gameBoard').innerHTML=html.join('');
-    $('gameBoard').querySelectorAll('.piece').forEach(el=>el.addEventListener('click',()=>tapPiece(Number(el.dataset.id),el)));
-    $('gameBoard').querySelectorAll('.power-gem').forEach(el=>el.addEventListener('click',()=>useSpecialTile(el.dataset.gem)));
+    // V24: delegated pointerdown handler is attached once (outside drawBoard).
+    // Repainting a level does not allocate dozens of new click listeners.
   }
   // Also catch blank/stone tile taps. Clicks on arrow buttons do NOT bubble
   // into a second penalty, because their target is inside .piece.
-  $('gameBoard').addEventListener('click',event=>{
-    if(event.target.closest('.piece') || !event.target.closest('.grid-rock'))return;
+  // V24: a real finger contact is processed on pointerdown, not delayed click.
+  // Keyboard and older WebViews use the delegated click fallback.
+  const inputBoard=$('gameBoard');
+  inputBoard.addEventListener('pointerdown',event=>{
+    if(event.isPrimary===false || (event.pointerType==='mouse'&&event.button!==0))return;
+    const arrow=event.target.closest('.piece');
+    if(!arrow || !inputBoard.contains(arrow))return;
+    event.preventDefault(); // avoids compatibility mouse events on touch
+    tapPiece(Number(arrow.dataset.id),arrow);
+  },{passive:false});
+  inputBoard.addEventListener('click',event=>{
+    const arrow=event.target.closest('.piece');
+    if(arrow){
+      // Pointer clicks were handled at contact time. detail===0 is keyboard/AT.
+      if(event.detail===0 || !window.PointerEvent)tapPiece(Number(arrow.dataset.id),arrow);
+      return;
+    }
+    const gem=event.target.closest('.power-gem');
+    if(gem){useSpecialTile(gem.dataset.gem);return;}
+    if(!event.target.closest('.grid-rock'))return;
     if(busy || screen!=='playing' || movesLeft<=0 || !$('modal').hidden)return;
     playSound('bad');vibrate(30);
     penalizeMistake('Boş kareye dokundun!');
@@ -462,27 +480,75 @@
     frame.appendChild(spark);
     setTimeout(()=>spark.remove(),620);
   }
+  // Update only changed HUD values / locks. The 81 carved sockets stay mounted.
+  function refreshAfterArrow(){
+    $('progressTxt').textContent=removed+'/'+levelData.pieces.length;
+    $('movesTxt').textContent=String(movesLeft);
+    const byId=new Map(pieces.map(p=>[p.id,p]));
+    const unlocked=pieces.filter(p=>p.needsKey && byId.has(p.needsKey)).length;
+    const label=$('difficultyLabel');
+    if(label)label.textContent=levelData.difficulty.name+' · '+pieces.length+' ok'+(unlocked?' · 🔒 '+unlocked:'');
+    $('gameBoard').querySelectorAll('.piece:not(.escaping)').forEach(el=>{
+      const p=byId.get(Number(el.dataset.id));if(!p)return;
+      const locked=!!(p.needsKey && byId.has(p.needsKey));
+      el.classList.toggle('locked-piece',locked);
+      el.classList.toggle('hinted',p.id===hintId);
+      const badge=el.querySelector('.lock-icon');
+      if(locked && !badge)el.querySelector('.piece-inner')?.insertAdjacentHTML('beforeend','<span class="lock-icon">🔒</span>');
+      if(!locked && badge)badge.remove();
+    });
+    $('undoBadge').textContent=String(save.undos);
+    $('hintBadge').textContent=String(save.hints);
+    $('undoBtn').disabled=save.undos<=0;
+    $('hintBtn').disabled=save.hints<=0;
+    renderComboHud();
+    updatePowerButtons();
+  }
   function tapPiece(id,element){
-    if(busy)return;
-    const p=pieces.find(p=>p.id===id);if(!p)return;
-    if(p.needsKey&&pieces.some(q=>q.id===p.needsKey)){playSound('bad');vibrate(45);penalizeMistake('🔐 Önce anahtarlı oku çıkar!');element.classList.add('blocked');setTimeout(()=>element.classList.remove('blocked'),300);return;}
-    if(!freeExit(p,pieces,levelData.rocks)){
-      element.classList.add('blocked');setTimeout(()=>element.classList.remove('blocked'),310);
-      playSound('bad');vibrate(35);penalizeMistake('Önce bu okun önündeki engeli kaldır!');return;
+    if(busy || screen!=='playing' || lostThisRun || !$('modal').hidden || movesLeft<1)return;
+    const p=pieces.find(q=>q.id===id);
+    if(!p)return;
+    if(p.needsKey && pieces.some(q=>q.id===p.needsKey)){
+      element.classList.add('blocked');
+      setTimeout(()=>element.classList.remove('blocked'),200);
+      playSound('bad');vibrate(25);penalizeMistake('🔐 Önce anahtarlı oku çıkar!');return;
     }
-    if(movesLeft<1)return;busy=true;spawnMoveSparkle(element,p.color);playSound();vibrate(12);
+    if(!freeExit(p,pieces,levelData.rocks)){
+      element.classList.add('blocked');
+      setTimeout(()=>element.classList.remove('blocked'),200);
+      playSound('bad');vibrate(25);penalizeMistake('Önce bu okun önündeki engeli kaldır!');return;
+    }
     history.push(snapshot());
     if(history.length>9)history.shift();
+    // Resolve the tap synchronously so the next free arrow can be tapped at once.
+    // Keep the V23 graphics: animate only this element; do not regenerate tiles.
+    pieces=pieces.filter(q=>q.id!==id);
+    removed++;
+    movesLeft=Math.max(0,movesLeft-1);
+    hintId=-1;
+    save.totalArrows++;ensureDaily();save.dailyQuests.arrows++;
+    if(currentLevel>=6){
+      comboStreak++;
+      if(comboStreak%5===0&&!awardedCombos.has(comboStreak)){
+        awardedCombos.add(comboStreak);save.coins+=30;
+        toast('🔥 5X KOMBO! +30 altın');
+        spawnMoveSparkle(element,p.color);
+        playSound('coin');vibrate([15,25,45]);
+      }
+    }
+    // A departing piece must not intercept the next contact.
+    element.style.pointerEvents='none';
     element.classList.add('escaping');
-    setTimeout(()=>{
-      pieces=pieces.filter(x=>x.id!==id);removed++;movesLeft=Math.max(0,movesLeft-1);hintId=-1;busy=false;
-      save.totalArrows++;ensureDaily();save.dailyQuests.arrows++;
-      if(currentLevel>=6){comboStreak++;if(comboStreak%5===0&&!awardedCombos.has(comboStreak)){awardedCombos.add(comboStreak);save.coins+=30;toast('🔥 5X KOMBO! +30 altın');playSound('coin');vibrate([15,25,45]);}}
-      persist();
-      if(pieces.length===0){completeLevel();return;}
-      if(movesLeft===0){drawBoard();failLevel('Hamle hakkın bitti!');return;}
-      $('gameTip').textContent='Harika! Yolu açık olan sonraki oku bul.';drawBoard();
-    },135);
+    refreshAfterArrow();
+    $('gameTip').textContent='Harika! Yolu açık olan sonraki oku bul.';
+    playSound();vibrate(8);persist();
+    const boardOnMove=$('gameBoard');
+    setTimeout(()=>{if(element.parentNode===boardOnMove)element.remove();},135);
+    if(pieces.length===0){
+      busy=true;setTimeout(()=>{if(screen==='playing'&&levelData)completeLevel();},135);
+      return;
+    }
+    if(movesLeft===0)failLevel('Hamle hakkın bitti!');
   }
   function undo(){if(busy||save.undos<=0)return;if(!history.length){toast('Geri alınacak hamle yok!');return;}const state=history.pop();pieces=state.pieces;removed=state.removed;movesLeft=state.movesLeft;mistakesUsed=state.mistakesUsed;if(state.specialTiles)specialTiles=state.specialTiles;if(Number.isFinite(state.comboStreak))comboStreak=state.comboStreak;save.undos--;persist();hintId=-1;drawBoard();toast('Son hamle geri alındı.');playSound('coin')}
   function hint(){if(busy||save.hints<=0)return;const valid=pieces.filter(p=>(!p.needsKey||!pieces.some(q=>q.id===p.needsKey))&&freeExit(p,pieces,levelData.rocks));if(!valid.length){toast('Açık ok bulunamadı. Yeniden dene.');return;}hintId=valid[valid.length-1].id;save.hints--;hintsUsed++;persist();drawBoard();toast('Parlayan oka dokun!');playSound('coin');setTimeout(()=>{if(screen==='playing'){hintId=-1;drawBoard();}},2500)}
