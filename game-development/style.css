@@ -795,3 +795,16 @@
   #playing .piece,#playing .piece .piece-inner,#playing .piece .juicy-arrow{transition:none!important;animation:none!important}
   #playing .juicy-burst{display:none!important}
 }
+
+
+/* V23 STABILITY FIX: retain the exact V21 wooden UI, only synchronize fast exit
+   animation with the 135 ms safe input lock. No V22 materials or instant state commits. */
+#playing .piece.escaping{
+  transition:transform .125s ease-out,opacity .125s linear!important;
+}
+#playing .piece:active .piece-inner{
+  transition:transform .075s ease-out,filter .075s ease-out!important;
+}
+@media(prefers-reduced-motion:reduce){
+  #playing .piece.escaping{transition:none!important}
+}

@@ -482,7 +482,7 @@
       if(pieces.length===0){completeLevel();return;}
       if(movesLeft===0){drawBoard();failLevel('Hamle hakkın bitti!');return;}
       $('gameTip').textContent='Harika! Yolu açık olan sonraki oku bul.';drawBoard();
-    },275);
+    },135);
   }
   function undo(){if(busy||save.undos<=0)return;if(!history.length){toast('Geri alınacak hamle yok!');return;}const state=history.pop();pieces=state.pieces;removed=state.removed;movesLeft=state.movesLeft;mistakesUsed=state.mistakesUsed;if(state.specialTiles)specialTiles=state.specialTiles;if(Number.isFinite(state.comboStreak))comboStreak=state.comboStreak;save.undos--;persist();hintId=-1;drawBoard();toast('Son hamle geri alındı.');playSound('coin')}
   function hint(){if(busy||save.hints<=0)return;const valid=pieces.filter(p=>(!p.needsKey||!pieces.some(q=>q.id===p.needsKey))&&freeExit(p,pieces,levelData.rocks));if(!valid.length){toast('Açık ok bulunamadı. Yeniden dene.');return;}hintId=valid[valid.length-1].id;save.hints--;hintsUsed++;persist();drawBoard();toast('Parlayan oka dokun!');playSound('coin');setTimeout(()=>{if(screen==='playing'){hintId=-1;drawBoard();}},2500)}
