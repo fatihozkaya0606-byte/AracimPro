@@ -795,3 +795,84 @@
   #playing .piece,#playing .piece .piece-inner,#playing .piece .juicy-arrow{transition:none!important;animation:none!important}
   #playing .juicy-burst{display:none!important}
 }
+
+
+/* ==== V22: responsive tap + contrast/real-grain/floating-shadow final polish ==== */
+/* Make all interaction transitions brief; do not block successive touches. */
+#playing .piece{
+  transition:transform .15s cubic-bezier(.15,.68,.25,1),opacity .15s ease!important;
+  filter:none!important;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+#playing .piece .piece-inner{
+  box-shadow:
+    inset 1px 2px 0 #fff9dbcc,
+    inset 0 -3px 1px #2b172b66,
+    0 2px 0 var(--tile-foot),
+    0 4px 6px #2d1b1599,
+    0 6px 9px #34211455!important;
+  transition:transform .075s ease,box-shadow .1s ease!important;
+}
+#playing .piece:active .piece-inner{
+  transform:translateY(1px) scale(.973)!important;
+  filter:none!important;
+}
+/* Dark cobalt outline around white vector helps on yellow, ice blue and white gloss. */
+#playing .piece .juicy-arrow{
+  width:min(87%,62px)!important;
+  height:min(86%,60px)!important;
+  filter:drop-shadow(0 1px 1px #16283fba)!important;
+}
+#playing .piece .juicy-arrow .arrow-depth{
+  fill:#173b58!important;
+  stroke:#10364e!important;
+  stroke-width:6!important;
+}
+#playing .piece .juicy-arrow .arrow-main{
+  fill:#fffefe!important;
+  stroke:#1b4965!important;
+  stroke-width:5!important;
+  stroke-linejoin:round!important;
+}
+#playing .piece .juicy-arrow .arrow-light{
+  stroke:#ffffff!important;
+  stroke-width:4!important;
+  opacity:.95!important;
+}
+/* Varied grain streaks layered into carved oak instead of a uniform flat fill. */
+#playing .game-board{
+  background:
+    linear-gradient(124deg,#f9d59e33 0%,transparent 25%,#45261130 100%),
+    repeating-linear-gradient(94deg,transparent 0 3px,#3d1e1015 4px 5px,transparent 7px 14px,#fff6d317 15px 17px),
+    linear-gradient(132deg,#d9ad76,#ad7745 59%,#754627)!important;
+  box-shadow:inset 0 4px 10px #3a1e0c99,inset 0 -2px 3px #ffebbb8a!important;
+}
+#playing .grid-rock span{
+  background:
+    linear-gradient(153deg,#ffffff31 0%,transparent 37%,#50280f22 70%,#3019084c 100%),
+    repeating-linear-gradient(98deg,transparent 0 3px,#60371620 4px 5px,transparent 7px 11px,#fff5d126 13px 14px,transparent 16px 21px),
+    linear-gradient(145deg,#e9c594,#c99662 50%,#a06b3f)!important;
+  box-shadow:
+    inset 2px 3px 4px #4e2d15a5,
+    inset -2px -2px 1px #fff1ccbf,
+    0 1px 0 #f7d7a3!important;
+}
+#playing .grid-rock.fixed span{
+  background:repeating-linear-gradient(103deg,#30180b45 0 3px,transparent 4px 11px),linear-gradient(145deg,#b58559,#714229 56%,#42281c)!important;
+}
+#playing .board-frame{
+  background:
+    repeating-linear-gradient(100deg,#371a0c32 0 2px,transparent 3px 11px,#ffe9b225 12px 14px,transparent 16px 23px),
+    linear-gradient(140deg,#c28a50,#854c29 49%,#5d311b 78%,#aa6a37)!important;
+}
+/* Stop animating all 81 static slots; they only need to paint on initial level load. */
+#playing .grid-rock,#playing .grid-rock span{animation:none!important;transition:none!important}
+#playing .piece.escaping{pointer-events:none!important;opacity:0!important;z-index:11!important}
+#playing .piece.escaping[data-dir="R"]{transform:translateX(120px)!important}
+#playing .piece.escaping[data-dir="L"]{transform:translateX(-120px)!important}
+#playing .piece.escaping[data-dir="U"]{transform:translateY(-120px)!important}
+#playing .piece.escaping[data-dir="D"]{transform:translateY(120px)!important}
+@media(prefers-reduced-motion:reduce){
+  #playing .piece,#playing .piece .piece-inner{animation:none!important;transition:none!important}
+}
