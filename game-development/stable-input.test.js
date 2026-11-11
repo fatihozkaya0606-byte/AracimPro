@@ -11,7 +11,7 @@ test('V23 graphics are stable while V24 immediately commits valid touch input',(
   assert.match(tap,/element\.classList\.add\('escaping'\)/);
   assert.match(tap,/refreshAfterArrow\(\)/);
   assert.doesNotMatch(tap,/busy=true;spawnMoveSparkle\(element,p\.color\)/);
-  assert.doesNotMatch(tap,/\},135\);/);
+  assert.doesNotMatch(tap,/setTimeout\(\(\)=>\{\s*pieces=pieces\.filter/);
   assert.doesNotMatch(tap,/drawBoard\(\)/);
 });
 test('V22 visual and interaction overrides are completely absent',()=>{
