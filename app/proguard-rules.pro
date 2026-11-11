@@ -40,3 +40,11 @@
 # All active AdMob, Yandex, Unity, Mintegral, Liftoff and AdMost dependencies
 # and the libraries' own consumer keep rules remain unchanged.
 -dontwarn org.jetbrains.annotations.**
+
+# AndroidX Core's official edge-to-edge helper must not be inlined into
+# MainActivity: R8 would otherwise attribute framework compatibility
+# calls for older OS versions to our application's entry point.
+# Keep just this helper; the remaining AndroidX classes remain optimizable.
+-keep,allowobfuscation class androidx.core.view.WindowCompat {
+    public static void enableEdgeToEdge(android.view.Window);
+}
