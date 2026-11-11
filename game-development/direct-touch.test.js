@@ -10,7 +10,7 @@ const body=src.slice(from,to);
 test('pointerdown listener is attached once, click is only fallback',()=>{
  assert.match(src,/inputBoard\.addEventListener\('pointerdown'/);
  assert.match(src,/event\.preventDefault\(\)/);
- assert.match(src,/event\.detail===0 \|\| !window\.PointerEvent/);
+ assert.match(src,/if\(window\.PointerEvent&&event\.detail!==0\)return/);
  assert.doesNotMatch(src,/querySelectorAll\('\.piece'\)\.forEach\(el=>el\.addEventListener\('click'/);
 });
 test('single-tap updates state immediately and allows next arrow without 135ms lock',()=>{
