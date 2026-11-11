@@ -15,16 +15,13 @@ import android.view.WindowInsetsController;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
-import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.RequestConfiguration;
 import com.google.android.gms.ads.AdSize;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.interstitial.InterstitialAd;
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
 import com.google.android.ump.ConsentInformation;
 import com.google.android.ump.ConsentRequestParameters;
 import com.google.android.ump.UserMessagingPlatform;
@@ -33,17 +30,16 @@ import com.google.android.ump.UserMessagingPlatform;
  * DEV PREVIEW: Google sample IDs exclusively, no live ad revenue.
  * Production integration must use the OK Kacis AdMob app and ad-unit IDs,
  * updated privacy/data safety declarations, and any required consent flow.
- * No interstitial or rewarded-interstitial logic is present.
+ * Only bottom banner advertising; Unity bidding is mapped in AdMob when enabled.
+ * Yandex is not enabled for child/unknown-age users.
  */
 public final class MainActivity extends Activity {
     // Google's official development/test IDs. Never ship these for monetization.
     private static final String TEST_BANNER_ID = "ca-app-pub-3940256099942544/9214589741";
-    private static final String TEST_INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712";
 
     private WebView game;
     private FrameLayout bannerContainer;
     private AdView banner;
-    private InterstitialAd interstitial;
     private ConsentInformation consentInformation;
     private boolean adsInitialized = false;
     private boolean bannerLoaded = false;
@@ -57,11 +53,6 @@ public final class MainActivity extends Activity {
                 wantsBanner = visible;
                 refreshBannerVisibility();
             });
-        }
-
-        @JavascriptInterface
-        public void showInterstitial() {
-            runOnUiThread(() -> showInterstitialOnUi());
         }
 
         @JavascriptInterface
@@ -118,44 +109,17 @@ public final class MainActivity extends Activity {
         banner.loadAd(new AdRequest.Builder().build());
     }
 
-    private void loadInterstitial() {
-        InterstitialAd.load(this, TEST_INTERSTITIAL_ID, new AdRequest.Builder().build(),
-            new InterstitialAdLoadCallback() {
-                @Override public void onAdLoaded(InterstitialAd ad) { interstitial = ad; }
-                @Override public void onAdFailedToLoad(LoadAdError e) { interstitial = null; }
-            });
-    }
-
-    private void showInterstitialOnUi() {
-        if (interstitial == null) {
-            notifyGame("onInterstitialFailed");
-            return;
-        }
-        final InterstitialAd ad = interstitial;
-        interstitial = null;
-        ad.setFullScreenContentCallback(new FullScreenContentCallback() {
-            @Override public void onAdShowedFullScreenContent() {
-                notifyGame("onInterstitialShown");
-            }
-            @Override public void onAdDismissedFullScreenContent() {
-                notifyGame("onInterstitialClosed");
-                loadInterstitial();
-            }
-            @Override public void onAdFailedToShowFullScreenContent(AdError error) {
-                notifyGame("onInterstitialFailed");
-                loadInterstitial();
-            }
-        });
-        ad.show(this);
-    }
-
     private void initializeAdsIfAllowed() {
         if (adsInitialized || consentInformation == null || !consentInformation.canRequestAds()) return;
         adsInitialized = true;
+        MobileAds.setRequestConfiguration(new RequestConfiguration.Builder()
+            .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+            .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+            .setMaxAdContentRating(RequestConfiguration.MAX_AD_CONTENT_RATING_G)
+            .build());
         MobileAds.initialize(this, status -> runOnUiThread(() -> {
             if (isFinishing() || isDestroyed()) return;
             loadBanner();
-            loadInterstitial();
         }));
     }
 
@@ -210,7 +174,7 @@ public final class MainActivity extends Activity {
         game.setWebViewClient(new WebViewClient() {
             @Override public void onPageFinished(WebView view, String url) {
                 pageLoaded = true;
-                // Banner-only initialization; no rewarded ad callbacks.
+                // Only an anchored banner at bottom of parent; no full-screen ads.
             }
         });
         root.addView(game, new LinearLayout.LayoutParams(

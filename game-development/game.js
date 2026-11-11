@@ -69,39 +69,16 @@
     if(save.lives===MAX_LIVES || !save.nextLifeAt)save.nextLifeAt=Date.now()+LIFE_REGEN_MS;
     save.lives--;persist();updateLifeUI();return true;
   }
-  // Only a banner on every page and an interstitial after the 10th NEW level.
-  // Test ads only in this separate preview build.
-  const nativeAds = () => typeof window.AndroidAds !== 'undefined' ? window.AndroidAds : null;
+  // ONE bottom banner on all pages; no full-screen or rewarded ads.
+  // Unity participates only when AdMob mediation mapping is configured.
+  // Yandex disabled for child and unknown-age traffic.
+  const nativeAds=()=>typeof window.AndroidAds!=='undefined'?window.AndroidAds:null;
   function adBannerForScreen(){
     const bridge=nativeAds();
-    if(bridge && typeof bridge.setBannerVisible==='function'){
+    if(bridge&&typeof bridge.setBannerVisible==='function'){
       try{bridge.setBannerVisible(true);}catch(_){}
     }
   }
-  let pendingMilestoneInterstitial=0;
-  let pendingNextLevel=null;
-  function finishInterstitialStep(){
-    if(pendingNextLevel===null)return;
-    const next=pendingNextLevel;pendingNextLevel=null;
-    if(screen==='victory')transitionToLevel(next);
-  }
-  function advanceFromVictory(){
-    const next=Math.min(TOTAL_LEVELS,save.highest);
-    if(pendingMilestoneInterstitial!==currentLevel){transitionToLevel(next);return;}
-    pendingMilestoneInterstitial=0;
-    pendingNextLevel=next;
-    const bridge=nativeAds();
-    if(bridge && typeof bridge.showInterstitial==='function'){
-      try{bridge.showInterstitial();return;}catch(_){}
-    }
-    finishInterstitialStep();
-  }
-  window.OkKacisAdCallbacks=Object.freeze({
-    onInterstitialShown:()=>{},
-    onInterstitialClosed:()=>finishInterstitialStep(),
-    onInterstitialFailed:()=>finishInterstitialStep()
-  });
-  function updateRewardButton() {} // compatibility stub; no rewarded ads
   // One lightweight ticker updates only displayed countdowns.
   setInterval(updateLifeUI,1000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateLifeUI();});
@@ -570,7 +547,6 @@
     if(currentLevel>=save.highest)save.highest=Math.min(TOTAL_LEVELS,currentLevel+1);
     const reward=previous?25:100;save.coins+=reward;save.undos=Math.max(save.undos,2);save.hints=Math.max(save.hints,2);
     levelData.reward=reward;levelData.grade=grade;
-    pendingMilestoneInterstitial=(previous===0 && currentLevel%10===0)?currentLevel:0;
     persist();vibrate([25,35,40]);show('victory');
   }
   function renderVictory(){if(!levelData)return;
@@ -583,7 +559,7 @@
   }
   function modal(title,body,kind){timerLastAt=performance.now();modalType=kind;$('modalClose').textContent=(kind==='lose'?'Bölümlere Dön':'Kapat');$('modalTitle').textContent=title;$('modalContent').innerHTML=body;$('modal').hidden=false;playSound()}
   function closeModal(){$('modal').hidden=true;modalType='';timerLastAt=performance.now();}
-  function openSettings(){modal('Ayarlar',`<div class="setting-line"><span>🔊 Ses efektleri</span><button id="soundToggle">${save.sound?'Açık':'Kapalı'}</button></div><div class="setting-line"><span>🎵 Fon müziği</span><button id="musicToggle">${save.music?'Açık':'Kapalı'}</button></div><div class="setting-line"><span>📳 Titreşim</span><button id="vibrateToggle">${save.vibrate?'Açık':'Kapalı'}</button></div><div class="setting-line"><span>🌍 Dil</span><span>Türkçe</span></div><p>Ok Kaçış · 9×9 reklam test<br>Çevrimdışı oynanır • ilerleme telefonda saklanır.</p>`,'settings');
+  function openSettings(){modal('Ayarlar',`<div class="setting-line"><span>🔊 Ses efektleri</span><button id="soundToggle">${save.sound?'Açık':'Kapalı'}</button></div><div class="setting-line"><span>🎵 Fon müziği</span><button id="musicToggle">${save.music?'Açık':'Kapalı'}</button></div><div class="setting-line"><span>📳 Titreşim</span><button id="vibrateToggle">${save.vibrate?'Açık':'Kapalı'}</button></div><div class="setting-line"><span>🌍 Dil</span><span>Türkçe</span></div><p>Ok Kaçış · 9×9 banner test<br>Çevrimdışı oynanır • ilerleme telefonda saklanır.</p>`,'settings');
     $('soundToggle').onclick=()=>{save.sound=!save.sound;persist();$('soundToggle').textContent=save.sound?'Açık':'Kapalı'};
     $('musicToggle').onclick=()=>{setMusic(!save.music);$('musicToggle').textContent=save.music?'Açık':'Kapalı'};
     $('vibrateToggle').onclick=()=>{save.vibrate=!save.vibrate;persist();$('vibrateToggle').textContent=save.vibrate?'Açık':'Kapalı'};
@@ -636,7 +612,7 @@
   $('prevPage').onclick=()=>{page=Math.max(0,page-1);renderLevels()};
   $('nextPage').onclick=()=>{page=Math.min(Math.ceil(TOTAL_LEVELS/12)-1,page+1);renderLevels()};
   $('pauseBtn').onclick=pause;$('gameSettings').onclick=openSettings;$('undoBtn').onclick=undo;$('hintBtn').onclick=hint;$('restartBtn').onclick=restart;
-  $('victoryHome').onclick=()=>show('home');$('continueBtn').onclick=advanceFromVictory;$('replayBtn').onclick=()=>transitionToLevel(currentLevel);
+  $('victoryHome').onclick=()=>show('home');$('continueBtn').onclick=()=>transitionToLevel(Math.min(TOTAL_LEVELS,save.highest));$('replayBtn').onclick=()=>transitionToLevel(currentLevel);
   $('dailyBtn').onclick=openDaily;$('settingsBtn').onclick=openSettings;$('shopBtn').onclick=openShop;
   $('gameShop').onclick=openShop;$('shopBack').onclick=()=>show(shopReturn==='shop'?'home':shopReturn);
   $('missionsBtn').onclick=()=>show('challenges');$('achievementsBtn').onclick=showAchievements;
