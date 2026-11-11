@@ -157,6 +157,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class MainActivity extends Activity {
+    // Disable ordinary full-screen interstitial ads ONLY. Keep App Open, rewarded,
+    // lower banner, 300x250 MREC, middle Native video and Native feed unchanged.
+    private static final boolean ENABLE_INTERSTITIAL_ADS_256 = false;
 
     private final android.os.Handler apPremiumSplashHandler = new android.os.Handler(android.os.Looper.getMainLooper());
 
@@ -644,6 +647,7 @@ public class MainActivity extends Activity {
     }
 
     private void testInterstitial141() {
+        if (!ENABLE_INTERSTITIAL_ADS_256) return;
         if (!BuildConfig.DEBUG) return;
         if (!admobSdkReady) {
             android.widget.Toast.makeText(this, "AdMob henüz hazır değil",
@@ -2699,6 +2703,7 @@ private void showLaunchSplash() {
     }
 
     private void requestInterstitialAfterVehicleSaved122() {
+        if (!ENABLE_INTERSTITIAL_ADS_256) return;
         long now = android.os.SystemClock.elapsedRealtime();
         if (!oneInterstitialReady || oneInterstitialAd == null ||
             !canRequestAdMobAds() || !apPremiumSplashHidden ||
@@ -2873,6 +2878,7 @@ private void showLaunchSplash() {
     }
 
     private void loadSingleInterstitial() {
+        if (!ENABLE_INTERSTITIAL_ADS_256) return;
         if (interstitialLoading || !canRequestAdMobAds() || !apPremiumSplashHidden ||
                 oneInterstitialClaimed.get() || oneInterstitialAd != null) {
             // Splash may still be visible when SDK initializes; allow preload then.
@@ -2919,6 +2925,7 @@ private void showLaunchSplash() {
     // A second full-screen placement at a natural break after a new record is saved.
     // Reuses our current live AdMob unit; no imaginary publisher ID is required.
     private void loadRecordInterstitial147() {
+        if (!ENABLE_INTERSTITIAL_ADS_256) return;
         if (recordInterstitialAd147 != null || recordInterstitialLoading147 ||
                 recordInterstitialClaimed147.get() || !admobSdkReady ||
                 !canRequestAdMobAds() || isFinishing() || isDestroyed()) return;
@@ -2955,6 +2962,7 @@ private void showLaunchSplash() {
     }
 
     private void showRecordInterstitial147(String type) {
+        if (!ENABLE_INTERSTITIAL_ADS_256) return;
         if (!("fuel".equals(type) || "expenses".equals(type) ||
                 "services".equals(type))) return;
         long now = android.os.SystemClock.elapsedRealtime();
@@ -3022,6 +3030,7 @@ private void showLaunchSplash() {
     // Called by a bottom-navigation click before changing screens, not by random taps.
     // Return true only when a loaded ad will take over that navigation.
     private boolean requestOneInterstitialForNavigation(String target) {
+        if (!ENABLE_INTERSTITIAL_ADS_256) return false;
         if (!("home".equals(target) || "garage".equals(target) ||
               "records".equals(target) || "plan".equals(target) ||
               "reports".equals(target) || "more".equals(target))) return false;
