@@ -13,9 +13,10 @@ test('woodland 3D design includes carved oak sockets, walnut frame and direction
   assert.match(js,/const ARROW_VECTOR =/);
   assert.match(js,/\$\{ARROW_VECTOR\}/);
 });
-test('success sparkles do not change the puzzle state or automatic timers',()=>{
+test('fast-touch visual animation stays optional without slowing game state',()=>{
   assert.match(js,/function spawnMoveSparkle\(element,color\)/);
-  assert.match(js,/spawnMoveSparkle\(element,p\.color\)/);
+  assert.match(js,/setTimeout\(\(\)=>element\.remove\(\),160\)/);
+  assert.match(js,/function refreshLiveBoardHud\(\)/);
   assert.match(css,/@media\(prefers-reduced-motion:reduce\)/);
 });
 test('existing 9x9, 540 levels, lives, timers, shop, banner and boosters remain present',()=>{
