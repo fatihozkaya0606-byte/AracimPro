@@ -39,7 +39,8 @@ test('all 540 levels follow six exact contiguous difficulty tiers and remain sol
      for(const id of g.requires)assert.ok(active.some(x=>x.id===id&&x.id>p.id),'Backward key at '+n);
    }
    const guards=gates.filter(x=>x.g.kind==='guard');
-   if(n<55)assert.equal(guards.length,0,'Premature trap at '+n);
+   if(n<21)assert.equal(guards.length,0,'No hard-tier traps before level 21');
+   if(n>=21)assert.ok(guards.length>=1,'No real order choices at '+n);
    for(const {p,g} of guards){
      const anchor=active.find(q=>q.id===g.anchorId);
      assert.ok(anchor&&anchor.id<p.id,'Wrong support anchor '+n);
