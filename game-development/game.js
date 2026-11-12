@@ -339,6 +339,10 @@
   }
   function mechanicReason(p,active,at=Date.now(),ignoreTime=false){
     for(const gate of p.gates||[]){
+      if(gate.kind==='guard'){
+        if(!active.some(q=>q.id===gate.anchorId))return '⚠️ Destek okunu erken çıkardın! Geri Al veya Yeniden kullan.';
+        continue;
+      }
       const pending=gate.requires.filter(id=>active.some(q=>q.id===id));
       if(pending.length){
         if(gate.kind==='double')return '🔐 '+pending.length+' anahtar daha gerekiyor!';
@@ -358,6 +362,8 @@
       11:'❄️ Buzlu ok: Buz çözücüyü önce çıkar.',
       16:'🚪 Tünel: Önce kapıyı açan oku kurtar.',
       21:'🔘 Düğme: Düğme okunu çıkar, kapı açılsın.',
+      24:'🔀 Yeni: Üç-dört anahtarı doğru sırada kurtar.',
+      35:'⚓ Uyarı! İşaretli desteği bağlı ok çıkana kadar koru.',
       31:'⛓️ Zincir: Bağlı oku önce kurtar.',
       41:'🎨 Renk kilidi: Aynı renkte anahtarı bul.',
       51:'⏳ Süreli kapı: 8 saniye açık, 4 saniye kapalı.',
@@ -372,6 +378,11 @@
   function mechanicBadges(p,active,at=Date.now()){
     let marks='';
     for(const g of p.gates||[]){
+      if(g.kind==='guard'){
+        const safe=active.some(q=>q.id===g.anchorId);
+        marks+='<span class="mechanic-mark mechanic-guard'+(safe?'':' broken')+'" aria-hidden="true">'+(safe?'🧷':'⛔')+'</span>';
+        continue;
+      }
       const pending=g.requires.filter(id=>active.some(q=>q.id===id));
       if(!pending.length&&(g.kind!=='timed'||timedGateOpen(at)))continue;
       const icon=g.kind==='double'?'🔐'+pending.length:MECHANIC_INFO[g.kind][0];
@@ -412,14 +423,13 @@
     // Optional reversible-order trap: marked anchor must be kept until a later arrow
     // leaves the board. First taught after the 30-level training window.
     if(n<35||n%5!==0)return;
-    const possible=pcs.filter((p,i)=>i<count-5&&freeExit(p,pcs,rocks));
+    const possible=pcs.filter((p,i)=>i<count-5&&freeExit(p,pcs,rocks)&&!(p.gates||[]).length);
     for(const anchor of possible){
       const anchorIndex=pcs.indexOf(anchor);
       const target=pcs.slice(anchorIndex+4).find(p=>
         p.id!==anchor.id && p.gates && p.gates.length>0);
       if(!target)continue;
       anchor.needsKey=null;
-      anchor.gates=[];
       anchor.holdsFor=target.id;
       (target.gates||(target.gates=[])).push({kind:'guard',requires:[],anchorId:anchor.id});
       break;
@@ -562,6 +572,12 @@
     document.head.appendChild(css);
   }
   function snapshot(){return {pieces:pieces.map(p=>({...p})),removed,movesLeft,mistakesUsed,specialTiles:specialTiles.map(t=>({...t})),comboStreak};}
+  function guardStillNeeded(p,active){return !!(p.holdsFor&&active.some(q=>q.id===p.holdsFor));}
+  function safeHintCandidates(active,lvl){
+    const valid=active.filter(p=>canRemoveArrow(p,active,lvl));
+    const safe=valid.filter(p=>!guardStillNeeded(p,active));
+    return safe.length?safe:valid;
+  }
   function useSpecialTile(id){
     if(busy||screen!=='playing'||lostThisRun||!$('modal').hidden)return;
     const gem=specialTiles.find(t=>t.id===id);if(!gem)return;
@@ -569,10 +585,10 @@
     specialTiles=specialTiles.filter(t=>t.id!==id);
     const crossed=(p)=>cells(p).some(([cx,cy])=>gem.type==='bomb'?Math.abs(cx-gem.x)<=1&&Math.abs(cy-gem.y)<=1:cy===gem.y);
     let victims=[];
-    if(gem.type==='bomb'||gem.type==='lightning')victims=pieces.filter(crossed);
+    if(gem.type==='bomb'||gem.type==='lightning')victims=pieces.filter(p=>crossed(p)&&!guardStillNeeded(p,pieces));
     if(gem.type==='spin'){
       const choices=pieces.filter(p=>!freeExit(p,pieces,levelData.rocks));
-      const pool=choices.length?choices:pieces;
+      const pool=(choices.length?choices:pieces).filter(p=>!guardStillNeeded(p,pieces));
       if(pool.length)victims=[pool.reduce((best,p)=>Math.abs(p.x-gem.x)+Math.abs(p.y-gem.y)<Math.abs(best.x-gem.x)+Math.abs(best.y-gem.y)?p:best)];
     }
     if(victims.length){
@@ -627,7 +643,7 @@
     for(const gem of specialTiles){const ico={bomb:'💣',lightning:'⚡',spin:'🔄',gift:'🎁'}[gem.type];html.push(`<button type="button" class="power-gem" data-gem="${gem.id}" data-kind="${gem.type}" style="left:${gem.x/SIZE*100}%;top:${gem.y/SIZE*100}%;width:${100/SIZE}%;height:${100/SIZE}%" aria-label="Özel güç ${gem.type}">${ico}</button>`);}
     for(const p of pieces){
       const horizontal=p.dir==='R'||p.dir==='L';
-      html.push(`<button class="piece ${p.color} ${p.isKey?'key-piece':''} ${p.needsKey&&pieces.some(q=>q.id===p.needsKey)?'locked-piece':''} ${p.id===hintId?'hinted':''}" data-dir="${p.dir}" data-id="${p.id}" style="left:${p.x/SIZE*100}%;top:${p.y/SIZE*100}%;width:${(horizontal?p.length:1)/SIZE*100}%;height:${(horizontal?1:p.length)/SIZE*100}%;--tile-image:url('sprites/${p.color}-${p.length===1?'s':p.length===2?'l':'xl'}-${p.dir}.webp')" aria-label="${p.dir==='R'?'Sağa':p.dir==='L'?'Sola':p.dir==='U'?'Yukarı':'Aşağı'} giden ok"><span class="piece-inner">${ARROW_VECTOR}${p.isKey?'<span class="key-icon">🔑</span>':''}${p.needsKey&&pieces.some(q=>q.id===p.needsKey)?'<span class="lock-icon">🔒</span>':''}<span class="mechanic-badges">${mechanicBadges(p,pieces)}</span>${p.isMechanicKey&&!p.isKey?'<span class="mechanic-key" aria-hidden="true">🔑</span>':''}</span></button>`);
+      html.push(`<button class="piece ${p.color} ${p.isKey?'key-piece':''} ${p.needsKey&&pieces.some(q=>q.id===p.needsKey)?'locked-piece':''} ${p.id===hintId?'hinted':''}" data-dir="${p.dir}" data-id="${p.id}" style="left:${p.x/SIZE*100}%;top:${p.y/SIZE*100}%;width:${(horizontal?p.length:1)/SIZE*100}%;height:${(horizontal?1:p.length)/SIZE*100}%;--tile-image:url('sprites/${p.color}-${p.length===1?'s':p.length===2?'l':'xl'}-${p.dir}.webp')" aria-label="${p.dir==='R'?'Sağa':p.dir==='L'?'Sola':p.dir==='U'?'Yukarı':'Aşağı'} giden ok"><span class="piece-inner">${ARROW_VECTOR}${p.isKey?'<span class="key-icon">🔑</span>':''}${p.needsKey&&pieces.some(q=>q.id===p.needsKey)?'<span class="lock-icon">🔒</span>':''}<span class="mechanic-badges">${mechanicBadges(p,pieces)}</span>${p.isMechanicKey&&!p.isKey?'<span class="mechanic-key" aria-hidden="true">🔑</span>':''}${p.holdsFor&&pieces.some(q=>q.id===p.holdsFor)?'<span class="guard-anchor" aria-hidden="true">⚓</span>':''}</span></button>`);
     }
     $('gameBoard').innerHTML=html.join('');
     // V24: delegated pointerdown handler is attached once (outside drawBoard).
@@ -746,6 +762,8 @@
       if(!locked && badge)badge.remove();
       const mechanical=el.querySelector('.mechanic-badges');
       if(mechanical)mechanical.innerHTML=mechanicBadges(p,pieces);
+      const marker=el.querySelector('.guard-anchor');
+      if(marker&&!pieces.some(q=>q.id===p.holdsFor))marker.remove();
     });
     $('undoBadge').textContent=String(save.undos);
     $('hintBadge').textContent=String(save.hints);
@@ -788,7 +806,8 @@
     element.style.pointerEvents='none';
     element.classList.add('escaping');
     refreshAfterArrow();
-    $('gameTip').textContent='Harika! Yolu açık olan sonraki oku bul.';
+    const stuck=pieces.some(q=>(q.gates||[]).some(g=>g.kind==='guard'&&!pieces.some(a=>a.id===g.anchorId)));
+    $('gameTip').textContent=stuck?'⚠️ Destek okunu erken çıkardın! Geri Al veya Yeniden kullan.':'Harika! Yolu açık olan sonraki oku bul.';
     playSound();vibrate(8);persist();
     const boardOnMove=$('gameBoard');
     setTimeout(()=>{if(element.parentNode===boardOnMove)element.remove();},135);
@@ -799,7 +818,7 @@
     if(movesLeft===0)failLevel('Hamle hakkın bitti!');
   }
   function undo(){if(busy||save.undos<=0)return;if(!history.length){toast('Geri alınacak hamle yok!');return;}const state=history.pop();pieces=state.pieces;removed=state.removed;movesLeft=state.movesLeft;mistakesUsed=state.mistakesUsed;if(state.specialTiles)specialTiles=state.specialTiles;if(Number.isFinite(state.comboStreak))comboStreak=state.comboStreak;save.undos--;persist();hintId=-1;drawBoard();toast('Son hamle geri alındı.');playSound('coin')}
-  function hint(){if(busy||save.hints<=0)return;const valid=pieces.filter(p=>canRemoveArrow(p,pieces,levelData));if(!valid.length){toast('Açık ok bulunamadı. Yeniden dene.');return;}hintId=valid[valid.length-1].id;save.hints--;hintsUsed++;persist();drawBoard();toast('Parlayan oka dokun!');playSound('coin');setTimeout(()=>{if(screen==='playing'){hintId=-1;drawBoard();}},2500)}
+  function hint(){if(busy||save.hints<=0)return;const valid=safeHintCandidates(pieces,levelData);if(!valid.length){toast('Açık ok bulunamadı. Yeniden dene.');return;}hintId=valid[valid.length-1].id;save.hints--;hintsUsed++;persist();drawBoard();toast('Parlayan oka dokun!');playSound('coin');setTimeout(()=>{if(screen==='playing'){hintId=-1;drawBoard();}},2500)}
   function failLevel(reason='Bölümü tamamlayamadın!'){
     // Exactly one life is lost per failed attempt, whichever action reached 0.
     if(lostThisRun || screen!=='playing' || pieces.length===0)return;
@@ -845,7 +864,7 @@
       candidates[0].gates=[];
     }
     if(id==='powerAuto'){
-      const valid=pieces.filter(p=>canRemoveArrow(p,pieces,levelData));
+      const valid=safeHintCandidates(pieces,levelData);
       if(!valid.length){toast('Şimdilik çıkarılabilir ok yok!');return false;}
       const p=valid[0];pieces=pieces.filter(x=>x.id!==p.id);removed++;
       save.totalArrows++;ensureDaily();save.dailyQuests.arrows++;
