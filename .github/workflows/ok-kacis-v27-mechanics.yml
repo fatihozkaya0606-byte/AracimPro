@@ -3,7 +3,7 @@ on:
   push:
     branches: [ok-kacis-v27-540-mechanics-test]
     paths:
-      - '.github/workflows/ok-kacis-v27-540-mechanics-test.yml'
+      - '.github/workflows/ok-kacis-v27-mechanics.yml'
       - 'game-development/**'
   workflow_dispatch:
 permissions:
