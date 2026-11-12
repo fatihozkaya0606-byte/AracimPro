@@ -253,32 +253,49 @@
   // avoid the previous sparse, trivially independent layouts.
   // Difficulty curve: early stages teach the rules; stages 20+ introduce
   // more dependencies, fewer visible choices and a smaller mistake budget.
+  // V29: six explicit, non-overlapping difficulty tiers, 1 through 540.
+  // Difficulty is defined by geometry, choices and dependencies; labels are not cosmetic.
   function difficulty(n){
+    const pulse=n>=21 && n%5===0; // a modest challenge every fifth level, not a doubling
+    const stage=n<=5?0:n<=10?1:n<=20?2:n<=50?3:n<=100?4:5;
     const d={
-      target:n<=5?6+n:n<11?10+n:n<16?17+Math.floor((n-8)*.7):n<31?22+Math.floor((n-16)/2):Math.min(32,29+Math.floor((n-30)/25)),
-      rocks:n<=5?0:n<13?1:n<35?2:n<75?3:n<120?4:5,
-      maxLen:n>=120?3:2,
-      longChance:n<5?.11:n<14?.27:n<40?.33:n<100?.38:.44,
-      allowances:n<=5?10:n<=10?5:n<20?4:n<35?3:n<75?2:n<160?1:1,
-      lockChance:n<=5?0:n<=10?.19:n<15?.34:n<20?.51:n<30?.72:n<50?.79:n<85?.84:.90,
-      visibleGoal:n<10?99:n<15?8:n<20?6:n<30?5:n<50?4:n<100?3:2,
-      name:n<=5?'Başlangıç':n<=10?'Isınma':n<20?'Orta':n<35?'Zorlu':n<75?'Usta':n<160?'Uzman':'Efsane'
+      target:0,rocks:0,maxLen:2,longChance:.24,allowances:4,
+      lockChance:0,visibleGoal:8,generationAttempts:3,candidateTries:55,
+      bottleneckCount:0,bottleneckKeys:3,challengePulse:pulse,
+      tier:stage,name:['Kolay','Hafif Zor','Orta','Zor','Çok Zor','Aşırı Zor'][stage]
     };
-    if(n>=24){
-      // Every fifth stage is a modest challenge pulse, followed by a recovery stage.
-      const pulse=n%5===0;
-      d.target=Math.min(42,31+Math.floor((n-24)/14)+(pulse?2:0));
-      d.rocks=Math.min(7,3+Math.floor((n-24)/100)+(n%10===0?1:0));
-      d.visibleGoal=n<36?3:n<75?3:2;
-      d.lockChance=n<36?.76:n<75?.83:.9;
-      d.longChance=n<75?.32:n<180?.30:.27;
-      d.maxLen=n>=115?3:2;
-      d.allowances=n<36?4:n<75?3:n<140?2:1;
-      d.generationAttempts=n<61?6:5;
-      d.candidateTries=n<61?110:95;
-      d.bottleneckCount=n<60?1:n<150?2:3;
-      d.bottleneckKeys=n<61?3:4;
-      d.challengePulse=pulse;
+    if(stage===0){
+      d.target=5+n;                        // 6–10 arrows
+      d.rocks=0;d.longChance=.12;d.allowances=10;
+      d.visibleGoal=99;d.candidateTries=35;
+    }else if(stage===1){
+      d.target=10+(n-5);                  // 11–15 arrows
+      d.rocks=n>=9?1:0;d.longChance=.22;d.allowances=8;
+      d.lockChance=.12;d.visibleGoal=8;d.candidateTries=48;
+    }else if(stage===2){
+      d.target=17+Math.floor((n-11)*.7); // 17–23 arrows
+      d.rocks=n>=18?2:1;d.longChance=.28;d.allowances=6;
+      d.lockChance=.3+(n-11)*.018;d.visibleGoal=5;
+      d.candidateTries=65;
+    }else if(stage===3){
+      d.target=29+Math.floor((n-21)/9)+(pulse?1:0); // 29–33 arrows
+      d.rocks=n>=36?3:2;d.longChance=.32;d.allowances=4;
+      d.lockChance=.69+(n-21)*.002;d.visibleGoal=3;
+      d.bottleneckCount=1;d.bottleneckKeys=3;
+      d.generationAttempts=5;d.candidateTries=100;
+    }else if(stage===4){
+      d.target=35+Math.floor((n-51)/16)+(pulse?1:0); // 35–39 arrows
+      d.rocks=n>=80?5:4;d.longChance=.31;d.allowances=n<75?3:2;
+      d.lockChance=.84+(n-51)*.0008;d.visibleGoal=2;
+      d.bottleneckCount=2;d.bottleneckKeys=n>=76?4:3;
+      d.generationAttempts=5;d.candidateTries=100;
+    }else{
+      d.target=Math.min(43,40+Math.floor((n-101)/130)+(pulse?1:0)); // 40–43 arrows
+      d.rocks=n>=420?7:n>=220?6:5;
+      d.longChance=.28;d.maxLen=3;d.allowances=n<160?2:1;
+      d.lockChance=.92;d.visibleGoal=1;
+      d.bottleneckCount=3;d.bottleneckKeys=4;
+      d.generationAttempts=5;d.candidateTries=95;
     }
     return d;
   }
@@ -383,8 +400,8 @@
       11:'❄️ Buzlu ok: Buz çözücüyü önce çıkar.',
       16:'🚪 Tünel: Önce kapıyı açan oku kurtar.',
       21:'🔘 Düğme: Düğme okunu çıkar, kapı açılsın.',
-      24:'🔀 Yeni: Üç-dört anahtarı doğru sırada kurtar.',
-      35:'⚓ Uyarı! İşaretli desteği bağlı ok çıkana kadar koru.',
+      21:'🔀 Zor seri: Üç anahtarlı dar boğazı çöz.',
+      55:'⚓ Çok zor: İşaretli desteği bağlı ok çıkana kadar koru.',
       31:'⛓️ Zincir: Bağlı oku önce kurtar.',
       41:'🎨 Renk kilidi: Aynı renkte anahtarı bul.',
       51:'⏳ Süreli kapı: 8 saniye açık, 4 saniye kapalı.',
@@ -443,7 +460,7 @@
     }
     // Optional reversible-order trap: marked anchor must be kept until a later arrow
     // leaves the board. First taught after the 30-level training window.
-    if(n<35||n%5!==0)return;
+    if(n<55||n%5!==0)return;
     const possible=pcs.filter((p,i)=>i<count-5&&freeExit(p,pcs,rocks)&&!(p.gates||[]).length);
     for(const anchor of possible){
       const anchorIndex=pcs.indexOf(anchor);
@@ -480,7 +497,7 @@
       const pcs=[];
       for(let index=0;index<diff.target;index++){
         const filled=occupancy(pcs,stones);
-        const available=pcs.filter(p=>n>=24?freeExitFilled(p,filled):freeExit(p,pcs,stones));
+        const available=pcs.filter(p=>n>=21?freeExitFilled(p,filled):freeExit(p,pcs,stones));
         let chosen=null,bestScore=-1e8;
         const tries=diff.candidateTries||(n<6?35:n<25?60:75);
         for(let t=0;t<tries;t++){
@@ -491,14 +508,14 @@
           const y=Math.floor(rand()*(SIZE-(horizontal?0:len-1)));
           const p={id:pcs.length+1,x,y,length:len,dir,color:COLORS[(pcs.length+Math.floor(rand()*6))%COLORS.length]};
           if(cells(p).some(([cx,cy])=>filled.has(key(cx,cy))))continue;
-          if(n>=24?!freeExitFilled(p,filled):!freeExit(p,pcs,stones))continue;
+          if(n>=21?!freeExitFilled(p,filled):!freeExit(p,pcs,stones))continue;
           let blocked=0;
-          for(const old of available)if(n>=24?blocksExitRay(old,p):!freeExit(old,[...pcs,p],stones))blocked++;
+          for(const old of available)if(n>=21?blocksExitRay(old,p):!freeExit(old,[...pcs,p],stones))blocked++;
           // Reward arrow-on-arrow dependencies, board density and variety.
           // A subtle seeded jitter prevents repetitive layouts.
           const near=cells(p).reduce((acc,[cx,cy])=>acc+
             [[cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1]].filter(([nx,ny])=>filled.has(key(nx,ny))).length,0);
-          const score=n>=24
+          const score=n>=21
             ?blocked*18+near*2.5+(len>1?3.5:0)+rand()*2-Math.abs(x-4)*.11-Math.abs(y-4)*.11
             :blocked*11+(len>1?(n>=7?3.5:1):0)+(rand()*2)-Math.abs(x-3)*.09-Math.abs(y-3)*.09;
           if(score>bestScore){chosen=p;bestScore=score;}
@@ -507,8 +524,8 @@
         if(!chosen)break;
         pcs.push(chosen);
       }
-      if(n<24){
-        // Preserve byte-for-byte V27 placement decisions for levels 1–23.
+      if(n<21){
+        // The first three tiers keep the simpler constructive placement method.
         if(pcs.length>best.length)best=pcs;
         if(best.length>=diff.target)break;
         continue;
@@ -551,7 +568,7 @@
       }
     }
     const mechanicTypes=attachMechanics(n,best,rand);
-    if(n>=24)attachBottlenecks(n,best,rand,diff,stones);
+    if(n>=21)attachBottlenecks(n,best,rand,diff,stones);
     const puzzle={rocks:stones,pieces:best,level:n,difficulty:diff,mechanicTypes};
     puzzle.metrics=measurePuzzle(puzzle);
     return puzzle;
