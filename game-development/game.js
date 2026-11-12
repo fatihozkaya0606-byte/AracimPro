@@ -268,10 +268,13 @@
     else if(n<301){pool=['rotate','double','tunnel','chain','switch','color'];amount=3;}
     else {pool=['ice','tunnel','switch','chain','color','timed','double','rotate'];amount=n<421?3:4;}
     const picks=[];
-    for(let i=0;i<amount;i++)picks.push(pool[(n+i)%pool.length]);
-    if(n===101)picks[0]='double';
-    if(n===181)picks[0]='rotate';
-    return [...new Set(picks)];
+    if(n===101)picks.push('double');
+    if(n===181)picks.push('rotate');
+    for(let i=0;picks.length<amount;i++){
+      const type=pool[(n+i)%pool.length];
+      if(!picks.includes(type))picks.push(type);
+    }
+    return picks;
   }
   function attachMechanics(n,pcs,rand){
     const types=mechanicsForLevel(n);
@@ -299,6 +302,14 @@
       if(kind==='rotate')gate.alignDir=p.dir;
       if(kind==='color')gate.matchColor=p.color;
       (p.gates||(p.gates=[])).push(gate);
+    }
+    // Keep all colour-key pairs visually matching even if a target was recoloured later.
+    for(const piece of pcs)for(const gate of piece.gates||[]){
+      if(gate.kind==='color'){
+        const opener=pcs.find(q=>q.id===gate.requires[0]);
+        if(opener)opener.color=piece.color;
+        gate.matchColor=piece.color;
+      }
     }
     return types;
   }
