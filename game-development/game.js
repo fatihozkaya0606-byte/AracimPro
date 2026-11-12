@@ -292,7 +292,7 @@
     }else{
       d.target=Math.min(43,40+Math.floor((n-101)/130)+(pulse?1:0)); // 40–43 arrows
       d.rocks=n>=420?7:n>=220?6:5;
-      d.longChance=.28;d.maxLen=3;d.allowances=n<160?2:1;
+      d.longChance=.28;d.maxLen=3;d.allowances=1;
       d.lockChance=.92;d.visibleGoal=1;
       d.bottleneckCount=3;d.bottleneckKeys=4;
       d.generationAttempts=5;d.candidateTries=95;
