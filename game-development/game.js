@@ -241,6 +241,120 @@
       visibleGoal:n<10?99:n<15?8:n<20?6:n<30?5:n<50?4:n<100?3:2,
       name:n<=5?'Başlangıç':n<=10?'Isınma':n<20?'Orta':n<35?'Zorlu':n<75?'Usta':n<160?'Uzman':'Efsane'};
   }
+
+  // V27: all new locks depend only on arrows inserted later. Reverse removal solves them.
+  const MECHANIC_INFO={
+    ice:['❄️','Buzu eritecek oku önce çıkar!'],
+    tunnel:['🚪','Tünel kapısını açan oku çıkar!'],
+    switch:['🔘','Kapı düğmesini açan oku çıkar!'],
+    chain:['⛓️','Zincirin bağlantı okunu çıkar!'],
+    color:['🎨','Aynı renk anahtarı bul!'],
+    timed:['⏳','Kapının açık olmasını bekle!'],
+    double:['🔐','İki anahtarı da çıkar!'],
+    rotate:['🔄','Döner kapının yönünü düzelt!']
+  };
+  function mechanicsForLevel(n){
+    if(n<11)return [];
+    if(n<16)return ['ice'];
+    if(n<21)return ['tunnel','ice'];
+    if(n<31)return ['switch','ice'];
+    if(n<41)return ['chain','switch'];
+    if(n<51)return ['color','chain'];
+    if(n<61)return ['timed','color'];
+    let pool,amount;
+    if(n<101){pool=['ice','tunnel','switch','chain','color','timed'];amount=3;}
+    else if(n<181){pool=['double','ice','chain','color','switch','timed'];amount=3;}
+    else if(n<301){pool=['rotate','double','tunnel','chain','switch','color'];amount=3;}
+    else {pool=['ice','tunnel','switch','chain','color','timed','double','rotate'];amount=n<421?3:4;}
+    const picks=[];
+    for(let i=0;i<amount;i++)picks.push(pool[(n+i)%pool.length]);
+    if(n===101)picks[0]='double';
+    if(n===181)picks[0]='rotate';
+    return [...new Set(picks)];
+  }
+  function attachMechanics(n,pcs,rand){
+    const types=mechanicsForLevel(n);
+    if(pcs.length<6)return [];
+    const used=new Set(),count=pcs.length;
+    for(let i=0;i<types.length;i++){
+      const kind=types[i],limit=count-(kind==='double'?3:2);
+      let pos=(n*3+i*7)%(limit+1);
+      while(used.has(pos))pos=(pos+1)%(limit+1);
+      used.add(pos);
+      const p=pcs[pos],later=pcs.slice(pos+1);
+      const first=later[Math.floor(rand()*later.length)];
+      const required=[first.id];
+      if(kind==='double'){
+        const second=later.filter(q=>q.id!==first.id);
+        required.push(second[Math.floor(rand()*second.length)].id);
+      }
+      if(kind==='color')first.color=p.color;
+      for(const id of required){
+        const key=pcs.find(q=>q.id===id);
+        key.isMechanicKey=true;
+      }
+      const gate={kind,requires:required};
+      if(kind==='tunnel'){gate.exitDir=p.dir;gate.exitSlot=(p.dir==='L'||p.dir==='R')?p.y:p.x;}
+      if(kind==='rotate')gate.alignDir=p.dir;
+      if(kind==='color')gate.matchColor=p.color;
+      (p.gates||(p.gates=[])).push(gate);
+    }
+    return types;
+  }
+  function timedGateOpen(at=Date.now()){
+    return ((Math.floor(at/1000)%12)+12)%12<8;
+  }
+  function mechanicReason(p,active,at=Date.now(),ignoreTime=false){
+    for(const gate of p.gates||[]){
+      const pending=gate.requires.filter(id=>active.some(q=>q.id===id));
+      if(pending.length){
+        if(gate.kind==='double')return '🔐 '+pending.length+' anahtar daha gerekiyor!';
+        return MECHANIC_INFO[gate.kind][0]+' '+MECHANIC_INFO[gate.kind][1];
+      }
+      if(gate.kind==='timed'&&!ignoreTime&&!timedGateOpen(at))return '⏳ Kapı 4 saniye içinde yeniden açılır.';
+    }
+    return '';
+  }
+  function canRemoveArrow(p,active,lvl,at=Date.now(),ignoreTime=false){
+    return !!p && (!p.needsKey||!active.some(q=>q.id===p.needsKey))
+      && !mechanicReason(p,active,at,ignoreTime)
+      && freeExit(p,active,lvl.rocks);
+  }
+  function mechanicTooltip(n){
+    const a={
+      11:'❄️ Buzlu ok: Buz çözücüyü önce çıkar.',
+      16:'🚪 Tünel: Önce kapıyı açan oku kurtar.',
+      21:'🔘 Düğme: Düğme okunu çıkar, kapı açılsın.',
+      31:'⛓️ Zincir: Bağlı oku önce kurtar.',
+      41:'🎨 Renk kilidi: Aynı renkte anahtarı bul.',
+      51:'⏳ Süreli kapı: 8 saniye açık, 4 saniye kapalı.',
+      61:'🧩 Artık mekanikler birlikte çalışır.',
+      101:'🔐 Çift kilit: Her iki anahtarı çıkar.',
+      181:'🔄 Döner kapı: Yönünü düzelt.',
+      301:'🧠 Usta: Önce hamle sırasını düşün.',
+      421:'🏆 Efsane: Dört mekanik bir arada.'
+    };
+    return a[n]||'Önce kilidi çözülen ve çıkışı açık oku seç!';
+  }
+  function mechanicBadges(p,active,at=Date.now()){
+    let marks='';
+    for(const g of p.gates||[]){
+      const pending=g.requires.filter(id=>active.some(q=>q.id===id));
+      if(!pending.length&&(g.kind!=='timed'||timedGateOpen(at)))continue;
+      const icon=g.kind==='double'?'🔐'+pending.length:MECHANIC_INFO[g.kind][0];
+      marks+='<span class="mechanic-mark mechanic-'+g.kind+'" aria-hidden="true">'+icon+'</span>';
+    }
+    return marks;
+  }
+  function verifyLevelSolution(lvl){
+    let active=lvl.pieces.slice();
+    for(const p of lvl.pieces.slice().reverse()){
+      if(!canRemoveArrow(p,active,lvl,0,true))return false;
+      active=active.filter(q=>q.id!==p.id);
+    }
+    return active.length===0;
+  }
+
   function makeLevel(n){
     const rand=rngFor(n), diff=difficulty(n);
     const stones=[];
@@ -310,7 +424,8 @@
         }
       }
     }
-    return {rocks:stones,pieces:best,level:n,difficulty:diff};
+    const mechanicTypes=attachMechanics(n,best,rand);
+    return {rocks:stones,pieces:best,level:n,difficulty:diff,mechanicTypes};
   }
 
   // Candy-style collectible tokens occupy FREE cells only, so they cannot block an
@@ -385,7 +500,7 @@
     // introduce new obstacles and cannot invalidate a solvable stage.
     $('progressTxt').textContent=`${removed}/${levelData.pieces.length}`;
   }
-  function availableCount(lvl){const pp=lvl.pieces;return pp.filter(p=>(!p.needsKey||!pp.some(x=>x.id===p.needsKey))&&freeExit(p,pp,lvl.rocks)).length;}
+  function availableCount(lvl){const pp=lvl.pieces;return pp.filter(p=>canRemoveArrow(p,pp,lvl,0,true)).length;}
   function startLevel(n){
     if(n>TOTAL_LEVELS){show('levels');return;}
     refreshLives();
@@ -733,7 +848,7 @@
   $('powersBtn').onclick=showPowers;
   window.addEventListener('keydown',e=>{if(e.key==='Escape'||e.key==='Backspace'){e.preventDefault();back()}});
   // Diagnostic hook used only by offline browser tests.
-  window.__okKacisTest={makeLevel,freeExit,occupancy,difficulty,availableCount,levels:TOTAL_LEVELS,getState:()=>({screen,currentLevel,mistakesUsed,movesLeft,timeRemainingMs,initialTimeMs,pieces:[...pieces],rocks:levelData?.rocks||[],save,lostThisRun,revivesUsed}),startLevel,show,refreshLives,consumeLife,updateLifeUI,failLevel,completeLevel,secondsForLevel,tickTimer,addTime,usePower,useRevive,showPowers,claimableQuests:()=>QUESTS.filter(q=>(save.dailyQuests[q.id]||0)>=q.goal&&!save.dailyQuests.claimed[q.id])};
+  window.__okKacisTest={makeLevel,freeExit,occupancy,difficulty,availableCount,mechanicsForLevel,canRemoveArrow,mechanicReason,verifyLevelSolution,levels:TOTAL_LEVELS,getState:()=>({screen,currentLevel,mistakesUsed,movesLeft,timeRemainingMs,initialTimeMs,pieces:[...pieces],rocks:levelData?.rocks||[],save,lostThisRun,revivesUsed}),startLevel,show,refreshLives,consumeLife,updateLifeUI,failLevel,completeLevel,secondsForLevel,tickTimer,addTime,usePower,useRevive,showPowers,claimableQuests:()=>QUESTS.filter(q=>(save.dailyQuests[q.id]||0)>=q.goal&&!save.dailyQuests.claimed[q.id])};
   show('home');
   launchIntro();
 })();
