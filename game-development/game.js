@@ -399,7 +399,6 @@
     const a={
       11:'❄️ Buzlu ok: Buz çözücüyü önce çıkar.',
       16:'🚪 Tünel: Önce kapıyı açan oku kurtar.',
-      21:'🔘 Düğme: Düğme okunu çıkar, kapı açılsın.',
       21:'🧠 Yeni: Çıkış yolu açık olsa bile desteği erken çıkarma!',
       51:'⚓ Çok Zor: İki ayrı destek sırasını planla.',
       101:'🧠 Aşırı Zor: Üç kritik sıra tuzağı ve dört anahtarlı kilit.',
@@ -408,7 +407,6 @@
       41:'🎨 Renk kilidi: Aynı renkte anahtarı bul.',
       51:'⏳ Süreli kapı: 8 saniye açık, 4 saniye kapalı.',
       61:'🧩 Artık mekanikler birlikte çalışır.',
-      101:'🔐 Çift kilit: Her iki anahtarı çıkar.',
       181:'🔄 Döner kapı: Yönünü düzelt.',
       301:'🧠 Usta: Önce hamle sırasını düşün.',
       421:'🏆 Efsane: Dört mekanik bir arada.'
@@ -490,7 +488,7 @@
       freeExit(p,pcs,rocks));
     // Prefer anchors from different board rows and insertion windows so that
     // memorizing "tap only the last arrow" is insufficient in hard tiers.
-    const usedTargets=new Set(),usedRows=new Set();
+    const usedTargets=new Set();
     let added=0;
     for(const anchor of possible){
       if(added>=wanted)break;
@@ -518,7 +516,6 @@
       anchor.holdsFor=target.id;
       (target.gates||(target.gates=[])).push({kind:'guard',requires:[],anchorId:anchor.id});
       usedTargets.add(target.id);
-      usedRows.add(anchor.y);
       added++;
     }
     return added;
@@ -624,8 +621,9 @@
     }
     const mechanicTypes=attachMechanics(n,best,rand);
     if(n>=21)attachBottlenecks(n,best,rand,diff,stones);
-    const criticalDecisions=injectChoiceTraps(n,best,rand,stones);
-    const puzzle={rocks:stones,pieces:best,level:n,difficulty:diff,mechanicTypes,criticalDecisions};
+    const newlyAddedTraps=injectChoiceTraps(n,best,rand,stones);
+    const puzzle={rocks:stones,pieces:best,level:n,difficulty:diff,mechanicTypes,newlyAddedTraps};
+    puzzle.criticalDecisions=best.filter(p=>p.holdsFor&&canRemoveArrow(p,best,puzzle,0,true)).length;
     puzzle.metrics=measurePuzzle(puzzle);
     return puzzle;
   }
