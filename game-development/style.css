@@ -1101,7 +1101,6 @@
 #playing .piece .mechanic-badges:empty{display:none!important}
 #playing .piece.locked-piece .piece-inner,
 #playing .piece:has(.mechanic-mark) .piece-inner{filter:saturate(.87)!important}
-#playing .board-touch-layer{z-index:30!important;pointer-events:auto!important}
 @media(prefers-reduced-motion:reduce){
  #playing .piece .mechanic-mark{animation:none!important}
 }

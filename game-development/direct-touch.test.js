@@ -31,7 +31,7 @@ test('single-tap updates state immediately and allows next arrow without 135ms l
    save:{undos:3,hints:3,totalArrows:0,dailyQuests:{arrows:0},coins:100},
    $:id=>nodes[id],
    snapshot(){return {pieces:ctx.pieces.map(p=>({...p})),removed:ctx.removed,movesLeft:ctx.movesLeft}},
-   freeExit(){return true},ensureDaily(){},playSound(){},vibrate(){},persist(){},
+   freeExit(){return true},mechanicReason(){return ''},ensureDaily(){},playSound(){},vibrate(){},persist(){},
    renderComboHud(){},updatePowerButtons(){},toast(){},spawnMoveSparkle(){},
    completeLevel(){events.push('won')},failLevel(){events.push('lost')},
    setTimeout(fn){events.push('cleanup');return 1},

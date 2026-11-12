@@ -54,7 +54,7 @@ test('teaching tiers introduce every requested mechanic in sequence',()=>{
 test('ice gate needs release; timed door alternates and always reopens',()=>{
  const p={id:1,x:0,y:0,length:1,dir:'R',gates:[{kind:'ice',requires:[2]},{kind:'timed',requires:[3]}]};
  assert.match(model.mechanicReason(p,[p,{id:2},{id:3}],0,true),/Buzu/);
- assert.match(model.mechanicReason(p,[p,{id:3}],0,true),/Kapıyı/);
+ assert.match(model.mechanicReason(p,[p,{id:3}],0,true),/Kapı/);
  assert.equal(model.mechanicReason(p,[p],0,false),'');
  assert.match(model.mechanicReason(p,[p],8000,false),/Kapı/);
  assert.equal(model.mechanicReason(p,[p],12000,false),'');
