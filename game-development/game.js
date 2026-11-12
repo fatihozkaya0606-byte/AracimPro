@@ -233,14 +233,33 @@
   // Difficulty curve: early stages teach the rules; stages 20+ introduce
   // more dependencies, fewer visible choices and a smaller mistake budget.
   function difficulty(n){
-    return {target:n<=5?6+n:n<11?10+n:n<16?17+Math.floor((n-8)*.7):n<31?22+Math.floor((n-16)/2):Math.min(32,29+Math.floor((n-30)/25)),
+    const d={
+      target:n<=5?6+n:n<11?10+n:n<16?17+Math.floor((n-8)*.7):n<31?22+Math.floor((n-16)/2):Math.min(32,29+Math.floor((n-30)/25)),
       rocks:n<=5?0:n<13?1:n<35?2:n<75?3:n<120?4:5,
       maxLen:n>=120?3:2,
       longChance:n<5?.11:n<14?.27:n<40?.33:n<100?.38:.44,
       allowances:n<=5?10:n<=10?5:n<20?4:n<35?3:n<75?2:n<160?1:1,
       lockChance:n<=5?0:n<=10?.19:n<15?.34:n<20?.51:n<30?.72:n<50?.79:n<85?.84:.90,
       visibleGoal:n<10?99:n<15?8:n<20?6:n<30?5:n<50?4:n<100?3:2,
-      name:n<=5?'Başlangıç':n<=10?'Isınma':n<20?'Orta':n<35?'Zorlu':n<75?'Usta':n<160?'Uzman':'Efsane'};
+      name:n<=5?'Başlangıç':n<=10?'Isınma':n<20?'Orta':n<35?'Zorlu':n<75?'Usta':n<160?'Uzman':'Efsane'
+    };
+    if(n>=24){
+      // Every fifth stage is a modest challenge pulse, followed by a recovery stage.
+      const pulse=n%5===0;
+      d.target=Math.min(42,31+Math.floor((n-24)/14)+(pulse?2:0));
+      d.rocks=Math.min(7,3+Math.floor((n-24)/100)+(n%10===0?1:0));
+      d.visibleGoal=n<36?3:n<75?3:2;
+      d.lockChance=n<36?.76:n<75?.83:.9;
+      d.longChance=n<75?.32:n<180?.30:.27;
+      d.maxLen=n>=115?3:2;
+      d.allowances=n<36?4:n<75?3:n<140?2:1;
+      d.generationAttempts=n<61?6:5;
+      d.candidateTries=n<61?110:95;
+      d.bottleneckCount=n<60?1:n<150?2:3;
+      d.bottleneckKeys=n<61?3:4;
+      d.challengePulse=pulse;
+    }
+    return d;
   }
 
   // V27: all new locks depend only on arrows inserted later. Reverse removal solves them.
@@ -252,7 +271,9 @@
     color:['🎨','Aynı renk anahtarı bul!'],
     timed:['⏳','Kapının açık olmasını bekle!'],
     double:['🔐','İki anahtarı da çıkar!'],
-    rotate:['🔄','Döner kapının yönünü düzelt!']
+    rotate:['🔄','Döner kapının yönünü düzelt!'],
+    bottleneck:['🔀','Önce üç-dört anahtarı sırasıyla kurtar!'],
+    guard:['⚠️','Destek oku erken çıkarıldı! Geri Al veya Yeniden kullan.']
   };
   function mechanicsForLevel(n){
     if(n<11)return [];
@@ -367,6 +388,55 @@
     return active.length===0;
   }
 
+
+  // V28: explicit 3-4 prerequisite bottlenecks. Keys always come later in placement.
+  function attachBottlenecks(n,pcs,rand,diff,rocks){
+    if(pcs.length<10)return;
+    const count=pcs.length;
+    for(let i=0;i<diff.bottleneckCount;i++){
+      const limit=count-6;
+      const index=(n+i*11+Math.floor(rand()*7))%Math.max(1,limit);
+      const target=pcs[index];
+      const later=pcs.slice(index+1);
+      if(later.length<3)continue;
+      const total=Math.min(later.length,diff.bottleneckKeys);
+      const keys=[];
+      for(let k=0;k<total;k++){
+        const selected=later[Math.min(later.length-1,Math.floor((k+.55)*later.length/total))];
+        if(!keys.includes(selected.id))keys.push(selected.id);
+      }
+      if(keys.length<3)continue;
+      (target.gates||(target.gates=[])).push({kind:'bottleneck',requires:keys});
+      for(const id of keys){const p=pcs.find(q=>q.id===id);if(p)p.isMechanicKey=true;}
+    }
+    // Optional reversible-order trap: marked anchor must be kept until a later arrow
+    // leaves the board. First taught after the 30-level training window.
+    if(n<35||n%5!==0)return;
+    const possible=pcs.filter((p,i)=>i<count-5&&freeExit(p,pcs,rocks));
+    for(const anchor of possible){
+      const anchorIndex=pcs.indexOf(anchor);
+      const target=pcs.slice(anchorIndex+4).find(p=>
+        p.id!==anchor.id && p.gates && p.gates.length>0);
+      if(!target)continue;
+      anchor.needsKey=null;
+      anchor.gates=[];
+      anchor.holdsFor=target.id;
+      (target.gates||(target.gates=[])).push({kind:'guard',requires:[],anchorId:anchor.id});
+      break;
+    }
+  }
+  function measurePuzzle(lvl){
+    const occupied=occupancy(lvl.pieces,lvl.rocks);
+    const active=lvl.pieces;
+    const initiallyFree=active.filter(p=>canRemoveArrow(p,active,lvl,0,true)).length;
+    const mechanics=active.reduce((sum,p)=>sum+(p.gates||[]).length,0);
+    const guards=active.filter(p=>p.holdsFor).length;
+    const adjacency=active.reduce((total,p)=>total+cells(p).reduce((sum,[x,y])=>sum+
+      [[x+1,y],[x-1,y],[x,y+1],[x,y-1]].filter(([nx,ny])=>
+        nx>=0&&nx<SIZE&&ny>=0&&ny<SIZE&&occupied.has(key(nx,ny))).length,0),0);
+    return {occupied:occupied.size,density:occupied.size/(SIZE*SIZE),initiallyFree,mechanics,guards,adjacency};
+  }
+
   function makeLevel(n){
     const rand=rngFor(n), diff=difficulty(n);
     const stones=[];
@@ -374,14 +444,14 @@
       const k=key(1+Math.floor(rand()*(SIZE-2)),1+Math.floor(rand()*(SIZE-2)));
       if(!stones.includes(k))stones.push(k);
     }
-    let best=[];
-    for(let attempt=0;attempt<3;attempt++){
+    let best=[],bestLayoutScore=-Infinity;
+    for(let attempt=0;attempt<(diff.generationAttempts||3);attempt++){
       const pcs=[];
       for(let index=0;index<diff.target;index++){
         const filled=occupancy(pcs,stones);
         const available=pcs.filter(p=>freeExit(p,pcs,stones));
         let chosen=null,bestScore=-1e8;
-        const tries= n<6 ? 35 : n<25 ? 60 : 75;
+        const tries=diff.candidateTries||(n<6?35:n<25?60:75);
         for(let t=0;t<tries;t++){
           const len=rand()<diff.longChance ? (diff.maxLen===3&&rand()<.12?3:2):1;
           const dir=pick(rand,['R','L','U','D']);
@@ -395,15 +465,23 @@
           for(const old of available)if(!freeExit(old,[...pcs,p],stones))blocked++;
           // Reward arrow-on-arrow dependencies, board density and variety.
           // A subtle seeded jitter prevents repetitive layouts.
-          const score=blocked*11+(len>1?(n>=7?3.5:1):0)+(rand()*2)-Math.abs(x-3)*.09-Math.abs(y-3)*.09;
+          const near=cells(p).reduce((acc,[cx,cy])=>acc+
+            [[cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1]].filter(([nx,ny])=>filled.has(key(nx,ny))).length,0);
+          const score=(n>=24?blocked*18+near*2.5:blocked*11)
+            +(len>1?(n>=7?3.5:1):0)+rand()*2
+            -Math.abs(x-4)*.11-Math.abs(y-4)*.11;
           if(score>bestScore){chosen=p;bestScore=score;}
           if(blocked>=3&&bestScore>30)break;
         }
         if(!chosen)break;
         pcs.push(chosen);
       }
-      if(pcs.length>best.length)best=pcs;
-      if(best.length>=diff.target)break;
+      const filledCount=pcs.reduce((sum,p)=>sum+p.length,0);
+      const geometryLinks=pcs.reduce((sum,p)=>sum+
+        pcs.filter(q=>q.id!==p.id&&!freeExit(p,pcs,stones)&&freeExit(p,pcs.filter(x=>x.id!==q.id),stones)).length,0);
+      const layoutScore=pcs.length*1000+filledCount*3+geometryLinks*2;
+      if(layoutScore>bestLayoutScore){best=pcs;bestLayoutScore=layoutScore;}
+      if(n<24 && best.length>=diff.target)break;
     }
     // Dependencies always go from an earlier placed arrow to a later arrow.
     // The reverse insertion order therefore remains a guaranteed solution.
@@ -437,7 +515,10 @@
       }
     }
     const mechanicTypes=attachMechanics(n,best,rand);
-    return {rocks:stones,pieces:best,level:n,difficulty:diff,mechanicTypes};
+    if(n>=24)attachBottlenecks(n,best,rand,diff,stones);
+    const puzzle={rocks:stones,pieces:best,level:n,difficulty:diff,mechanicTypes};
+    puzzle.metrics=measurePuzzle(puzzle);
+    return puzzle;
   }
 
   // Candy-style collectible tokens occupy FREE cells only, so they cannot block an
