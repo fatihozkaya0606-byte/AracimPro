@@ -40,7 +40,7 @@ test('earning a rank requires completing the previous milestone; replay cannot f
   assert.equal(after.rank.name,RANKS[i].name);
   assert.equal(after.earned,0);
   assert.equal(after.percent,0);
-  assert.equal(after.remaining,RANKS[i].to-(n-1));
+  assert.equal(after.remaining,after.next?RANKS[i].to-(n-1):0);
  }
  assert.equal(rankProgress(1).earned,0);
  assert.equal(rankProgress(11).rank.name,'Çırak');
