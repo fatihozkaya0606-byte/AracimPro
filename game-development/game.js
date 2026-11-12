@@ -114,6 +114,7 @@
     const second=Math.ceil(timeRemainingMs/1000);
     if(second!==lastTickSeconds){
       lastTickSeconds=second;drawTimer();
+      if(currentLevel>=51)updateTimedGateBadges();
       if(second<=5&&second>0&&lastBeepSecond!==second){lastBeepSecond=second;playSound('tick');}
     }
     if(timeRemainingMs<=0){drawTimer();failLevel('Süren bitti!');}
@@ -513,7 +514,7 @@
     currentLevel=n;levelData=makeLevel(n);pieces=levelData.pieces.map(p=>({...p}));removed=0;specialTiles=createSpecialTiles(n,levelData);comboStreak=0;awardedCombos.clear();specialStyle();ensureDaily();
     movesLeft=pieces.length+levelData.difficulty.allowances;hintsUsed=0;mistakesUsed=0;hintId=-1;
     timeRemainingMs=initialTimeMs=secondsForLevel(n)*1000;timerLastAt=performance.now();lastTickSeconds=-1;lastBeepSecond=-1;revivesUsed=0;
-    history=[];busy=false;lostThisRun=false;show('playing');$('gameTip').textContent=`${levelData.difficulty.name} • Önce birbirini engelleyen okları çöz!`;playSound();
+    history=[];busy=false;lostThisRun=false;show('playing');$('gameTip').textContent=mechanicTooltip(n);playSound();
   }
   function renderRock(x,y){return `<div class="grid-rock" style="left:${x/SIZE*100}%;top:${y/SIZE*100}%"><span></span></div>`}
   const ARROW_VECTOR = '<svg class="juicy-arrow" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path class="arrow-depth" d="M9 38H56V19L94 51 56 83V65H9Z" transform="translate(0 3)"/><path class="arrow-main" d="M9 35H56V16L94 48 56 80V62H9Z"/><path class="arrow-light" d="M16 40H60L73 49"/></svg>';
@@ -522,7 +523,7 @@
     $('currentLevelTitle').textContent=`Seviye ${currentLevel}`;
     if($('difficultyLabel'))$('difficultyLabel').textContent=`${levelData.difficulty.name} · ${levelData.pieces.length} ok`;
     $('progressTxt').textContent=`${removed}/${levelData.pieces.length}`;
-    if($('difficultyLabel')){const closed=pieces.filter(p=>p.needsKey && pieces.some(q=>q.id===p.needsKey)).length; $('difficultyLabel').textContent=`${levelData.difficulty.name} · ${pieces.length} ok${closed?' · 🔒 '+closed:''}`;}
+    if($('difficultyLabel')){const closed=pieces.filter(p=>(p.needsKey && pieces.some(q=>q.id===p.needsKey))||!!mechanicReason(p,pieces)).length; $('difficultyLabel').textContent=`${levelData.difficulty.name} · ${pieces.length} ok${closed?' · 🔒 '+closed:''}`;}
     $('movesTxt').textContent=String(movesLeft);
     drawTimer();updateLifeUI();updatePowerButtons();renderComboHud();
     $('undoBadge').textContent=String(save.undos);$('hintBadge').textContent=String(save.hints);
@@ -534,7 +535,7 @@
     for(const gem of specialTiles){const ico={bomb:'💣',lightning:'⚡',spin:'🔄',gift:'🎁'}[gem.type];html.push(`<button type="button" class="power-gem" data-gem="${gem.id}" data-kind="${gem.type}" style="left:${gem.x/SIZE*100}%;top:${gem.y/SIZE*100}%;width:${100/SIZE}%;height:${100/SIZE}%" aria-label="Özel güç ${gem.type}">${ico}</button>`);}
     for(const p of pieces){
       const horizontal=p.dir==='R'||p.dir==='L';
-      html.push(`<button class="piece ${p.color} ${p.isKey?'key-piece':''} ${p.needsKey&&pieces.some(q=>q.id===p.needsKey)?'locked-piece':''} ${p.id===hintId?'hinted':''}" data-dir="${p.dir}" data-id="${p.id}" style="left:${p.x/SIZE*100}%;top:${p.y/SIZE*100}%;width:${(horizontal?p.length:1)/SIZE*100}%;height:${(horizontal?1:p.length)/SIZE*100}%;--tile-image:url('sprites/${p.color}-${p.length===1?'s':p.length===2?'l':'xl'}-${p.dir}.webp')" aria-label="${p.dir==='R'?'Sağa':p.dir==='L'?'Sola':p.dir==='U'?'Yukarı':'Aşağı'} giden ok"><span class="piece-inner">${ARROW_VECTOR}${p.isKey?'<span class="key-icon">🔑</span>':''}${p.needsKey&&pieces.some(q=>q.id===p.needsKey)?'<span class="lock-icon">🔒</span>':''}</span></button>`);
+      html.push(`<button class="piece ${p.color} ${p.isKey?'key-piece':''} ${p.needsKey&&pieces.some(q=>q.id===p.needsKey)?'locked-piece':''} ${p.id===hintId?'hinted':''}" data-dir="${p.dir}" data-id="${p.id}" style="left:${p.x/SIZE*100}%;top:${p.y/SIZE*100}%;width:${(horizontal?p.length:1)/SIZE*100}%;height:${(horizontal?1:p.length)/SIZE*100}%;--tile-image:url('sprites/${p.color}-${p.length===1?'s':p.length===2?'l':'xl'}-${p.dir}.webp')" aria-label="${p.dir==='R'?'Sağa':p.dir==='L'?'Sola':p.dir==='U'?'Yukarı':'Aşağı'} giden ok"><span class="piece-inner">${ARROW_VECTOR}${p.isKey?'<span class="key-icon">🔑</span>':''}${p.needsKey&&pieces.some(q=>q.id===p.needsKey)?'<span class="lock-icon">🔒</span>':''}<span class="mechanic-badges">${mechanicBadges(p,pieces)}</span>${p.isMechanicKey&&!p.isKey?'<span class="mechanic-key" aria-hidden="true">🔑</span>':''}</span></button>`);
     }
     $('gameBoard').innerHTML=html.join('');
     // V24: delegated pointerdown handler is attached once (outside drawBoard).
@@ -601,7 +602,7 @@
     // Wrong taps cost one move at EVERY level, including levels 1–5.
     // Keep the counter in sync with the visible HUD and never go negative.
     if(busy || screen!=='playing' || movesLeft<=0 || !$('modal').hidden)return;
-    if(currentLevel<=5){toast('İlk 5 bölümde rahatça dene; önce yolu açık oku seç!');return;}
+    if(currentLevel<=30){$('gameTip').textContent=reason;toast(reason);return;}
     comboStreak=0;renderComboHud();
     movesLeft=Math.max(0,movesLeft-1);mistakesUsed++;
     $('movesTxt').textContent=String(movesLeft);
@@ -627,11 +628,20 @@
     setTimeout(()=>spark.remove(),620);
   }
   // Update only changed HUD values / locks. The 81 carved sockets stay mounted.
+  function updateTimedGateBadges(){
+    if(!levelData||screen!=='playing'||!(levelData.mechanicTypes||[]).includes('timed'))return;
+    $('gameBoard').querySelectorAll('.piece:not(.escaping)').forEach(el=>{
+      const p=pieces.find(q=>q.id===Number(el.dataset.id));
+      if(!p||!(p.gates||[]).some(g=>g.kind==='timed'))return;
+      const target=el.querySelector('.mechanic-badges');
+      if(target)target.innerHTML=mechanicBadges(p,pieces);
+    });
+  }
   function refreshAfterArrow(){
     $('progressTxt').textContent=removed+'/'+levelData.pieces.length;
     $('movesTxt').textContent=String(movesLeft);
     const byId=new Map(pieces.map(p=>[p.id,p]));
-    const unlocked=pieces.filter(p=>p.needsKey && byId.has(p.needsKey)).length;
+    const unlocked=pieces.filter(p=>(p.needsKey && byId.has(p.needsKey))||!!mechanicReason(p,pieces)).length;
     const label=$('difficultyLabel');
     if(label)label.textContent=levelData.difficulty.name+' · '+pieces.length+' ok'+(unlocked?' · 🔒 '+unlocked:'');
     $('gameBoard').querySelectorAll('.piece:not(.escaping)').forEach(el=>{
@@ -642,6 +652,8 @@
       const badge=el.querySelector('.lock-icon');
       if(locked && !badge)el.querySelector('.piece-inner')?.insertAdjacentHTML('beforeend','<span class="lock-icon">🔒</span>');
       if(!locked && badge)badge.remove();
+      const mechanical=el.querySelector('.mechanic-badges');
+      if(mechanical)mechanical.innerHTML=mechanicBadges(p,pieces);
     });
     $('undoBadge').textContent=String(save.undos);
     $('hintBadge').textContent=String(save.hints);
@@ -654,15 +666,13 @@
     if(busy || screen!=='playing' || lostThisRun || !$('modal').hidden || movesLeft<1)return;
     const p=pieces.find(q=>q.id===id);
     if(!p)return;
-    if(p.needsKey && pieces.some(q=>q.id===p.needsKey)){
+    const reason=p.needsKey && pieces.some(q=>q.id===p.needsKey)
+      ?'🔐 Önce anahtarlı oku çıkar!' : mechanicReason(p,pieces);
+    if(reason || !freeExit(p,pieces,levelData.rocks)){
       element.classList.add('blocked');
       setTimeout(()=>element.classList.remove('blocked'),200);
-      playSound('bad');vibrate(25);penalizeMistake('🔐 Önce anahtarlı oku çıkar!');return;
-    }
-    if(!freeExit(p,pieces,levelData.rocks)){
-      element.classList.add('blocked');
-      setTimeout(()=>element.classList.remove('blocked'),200);
-      playSound('bad');vibrate(25);penalizeMistake('Önce bu okun önündeki engeli kaldır!');return;
+      playSound('bad');vibrate(25);
+      penalizeMistake(reason||'Önce bu okun önündeki engeli kaldır!');return;
     }
     history.push(snapshot());
     if(history.length>9)history.shift();
@@ -697,7 +707,7 @@
     if(movesLeft===0)failLevel('Hamle hakkın bitti!');
   }
   function undo(){if(busy||save.undos<=0)return;if(!history.length){toast('Geri alınacak hamle yok!');return;}const state=history.pop();pieces=state.pieces;removed=state.removed;movesLeft=state.movesLeft;mistakesUsed=state.mistakesUsed;if(state.specialTiles)specialTiles=state.specialTiles;if(Number.isFinite(state.comboStreak))comboStreak=state.comboStreak;save.undos--;persist();hintId=-1;drawBoard();toast('Son hamle geri alındı.');playSound('coin')}
-  function hint(){if(busy||save.hints<=0)return;const valid=pieces.filter(p=>(!p.needsKey||!pieces.some(q=>q.id===p.needsKey))&&freeExit(p,pieces,levelData.rocks));if(!valid.length){toast('Açık ok bulunamadı. Yeniden dene.');return;}hintId=valid[valid.length-1].id;save.hints--;hintsUsed++;persist();drawBoard();toast('Parlayan oka dokun!');playSound('coin');setTimeout(()=>{if(screen==='playing'){hintId=-1;drawBoard();}},2500)}
+  function hint(){if(busy||save.hints<=0)return;const valid=pieces.filter(p=>canRemoveArrow(p,pieces,levelData));if(!valid.length){toast('Açık ok bulunamadı. Yeniden dene.');return;}hintId=valid[valid.length-1].id;save.hints--;hintsUsed++;persist();drawBoard();toast('Parlayan oka dokun!');playSound('coin');setTimeout(()=>{if(screen==='playing'){hintId=-1;drawBoard();}},2500)}
   function failLevel(reason='Bölümü tamamlayamadın!'){
     // Exactly one life is lost per failed attempt, whichever action reached 0.
     if(lostThisRun || screen!=='playing' || pieces.length===0)return;
@@ -736,13 +746,14 @@
     if(screen!=='playing'||save[id]<=0||lostThisRun)return false;
     if(id==='powerRevive'){toast('İkinci Şans, kaybedince kullanılabilir!');return false;}
     if(id==='powerUnlock'){
-      const candidates=pieces.filter(p=>p.needsKey&&pieces.some(q=>q.id===p.needsKey));
+      const candidates=pieces.filter(p=>(p.needsKey&&pieces.some(q=>q.id===p.needsKey))||!!mechanicReason(p,pieces));
       if(!candidates.length){toast('Tahtada kilitli ok yok!');return false;}
       candidates.sort((a,b)=>(freeExit(b,pieces,levelData.rocks)?1:0)-(freeExit(a,pieces,levelData.rocks)?1:0));
       candidates[0].needsKey=null;
+      candidates[0].gates=[];
     }
     if(id==='powerAuto'){
-      const valid=pieces.filter(p=>(!p.needsKey||!pieces.some(q=>q.id===p.needsKey))&&freeExit(p,pieces,levelData.rocks));
+      const valid=pieces.filter(p=>canRemoveArrow(p,pieces,levelData));
       if(!valid.length){toast('Şimdilik çıkarılabilir ok yok!');return false;}
       const p=valid[0];pieces=pieces.filter(x=>x.id!==p.id);removed++;
       save.totalArrows++;ensureDaily();save.dailyQuests.arrows++;
