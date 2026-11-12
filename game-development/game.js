@@ -477,21 +477,28 @@
           // A subtle seeded jitter prevents repetitive layouts.
           const near=cells(p).reduce((acc,[cx,cy])=>acc+
             [[cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1]].filter(([nx,ny])=>filled.has(key(nx,ny))).length,0);
-          const score=(n>=24?blocked*18+near*2.5:blocked*11)
-            +(len>1?(n>=7?3.5:1):0)+rand()*2
-            -Math.abs(x-4)*.11-Math.abs(y-4)*.11;
+          const score=n>=24
+            ?blocked*18+near*2.5+(len>1?3.5:0)+rand()*2-Math.abs(x-4)*.11-Math.abs(y-4)*.11
+            :blocked*11+(len>1?(n>=7?3.5:1):0)+(rand()*2)-Math.abs(x-3)*.09-Math.abs(y-3)*.09;
           if(score>bestScore){chosen=p;bestScore=score;}
           if(blocked>=3&&bestScore>30)break;
         }
         if(!chosen)break;
         pcs.push(chosen);
       }
+      if(n<24){
+        // Preserve byte-for-byte V27 placement decisions for levels 1–23.
+        if(pcs.length>best.length)best=pcs;
+        if(best.length>=diff.target)break;
+        continue;
+      }
       const filledCount=pcs.reduce((sum,p)=>sum+p.length,0);
-      const geometryLinks=pcs.reduce((sum,p)=>sum+
-        pcs.filter(q=>q.id!==p.id&&!freeExit(p,pcs,stones)&&freeExit(p,pcs.filter(x=>x.id!==q.id),stones)).length,0);
+      const geometryLinks=pcs.reduce((sum,p)=>{
+        if(freeExit(p,pcs,stones))return sum;
+        return sum+pcs.filter(q=>q.id!==p.id&&freeExit(p,pcs.filter(x=>x.id!==q.id),stones)).length;
+      },0);
       const layoutScore=pcs.length*1000+filledCount*3+geometryLinks*2;
       if(layoutScore>bestLayoutScore){best=pcs;bestLayoutScore=layoutScore;}
-      if(n<24 && best.length>=diff.target)break;
     }
     // Dependencies always go from an earlier placed arrow to a later arrow.
     // The reverse insertion order therefore remains a guaranteed solution.
