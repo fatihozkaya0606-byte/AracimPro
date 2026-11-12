@@ -13,7 +13,7 @@ const level=n=>game.makeLevel(n);
 test("first five stages are easy; stage six introduces challenge",()=>{
   for(let n=1;n<=5;n++){
     const d=game.difficulty(n), b=level(n);
-    assert.equal(d.name,"Başlangıç");
+    assert.equal(d.name,"Kolay");
     assert.equal(d.rocks,0);
     assert.ok(d.allowances>=10);
     assert.equal(game.createSpecialTiles(n,b).length,0);

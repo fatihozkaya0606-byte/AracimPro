@@ -270,7 +270,7 @@
       d.visibleGoal=99;d.candidateTries=35;
     }else if(stage===1){
       d.target=10+(n-5);                  // 11–15 arrows
-      d.rocks=n>=9?1:0;d.longChance=.22;d.allowances=8;
+      d.rocks=1;d.longChance=.22;d.allowances=8;
       d.lockChance=.12;d.visibleGoal=8;d.candidateTries=48;
     }else if(stage===2){
       d.target=17+Math.floor((n-11)*.7); // 17–23 arrows

@@ -9,7 +9,7 @@ V28'in yoğun bulmaca sistemi üstüne yeni zorluk eğrisi. Google Play'deki sü
 | 11–20 | Orta | 17–23 | +6 | Orta kilit ve buz/tünel |
 | 21–50 | Zor | 29–33 | +4 | 3 anahtarlı dar boğaz |
 | 51–100 | Çok Zor | 35–39 | +3 / +2 | İki çoklu anahtar kilidi, bazı destek tuzakları |
-| 101–540 | Aşırı Zor | 40–43 (hedef) | +2 / +1 | Üç adet dört anahtarlı dar boğaz, yoğun tahta, uzman tuzakları |
+| 101–540 | Aşırı Zor | 40–43 (hedef) | +1 | Üç adet dört anahtarlı dar boğaz, yoğun tahta, uzman tuzakları |
 
 Seviyelerde ok sayısı gerçek yerleşime bağlıdır ve hedefin altında kalabilir. Her 5 bölümde hafif meydan okuma artışı eklenir; zorluk ikiye katlanmaz.
 
