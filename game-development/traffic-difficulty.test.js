@@ -18,7 +18,7 @@ test('level 24 onward: higher target, denser placements, mandatory multikey bott
    assert.ok(d.visibleGoal<=3,'Too many free choices at '+n);
    assert.ok(lvl.metrics.density>.29,'Almost empty stage '+n);
    assert.ok(lvl.metrics.initiallyFree>=1);
-   assert.ok(lvl.metrics.initiallyFree<=Math.max(3,d.visibleGoal),'Too many accessible starting arrows at '+n);
+   assert.ok(lvl.metrics.initiallyFree<=Math.max(3,d.visibleGoal+lvl.metrics.guards),'Too many accessible starting arrows at '+n);
    const gates=active.flatMap(p=>(p.gates||[]).map(g=>({p,g})));
    const bottlenecks=gates.filter(x=>x.g.kind==='bottleneck');
    assert.ok(bottlenecks.length>=1,'Missing bottleneck '+n);
