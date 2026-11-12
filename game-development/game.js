@@ -400,8 +400,10 @@
       11:'❄️ Buzlu ok: Buz çözücüyü önce çıkar.',
       16:'🚪 Tünel: Önce kapıyı açan oku kurtar.',
       21:'🔘 Düğme: Düğme okunu çıkar, kapı açılsın.',
-      21:'🔀 Zor seri: Üç anahtarlı dar boğazı çöz.',
-      55:'⚓ Çok zor: İşaretli desteği bağlı ok çıkana kadar koru.',
+      21:'🧠 Yeni: Çıkış yolu açık olsa bile desteği erken çıkarma!',
+      51:'⚓ Çok Zor: İki ayrı destek sırasını planla.',
+      101:'🧠 Aşırı Zor: Üç kritik sıra tuzağı ve dört anahtarlı kilit.',
+      221:'🔥 Ustalık: Dört kritik tuzağı sırayla çöz.',
       31:'⛓️ Zincir: Bağlı oku önce kurtar.',
       41:'🎨 Renk kilidi: Aynı renkte anahtarı bul.',
       51:'⏳ Süreli kapı: 8 saniye açık, 4 saniye kapalı.',
@@ -473,6 +475,58 @@
       break;
     }
   }
+  // V30: Real decisions, not cosmetic density. An initially legal support arrow
+  // must remain on the board until a later (currently blocked) dependent arrow
+  // has escaped. Removing the support too early creates an actual dead end.
+  // Every order trap is constructed with anchor.id < target.id, so the
+  // reverse-insertion solution stays valid and the level is never inherently stuck.
+  function injectChoiceTraps(n,pcs,rand,rocks){
+    if(n<=20)return 0;
+    const wanted=n<=50?1:n<=100?2:n<=220?3:4;
+    const lvl={pieces:pcs,rocks};
+    const indexed=new Map(pcs.map((p,i)=>[p.id,i]));
+    const possible=pcs.filter((p,i)=>
+      i<pcs.length-7 && !p.holdsFor && !(p.gates||[]).length &&
+      freeExit(p,pcs,rocks));
+    // Prefer anchors from different board rows and insertion windows so that
+    // memorizing "tap only the last arrow" is insufficient in hard tiers.
+    const usedTargets=new Set(),usedRows=new Set();
+    let added=0;
+    for(const anchor of possible){
+      if(added>=wanted)break;
+      const idx=indexed.get(anchor.id);
+      const candidates=pcs.filter(target=>{
+        const ti=indexed.get(target.id);
+        return ti>=idx+4 && ti<=pcs.length-4 &&
+          !target.holdsFor && !usedTargets.has(target.id) &&
+          !canRemoveArrow(target,pcs,lvl,0,true);
+      });
+      if(!candidates.length)continue;
+      candidates.sort((a,b)=>{
+        const priority=p=>{
+          const gates=(p.gates||[]).reduce((n,g)=>n+(g.requires||[]).length,0);
+          const key=p.needsKey?1:0;
+          const delta=indexed.get(p.id)-idx;
+          return gates*12+key*4+Math.min(delta,14);
+        };
+        return priority(b)-priority(a);
+      });
+      const target=candidates[(n+added)%Math.min(3,candidates.length)];
+      // Make the support an actual available choice; previously a majority of
+      // the "traps" were locked themselves and never offered a meaningful fork.
+      anchor.needsKey=null;
+      anchor.holdsFor=target.id;
+      (target.gates||(target.gates=[])).push({kind:'guard',requires:[],anchorId:anchor.id});
+      usedTargets.add(target.id);
+      usedRows.add(anchor.y);
+      added++;
+    }
+    return added;
+  }
+
+  function guardStillNeededAtStart(p,active){
+    return !!(p.holdsFor&&active.some(q=>q.id===p.holdsFor));
+  }
   function measurePuzzle(lvl){
     const occupied=occupancy(lvl.pieces,lvl.rocks);
     const active=lvl.pieces;
@@ -482,7 +536,8 @@
     const adjacency=active.reduce((total,p)=>total+cells(p).reduce((sum,[x,y])=>sum+
       [[x+1,y],[x-1,y],[x,y+1],[x,y-1]].filter(([nx,ny])=>
         nx>=0&&nx<SIZE&&ny>=0&&ny<SIZE&&occupied.has(key(nx,ny))).length,0),0);
-    return {occupied:occupied.size,density:occupied.size/(SIZE*SIZE),initiallyFree,mechanics,guards,adjacency};
+    const dangerousOpenings=active.filter(p=>canRemoveArrow(p,active,lvl,0,true)&&guardStillNeededAtStart(p,active)).length;
+    return {occupied:occupied.size,density:occupied.size/(SIZE*SIZE),initiallyFree,mechanics,guards,adjacency,dangerousOpenings};
   }
 
   function makeLevel(n){
@@ -569,7 +624,8 @@
     }
     const mechanicTypes=attachMechanics(n,best,rand);
     if(n>=21)attachBottlenecks(n,best,rand,diff,stones);
-    const puzzle={rocks:stones,pieces:best,level:n,difficulty:diff,mechanicTypes};
+    const criticalDecisions=injectChoiceTraps(n,best,rand,stones);
+    const puzzle={rocks:stones,pieces:best,level:n,difficulty:diff,mechanicTypes,criticalDecisions};
     puzzle.metrics=measurePuzzle(puzzle);
     return puzzle;
   }
