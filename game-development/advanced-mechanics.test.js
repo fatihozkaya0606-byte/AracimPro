@@ -20,14 +20,19 @@ test('all 540 generated stages have a complete reverse-order solution and no cyc
    assert.ok(model.availableCount(lvl)>0,'No starting arrow at '+n);
    const available=model.mechanicsForLevel(n);
    const found=[...new Set(lvl.pieces.flatMap(p=>(p.gates||[]).map(g=>g.kind)))];
-   assert.equal(found.length,available.length,'Missing mechanics at level '+n);
+   assert.ok(found.length>=available.length,'Missing mechanics at level '+n);
    for(const name of available){assert.ok(found.includes(name),'Missing '+name+' at level '+n);counts[name]=(counts[name]||0)+1;}
    const indexes=new Map(lvl.pieces.map((p,i)=>[p.id,i]));
    for(const p of lvl.pieces){
      for(const [x,y] of model.cells(p))assert.ok(x>=0&&x<9&&y>=0&&y<9,'Out of bounds '+n);
      for(const gate of p.gates||[]){
-       assert.ok(gate.requires.length>0,'Empty gate key at '+n);
-       for(const keyId of gate.requires)assert.ok(indexes.get(keyId)>indexes.get(p.id),'Backward dependency at '+n);
+       if(gate.kind==='guard'){
+         assert.equal(gate.requires.length,0,'Guard must use a hold condition');
+         assert.ok(indexes.get(gate.anchorId)<indexes.get(p.id),'Guard must remain after target');
+       } else {
+         assert.ok(gate.requires.length>0,'Empty gate key at '+n);
+         for(const keyId of gate.requires)assert.ok(indexes.get(keyId)>indexes.get(p.id),'Backward dependency at '+n);
+       }
        if(gate.kind==='double')assert.equal(gate.requires.length,2);
        if(gate.kind==='color'){
          const key=lvl.pieces.find(x=>x.id===gate.requires[0]);

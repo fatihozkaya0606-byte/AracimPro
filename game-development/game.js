@@ -575,8 +575,7 @@
   function guardStillNeeded(p,active){return !!(p.holdsFor&&active.some(q=>q.id===p.holdsFor));}
   function safeHintCandidates(active,lvl){
     const valid=active.filter(p=>canRemoveArrow(p,active,lvl));
-    const safe=valid.filter(p=>!guardStillNeeded(p,active));
-    return safe.length?safe:valid;
+    return valid.filter(p=>!guardStillNeeded(p,active));
   }
   function useSpecialTile(id){
     if(busy||screen!=='playing'||lostThisRun||!$('modal').hidden)return;
@@ -710,7 +709,7 @@
     // Wrong taps cost one move at EVERY level, including levels 1–5.
     // Keep the counter in sync with the visible HUD and never go negative.
     if(busy || screen!=='playing' || movesLeft<=0 || !$('modal').hidden)return;
-    if(currentLevel<=30){$('gameTip').textContent=reason;toast(reason);return;}
+    if(currentLevel<=30){$('gameTip').textContent=reason;return;}
     comboStreak=0;renderComboHud();
     movesLeft=Math.max(0,movesLeft-1);mistakesUsed++;
     $('movesTxt').textContent=String(movesLeft);

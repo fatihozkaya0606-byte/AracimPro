@@ -1104,3 +1104,27 @@
 @media(prefers-reduced-motion:reduce){
  #playing .piece .mechanic-mark{animation:none!important}
 }
+
+
+/* V28 traffic design: legible bottlenecks and deliberately risky support arrows. */
+#playing .piece .mechanic-bottleneck{
+  background:#eedec9!important;color:#5b3d24!important;
+  outline:1px solid #b8915a99;
+}
+#playing .piece .mechanic-guard{
+  background:#f9e5bb!important;color:#664e24!important;
+  border:1px solid #d5aa6f!important;
+}
+#playing .piece .mechanic-guard.broken{
+  background:#ffe0dd!important;color:#a53636!important;
+}
+#playing .piece .guard-anchor{
+  position:absolute!important;z-index:8;
+  right:1px;top:0;display:grid;place-items:center;
+  width:clamp(16px,4.3vw,22px);height:clamp(16px,4.3vw,22px);
+  background:#fbe4ad;border-radius:50%;border:1px solid #aa8551;
+  box-shadow:0 1px 3px #2f241d66;
+  font-size:clamp(12px,3.5vw,17px);
+  pointer-events:none!important;
+}
+/* Keep the V25 input layer and arrow bounds untouched. */
