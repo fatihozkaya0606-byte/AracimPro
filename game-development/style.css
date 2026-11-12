@@ -1128,3 +1128,76 @@
   pointer-events:none!important;
 }
 /* Keep the V25 input layer and arrow bounds untouched. */
+
+
+/* V31: player career rank – slim on the playfield, fuller in the level menu.
+   Player-rank graphics do not intersect the board or the V25 touch layer. */
+#playing #currentLevelTitle{
+  display:flex!important;flex-direction:column!important;justify-content:center!important;
+  align-items:center!important;line-height:1.02!important;
+  padding:6px 10px!important;font-size:clamp(23px,5vw,31px)!important;
+  min-width:0!important;
+}
+#playing .rank-title-sub{
+  display:block;font-size:clamp(10px,2.6vw,13px);font-weight:700;letter-spacing:.02em;
+  white-space:nowrap;color:#f3d9b3;line-height:1.25;margin-top:4px;
+  text-shadow:0 1px 2px #2d1f1c88;
+}
+#levels .rank-overview{
+  display:block;width:100%;margin:0 0 12px;padding:10px 12px 9px;
+  background:linear-gradient(160deg,#fffaf0f0,#eee1cdf5)!important;
+  border:1px solid var(--rank-accent,#b7a184)!important;border-radius:15px!important;
+  color:#483b30;text-align:left;box-shadow:0 3px 8px #36251a40!important;
+  min-height:65px;cursor:pointer;touch-action:manipulation;
+}
+#levels .rank-overview-main{display:flex;align-items:center;gap:9px;min-width:0}
+#levels .rank-overview-icon{
+  display:grid;place-items:center;flex:0 0 32px;width:32px;height:32px;
+  border-radius:10px;background:#ffffffb3;font-size:20px;
+  box-shadow:inset 0 1px #fff,0 1px 3px #37281d28;
+}
+#levels .rank-overview-copy{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}
+#levels .rank-overview-copy strong{font-size:14px;line-height:1.15}
+#levels .rank-overview-copy small{font-size:10px;line-height:1.15;color:#6c6259}
+#levels .rank-overview-open{font-size:11px;font-weight:800;white-space:nowrap;color:#547a8c}
+.rank-meter{display:block;width:100%;height:6px;border-radius:99px;background:#b5afa6a3;overflow:hidden;margin-top:7px;box-shadow:inset 0 1px 2px #45342826}
+.rank-meter>span{display:block;height:100%;border-radius:99px;transition:width .2s ease}
+#levels .level-card .level-rank{
+  font-size:clamp(9px,2.5vw,11px);font-weight:800;line-height:1.15;
+  display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  color:#fffef6;text-shadow:0 1px 2px #211b1777;
+}
+#victory .victory-rank{
+  margin:5px auto 0;padding:6px 10px;max-width:95%;
+  border:1px solid #d5b995;border-radius:13px;
+  background:#fbf1debF;color:#66482e;font-size:clamp(12px,3.2vw,15px);font-weight:900;
+  box-shadow:0 2px 5px #2b211b26;line-height:1.25;
+}
+#victory .victory-rank.promoted{
+  background:linear-gradient(120deg,#ffedb5,#fff6d9,#f1d08b);
+  border-color:#bfa055;color:#704d20;
+  animation:rankPromotion .65s ease-out both;
+}
+@keyframes rankPromotion{
+  from{transform:scale(.86);opacity:.5}
+  to{transform:scale(1);opacity:1}
+}
+#app .rank-list-item{
+  display:flex;align-items:center;gap:9px;padding:6px 9px;
+  border-bottom:1px solid #bda89177;text-align:left;
+  color:#514333;font-size:13px;
+}
+#app .rank-list-item.active{background:#f1e5c5;border-radius:9px}
+#app .rank-medal{font-size:22px;width:28px;text-align:center}
+#app .rank-list-item>div{display:flex;flex-direction:column;gap:1px;flex:1}
+#app .rank-list-item small{font-size:10px;color:#837564}
+#app .rank-list-status{font-weight:800;font-size:13px}
+#app .rank-explain,#app .rank-modal-foot{font-size:12px;color:#655441;line-height:1.4}
+#app .rank-modal-foot{margin-top:10px;font-weight:900}
+@media(max-height:690px){
+  #playing #currentLevelTitle{font-size:21px!important;padding:3px 9px!important}
+  #playing .rank-title-sub{font-size:10px;margin-top:2px}
+}
+@media(prefers-reduced-motion:reduce){
+  .rank-meter>span,#victory .victory-rank.promoted{animation:none!important;transition:none!important}
+}

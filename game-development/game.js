@@ -6,6 +6,52 @@
   const WORLDS=[{id:'forest',name:'🌿 Yeşil Vadi',emoji:'🌲'},{id:'desert',name:'🏜️ Altın Çöl',emoji:'🌵'},{id:'snow',name:'❄️ Buz Tepeleri',emoji:'❄️'},{id:'sunset',name:'🌅 Günbatımı',emoji:'🌅'},{id:'neon',name:'🌌 Neon Evren',emoji:'💜'}];
   const SKINS=[{id:'classic',name:'Klasik Parlak',icon:'🌈',price:0},{id:'crystal',name:'Kristal Ok',icon:'💎',price:850},{id:'metal',name:'Altın Ok',icon:'🏆',price:1200},{id:'neon',name:'Neon Ok',icon:'⚡',price:1800},{id:'candy',name:'Şeker Ok',icon:'🍬',price:2400}];
   const THEME_PRICES={auto:0,forest:0,desert:900,snow:1100,sunset:1500,neon:2000};
+
+  // V31: one permanent player rank for every completed milestone. Independent
+  // of the six puzzle difficulty tiers and derived from the EXISTING save.
+  const RANKS=Object.freeze([
+    {from:1,to:10,name:'Çaylak',icon:'🐣',color:'#85ad74'},
+    {from:11,to:25,name:'Çırak',icon:'🛠️',color:'#85a4bc'},
+    {from:26,to:50,name:'Amatör',icon:'🎯',color:'#c99e63'},
+    {from:51,to:80,name:'Kalfa',icon:'🔨',color:'#ba8a77'},
+    {from:81,to:120,name:'Becerikli',icon:'🌟',color:'#6faaa4'},
+    {from:121,to:170,name:'Uzman',icon:'🧠',color:'#7695ca'},
+    {from:171,to:230,name:'Profesyonel',icon:'🥇',color:'#bca65e'},
+    {from:231,to:300,name:'Usta',icon:'🏆',color:'#9a83c9'},
+    {from:301,to:380,name:'Büyük Usta',icon:'👑',color:'#c78b71'},
+    {from:381,to:460,name:'Efsane',icon:'🔥',color:'#c47784'},
+    {from:461,to:520,name:'Şampiyon',icon:'💎',color:'#718fc4'},
+    {from:521,to:540,name:'Okların Efendisi',icon:'⚡',color:'#a48dd2'}
+  ]);
+  function rankForLevel(level){
+    const n=Math.max(1,Math.min(TOTAL_LEVELS,Math.floor(Number(level)||1)));
+    return RANKS.find(r=>n<=r.to)||RANKS[RANKS.length-1];
+  }
+  function rankProgress(highestUnlocked){
+    const h=Math.max(1,Math.min(TOTAL_LEVELS+1,Math.floor(Number(highestUnlocked)||1)));
+    const completed=Math.min(TOTAL_LEVELS,h-1);
+    const rank=rankForLevel(Math.min(TOTAL_LEVELS,h));
+    const next=RANKS[RANKS.indexOf(rank)+1]||null;
+    const span=rank.to-rank.from+1;
+    const earned=Math.min(span,Math.max(0,completed-rank.from+1));
+    return {rank,next,completed,earned,span,percent:Math.round(earned/span*100),remaining:next?Math.max(0,rank.to-completed):0};
+  }
+  function playerRank(){return rankProgress(save.completed[540]?TOTAL_LEVELS+1:save.highest);}
+  function rankLabel(rank){return rank.icon+' '+rank.name;}
+  function rankBarHtml(progress){
+    return '<span class="rank-meter"><span style="width:'+progress.percent+'%;background:'+progress.rank.color+'"></span></span>';
+  }
+  function showRankOverview(){
+    const progress=playerRank(),currentIndex=RANKS.indexOf(progress.rank);
+    const rows=RANKS.map((r,i)=>{
+      const status=i<currentIndex?'✓':i===currentIndex?'●':'🔒';
+      return '<div class="rank-list-item'+(i===currentIndex?' active':'')+'"><span class="rank-medal">'+r.icon+'</span><div><strong>'+r.name+'</strong><small>Seviye '+r.from+'–'+r.to+'</small></div><span class="rank-list-status">'+status+'</span></div>';
+    }).join('');
+    modal('🏅 Oyuncu Rütbeleri','<p class="rank-explain">Rütbeler bölüm tamamladıkça yükselir. Mevcut zorluk dereceleri aynı kalır.</p>'+rows+
+      '<div class="rank-modal-foot">'+rankLabel(progress.rank)+' · '+progress.earned+'/'+progress.span+
+      (progress.next?' · Sonraki: '+progress.next.name:' · En yüksek rütbe!')+'</div>','ranks');
+  }
+
   const $ = id => document.getElementById(id);
   const defaultSave = () => ({highest:1,coins:1250,stars:0,hints:3,undos:3,lastDaily:'',completed:{},sound:true,music:true,vibrate:true,selectedSkin:'classic',ownedSkins:['classic'],selectedTheme:'auto',ownedThemes:['auto','forest'],totalArrows:0,totalWins:0,perfectWins:0,dailyQuests:{},claimedAchievements:{},dailyStreak:0,lastWinDate:'',lives:MAX_LIVES,nextLifeAt:0,lifeSystemVersion:1,powerMoves:0,powerTime:0,powerUnlock:0,powerAuto:0,powerRevive:0});
   let save;
@@ -30,7 +76,7 @@
   function applyTheme(){const chosen=save.selectedTheme==='auto'?levelWorld(Math.max(1,currentLevel)).id:save.selectedTheme; $('app').className='app theme-'+chosen+' skin-'+save.selectedSkin;
     if($('worldLabel'))$('worldLabel').textContent=save.selectedTheme==='auto'?levelWorld(currentLevel).name:WORLDS.find(w=>w.id===chosen).name;
   }
-  function updateHome(){if($('homeStatus'))$('homeStatus').textContent=`❤️ ${save.lives}/${MAX_LIVES} can  •  🪙 ${save.coins} altın  •  ⭐ ${save.stars} yıldız`;}
+  function updateHome(){if($('homeStatus')){const r=playerRank();$('homeStatus').textContent=`${rankLabel(r.rank)} · ❤️ ${save.lives}/${MAX_LIVES} · 🪙 ${save.coins} · ⭐ ${save.stars}`;}}
   const persist = () => {try{localStorage.setItem('ok-kacis-v1',JSON.stringify(save));}catch(_){}};
   // Persist the time of the NEXT heart, not a timer. Regeneration also works
   // while the app is closed. A full bar never accumulates extra hearts.
@@ -195,6 +241,13 @@
   function resources(){return `<div class="resource"><span class="resource-emoji">🪙</span><span>${save.coins}</span><button class="plus" data-open-shop="1">+</button></div><div class="resource"><span class="resource-emoji">❤️</span><span id="livesResource">${save.lives}/${MAX_LIVES}</span><small id="livesCountdown"></small></div><div class="resource"><span class="resource-emoji">⭐</span><span>${save.stars}</span></div>`}
   function renderLevels(){
     $('resourcesLevels').innerHTML=resources();
+    const rp=playerRank(),overview=$('rankOverviewBtn');
+    if(overview){
+      overview.style.setProperty('--rank-accent',rp.rank.color);
+      overview.innerHTML='<span class="rank-overview-main"><span class="rank-overview-icon">'+rp.rank.icon+'</span><span class="rank-overview-copy"><strong>Rütbe: '+rp.rank.name+'</strong><small>'+
+        (rp.next?'Sonraki '+rp.next.name+' · '+rp.remaining+' bölüm kaldı':'Maksimum rütbe')+
+        '</small></span><span class="rank-overview-open">Rütbeler ›</span></span>'+rankBarHtml(rp);
+    }
     const grid=$('levelGrid');grid.innerHTML='';
     let first=page*12+1;
     for(let n=first;n<Math.min(first+12,TOTAL_LEVELS+1);n++){
@@ -204,7 +257,9 @@
       const landscape=levelWorld(n).emoji+' ✦ '+(n%5===0?'🏆':'🏛️');
       const stars = unlocked ? Array.from({length:3},(_,i)=>`<span class="${i<grades?'':'off'}">★</span>`).join('') : '<span class="off">★★★</span>';
       const btn=document.createElement('button');btn.className=`level-card ${unlocked?type:'gray locked'}`;btn.innerHTML=`<div class="level-name">Seviye ${n}</div><div class="level-stars">${stars}</div><div class="mini-landscape">${unlocked?landscape:'🔒'}</div>`;
-      btn.onclick=()=>{if(unlocked)startLevel(n);else toast(`Önce Seviye ${save.highest}'i tamamla!`)};
+      const levelRank=rankForLevel(n);
+      btn.innerHTML+='<div class="level-rank">'+levelRank.icon+' '+levelRank.name+'</div>';
+      btn.onclick=()=>{if(unlocked)startLevel(n);else toast(`Önce Seviye ${save.highest}'i tamamla!`) };
       grid.appendChild(btn);
     }
     $('pageDots').innerHTML='';let totalPages=Math.ceil(TOTAL_LEVELS/12), nDots=4;
@@ -724,7 +779,7 @@
   const ARROW_VECTOR = '<svg class="juicy-arrow" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path class="arrow-depth" d="M9 38H56V19L94 51 56 83V65H9Z" transform="translate(0 3)"/><path class="arrow-main" d="M9 35H56V16L94 48 56 80V62H9Z"/><path class="arrow-light" d="M16 40H60L73 49"/></svg>';
   function drawBoard(){
     if(!levelData)return;
-    $('currentLevelTitle').textContent=`Seviye ${currentLevel}`;
+    $('currentLevelTitle').innerHTML='Seviye '+currentLevel+'<small class="rank-title-sub">'+rankLabel(playerRank().rank)+'</small>';
     if($('difficultyLabel'))$('difficultyLabel').textContent=`${levelData.difficulty.name} · ${levelData.pieces.length} ok`;
     $('progressTxt').textContent=`${removed}/${levelData.pieces.length}`;
     if($('difficultyLabel')){const closed=pieces.filter(p=>(p.needsKey && pieces.some(q=>q.id===p.needsKey))||!!mechanicReason(p,pieces)).length; $('difficultyLabel').textContent=`${levelData.difficulty.name} · ${pieces.length} ok${closed?' · 🔒 '+closed:''}`;}
@@ -986,17 +1041,25 @@
   function restart(){if(!levelData)return;const n=currentLevel;startLevel(n);if(screen==='playing')toast('Bölüm yeniden başladı.')}
   function completeLevel(){
     playSound('win');const grade=hintsUsed===0&&mistakesUsed===0?3:(hintsUsed<=1&&mistakesUsed<=1)?2:1;const previous=save.completed[currentLevel]||0;
+    const formerRank=playerRank().rank;
     if(grade>previous){save.stars+=(grade-previous);save.completed[currentLevel]=grade;}
     save.totalWins++;if(grade===3)save.perfectWins++;ensureDaily();save.dailyQuests.wins++;if(grade===3)save.dailyQuests.perfect++;
     if(currentLevel>=save.highest)save.highest=Math.min(TOTAL_LEVELS,currentLevel+1);
     const reward=previous?25:100;save.coins+=reward;save.undos=Math.max(save.undos,2);save.hints=Math.max(save.hints,2);
     levelData.reward=reward;levelData.grade=grade;
+    const newRank=playerRank().rank;
+    levelData.rankPromotion=formerRank.name!==newRank.name?newRank:null;
     persist();vibrate([25,35,40]);show('victory');
   }
   function renderVictory(){if(!levelData)return;
     $('victory').classList.remove('celebrating');void $('victory').offsetWidth;$('victory').classList.add('celebrating');
     $('continueBtn').disabled=true;$('replayBtn').disabled=true;
     setTimeout(()=>{if(screen==='victory'){$('continueBtn').disabled=false;$('replayBtn').disabled=false;}},2900);$('victoryLevel').innerHTML=`Seviye ${currentLevel}<br>Tamamlandı!`;$('rewardNumber').textContent=`🟡 +${levelData.reward||100}`;
+    const progress=playerRank(),promotion=levelData.rankPromotion,rankReward=$('victoryRank');
+    if(rankReward){
+      rankReward.classList.toggle('promoted',!!promotion);
+      rankReward.textContent=promotion?'🎉 RÜTBE ATLADIN! '+rankLabel(promotion):'🏅 '+rankLabel(progress.rank)+(progress.next?' · '+progress.earned+'/'+progress.span:' · Zirvedesin!');
+    }
     document.querySelectorAll('.big-stars span').forEach((el,i)=>{el.style.filter=i<levelData.grade?'':'grayscale(1) brightness(.6)'});
     const colors=['#ffdd2d','#ff509d','#04e8ca','#b76aff','#ffad25','#73ef47'];
     $('confetti').innerHTML=Array.from({length:35},(_,i)=>`<span style="left:${(i*73)%100}%;background:${colors[i%colors.length]};animation-duration:${3+(i%5)*.4}s;animation-delay:${-(i%7)*.7}s"></span>`).join('');
@@ -1053,6 +1116,7 @@
   window.gameBack=back;
   $('startBtn').onclick=()=>{page=Math.floor((save.highest-1)/12);show('levels')};
   document.querySelectorAll('[data-nav]').forEach(btn=>btn.onclick=()=>show(btn.dataset.nav));
+  $('rankOverviewBtn').onclick=showRankOverview;
   $('prevPage').onclick=()=>{page=Math.max(0,page-1);renderLevels()};
   $('nextPage').onclick=()=>{page=Math.min(Math.ceil(TOTAL_LEVELS/12)-1,page+1);renderLevels()};
   $('pauseBtn').onclick=pause;$('gameSettings').onclick=openSettings;$('undoBtn').onclick=undo;$('hintBtn').onclick=hint;$('restartBtn').onclick=restart;
@@ -1066,7 +1130,7 @@
   $('powersBtn').onclick=showPowers;
   window.addEventListener('keydown',e=>{if(e.key==='Escape'||e.key==='Backspace'){e.preventDefault();back()}});
   // Diagnostic hook used only by offline browser tests.
-  window.__okKacisTest={makeLevel,freeExit,occupancy,difficulty,availableCount,mechanicsForLevel,canRemoveArrow,mechanicReason,verifyLevelSolution,levels:TOTAL_LEVELS,getState:()=>({screen,currentLevel,mistakesUsed,movesLeft,timeRemainingMs,initialTimeMs,pieces:[...pieces],rocks:levelData?.rocks||[],save,lostThisRun,revivesUsed}),startLevel,show,refreshLives,consumeLife,updateLifeUI,failLevel,completeLevel,secondsForLevel,tickTimer,addTime,usePower,useRevive,showPowers,claimableQuests:()=>QUESTS.filter(q=>(save.dailyQuests[q.id]||0)>=q.goal&&!save.dailyQuests.claimed[q.id])};
+  window.__okKacisTest={makeLevel,freeExit,occupancy,difficulty,availableCount,mechanicsForLevel,canRemoveArrow,mechanicReason,verifyLevelSolution,rankForLevel,rankProgress,playerRank,ranks:RANKS,levels:TOTAL_LEVELS,getState:()=>({screen,currentLevel,mistakesUsed,movesLeft,timeRemainingMs,initialTimeMs,pieces:[...pieces],rocks:levelData?.rocks||[],save,lostThisRun,revivesUsed}),startLevel,show,refreshLives,consumeLife,updateLifeUI,failLevel,completeLevel,secondsForLevel,tickTimer,addTime,usePower,useRevive,showPowers,claimableQuests:()=>QUESTS.filter(q=>(save.dailyQuests[q.id]||0)>=q.goal&&!save.dailyQuests.claimed[q.id])};
   show('home');
   launchIntro();
 })();
