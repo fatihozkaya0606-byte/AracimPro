@@ -832,3 +832,239 @@
   pointer-events:auto;cursor:pointer;border-radius:8px;
 }
 #playing .board-touch-layer:focus{outline:none}
+
+
+/* ============================================================================
+   OK KAÇIŞ V26 — QUIET WOOD / MATTE CLAY UI
+   Visual-only layer, intentionally does NOT modify: geometry, 9x9 positions,
+   transparent touch surface, pointer events, save data, game rules, or timers.
+   ============================================================================ */
+#app {
+  --ui-walnut:#76533d;
+  --ui-oak:#c8ad8c;
+  --ui-inset:#e8d8c0;
+  --ui-paper:#f6f1e8;
+  --ui-ink:#40362e;
+  --ui-quiet-blue:#426c89;
+}
+/* Let the foreground game board carry the attention, not the oversaturated scenery. */
+#app.theme-forest .world-backdrop{
+  filter:saturate(.80) contrast(.93) brightness(.91)!important;
+}
+#playing .wooden-title,
+#playing .wooden-title.small-title{
+  background:linear-gradient(175deg,#84624b,#664534)!important;
+  color:#fff9ef!important;
+  border:2px solid #bda184!important;
+  outline:0!important;
+  border-radius:15px!important;
+  text-shadow:0 1px 2px #41291b!important;
+  box-shadow:inset 0 1px #ffffff44,0 3px 8px #3d27195b!important;
+}
+#playing .game-top .circle-btn{
+  background:linear-gradient(165deg,#5a9ac0,#376a94)!important;
+  border:2px solid #e5e7e3!important;
+  outline:0!important;
+  border-radius:50%!important;
+  color:white!important;
+  text-shadow:0 1px #21405999!important;
+  box-shadow:0 3px 9px #1c324554,inset 0 1px #ffffff71!important;
+}
+#playing .objective-card{
+  background:linear-gradient(180deg,#fffdf7,#f1e9da)!important;
+  border:1px solid #d7c4a8!important;
+  outline:none!important;
+  border-radius:16px!important;
+  box-shadow:0 3px 8px #38281b2f,inset 0 1px #ffffffeb!important;
+}
+#playing .objective-label{color:#6b5948!important;font-weight:800!important;text-shadow:none!important}
+#playing .objective-value{color:#3b362e!important;text-shadow:none!important}
+#playing .life-timer{color:#716353!important;text-shadow:none!important}
+#playing .timer-panel{
+  background:linear-gradient(180deg,#41657a,#334d60)!important;
+  border:1px solid #78919e!important;
+  border-radius:18px!important;
+  box-shadow:0 3px 9px #1e34465e,inset 0 1px #ffffff40!important;
+}
+#playing .timer-rail{
+  background:#243747!important;
+  border:1px solid #899fa4!important;
+  border-radius:100px!important;
+  box-shadow:inset 0 1px 2px #0d202a82!important;
+}
+#playing .timer-fill{
+  background:linear-gradient(180deg,#a5dda6,#5ba77e)!important;
+  box-shadow:none!important;
+}
+#playing .world-label{
+  background:linear-gradient(180deg,#f8f3e8ed,#e8d8c5ed)!important;
+  border:1px solid #c8af90!important;
+  border-radius:16px!important;
+  box-shadow:0 3px 8px #4b332640!important;
+  color:#564534!important;
+  text-shadow:none!important;
+}
+#playing .difficulty-label{
+  background:#597e94!important;
+  border:1px solid #a4bec8!important;
+  border-radius:14px!important;
+  color:#fff!important;
+  text-shadow:none!important;
+  box-shadow:none!important;
+}
+/* Refined 9x9 hardwood frame: the grain lives on the border; sockets stay quiet. */
+#playing .board-frame{
+  border:7px solid #76533d!important;
+  border-radius:17px!important;
+  background:
+    repeating-linear-gradient(96deg,transparent 0 13px,#3e29131a 14px 15px,transparent 16px 28px),
+    linear-gradient(145deg,#a27c58,#76533d 63%,#60402e)!important;
+  outline:1px solid #ae9071!important;
+  box-shadow:inset 0 0 0 2px #c9a581,0 5px 0 #513627,0 9px 18px #2b1c175e!important;
+}
+#playing .board-frame:before{
+  border-radius:16px!important;
+  background:linear-gradient(130deg,#ffffff33,transparent 26%,transparent 80%,#31201320)!important;
+  box-shadow:inset 1px 1px 1px #efd8bd65!important;
+}
+#playing .corner-ornament{
+  width:25px!important;height:25px!important;
+  border:1px solid #d5b48b!important;
+  border-radius:8px!important;
+  background:linear-gradient(145deg,#bda183,#84654b)!important;
+  box-shadow:inset 0 1px #fff7,0 2px 4px #40281955!important;
+}
+#playing .game-board{
+  background:#bda183!important;
+  border-radius:7px!important;
+  box-shadow:inset 0 2px 5px #58412d7d!important;
+}
+/* Shallow carved oak sockets, no bevel overkill, one soft shadow per tile. */
+#playing .grid-rock{padding:1.4px!important}
+#playing .grid-rock span{
+  border:1px solid #d7c3a9!important;
+  border-radius:6px!important;
+  background:linear-gradient(145deg,#e8d8c0,#decaaf 68%,#d5bea0)!important;
+  background-blend-mode:normal!important;
+  box-shadow:inset 1px 2px 2px #795a4061,inset -1px -1px 0 #fff6e0b0!important;
+}
+#playing .grid-rock span:after{
+  display:none!important;content:none!important;
+}
+#playing .grid-rock.fixed span{
+  border:1px solid #ae9477!important;
+  background:linear-gradient(145deg,#846a52,#705540)!important;
+  box-shadow:inset 1px 2px 2px #3d281c73,inset -1px -1px #ccb89b5c!important;
+}
+/* Matte-clay colour tokens: restrained saturation, legible arrow silhouette. */
+#playing .piece.red{--mat-high:#eaa4a4;--mat-body:#d86c70;--mat-deep:#bc5359}
+#playing .piece.orange{--mat-high:#f1bd8f;--mat-body:#e79a58;--mat-deep:#c77b40}
+#playing .piece.yellow{--mat-high:#e5cc87;--mat-body:#d5ad51;--mat-deep:#b78c37}
+#playing .piece.blue{--mat-high:#80aecb;--mat-body:#488dbb;--mat-deep:#356d9b}
+#playing .piece.green{--mat-high:#8ac4aa;--mat-body:#55ac83;--mat-deep:#398b68}
+#playing .piece.purple{--mat-high:#b2a1d4;--mat-body:#9475be;--mat-deep:#765aa0}
+#playing .piece .piece-inner{
+  border:1px solid #ffffff8a!important;
+  border-radius:7px!important;
+  background-image:linear-gradient(175deg,var(--mat-high) 0%,var(--mat-body) 39%,var(--mat-body) 74%,var(--mat-deep) 100%)!important;
+  background:linear-gradient(175deg,var(--mat-high) 0%,var(--mat-body) 39%,var(--mat-body) 74%,var(--mat-deep) 100%)!important;
+  background-size:100% 100%!important;
+  box-shadow:inset 0 1px #fff9,inset 0 -2px #36241e32,0 2px 0 #493c3e5c,0 3px 4px #342d2f52!important;
+  filter:none!important;
+}
+#playing .piece .piece-inner:before{
+  display:block!important;
+  content:""!important;
+  inset:0 2px auto 2px!important;
+  height:10%!important;
+  background:linear-gradient(180deg,#fff8,#fff0)!important;
+  border-radius:6px 6px 0 0!important;
+}
+#playing .piece .piece-inner:after{display:none!important;content:none!important}
+#playing .piece .juicy-arrow{
+  filter:drop-shadow(0 1px 1px #1c344b66)!important;
+}
+#playing .piece .juicy-arrow .arrow-depth{
+  fill:#365064!important;
+  stroke:#30495a!important;
+  stroke-width:3!important;
+}
+#playing .piece .juicy-arrow .arrow-main{
+  fill:#ffffff!important;
+  stroke:#344d5d!important;
+  stroke-width:3.3!important;
+  stroke-linejoin:round!important;
+}
+#playing .piece .juicy-arrow .arrow-light{
+  opacity:.7!important;stroke-width:3!important;
+}
+#playing .piece:active .piece-inner{
+  transform:translateY(1px) scale(.98)!important;
+  filter:brightness(1.06)!important;
+}
+/* Auxiliary game feedback and controls match the matte material family. */
+#playing .game-tip{
+  background:#f6f1e8ef!important;
+  border:1px solid #d0b99c!important;
+  border-radius:14px!important;
+  color:#56483d!important;
+  text-shadow:none!important;
+  box-shadow:0 2px 7px #47301c37!important;
+}
+#playing #comboHud{
+  background:#7e678f!important;
+  border:1px solid #bcabc8!important;
+  border-radius:12px!important;
+  box-shadow:0 2px 6px #3d31494a!important;
+  color:#fff!important;
+  text-shadow:none!important;
+}
+#playing .play-utilities .powers-strip{
+  background:linear-gradient(160deg,#8b79a8,#71628f)!important;
+  border:1px solid #c9bdd4!important;
+  color:#fefaff!important;
+  border-radius:15px!important;
+  box-shadow:0 3px 8px #4234536d!important;
+  text-shadow:none!important;
+}
+#playing .play-utilities .music-toggle-float{
+  background:#597e94!important;border:1px solid #b2c5cf!important;
+  box-shadow:0 2px 6px #2637445b!important;
+}
+#playing .game-bottom .btn.action{
+  min-height:76px!important;
+  border:1px solid #c4dae3!important;
+  border-radius:18px!important;
+  background:linear-gradient(170deg,#6cacc7,#3d7da7)!important;
+  box-shadow:inset 0 1px #ffffff80,0 4px 8px #14354a5b!important;
+  text-shadow:0 1px #254a65a8!important;
+}
+#playing .game-bottom .action-icon{
+  font-size:clamp(29px,8vw,39px)!important;
+}
+#playing .game-bottom .bubble{
+  background:#b54e51!important;
+  border:2px solid #fff4ef!important;
+  box-shadow:0 2px 5px #46262766!important;
+}
+/* Non-playing pages: use the same subdued visual grammar. */
+#home .wooden-title,#levels .wooden-title,#shop .wooden-title,#challenges .wooden-title{
+  background:linear-gradient(165deg,#89674d,#674634)!important;
+  border:2px solid #c0a086!important;
+  outline:0!important;box-shadow:0 3px 8px #38271961!important;
+}
+#levels .level-card{
+  border:2px solid #d7b999!important;
+  box-shadow:0 3px 9px #3b2b2054,inset 0 1px #fff8!important;
+}
+#shop .shop-card,#challenges .mission-card,#app .modal-dialog{
+  background:linear-gradient(160deg,#fffcf7,#f1e6d7)!important;
+  border:1px solid #d0baa0!important;
+  box-shadow:0 6px 14px #33271c56!important;
+}
+@media(prefers-reduced-motion:reduce){
+  #playing .piece .piece-inner,#playing .piece .juicy-arrow{
+    transition:none!important;
+  }
+}
+/* NOTE: #boardTouchLayer and .board-touch-layer are intentionally unchanged. */
