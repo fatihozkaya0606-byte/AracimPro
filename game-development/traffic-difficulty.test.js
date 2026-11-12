@@ -34,7 +34,8 @@ test('level 24 onward: higher target, denser placements, mandatory multikey bott
      assert.ok(anchor,'Missing hold anchor at '+n);
      assert.ok(anchor.id<p.id,'Support anchor must be inserted before guarded arrow '+n);
      assert.ok(m.canRemoveArrow(p,active,lvl,0,true)===false || m.mechanicReason(p,active,0,true)==='');
-     assert.match(m.mechanicReason(p,active.filter(q=>q.id!==anchor.id),0,true),/Destek oku/,'Wrong start must block guarded exit '+n);
+     const guardOnly={...p,gates:(p.gates||[]).filter(x=>x.kind==='guard')};
+     assert.match(m.mechanicReason(guardOnly,active.filter(q=>q.id!==anchor.id),0,true),/Destek oku/,'Wrong start must block guarded exit '+n);
      holdLevels++;
    }
    minimum=Math.min(minimum,lvl.metrics.density);

@@ -72,7 +72,8 @@ test('UI path, full-board touch layer, hint and automatic boosters honor mechani
  assert.match(src,/function mechanicBadges\(p,active/);
  assert.match(src,/mechanicBadges\(p,pieces\)/);
  assert.match(src,/mechanicReason\(p,pieces\)/);
- assert.match(src,/canRemoveArrow\(p,pieces,levelData\)/);
+ assert.match(src,/function safeHintCandidates\(active,lvl\)/);
+ assert.match(src,/active.filter\(p=>canRemoveArrow\(p,active,lvl\)\)/);
  assert.match(src,/boardTouchLayer\.addEventListener\('pointerdown'/);
  assert.match(src,/currentLevel<=30/);
  assert.match(src,/mechanicTooltip\(n\)/);
