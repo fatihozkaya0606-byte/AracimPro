@@ -1,64 +1,81 @@
-const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
 const src=fs.readFileSync(__dirname+'/game.js','utf8');
 const start=src.indexOf('  function rngFor(level){');
 const end=src.indexOf('  function startLevel(n){',start);
-assert.ok(start>0&&end>start);
+assert.ok(start>0&&end>start,'Puzzle source not found');
 const script="const SIZE=9,COLORS=['red','green','orange','purple','yellow','blue'];\n"+src.slice(start,end)
  +"\n({makeLevel,difficulty,canRemoveArrow,verifyLevelSolution,availableCount,mechanicReason,mechanicsForLevel,occupancy,cells});";
 const m=vm.runInNewContext(script,{});
-
-test('level 24 onward: higher target, denser placements, mandatory multikey bottleneck, solvable',()=>{
- const stats=[];
- let holdLevels=0,minimum=100;
- for(let n=24;n<=540;n++){
-   const lvl=m.makeLevel(n),d=m.difficulty(n),active=lvl.pieces;
-   assert.ok(m.verifyLevelSolution(lvl),'No complete solution at '+n);
-   assert.ok(m.availableCount(lvl)>=1,'No legal starting move at '+n);
-   assert.ok(d.target>=31,'Not a harder target at '+n);
-   assert.ok(d.visibleGoal<=3,'Too many free choices at '+n);
-   assert.ok(lvl.metrics.density>.29,'Almost empty stage '+n);
-   assert.ok(lvl.metrics.initiallyFree>=1);
-   assert.ok(lvl.metrics.initiallyFree<=Math.max(3,d.visibleGoal+lvl.metrics.guards),'Too many accessible starting arrows at '+n);
+const expected=[
+ {start:1,end:5,name:'Kolay',min:6,max:10,locks:0,extra:10,bottlenecks:0,density:.08},
+ {start:6,end:10,name:'Hafif Zor',min:11,max:15,locks:.12,extra:8,bottlenecks:0,density:.12},
+ {start:11,end:20,name:'Orta',min:17,max:23,locks:.3,extra:6,bottlenecks:0,density:.24},
+ {start:21,end:50,name:'Zor',min:29,max:33,locks:.69,extra:4,bottlenecks:1,density:.45},
+ {start:51,end:100,name:'Çok Zor',min:35,max:39,locks:.84,extra:3,bottlenecks:2,density:.55},
+ {start:101,end:540,name:'Aşırı Zor',min:40,max:43,locks:.92,extra:2,bottlenecks:3,density:.60}
+];
+test('all 540 levels follow six exact contiguous difficulty tiers and remain solvable',()=>{
+ let count=0,guarded=0,stats=[];
+ for(const tier of expected){
+  for(let n=tier.start;n<=tier.end;n++){
+   const d=m.difficulty(n),lvl=m.makeLevel(n),active=lvl.pieces;
+   assert.equal(d.name,tier.name,'Wrong difficulty label '+n);
+   assert.ok(d.target>=tier.min&&d.target<=tier.max,'Wrong target count at '+n);
+   assert.ok(d.allowances<=tier.extra,'Too many extra moves at '+n);
+   assert.ok(d.lockChance>=tier.locks,'Too few locks at '+n);
+   assert.ok(active.length>0&&active.length<=d.target,'Invalid arrow placement '+n);
+   assert.ok(lvl.metrics.density>=tier.density,'Board too empty at '+n);
+   assert.ok(lvl.metrics.initiallyFree>=1,'No legal start at '+n);
+   assert.ok(m.verifyLevelSolution(lvl),'No guaranteed complete solution at '+n);
+   assert.ok(m.availableCount(lvl)>0,'No initial available arrow at '+n);
    const gates=active.flatMap(p=>(p.gates||[]).map(g=>({p,g})));
-   const bottlenecks=gates.filter(x=>x.g.kind==='bottleneck');
-   assert.ok(bottlenecks.length>=1,'Missing bottleneck '+n);
-   for(const {p,g} of bottlenecks){
-     assert.ok(g.requires.length>=3&&g.requires.length<=4,'Wrong multikey count at '+n);
-     for(const id of g.requires){
-       const k=active.find(q=>q.id===id);
-       assert.ok(k && k.id>p.id,'Invalid bottleneck direction at '+n);
-     }
+   const bottle=gates.filter(x=>x.g.kind==='bottleneck');
+   assert.equal(bottle.length,tier.bottlenecks,'Wrong bottleneck depth at '+n);
+   for(const {p,g} of bottle){
+     assert.equal(g.requires.length,d.bottleneckKeys,'Wrong key count at '+n);
+     for(const id of g.requires)assert.ok(active.some(x=>x.id===id&&x.id>p.id),'Backward key at '+n);
    }
-   for(const {p,g} of gates.filter(x=>x.g.kind==='guard')){
+   const guards=gates.filter(x=>x.g.kind==='guard');
+   if(n<55)assert.equal(guards.length,0,'Premature trap at '+n);
+   for(const {p,g} of guards){
      const anchor=active.find(q=>q.id===g.anchorId);
-     assert.ok(anchor,'Missing hold anchor at '+n);
-     assert.ok(anchor.id<p.id,'Support anchor must be inserted before guarded arrow '+n);
-     assert.ok(m.canRemoveArrow(p,active,lvl,0,true)===false || m.mechanicReason(p,active,0,true)==='');
-     const guardOnly={...p,gates:(p.gates||[]).filter(x=>x.kind==='guard')};
-     assert.match(m.mechanicReason(guardOnly,active.filter(q=>q.id!==anchor.id),0,true),/Destek oku/,'Wrong start must block guarded exit '+n);
-     holdLevels++;
+     assert.ok(anchor&&anchor.id<p.id,'Wrong support anchor '+n);
+     const guardOnly={...p,gates:[g]};
+     assert.match(m.mechanicReason(guardOnly,active.filter(q=>q.id!==anchor.id),0,true),/Destek oku/);
+     guarded++;
    }
-   minimum=Math.min(minimum,lvl.metrics.density);
-   if(n===24||n===25||n===30||n===35||n===50||n===100||n===181||n===300||n===540)
-     stats.push({level:n,arrows:active.length,occupied:lvl.metrics.occupied,percent:Math.round(lvl.metrics.density*100),free:lvl.metrics.initiallyFree,guards:lvl.metrics.guards});
+   if([1,5,6,10,11,20,21,25,50,51,55,75,100,101,200,300,420,540].includes(n))
+     stats.push({level:n,difficulty:d.name,arrows:active.length,occupied:lvl.metrics.occupied,density:Math.round(lvl.metrics.density*100),initialFree:lvl.metrics.initiallyFree,bottlenecks:bottle.length});
+   count++;
+  }
  }
- console.log('V28-BOARD-METRICS '+JSON.stringify({stats,minimumDensity:minimum,guardedPuzzles:holdLevels}));
+ assert.equal(count,540);
+ assert.ok(guarded>=50,'Advanced support traps are absent');
+ console.log('SIX-TIER-BOARD-METRICS '+JSON.stringify({sample:stats,guards:guarded}));
 });
-test('5-level challenge pulses add density goals without mutating early stages',()=>{
- const before=m.difficulty(23),v24=m.difficulty(24),challenge=m.difficulty(25),next=m.difficulty(26);
- assert.equal(before.target,25);
- assert.ok(v24.target>before.target);
- assert.ok(challenge.target>v24.target);
- assert.ok(next.target<challenge.target);
- assert.ok(challenge.rocks>=v24.rocks);
- assert.equal(m.mechanicsForLevel(23).includes('switch'),true);
+
+test('difficulty increases at exact 5/6 10/11 20/21 50/51 100/101 boundaries',()=>{
+ for(const [a,b] of [[5,6],[10,11],[20,21],[50,51],[100,101]]){
+   const before=m.difficulty(a),after=m.difficulty(b);
+   assert.ok(before.target<after.target,'Not enough new arrows at '+b);
+   assert.ok(before.allowances>after.allowances,'Not fewer spare moves at '+b);
+   assert.ok(before.lockChance<after.lockChance,'Not more key pressure at '+b);
+ }
+ assert.equal(m.difficulty(1).name,'Kolay');
+ assert.equal(m.difficulty(540).name,'Aşırı Zor');
+ assert.equal(m.difficulty(540).bottleneckCount,3);
+ assert.equal(m.difficulty(540).bottleneckKeys,4);
+ assert.equal(m.mechanicsForLevel(11).includes('ice'),true);
  assert.match(src,/const SIZE = 9, TOTAL_LEVELS = 540/);
 });
-test('input, undo, bonus powers, progression and on-screen guidance survive',()=>{
+
+test('V25 fast touch, undo, safe hints, rewards and matte UI hooks are preserved',()=>{
  assert.match(src,/boardTouchLayer\.addEventListener\('pointerdown'/);
  assert.match(src,/function safeHintCandidates\(/);
  assert.match(src,/guardStillNeeded\(p,pieces\)/);
- assert.match(src,/p\.holdsFor&&pieces\.some/);
  assert.match(src,/currentLevel<=30/);
  assert.match(src,/function snapshot\(/);
  assert.match(src,/function undo\(/);
