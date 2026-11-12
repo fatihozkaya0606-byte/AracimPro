@@ -226,6 +226,27 @@
     while(x>=0&&x<SIZE&&y>=0&&y<SIZE){if(occ.has(key(x,y))&&!own.has(key(x,y)))return false;x+=dx;y+=dy;}
     return true;
   }
+  // Fast geometric tests for the constructive generator. No DOM or full-board set cloning per candidate.
+  function freeExitFilled(p,filled){
+    const dx=p.dir==='R'?1:p.dir==='L'?-1:0,dy=p.dir==='D'?1:p.dir==='U'?-1:0;
+    let x=p.x+(dx>0?p.length:dx<0?-1:0),y=p.y+(dy>0?p.length:dy<0?-1:0);
+    while(x>=0&&x<SIZE&&y>=0&&y<SIZE){
+      if(filled.has(key(x,y)))return false;
+      x+=dx;y+=dy;
+    }
+    return true;
+  }
+  function blocksExitRay(arrow,blocker){
+    const dx=arrow.dir==='R'?1:arrow.dir==='L'?-1:0;
+    const dy=arrow.dir==='D'?1:arrow.dir==='U'?-1:0;
+    const tipX=arrow.x+(dx>0?arrow.length-1:0);
+    const tipY=arrow.y+(dy>0?arrow.length-1:0);
+    return cells(blocker).some(([x,y])=>{
+      if(dx!==0)return y===arrow.y && (x-tipX)*dx>0;
+      return x===arrow.x && (y-tipY)*dy>0;
+    });
+  }
+
   // Controlled difficulty: more arrows, longer pieces, blockers and key locks.
   // Candidate arrows must have a clear exit when added, so undoing insertion
   // order always solves the board. Pick arrows that obstruct existing exits to
@@ -459,7 +480,7 @@
       const pcs=[];
       for(let index=0;index<diff.target;index++){
         const filled=occupancy(pcs,stones);
-        const available=pcs.filter(p=>freeExit(p,pcs,stones));
+        const available=pcs.filter(p=>n>=24?freeExitFilled(p,filled):freeExit(p,pcs,stones));
         let chosen=null,bestScore=-1e8;
         const tries=diff.candidateTries||(n<6?35:n<25?60:75);
         for(let t=0;t<tries;t++){
@@ -470,9 +491,9 @@
           const y=Math.floor(rand()*(SIZE-(horizontal?0:len-1)));
           const p={id:pcs.length+1,x,y,length:len,dir,color:COLORS[(pcs.length+Math.floor(rand()*6))%COLORS.length]};
           if(cells(p).some(([cx,cy])=>filled.has(key(cx,cy))))continue;
-          if(!freeExit(p,pcs,stones))continue;
+          if(n>=24?!freeExitFilled(p,filled):!freeExit(p,pcs,stones))continue;
           let blocked=0;
-          for(const old of available)if(!freeExit(old,[...pcs,p],stones))blocked++;
+          for(const old of available)if(n>=24?blocksExitRay(old,p):!freeExit(old,[...pcs,p],stones))blocked++;
           // Reward arrow-on-arrow dependencies, board density and variety.
           // A subtle seeded jitter prevents repetitive layouts.
           const near=cells(p).reduce((acc,[cx,cy])=>acc+
@@ -493,10 +514,8 @@
         continue;
       }
       const filledCount=pcs.reduce((sum,p)=>sum+p.length,0);
-      const geometryLinks=pcs.reduce((sum,p)=>{
-        if(freeExit(p,pcs,stones))return sum;
-        return sum+pcs.filter(q=>q.id!==p.id&&freeExit(p,pcs.filter(x=>x.id!==q.id),stones)).length;
-      },0);
+      const geometryLinks=pcs.reduce((sum,p)=>sum+
+        pcs.filter(q=>q.id!==p.id&&blocksExitRay(p,q)).length,0);
       const layoutScore=pcs.length*1000+filledCount*3+geometryLinks*2;
       if(layoutScore>bestLayoutScore){best=pcs;bestLayoutScore=layoutScore;}
     }
