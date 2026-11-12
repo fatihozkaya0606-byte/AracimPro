@@ -30,7 +30,9 @@ test('every level above 20 offers genuine bad and safe removal choices, but has 
     assert.ok(target.id-anchor.id>=4,'No advance planning depth at '+n);
     assert.ok(!game.canRemoveArrow(target,all,lvl,0,true),'Trap target trivially removable at '+n);
     const wrongState=all.filter(p=>p.id!==anchor.id);
-    assert.match(game.mechanicReason(target,wrongState,0,true),/Destek oku/,'Wrong opening did not create dead end at '+n);
+    const guardOnly={...target,gates:(target.gates||[]).filter(g=>g.kind==='guard'&&g.anchorId===anchor.id)};
+    assert.equal(guardOnly.gates.length,1,'Missing explicit support dependency at '+n);
+    assert.match(game.mechanicReason(guardOnly,wrongState,0,true),/Destek oku/,'Wrong opening did not create dead end at '+n);
   }
   if([1,5,6,10,11,20,21,24,25,30,50,51,75,100,101,150,220,221,300,420,540].includes(n))
     stats.push({level:n,tier:lvl.difficulty.name,legal:legal.length,unsafe:dangerous.length,safe:safe.length,arrows:all.length});
