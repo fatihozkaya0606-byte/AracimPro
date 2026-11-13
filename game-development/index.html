@@ -29,7 +29,7 @@
         <button class="btn square blue" id="settingsBtn"><span class="menu-icon">⚙️</span><span>Ayarlar</span></button>
         <button class="btn square blue" id="shopBtn"><span class="menu-icon">🏪</span><span>Mağaza</span></button>
       </div>
-      <div class="extra-buttons"><button id="missionsBtn">🎯 Görevler</button><button id="achievementsBtn">🏆 Başarılar</button></div>
+      <div class="extra-buttons"><button id="missionsBtn">🎯 Görevler</button><button id="achievementsBtn">🏆 Başarılar</button><button type="button" id="v32HubOpen">✨ Yeni Modlar</button></div>
     </div>
   </section>
 
@@ -53,6 +53,79 @@
     <div class="game-bottom"><button class="btn action blue" id="undoBtn"><span class="bubble" id="undoBadge">3</span><span class="action-icon">↶</span><span>Geri Al</span></button><button class="btn action blue" id="hintBtn"><span class="bubble" id="hintBadge">3</span><span class="action-icon">💡</span><span>İpucu</span></button><button class="btn action blue" id="restartBtn"><span class="action-icon">↻</span><span>Yeniden</span></button></div>
   </section>
 
+
+  <!-- V32 extra modes: dedicated screen; normal 540 level layout untouched. -->
+  <section id="v32" class="screen" aria-label="Yeni oyun modları">
+    <div class="v32-head">
+      <button type="button" id="v32Back" class="circle-btn" aria-label="Geri">❮</button>
+      <div class="wooden-title">✨ Ok Kaçış V32</div>
+      <span id="v32Wallet" class="v32-wallet">🪙</span>
+    </div>
+    <div class="v32-scroll">
+      <div id="v32Menu" class="v32-panel">
+        <p class="v32-intro">Yeni maceralar, yarışmalar ve kendi bulmacaların. 540 ana bölümün aynen korunuyor.</p>
+        <div id="v32Result" class="v32-result" hidden></div>
+        <div class="v32-card">
+          <h3>👑 Patron Bölümleri</h3>
+          <p>Her 10. bölümden sonra 3 aşamalı patron mücadelesi. İlk zaferde altın kazan.</p>
+          <div class="v32-inline"><select id="v32BossSelect" aria-label="Patron seviyesini seç"></select><button type="button" id="v32BossStart">Patrona Meydan Oku</button></div>
+        </div>
+        <div class="v32-card">
+          <h3>⚡ 60 Saniye Kaçış</h3>
+          <p>60 saniyede mümkün olduğunca çok ok çıkar. Her yeni tahtada kombo puanı kazan.</p>
+          <div class="v32-inline"><span id="v32SpeedBest">Rekor: 0</span><button id="v32SpeedStart">Başla</button></div>
+        </div>
+        <div class="v32-card">
+          <h3>🏆 Haftalık Meydan Okuma</h3>
+          <p>Her hafta herkese aynı sabit bulmaca. Sıralama şimdilik yalnızca bu cihazdaki kişisel rekordur.</p>
+          <div class="v32-inline"><span id="v32WeekSummary">Hafta</span><button id="v32WeekStart">Bu Haftayı Oyna</button></div>
+        </div>
+        <div class="v32-feature-grid">
+          <button type="button" id="v32EditorOpen" class="v32-tile">🧩<strong>Bölüm Oluştur</strong><small>Kendi 9×9 bulmacan</small></button>
+          <button type="button" id="v32MapOpen" class="v32-tile">🌍<strong>Macera Haritası</strong><small>27 dünya durağı</small></button>
+          <button type="button" id="v32SkinsOpen" class="v32-tile">💎<strong>Ok Koleksiyonu</strong><small>Yeni ok görünümleri</small></button>
+        </div>
+      </div>
+      <div id="v32Play" class="v32-panel" hidden>
+        <div class="v32-play-top"><strong id="v32PlayTitle">Oyun</strong><span id="v32PlayClock">01:00</span></div>
+        <div class="v32-play-stats"><span id="v32PlayProgress">0/0</span><span id="v32PlayPoints">0 puan</span></div>
+        <div id="v32PlayMessage" class="v32-info" aria-live="polite">Açık okları doğru sırayla çıkar.</div>
+        <div class="v32-board-frame">
+          <div id="v32Board" class="v32-board" role="group" aria-label="Ek oyun modu tahtası"></div>
+          <div id="v32TouchLayer" class="v32-touch-layer" aria-hidden="true"></div>
+        </div>
+        <div class="v32-play-controls">
+          <button type="button" id="v32Restart">↻ Yeniden</button>
+          <button type="button" id="v32Exit">⌂ Modlara Dön</button>
+        </div>
+      </div>
+      <div id="v32Editor" class="v32-panel" hidden>
+        <h3>🧩 Kendi Bölümünü Tasarla</h3>
+        <p class="v32-intro">Kareye dokunarak ok ya da taş yerleştir. Dolu kareye dokununca kaldırılır. Kaydetmeden önce çözüm kontrol edilir.</p>
+        <div class="v32-editor-tools">
+          <label>Tür <select id="v32EditKind"><option value="arrow">➜ Ok</option><option value="rock">🪨 Taş</option></select></label>
+          <label>Yön <select id="v32EditDir"><option value="R">Sağa →</option><option value="L">Sola ←</option><option value="U">Yukarı ↑</option><option value="D">Aşağı ↓</option></select></label>
+          <label>Uzunluk <select id="v32EditLen"><option value="1">1 kare</option><option value="2">2 kare</option><option value="3">3 kare</option></select></label>
+          <label>Renk <select id="v32EditColor"><option value="blue">Mavi</option><option value="green">Yeşil</option><option value="orange">Turuncu</option><option value="purple">Mor</option><option value="yellow">Sarı</option><option value="red">Kırmızı</option></select></label>
+        </div>
+        <div id="v32EditorBoard" class="v32-editor-board" aria-label="9×9 bölüm düzenleyici"></div>
+        <p class="v32-info" id="v32EditorInfo">En az 3, en fazla 12 ok yerleştir.</p>
+        <div class="v32-editor-actions">
+          <button type="button" id="v32EditorCheck">✓ Çözümü Kontrol Et</button>
+          <button type="button" id="v32EditorSave">💾 Kaydet</button>
+          <button type="button" id="v32EditorTest">▶ Oyna</button>
+          <button type="button" id="v32EditorClear">🗑 Temizle</button>
+        </div>
+        <div id="v32SavedLevels" class="v32-saved-list"></div>
+      </div>
+      <div id="v32Map" class="v32-panel" hidden>
+        <h3>🌍 Macera Haritası</h3>
+        <p class="v32-intro">540 bölüm, 27 dünya durağı. Açılmış bir durağa dokunup o bölümlere git.</p>
+        <div id="v32MapStops" class="v32-map-stops"></div>
+      </div>
+    </div>
+  </section>
+
   <section id="shop" class="screen" aria-label="Mağaza">
     <div class="shop-header"><button class="circle-btn" id="shopBack" aria-label="Geri">❮</button><div class="wooden-title">🏪 Mağaza</div><div class="shop-wallet" id="shopWallet">🪙 0</div></div>
     <div class="shop-scroll" id="shopItems"></div>
@@ -73,5 +146,7 @@
   <div class="toast" id="toast" aria-live="polite"></div>
 </div>
 <script src="game.js"></script>
+<script src="v32-engine.js"></script>
+<script src="v32-features.js"></script>
 </body>
 </html>
