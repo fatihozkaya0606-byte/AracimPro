@@ -1380,3 +1380,12 @@
   #playing #v32StageBoss{min-height:24px;padding:3px 6px;margin:0 auto!important}
   #victory #v32VictoryBoss{margin:4px auto!important;padding:7px!important}
 }
+
+#v32 .v32-preview-boss{
+ display:block;width:100%;margin:8px 0 0;padding:10px 8px;
+ border:1px solid #ecbe6e;border-radius:12px;
+ background:linear-gradient(115deg,#6d508f,#aa6a52);
+ color:#fff8e4;text-shadow:0 1px 2px #36293a;
+ box-shadow:0 2px 5px #39273f7a;font-size:12px;font-weight:900;
+ touch-action:manipulation;
+}
