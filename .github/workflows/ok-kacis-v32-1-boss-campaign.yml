@@ -3,7 +3,7 @@ on:
   push:
     branches: [ok-kacis-v32-1-boss-campaign-integration]
     paths:
-      - '.github/workflows/ok-kacis-v32-1-boss-campaign-integration.yml'
+      - '.github/workflows/ok-kacis-v32-1-boss-campaign.yml'
       - 'game-development/**'
   workflow_dispatch:
 permissions:
