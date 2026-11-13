@@ -66,7 +66,7 @@
    const totalMs=mode==='speed'?60000:mode==='weekly'?240000:mode==='boss'?480000:Infinity;
    state.session={
      mode,boss,week:today.week,custom,stageNumbers,stageIndex:0,
-     score:0,cleared:0,mistakes:0,undoUsed:0,history:[],
+     score:0,cleared:0,mistakes:0,undoUsed:0,history:[],health:mode==='boss'?3:0,shield:mode==='boss'?3:0,
      remaining:totalMs,totalMs,done:false,stage:null,
      pieces:[],title:mode==='speed'?'⚡ 60 Saniye Kaçış':mode==='weekly'?'🏆 Haftalık Meydan Okuma':mode==='boss'?'👑 Patron '+boss:'🧩 Kendi Bulmacan'
    };
@@ -111,6 +111,14 @@
    const count=s.stage?s.stage.pieces.length-s.pieces.length:0;
    $('v32PlayProgress').textContent=(s.mode==='speed'?'Tur '+(s.cleared+1)+' · ':'')+count+'/'+(s.stage?s.stage.pieces.length:0)+' ok';
    $('v32PlayPoints').textContent=s.score+' puan';
+   const bossHud=$('v32BossHealth');
+   if(bossHud){
+     bossHud.hidden=s.mode!=='boss';
+     if(s.mode==='boss'){
+       bossHud.textContent='👑 PATRON · Kalkan: '+('🛡️'.repeat(s.shield))+
+         ' · Hata hakkı: '+('❤️'.repeat(s.health))+('🖤'.repeat(3-s.health));
+     }
+   }
  }
  function timeText(ms){
    const seconds=Math.max(0,Math.ceil(ms/1000));
@@ -126,8 +134,16 @@
    if(!legal){
      s.mistakes++;
      s.score=Math.max(0,s.score-5);
-     $('v32PlayMessage').textContent='🚫 Bu okun yolu kapalı. Önce engeli kaldır.';
-     B.sound('bad');drawStats();return;
+     if(s.mode==='boss'){
+       s.health=Math.max(0,s.health-1);
+       $('v32PlayMessage').textContent='⚔️ Patron saldırdı! '+s.health+' hata hakkın kaldı.';
+       B.sound('bad');
+       if(!s.health){finish(false);return;}
+     } else {
+       $('v32PlayMessage').textContent='🚫 Bu okun yolu kapalı. Önce engeli kaldır.';
+       B.sound('bad');
+     }
+     drawStats();return;
    }
    s.history.push({pieces:s.pieces.map(q=>({...q})),score:s.score});
    if(s.history.length>8)s.history.shift();
@@ -144,6 +160,7 @@
    if(!s)return;
    s.cleared++;
    s.score+=35;
+   if(s.mode==='boss')s.shield=Math.max(0,3-s.cleared);
    if(s.mode==='speed'){
      beginStage();
      $('v32PlayMessage').textContent='⚡ Yeni tur! Seri devam ediyor.';
@@ -178,7 +195,7 @@
        save.v32BossWins[s.boss]=true;
        if(!already){const reward=Math.min(1000,200+s.boss*2);B.addCoins(reward);message='👑 Patron yenildi! +'+reward+' altın';}
        else message='👑 Patron yeniden yenildi! Rekor: '+s.score;
-     }else message='👑 Patron süreyi doldurdu. Yeniden deneyebilirsin.';
+     }else message='👑 Patron savunması geçilemedi. Yeniden deneyebilirsin.';
    }
    if(s.mode==='custom')message='🧩 Kendi bulmacan '+(won?'çözüldü!':'bitirilemedi.');
    B.persist();
@@ -272,6 +289,47 @@
  }
  function showEditor(){B.show('v32');renderEditor();}
  function showMap(){B.show('v32');renderMap();}
+ // V32.1: Campaign-level visibility, not a hidden menu-only feature.
+ function completedBossTop(){
+   const last=save.completed&&save.completed[540]?540:Math.max(0,Math.min(540,Number(save.highest||1)-1));
+   return Math.floor(last/10)*10;
+ }
+ function onCampaignLevels(){
+   const top=completedBossTop(),button=$('v32LevelBoss');
+   if(!button)return;
+   button.hidden=false;
+   button.classList.toggle('v32-boss-ready',top>=10);
+   button.textContent=top>=10?
+     '👑 PATRON '+top+' HAZIR! ⚔️ OYNA  · Sonraki: '+Math.min(540,top+10):
+     '👑 İLK PATRON: SEVİYE 10’U TAMAMLA';
+   button.onclick=()=>top>=10?begin('boss',{boss:top}):B.toast('10. bölüm tamamlanınca ilk patron açılacak.');
+ }
+ function onCampaignStart(n){
+   const bossLevel=n%10===0&&n>=10;
+   const panel=$('v32StageBoss'),playing=$('playing');
+   playing.classList.toggle('v32-boss-stage',bossLevel);
+   panel.hidden=!bossLevel;
+   if(!bossLevel)return;
+   const open=n<save.highest||(n===540&&save.completed&&save.completed[540]);
+   panel.textContent=open?'👑 PATRON '+n+' · ⚔️ ARENAYA GİR':'👑 PATRON KAPISI · '+n+'. BÖLÜMÜ BİTİR';
+   panel.onclick=()=>open?begin('boss',{boss:n}):
+     B.toast('👑 Bu bölümü tamamlayınca üç aşamalı patron mücadelesi açılır!');
+   const tip=$('gameTip');
+   if(tip && !open)tip.textContent='👑 Patron kapısı! Bu seviyeyi tamamla; üç aşamalı mücadele açılsın.';
+ }
+ function onCampaignVictory(n){
+   const bossLevel=n>=10&&n%10===0,btn=$('v32VictoryBoss');
+   if(!btn)return;
+   btn.hidden=!bossLevel;
+   if(!bossLevel)return;
+   btn.textContent='👑 SEVİYE '+n+' PATRONU AÇILDI · ⚔️ MÜCADELE';
+   btn.onclick=()=>begin('boss',{boss:n});
+ }
+ $('v32LevelBoss').onclick=onCampaignLevels;
+ $('v32StageBoss').onclick=()=>B.toast('Patron kapısı her 10. seviyede açılır.');
+ $('v32VictoryBoss').onclick=hub;
+ window.__okKacisV32Live={onCampaignLevels,onCampaignStart,onCampaignVictory,openBoss:(n)=>begin('boss',{boss:n}),hub,completedBossTop};
+
  function onTouch(event){
    if(event.isPrimary===false||(event.pointerType==='mouse'&&event.button!==0))return;
    event.preventDefault();
