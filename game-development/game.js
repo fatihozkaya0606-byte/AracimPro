@@ -266,6 +266,7 @@
     for(let d=0;d<nDots;d++){let dot=document.createElement('span');dot.className='page-dot'+(d===page%nDots?' active':'');$('pageDots').appendChild(dot)}
     $('prevPage').disabled=page===0;$('nextPage').disabled=page>=totalPages-1;
     $('levelTip').textContent=`Açılan bölüm: ${save.highest} / ${TOTAL_LEVELS}`;
+    window.__okKacisV32Live?.onCampaignLevels?.();
   }
   function rngFor(level){let seed=(Math.imul(level,2654435761)^0x64321fab)>>>0;return function(){seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;return (seed>>>0)/4294967296}}
   const pick=(r,a)=>a[Math.floor(r()*a.length)];
@@ -773,7 +774,7 @@
     currentLevel=n;levelData=makeLevel(n);pieces=levelData.pieces.map(p=>({...p}));removed=0;specialTiles=createSpecialTiles(n,levelData);comboStreak=0;awardedCombos.clear();specialStyle();ensureDaily();
     movesLeft=pieces.length+levelData.difficulty.allowances;hintsUsed=0;mistakesUsed=0;hintId=-1;
     timeRemainingMs=initialTimeMs=secondsForLevel(n)*1000;timerLastAt=performance.now();lastTickSeconds=-1;lastBeepSecond=-1;revivesUsed=0;
-    history=[];busy=false;lostThisRun=false;show('playing');$('gameTip').textContent=mechanicTooltip(n);playSound();
+    history=[];busy=false;lostThisRun=false;show('playing');$('gameTip').textContent=mechanicTooltip(n);window.__okKacisV32Live?.onCampaignStart?.(n);playSound();
   }
   function renderRock(x,y){return `<div class="grid-rock" style="left:${x/SIZE*100}%;top:${y/SIZE*100}%"><span></span></div>`}
   const ARROW_VECTOR = '<svg class="juicy-arrow" viewBox="0 0 100 100" aria-hidden="true" focusable="false"><path class="arrow-depth" d="M9 38H56V19L94 51 56 83V65H9Z" transform="translate(0 3)"/><path class="arrow-main" d="M9 35H56V16L94 48 56 80V62H9Z"/><path class="arrow-light" d="M16 40H60L73 49"/></svg>';
@@ -1050,6 +1051,7 @@
     const newRank=playerRank().rank;
     levelData.rankPromotion=formerRank.name!==newRank.name?newRank:null;
     persist();vibrate([25,35,40]);show('victory');
+    window.__okKacisV32Live?.onCampaignVictory?.(currentLevel);
   }
   function renderVictory(){if(!levelData)return;
     $('victory').classList.remove('celebrating');void $('victory').offsetWidth;$('victory').classList.add('celebrating');
