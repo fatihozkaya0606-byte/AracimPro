@@ -1310,3 +1310,73 @@
 #playing.skin-diamond .piece .piece-inner{border-color:#ddedff!important;box-shadow:inset 0 2px #fff,0 0 12px #93aef5b5!important}
 @media(max-width:390px){#v32.screen{padding-left:7px;padding-right:7px}#v32 .v32-inline{gap:5px}#v32 .v32-inline button{font-size:11px}}
 @media(prefers-reduced-motion:reduce){#v32 *{animation:none!important;transition:none!important}}
+
+
+/* V32.1: visible boss milestones within normal 540-level progression. */
+#home .v32-home-cta{
+  display:block!important;width:min(94%,430px)!important;margin:5px auto 3px!important;
+  padding:9px 7px!important;min-height:38px!important;
+  border:2px solid #ffe5a0!important;border-radius:15px!important;
+  color:#fffaf2!important;font-size:clamp(10px,2.8vw,13px)!important;line-height:1.12!important;
+  font-weight:1000!important;letter-spacing:.01em!important;
+  text-shadow:0 1px 3px #573919!important;
+  background:linear-gradient(120deg,#8751aa,#c67eb1 48%,#c58a4e)!important;
+  box-shadow:0 3px 0 #73456e,0 6px 9px #36305088,inset 0 2px #fff8!important;
+  touch-action:manipulation!important;flex:0 0 auto;
+}
+#levels #v32LevelBoss{
+  display:block;width:100%;margin:0 0 10px;padding:11px 12px;
+  background:linear-gradient(120deg,#69546e,#8a5c8d 53%,#c38854);
+  border:2px solid #e8cc8d;border-radius:15px;box-shadow:0 4px 8px #2b223a70,inset 0 1px #fff7;
+  color:#fff9e5;font-weight:1000;font-size:clamp(11px,3vw,15px);line-height:1.25;
+  text-shadow:0 1px 3px #37213c;touch-action:manipulation;
+}
+#levels #v32LevelBoss.v32-boss-ready{
+  background:linear-gradient(115deg,#9e5634,#b47b35,#73529a);
+  box-shadow:0 3px 8px #31264580,inset 0 1px #fff9,0 0 8px #ffd58f77;
+}
+#playing #v32StageBoss{
+  display:block;width:min(92%,480px);margin:0 auto 2px;
+  background:linear-gradient(120deg,#67446d,#bb7d42,#624e86);
+  color:#fff5d8;box-shadow:inset 0 1px #fffb,0 2px 4px #34243670;
+  border:1px solid #f3d298;border-radius:13px;
+  padding:5px 8px;min-height:27px;font-weight:1000;
+  font-size:clamp(9px,2.65vw,12px);line-height:1.2;
+  text-shadow:0 1px 2px #2e1a35;
+  touch-action:manipulation;flex:0 0 auto;
+}
+#playing.v32-boss-stage #boardFrame{
+  border-color:#a57941!important;
+  box-shadow:0 0 0 2px #f8dba0a3,0 5px 17px #66402888,inset 0 2px #e4bf79!important;
+}
+#playing.v32-boss-stage #currentLevelTitle{
+  background:linear-gradient(180deg,#9b6740,#65405b)!important;
+  border-color:#e9c883!important;
+  box-shadow:0 3px 8px #47304799!important;
+}
+#victory #v32VictoryBoss{
+  display:block;width:min(93%,420px);margin:7px auto 5px;
+  padding:11px 9px;min-height:45px;border:2px solid #ffd177;border-radius:15px;
+  background:linear-gradient(145deg,#9a5839,#b8853a 45%,#8358a0);
+  color:#fff9e8;text-align:center;font-weight:1000;
+  font-size:clamp(12px,3.25vw,15px);line-height:1.2;
+  text-shadow:0 2px 3px #533526;
+  box-shadow:0 3px 0 #8b5a35,0 5px 10px #46314589;
+  touch-action:manipulation;
+}
+#v32 #v32BossHealth{
+  border:2px solid #ddbb85;
+  background:linear-gradient(105deg,#6f3e59,#934c65,#ac7939);
+  color:#fff3d2;border-radius:11px;padding:8px 6px;text-align:center;
+  font-size:clamp(11px,3vw,14px);font-weight:900;
+  text-shadow:0 1px 3px #47283b;box-shadow:0 3px 8px #28223e55;
+}
+#v32 #v32BossHealth[hidden],#victory #v32VictoryBoss[hidden],
+#playing #v32StageBoss[hidden],#levels #v32LevelBoss[hidden]{
+  display:none!important;
+}
+@media(max-height:750px){
+  #home .v32-home-cta{padding:6px!important;min-height:32px!important;margin:2px auto!important}
+  #playing #v32StageBoss{min-height:24px;padding:3px 6px;margin:0 auto!important}
+  #victory #v32VictoryBoss{margin:4px auto!important;padding:7px!important}
+}
