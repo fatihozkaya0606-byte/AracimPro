@@ -8,7 +8,9 @@ function harness(){
  const nodes={};
  class El{
    constructor(id=''){this.id=id;this.hidden=false;this.innerHTML='';this.textContent='';this.value='';this.disabled=false;
-     this.style={};this.dataset={};this.listeners={};this.children=[];this.selected=false;}
+     this.style={};this.dataset={};this.listeners={};this.children=[];this.selected=false;
+     const state=new Set();
+     this.classList={toggle(name,force){if(force===undefined? !state.has(name):force)state.add(name);else state.delete(name);return state.has(name);},contains(name){return state.has(name);}};}
    addEventListener(name,cb){this.listeners[name]=cb;}
    querySelector(){return {insertAdjacentHTML(){}};}
    appendChild(c){this.children.push(c);if(c.selected)this.value=c.value;}
@@ -38,7 +40,7 @@ function harness(){
    isPrimary:true,pointerType:'touch',button:0,clientX:x*10+5,clientY:y*10+5,
    preventDefault(){}
  });
- return {api,save,get,press,bridge,shown:()=>shown,persisted:()=>persisted};
+ return {api,save,get,press,bridge,live:window.__okKacisV32Live,shown:()=>shown,persisted:()=>persisted};
 }
 
 test('60-second mode draws real arrows, accepts direct touch and moves to next board',()=>{
@@ -95,4 +97,55 @@ test('map navigation and skin catalog links use existing unlocked level and shop
  assert.match(t.get('v32MapStops').innerHTML,/Seviye 521–540/);
  t.get('v32SkinsOpen').onclick();
  assert.equal(t.shown(),'shop');
+});
+
+
+test('level 20 now shows boss gate during campaign, unlocks on victory and launches directly',()=>{
+ const t=harness();
+ t.save.highest=20;
+ t.live.onCampaignLevels();
+ assert.equal(t.get('v32LevelBoss').hidden,false);
+ assert.match(t.get('v32LevelBoss').textContent,/PATRON 10 HAZIR/);
+ t.live.onCampaignStart(20);
+ assert.equal(t.get('v32StageBoss').hidden,false);
+ assert.equal(t.get('playing').classList.contains('v32-boss-stage'),true);
+ assert.match(t.get('v32StageBoss').textContent,/20. BÖLÜMÜ BİTİR/);
+ t.save.highest=21;t.save.completed[20]=3;
+ t.live.onCampaignVictory(20);
+ assert.equal(t.get('v32VictoryBoss').hidden,false);
+ assert.match(t.get('v32VictoryBoss').textContent,/PATRONU AÇILDI/);
+ t.get('v32VictoryBoss').onclick();
+ assert.equal(t.api.getState().mode,'boss');
+ assert.match(t.get('v32BossHealth').textContent,/🛡️🛡️🛡️/);
+});
+test('explicit level 20 preview plays now with no unlock, no gold and no campaign progress',()=>{
+ const t=harness(),start=t.save.highest,coins=t.save.coins;
+ t.api.hub();
+ t.get('v32Preview20').onclick();
+ assert.equal(t.api.getState().mode,'boss');
+ assert.equal(t.get('v32BossHealth').hidden,false);
+ for(let n=0;n<9;n++)t.press(...[[0,0],[2,2],[4,4]][n%3]);
+ assert.equal(t.api.getState().mode,null);
+ assert.equal(t.save.v32BossWins[20],undefined,'preview is never a real boss victory');
+ assert.equal(t.save.coins,coins);
+ assert.equal(t.save.highest,start);
+ assert.match(t.get('v32Result').textContent,/TEST tamamlandı/);
+});
+test('boss shield breaks every stage; three blocked attacks cause loss instead of normal combo',()=>{
+ const t=harness();t.api.hub();
+ t.bridge.makeLevel=()=>({rocks:[],pieces:[
+  {id:1,x:0,y:0,length:1,dir:'R',color:'blue'},
+  {id:2,x:2,y:0,length:1,dir:'U',color:'red'},
+  {id:3,x:4,y:4,length:1,dir:'D',color:'green'}
+ ]});
+ t.get('v32Preview20').onclick();
+ assert.match(t.get('v32BossHealth').textContent,/❤️❤️❤️/);
+ t.press(0,0);
+ assert.match(t.get('v32BossHealth').textContent,/❤️❤️🖤/);
+ t.press(0,0);
+ assert.match(t.get('v32BossHealth').textContent,/❤️🖤🖤/);
+ t.press(0,0);
+ assert.equal(t.api.getState().mode,null);
+ assert.match(t.get('v32Result').textContent,/geçilemedi/);
+ assert.equal(t.save.v32BossWins[20],undefined);
 });
