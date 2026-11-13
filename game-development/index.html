@@ -29,7 +29,8 @@
         <button class="btn square blue" id="settingsBtn"><span class="menu-icon">⚙️</span><span>Ayarlar</span></button>
         <button class="btn square blue" id="shopBtn"><span class="menu-icon">🏪</span><span>Mağaza</span></button>
       </div>
-      <div class="extra-buttons"><button id="missionsBtn">🎯 Görevler</button><button id="achievementsBtn">🏆 Başarılar</button><button type="button" id="v32HubOpen">✨ Yeni Modlar</button></div>
+      <button type="button" id="v32HubOpen" class="v32-home-cta">👑 PATRON ARENA · ⚡ 60 SN · 🌍 HARİTA</button>
+      <div class="extra-buttons"><button id="missionsBtn">🎯 Görevler</button><button id="achievementsBtn">🏆 Başarılar</button></div>
     </div>
   </section>
 
@@ -37,6 +38,7 @@
     <div class="resource-bar" id="resourcesLevels"></div>
     <div class="levels-head"><button class="circle-btn" data-nav="home" aria-label="Geri">❮</button><div class="wooden-title">Bölümler</div></div>
     <div class="levels-scroll">
+      <button type="button" id="v32LevelBoss" class="v32-level-boss" hidden>👑 Patron Mücadelesi</button>
       <button type="button" id="rankOverviewBtn" class="rank-overview" aria-label="Mevcut rütbe ve tüm oyuncu rütbeleri"></button>
       <div class="levels-grid" id="levelGrid"></div>
       <div class="level-pages"><button class="circle-btn small" id="prevPage" aria-label="Önceki bölümler">❮</button><div id="pageDots" class="page-dots"></div><button class="circle-btn small" id="nextPage" aria-label="Sonraki bölümler">❯</button></div>
@@ -48,7 +50,8 @@
     <div class="game-top"><button class="circle-btn" id="pauseBtn" aria-label="Duraklat">Ⅱ</button><div class="wooden-title small-title" id="currentLevelTitle">Seviye 1<small class="rank-title-sub">🐣 Çaylak</small></div><div class="game-tools"><button class="circle-btn game-shop-icon" id="gameShop" aria-label="Mağaza">🏪</button><button class="circle-btn" id="gameSettings" aria-label="Ayarlar">⚙</button></div></div>
     <div class="objective-bar"><div class="objective-card"><div class="objective-label">Hedef</div><div class="objective-value"><span class="goal-arrow" aria-hidden="true">➜</span><span id="progressTxt">0/6</span></div></div><div class="objective-card"><div class="objective-label">Hamle</div><div class="objective-value"><span>👣</span><span id="movesTxt">12</span></div></div><div class="objective-card lives-card" aria-label="Kalan can"><div class="objective-label">Can</div><div class="objective-value"><span>❤️</span><span id="livesTxt">20/20</span></div><div id="lifeTimer" class="life-timer">Canlar dolu</div></div></div>
     <div class="timer-panel" id="timerPanel" aria-label="Kalan süre"><span class="timer-face">⏱ <strong id="timerText">02:00</strong></span><div class="timer-rail"><div class="timer-fill" id="timerFill"></div></div><span class="timer-level" id="timerLevel">Süreli</span></div>
-    <div class="game-center"><div class="world-label"><span id="worldLabel">🌿 Yeşil Vadi</span><span id="difficultyLabel" class="difficulty-label">Başlangıç</span></div><div id="boardFrame" class="board-frame"><div class="corner-ornament c1"></div><div class="corner-ornament c2"></div><div class="corner-ornament c3"></div><div class="corner-ornament c4"></div><div id="gameBoard" class="game-board" role="group" aria-label="Yönlerine dokunarak okları çıkar"></div><div id="boardTouchLayer" class="board-touch-layer" aria-hidden="true"></div></div><p class="game-tip" id="gameTip">Yolu açık oka dokun, onu tahtadan çıkar!</p></div>
+    <div class="game-center"><div class="world-label"><span id="worldLabel">🌿 Yeşil Vadi</span><span id="difficultyLabel" class="difficulty-label">Başlangıç</span></div>
+    <button type="button" id="v32StageBoss" class="v32-stage-boss" hidden>👑 PATRON KAPISI</button><div id="boardFrame" class="board-frame"><div class="corner-ornament c1"></div><div class="corner-ornament c2"></div><div class="corner-ornament c3"></div><div class="corner-ornament c4"></div><div id="gameBoard" class="game-board" role="group" aria-label="Yönlerine dokunarak okları çıkar"></div><div id="boardTouchLayer" class="board-touch-layer" aria-hidden="true"></div></div><p class="game-tip" id="gameTip">Yolu açık oka dokun, onu tahtadan çıkar!</p></div>
     <div class="play-utilities"><button class="powers-strip" id="powersBtn" type="button">⚡ Güçler</button><button id="musicToggleFloat" class="music-toggle-float" type="button" aria-label="Fon müziğini aç veya kapat" aria-pressed="true" hidden>♫ Müzik Açık</button></div>
     <div class="game-bottom"><button class="btn action blue" id="undoBtn"><span class="bubble" id="undoBadge">3</span><span class="action-icon">↶</span><span>Geri Al</span></button><button class="btn action blue" id="hintBtn"><span class="bubble" id="hintBadge">3</span><span class="action-icon">💡</span><span>İpucu</span></button><button class="btn action blue" id="restartBtn"><span class="action-icon">↻</span><span>Yeniden</span></button></div>
   </section>
@@ -89,6 +92,7 @@
       <div id="v32Play" class="v32-panel" hidden>
         <div class="v32-play-top"><strong id="v32PlayTitle">Oyun</strong><span id="v32PlayClock">01:00</span></div>
         <div class="v32-play-stats"><span id="v32PlayProgress">0/0</span><span id="v32PlayPoints">0 puan</span></div>
+        <div id="v32BossHealth" class="v32-boss-health" hidden aria-live="polite">👑 PATRON · 🛡️🛡️🛡️</div>
         <div id="v32PlayMessage" class="v32-info" aria-live="polite">Açık okları doğru sırayla çıkar.</div>
         <div class="v32-board-frame">
           <div id="v32Board" class="v32-board" role="group" aria-label="Ek oyun modu tahtası"></div>
@@ -139,7 +143,8 @@
   <section id="victory" class="screen" aria-label="Bölüm tamamlandı">
     <div class="victory-rays"></div><div class="confetti" id="confetti"></div>
     <button class="circle-btn victory-home" id="victoryHome" aria-label="Ana menü">⌂</button>
-    <div class="victory-body"><div class="big-stars"><span>★</span><span>★</span><span>★</span></div><div class="ribbon"><span>Harika!</span></div><div class="reward-stone"><h2 id="victoryLevel">Seviye 1<br>Tamamlandı!</h2><div class="coin-pile"><span>🪙</span><span>🪙</span><span>🪙</span></div><div class="reward-number" id="rewardNumber">🟡 +100</div><div id="victoryRank" class="victory-rank" aria-live="polite">🏅 Çaylak</div></div><button class="btn huge green" id="continueBtn"><span class="playicon">▶</span> Devam</button><button class="btn medium blue" id="replayBtn">↻ Tekrar Oyna</button></div>
+    <div class="victory-body"><div class="big-stars"><span>★</span><span>★</span><span>★</span></div><div class="ribbon"><span>Harika!</span></div><div class="reward-stone"><h2 id="victoryLevel">Seviye 1<br>Tamamlandı!</h2><div class="coin-pile"><span>🪙</span><span>🪙</span><span>🪙</span></div><div class="reward-number" id="rewardNumber">🟡 +100</div><div id="victoryRank" class="victory-rank" aria-live="polite">🏅 Çaylak</div></div><button type="button" id="v32VictoryBoss" class="v32-victory-boss" hidden>👑 PATRON MÜCADELESİ AÇILDI! ⚔️ BAŞLA</button>
+    <button class="btn huge green" id="continueBtn"><span class="playicon">▶</span> Devam</button><button class="btn medium blue" id="replayBtn">↻ Tekrar Oyna</button></div>
   </section>
 
   <div class="modal-cover" id="modal" hidden><div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><h2 id="modalTitle">Ayarlar</h2><div id="modalContent"></div><button id="modalClose" class="btn medium blue">Kapat</button></div></div>
