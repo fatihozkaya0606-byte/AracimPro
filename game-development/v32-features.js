@@ -219,7 +219,7 @@
  }
  function restart(){
    const s=state.session;if(!s)return;
-   const opts={boss:s.boss,custom:s.custom};
+   const opts={boss:s.boss,custom:s.custom,preview:s.preview};
    begin(s.mode,opts);
  }
  function undo(){
