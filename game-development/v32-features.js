@@ -21,7 +21,8 @@
    B.show('v32');view('menu');renderMenu();
  }
  function renderMenu(){
-   const unlocked=Math.floor((Math.max(1,save.highest)-1)/10)*10;
+   const completedTop=save.completed&&save.completed[540]?540:Math.max(0,save.highest-1);
+   const unlocked=Math.floor(completedTop/10)*10;
    const sel=$('v32BossSelect');
    sel.innerHTML='';
    if(!unlocked){
@@ -53,7 +54,7 @@
  function begin(mode,options={}){
    const today=E.weekChallengeLevel(new Date());
    const boss=mode==='boss'?Number(options.boss):0;
-   if(mode==='boss' && (E.bossStages(boss).length!==3 || boss>=save.highest)){
+   if(mode==='boss' && (E.bossStages(boss).length!==3 || (boss>=save.highest&&!(boss===540&&save.completed&&save.completed[540])))){
      B.toast('Bu patron henüz açılmadı.');return;
    }
    let custom=null;
