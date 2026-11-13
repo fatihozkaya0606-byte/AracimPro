@@ -54,7 +54,8 @@
  function begin(mode,options={}){
    const today=E.weekChallengeLevel(new Date());
    const boss=mode==='boss'?Number(options.boss):0;
-   if(mode==='boss' && (E.bossStages(boss).length!==3 || (boss>=save.highest&&!(boss===540&&save.completed&&save.completed[540])))){
+   const preview=mode==='boss'&&options.preview===true&&boss===20;
+   if(mode==='boss' && (E.bossStages(boss).length!==3 || (!preview&&boss>=save.highest&&!(boss===540&&save.completed&&save.completed[540])))){
      B.toast('Bu patron henüz açılmadı.');return;
    }
    let custom=null;
@@ -65,7 +66,7 @@
    const stageNumbers=mode==='boss'?E.bossStages(boss):mode==='weekly'?[today.level]:mode==='speed'?[1]:[0];
    const totalMs=mode==='speed'?60000:mode==='weekly'?240000:mode==='boss'?480000:Infinity;
    state.session={
-     mode,boss,week:today.week,custom,stageNumbers,stageIndex:0,
+     mode,boss,week:today.week,custom,preview,stageNumbers,stageIndex:0,
      score:0,cleared:0,mistakes:0,undoUsed:0,history:[],health:mode==='boss'?3:0,shield:mode==='boss'?3:0,
      remaining:totalMs,totalMs,done:false,stage:null,
      pieces:[],title:mode==='speed'?'⚡ 60 Saniye Kaçış':mode==='weekly'?'🏆 Haftalık Meydan Okuma':mode==='boss'?'👑 Patron '+boss:'🧩 Kendi Bulmacan'
@@ -190,7 +191,9 @@
      }else message='🏆 Süre bitti. Haftalık bulmacayı tekrar deneyebilirsin.';
    }
    if(s.mode==='boss'){
-     if(won){
+     if(won&&s.preview){
+       message='🧪 20. Seviye Patron TEST tamamlandı! Ana bölüm ilerlemen ve altının değişmedi.';
+     }else if(won){
        const already=!!save.v32BossWins[s.boss];
        save.v32BossWins[s.boss]=true;
        if(!already){const reward=Math.min(1000,200+s.boss*2);B.addCoins(reward);message='👑 Patron yenildi! +'+reward+' altın';}
@@ -345,6 +348,7 @@
    else hub();
  };
  $('v32BossStart').onclick=()=>begin('boss',{boss:Number($('v32BossSelect').value)});
+ $('v32Preview20').onclick=()=>begin('boss',{boss:20,preview:true});
  $('v32SpeedStart').onclick=()=>begin('speed');
  $('v32WeekStart').onclick=()=>begin('weekly');
  $('v32EditorOpen').onclick=showEditor;
