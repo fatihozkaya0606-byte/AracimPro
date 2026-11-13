@@ -89,7 +89,7 @@ test('editor, catalog, map and local-only tournament views are wired to UI eleme
  assert.match(ui,/B\.openShopSkins/);
  assert.match(html,/kişisel rekordur/);
  for(const skin of ['ice','lava','diamond'])assert.match(game,new RegExp("id:'"+skin+"'"));
- assert.match(css,/#playing\.skin-diamond/);
+ assert.match(css,/#app\.skin-diamond #playing/);
 });
 test('V31 save, direct touch, 540 stages, ranks and advertising policy are unchanged',()=>{
  assert.match(game,/localStorage\.getItem\('ok-kacis-v1'/);
