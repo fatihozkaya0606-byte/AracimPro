@@ -22,20 +22,20 @@
  }
  function renderMenu(){
    const completedTop=save.completed&&save.completed[540]?540:Math.max(0,save.highest-1);
-   const unlocked=Math.floor(completedTop/10)*10;
+   const unlocked=Math.floor(completedTop/5)*5;
    const sel=$('v32BossSelect');
    sel.innerHTML='';
    if(!unlocked){
-     sel.innerHTML='<option value="0">Önce Seviye 10</option>';
+     sel.innerHTML='<option value="0">Önce Seviye 5</option>';
    }else{
-     for(let i=10;i<=unlocked;i+=10){
+     for(let i=5;i<=unlocked;i+=5){
        const o=document.createElement('option');
        o.value=i;o.textContent='👑 Seviye '+i+(save.v32BossWins[i]?' ✓':'');
        if(i===unlocked)o.selected=true;
        sel.appendChild(o);
      }
    }
-   $('v32BossStart').disabled=unlocked<10;
+   $('v32BossStart').disabled=unlocked<5;
    $('v32SpeedBest').textContent='En iyi: '+save.v32SpeedBest+' puan';
    const week=E.weekChallengeLevel(new Date());
    const previous=save.v32Weekly.week===week.week?Number(save.v32Weekly.best)||0:0;
@@ -295,20 +295,20 @@
  // V32.1: Campaign-level visibility, not a hidden menu-only feature.
  function completedBossTop(){
    const last=save.completed&&save.completed[540]?540:Math.max(0,Math.min(540,Number(save.highest||1)-1));
-   return Math.floor(last/10)*10;
+   return Math.floor(last/5)*5;
  }
  function onCampaignLevels(){
    const top=completedBossTop(),button=$('v32LevelBoss');
    if(!button)return;
    button.hidden=false;
-   button.classList.toggle('v32-boss-ready',top>=10);
-   button.textContent=top>=10?
-     '👑 PATRON '+top+' HAZIR! ⚔️ OYNA  · Sonraki: '+Math.min(540,top+10):
-     '👑 İLK PATRON: SEVİYE 10’U TAMAMLA';
-   button.onclick=()=>top>=10?begin('boss',{boss:top}):B.toast('10. bölüm tamamlanınca ilk patron açılacak.');
+   button.classList.toggle('v32-boss-ready',top>=5);
+   button.textContent=top>=5?
+     '👑 PATRON '+top+' HAZIR! ⚔️ OYNA  · Sonraki: '+Math.min(540,top+5):
+     '👑 İLK PATRON: SEVİYE 5’İ TAMAMLA';
+   button.onclick=()=>top>=5?begin('boss',{boss:top}):B.toast('5. bölüm tamamlanınca ilk patron açılacak.');
  }
  function onCampaignStart(n){
-   const bossLevel=n%10===0&&n>=10;
+   const bossLevel=n>=5&&n%5===0;
    const panel=$('v32StageBoss'),playing=$('playing');
    playing.classList.toggle('v32-boss-stage',bossLevel);
    panel.hidden=!bossLevel;
@@ -321,7 +321,7 @@
    if(tip && !open)tip.textContent='👑 Patron kapısı! Bu seviyeyi tamamla; üç aşamalı mücadele açılsın.';
  }
  function onCampaignVictory(n){
-   const bossLevel=n>=10&&n%10===0,btn=$('v32VictoryBoss');
+   const bossLevel=n>=5&&n%5===0,btn=$('v32VictoryBoss');
    if(!btn)return;
    btn.hidden=!bossLevel;
    if(!bossLevel)return;
@@ -329,7 +329,7 @@
    btn.onclick=()=>begin('boss',{boss:n});
  }
  $('v32LevelBoss').onclick=onCampaignLevels;
- $('v32StageBoss').onclick=()=>B.toast('Patron kapısı her 10. seviyede açılır.');
+ $('v32StageBoss').onclick=()=>B.toast('Patron kapısı her 5. seviyede açılır.');
  $('v32VictoryBoss').onclick=hub;
  window.__okKacisV32Live={onCampaignLevels,onCampaignStart,onCampaignVictory,openBoss:(n)=>begin('boss',{boss:n}),hub,completedBossTop};
 

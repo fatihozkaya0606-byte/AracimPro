@@ -105,7 +105,7 @@ test('level 20 now shows boss gate during campaign, unlocks on victory and launc
  t.save.highest=20;
  t.live.onCampaignLevels();
  assert.equal(t.get('v32LevelBoss').hidden,false);
- assert.match(t.get('v32LevelBoss').textContent,/PATRON 10 HAZIR/);
+ assert.match(t.get('v32LevelBoss').textContent,/PATRON 15 HAZIR/);
  t.live.onCampaignStart(20);
  assert.equal(t.get('v32StageBoss').hidden,false);
  assert.equal(t.get('playing').classList.contains('v32-boss-stage'),true);
@@ -148,4 +148,42 @@ test('boss shield breaks every stage; three blocked attacks cause loss instead o
  assert.equal(t.api.getState().mode,null);
  assert.match(t.get('v32Result').textContent,/geçilemedi/);
  assert.equal(t.save.v32BossWins[20],undefined);
+});
+
+test('5, 10, 15, 20 and 25: each fifth campaign level has a visible boss gate and direct victory CTA',()=>{
+ const t=harness();
+ for(const level of [5,10,15,20,25,50,100,540]){
+   t.save.highest=level;
+   t.live.onCampaignStart(level);
+   assert.equal(t.get('v32StageBoss').hidden,false,'No boss gate on '+level);
+   assert.equal(t.get('playing').classList.contains('v32-boss-stage'),true);
+   t.save.highest=level===540?540:level+1;
+   if(level===540)t.save.completed[540]=3;
+   t.live.onCampaignVictory(level);
+   assert.equal(t.get('v32VictoryBoss').hidden,false,'Victory has no boss on '+level);
+   assert.match(t.get('v32VictoryBoss').textContent,new RegExp('SEVİYE '+level+' PATRONU'));
+ }
+ for(const level of [1,4,6,9,11,19,21,26,539]){
+   t.live.onCampaignStart(level);
+   assert.equal(t.get('v32StageBoss').hidden,true,'Unexpected boss stage '+level);
+   t.live.onCampaignVictory(level);
+   assert.equal(t.get('v32VictoryBoss').hidden,true,'Unexpected boss victory '+level);
+ }
+});
+test('first boss unlocks after completing fifth level and has three stages with one-time gold',()=>{
+ const t=harness();
+ t.save.highest=5;
+ t.live.onCampaignLevels();
+ assert.match(t.get('v32LevelBoss').textContent,/İLK PATRON/);
+ t.save.highest=6;t.save.completed[5]=3;
+ t.live.onCampaignLevels();
+ assert.match(t.get('v32LevelBoss').textContent,/PATRON 5 HAZIR/);
+ t.get('v32LevelBoss').onclick();
+ assert.equal(t.api.getState().mode,'boss');
+ for(let step=0;step<9;step++)t.press(...[[0,0],[2,2],[4,4]][step%3]);
+ assert.equal(t.save.v32BossWins[5],true);
+ assert.equal(t.save.coins,2710);
+ t.get('v32LevelBoss').onclick();
+ for(let step=0;step<9;step++)t.press(...[[0,0],[2,2],[4,4]][step%3]);
+ assert.equal(t.save.coins,2710);
 });

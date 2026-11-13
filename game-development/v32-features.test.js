@@ -56,10 +56,14 @@ test('540 levels map to 27 ordered islands matching every 20-level world',()=>{
  }
 });
 test('bosses unlock every ten levels and require three consecutive puzzle stages',()=>{
+ assert.deepEqual(Engine.bossStages(5),[3,4,5]);
  assert.deepEqual(Engine.bossStages(10),[8,9,10]);
+ assert.deepEqual(Engine.bossStages(15),[13,14,15]);
  assert.deepEqual(Engine.bossStages(20),[18,19,20]);
  assert.deepEqual(Engine.bossStages(540),[538,539,540]);
  assert.deepEqual(Engine.bossStages(11),[]);
+ assert.deepEqual(Engine.bossStages(4),[]);
+ for(let level=1;level<=540;level++)assert.equal(Engine.bossStages(level).length,level%5===0?3:0,'boss cadence at '+level);
  assert.deepEqual(Engine.bossStages(0),[]);
 });
 test('speed, boss, weekly and custom modes are playable, have direct touch, clock and result updates',()=>{

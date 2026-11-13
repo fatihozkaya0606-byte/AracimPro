@@ -87,7 +87,7 @@
  }
  function bossStages(bossLevel){
    const n=Math.floor(Number(bossLevel));
-   if(n<10||n>540||n%10)return [];
+   if(n<5||n>540||n%5!==0)return [];
    return [Math.max(1,n-2),n-1,n];
  }
  function mapIslands(){
