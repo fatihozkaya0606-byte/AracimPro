@@ -4,7 +4,7 @@
   const MAX_LIVES = 20, LIFE_REGEN_MS = 2 * 60 * 1000;
   const SIZE = 9, TOTAL_LEVELS = 540, COLORS = ['red','green','orange','purple','yellow','blue'];
   const WORLDS=[{id:'forest',name:'🌿 Yeşil Vadi',emoji:'🌲'},{id:'desert',name:'🏜️ Altın Çöl',emoji:'🌵'},{id:'snow',name:'❄️ Buz Tepeleri',emoji:'❄️'},{id:'sunset',name:'🌅 Günbatımı',emoji:'🌅'},{id:'neon',name:'🌌 Neon Evren',emoji:'💜'}];
-  const SKINS=[{id:'classic',name:'Klasik Parlak',icon:'🌈',price:0},{id:'crystal',name:'Kristal Ok',icon:'💎',price:850},{id:'metal',name:'Altın Ok',icon:'🏆',price:1200},{id:'neon',name:'Neon Ok',icon:'⚡',price:1800},{id:'candy',name:'Şeker Ok',icon:'🍬',price:2400}];
+  const SKINS=[{id:'classic',name:'Klasik Parlak',icon:'🌈',price:0},{id:'crystal',name:'Kristal Ok',icon:'💎',price:850},{id:'metal',name:'Altın Ok',icon:'🏆',price:1200},{id:'neon',name:'Neon Ok',icon:'⚡',price:1800},{id:'candy',name:'Şeker Ok',icon:'🍬',price:2400},{id:'ice',name:'Buz Ok',icon:'❄️',price:2600},{id:'lava',name:'Lav Ok',icon:'🌋',price:2900},{id:'diamond',name:'Elmas Ok',icon:'💠',price:3500}];
   const THEME_PRICES={auto:0,forest:0,desert:900,snow:1100,sunset:1500,neon:2000};
 
   // V31: one permanent player rank for every completed milestone. Independent
@@ -1131,6 +1131,22 @@
   window.addEventListener('keydown',e=>{if(e.key==='Escape'||e.key==='Backspace'){e.preventDefault();back()}});
   // Diagnostic hook used only by offline browser tests.
   window.__okKacisTest={makeLevel,freeExit,occupancy,difficulty,availableCount,mechanicsForLevel,canRemoveArrow,mechanicReason,verifyLevelSolution,rankForLevel,rankProgress,playerRank,ranks:RANKS,levels:TOTAL_LEVELS,getState:()=>({screen,currentLevel,mistakesUsed,movesLeft,timeRemainingMs,initialTimeMs,pieces:[...pieces],rocks:levelData?.rocks||[],save,lostThisRun,revivesUsed}),startLevel,show,refreshLives,consumeLife,updateLifeUI,failLevel,completeLevel,secondsForLevel,tickTimer,addTime,usePower,useRevive,showPowers,claimableQuests:()=>QUESTS.filter(q=>(save.dailyQuests[q.id]||0)>=q.goal&&!save.dailyQuests.claimed[q.id])};
+  // V32 extension bridge: additive-only feature access, preserving the save key
+  // and all original 540-level rules and V25 direct-touch input handlers.
+  window.__okKacisV32Bridge={
+    save,
+    persist,
+    makeLevel,
+    canRemoveArrow,
+    levelWorld,
+    show,
+    openShopSkins:()=>{selectedShopTab='skins';openShop();},
+    openLevelPage:(n)=>{page=Math.floor((Math.max(1,Math.min(TOTAL_LEVELS,n))-1)/12);show('levels');},
+    maxLevel:TOTAL_LEVELS,
+    addCoins:(amount)=>{const value=Math.max(0,Math.min(10000,Math.floor(Number(amount)||0)));save.coins+=value;persist();updateHome();return value;},
+    sound:playSound,
+    toast
+  };
   show('home');
   launchIntro();
 })();
