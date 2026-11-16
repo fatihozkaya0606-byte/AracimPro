@@ -102,10 +102,10 @@ jobs:
             sleep 2
             adb shell pidof com.okkacis.game | tee smoke-results/back-pid.txt
             adb logcat -d -v time > smoke-results/logcat.txt
-            if grep -Eq 'FATAL EXCEPTION|Process: com.okkacis.game' smoke-results/logcat.txt; then
-              echo 'Android runtime crash found; inspect logcat artifact'
-              exit 1
-            fi
+            cmp -s smoke-results/launch-pid.txt smoke-results/navigation-pid.txt
+            cmp -s smoke-results/launch-pid.txt smoke-results/back-pid.txt
+            ! grep -Eq 'Process: com.okkacis.game' smoke-results/logcat.txt
+            python3 -c 'from PIL import Image; im=Image.open("smoke-results/after-tap.png").convert("RGB").resize((160,320)); n=len(set(im.getdata())); print("Screen colors:",n); assert n>50, "Game did not render beyond a flat screen"'
       - name: Save screenshots and launch logs
         if: always()
         uses: actions/upload-artifact@v4
