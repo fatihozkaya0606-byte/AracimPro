@@ -16,13 +16,17 @@
   if(save.lifeSystemVersion!==1){save.lives=MAX_LIVES;save.nextLifeAt=0;save.lifeSystemVersion=1;}
   save.lives=Math.max(0,Math.min(MAX_LIVES,Number.isFinite(Number(save.lives))?Math.floor(Number(save.lives)):MAX_LIVES));
   save.nextLifeAt=Number.isFinite(Number(save.nextLifeAt))?Math.max(0,Number(save.nextLifeAt)):0;
-  save.completed = save.completed || {};
+  // Old installations can contain incomplete or obsolete save fields. Keep
+  // valid progress, but never let a bad preference blank the launch screen.
+  save.highest=Math.max(1,Math.min(TOTAL_LEVELS,Math.floor(Number(save.highest)||1)));
+  save.completed = save.completed && typeof save.completed==='object' && !Array.isArray(save.completed) ? save.completed : {};
   save.ownedSkins = Array.isArray(save.ownedSkins)?save.ownedSkins:['classic'];
   save.ownedThemes = Array.isArray(save.ownedThemes)?save.ownedThemes:['auto','forest'];
-  save.dailyQuests = save.dailyQuests || {};
-  save.claimedAchievements = save.claimedAchievements || {};
+  save.dailyQuests = save.dailyQuests && typeof save.dailyQuests==='object' && !Array.isArray(save.dailyQuests) ? save.dailyQuests : {};
+  save.claimedAchievements = save.claimedAchievements && typeof save.claimedAchievements==='object' && !Array.isArray(save.claimedAchievements) ? save.claimedAchievements : {};
+  if(save.selectedTheme!=='auto'&&!WORLDS.some(w=>w.id===save.selectedTheme))save.selectedTheme='auto';
+  if(!SKINS.some(s=>s.id===save.selectedSkin))save.selectedSkin='classic';
   for(const k of ['powerMoves','powerTime','powerUnlock','powerAuto','powerRevive'])save[k]=Math.max(0,Math.min(9999,Math.floor(Number(save[k])||0))); 
-  if(save.highest>TOTAL_LEVELS)save.highest=TOTAL_LEVELS;
   const TODAY=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
   function ensureDaily(){const d=TODAY();if(save.dailyQuests.date!==d){save.dailyQuests={date:d,arrows:0,wins:0,perfect:0,claimed:{}};persist();}}
   function vibrate(pattern){if(save.vibrate&&navigator.vibrate){try{navigator.vibrate(pattern)}catch(_){}}}
@@ -525,7 +529,7 @@
       el.classList.toggle('locked-piece',locked);
       el.classList.toggle('hinted',p.id===hintId);
       const badge=el.querySelector('.lock-icon');
-      if(locked && !badge)el.querySelector('.piece-inner')?.insertAdjacentHTML('beforeend','<span class="lock-icon">🔒</span>');
+      if(locked && !badge){const inner=el.querySelector('.piece-inner');if(inner)inner.insertAdjacentHTML('beforeend','<span class="lock-icon">🔒</span>');}
       if(!locked && badge)badge.remove();
     });
     $('undoBadge').textContent=String(save.undos);
@@ -733,7 +737,7 @@
   $('powersBtn').onclick=showPowers;
   window.addEventListener('keydown',e=>{if(e.key==='Escape'||e.key==='Backspace'){e.preventDefault();back()}});
   // Diagnostic hook used only by offline browser tests.
-  window.__okKacisTest={makeLevel,freeExit,occupancy,difficulty,availableCount,levels:TOTAL_LEVELS,getState:()=>({screen,currentLevel,mistakesUsed,movesLeft,timeRemainingMs,initialTimeMs,pieces:[...pieces],rocks:levelData?.rocks||[],save,lostThisRun,revivesUsed}),startLevel,show,refreshLives,consumeLife,updateLifeUI,failLevel,completeLevel,secondsForLevel,tickTimer,addTime,usePower,useRevive,showPowers,claimableQuests:()=>QUESTS.filter(q=>(save.dailyQuests[q.id]||0)>=q.goal&&!save.dailyQuests.claimed[q.id])};
+  window.__okKacisTest={makeLevel,freeExit,occupancy,difficulty,availableCount,levels:TOTAL_LEVELS,getState:()=>({screen,currentLevel,mistakesUsed,movesLeft,timeRemainingMs,initialTimeMs,pieces:[...pieces],rocks:levelData?levelData.rocks||[]:[],save,lostThisRun,revivesUsed}),startLevel,show,refreshLives,consumeLife,updateLifeUI,failLevel,completeLevel,secondsForLevel,tickTimer,addTime,usePower,useRevive,showPowers,claimableQuests:()=>QUESTS.filter(q=>(save.dailyQuests[q.id]||0)>=q.goal&&!save.dailyQuests.claimed[q.id])};
   show('home');
   launchIntro();
 })();
