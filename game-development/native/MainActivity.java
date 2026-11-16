@@ -3,7 +3,9 @@ package com.okkacis.game;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
+import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -14,6 +16,8 @@ import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.Button;
+import android.widget.TextView;
 
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
@@ -34,6 +38,8 @@ import com.google.android.ump.UserMessagingPlatform;
  * Yandex is not enabled for child/unknown-age users.
  */
 public final class MainActivity extends Activity {
+    private static final String TAG = "OkKacis";
+    private static int rendererRecoveries = 0;
     // Google's official development/test IDs. Never ship these for monetization.
     private static final String TEST_BANNER_ID = "ca-app-pub-3940256099942544/9214589741";
 
@@ -58,10 +64,15 @@ public final class MainActivity extends Activity {
         @JavascriptInterface
         public void showPrivacyOptions() {
             runOnUiThread(() -> {
-                if (consentInformation != null &&
-                        consentInformation.getPrivacyOptionsRequirementStatus()
-                          == ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED) {
-                    UserMessagingPlatform.showPrivacyOptionsForm(MainActivity.this, error -> {});
+                if (isFinishing() || isDestroyed()) return;
+                try {
+                    if (consentInformation != null &&
+                            consentInformation.getPrivacyOptionsRequirementStatus()
+                              == ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED) {
+                        UserMessagingPlatform.showPrivacyOptionsForm(MainActivity.this, error -> {});
+                    }
+                } catch (RuntimeException error) {
+                    Log.w(TAG, "Privacy options unavailable; the game stays playable", error);
                 }
             });
         }
@@ -85,56 +96,77 @@ public final class MainActivity extends Activity {
     }
 
     private void loadBanner() {
-        if (bannerContainer == null) return;
-        banner = new AdView(this);
-        banner.setAdUnitId(TEST_BANNER_ID);
-        int dpWidth = (int) (getResources().getDisplayMetrics().widthPixels /
-                getResources().getDisplayMetrics().density);
-        // Anchored adaptive banner remains outside the 9x9 WebView board.
-        banner.setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, Math.max(320, dpWidth)));
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT,
-                Gravity.CENTER);
-        bannerContainer.addView(banner, params);
-        banner.setAdListener(new AdListener() {
-            @Override public void onAdLoaded() {
-                bannerLoaded = true;
-                refreshBannerVisibility();
-            }
-            @Override public void onAdFailedToLoad(LoadAdError error) {
-                bannerLoaded = false;
-                refreshBannerVisibility();
-            }
-        });
-        banner.loadAd(new AdRequest.Builder().build());
+        if (bannerContainer == null || banner != null || isFinishing() || isDestroyed()) return;
+        try {
+            banner = new AdView(this);
+            banner.setAdUnitId(TEST_BANNER_ID);
+            int dpWidth = (int) (getResources().getDisplayMetrics().widthPixels /
+                    getResources().getDisplayMetrics().density);
+            // Keep ads separate from the game board; ad failure must not stop play.
+            banner.setAdSize(AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, Math.max(320, dpWidth)));
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT,
+                    Gravity.CENTER);
+            bannerContainer.addView(banner, params);
+            banner.setAdListener(new AdListener() {
+                @Override public void onAdLoaded() {
+                    bannerLoaded = true;
+                    refreshBannerVisibility();
+                }
+                @Override public void onAdFailedToLoad(LoadAdError error) {
+                    bannerLoaded = false;
+                    refreshBannerVisibility();
+                }
+            });
+            banner.loadAd(new AdRequest.Builder().build());
+        } catch (RuntimeException error) {
+            Log.w(TAG, "Banner failed; continuing the offline game", error);
+            bannerLoaded = false;
+            if (banner != null) { banner.destroy(); banner = null; }
+            bannerContainer.removeAllViews();
+            refreshBannerVisibility();
+        }
     }
 
     private void initializeAdsIfAllowed() {
-        if (adsInitialized || consentInformation == null || !consentInformation.canRequestAds()) return;
-        adsInitialized = true;
-        MobileAds.setRequestConfiguration(new RequestConfiguration.Builder()
-            .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
-            .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
-            .setMaxAdContentRating(RequestConfiguration.MAX_AD_CONTENT_RATING_G)
-            .build());
-        MobileAds.initialize(this, status -> runOnUiThread(() -> {
-            if (isFinishing() || isDestroyed()) return;
-            loadBanner();
-        }));
+        if (adsInitialized || consentInformation == null || isFinishing() || isDestroyed()) return;
+        try {
+            if (!consentInformation.canRequestAds()) return;
+            adsInitialized = true;
+            MobileAds.setRequestConfiguration(new RequestConfiguration.Builder()
+                .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+                .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+                .setMaxAdContentRating(RequestConfiguration.MAX_AD_CONTENT_RATING_G)
+                .build());
+            MobileAds.initialize(this, status -> runOnUiThread(() -> {
+                if (!isFinishing() && !isDestroyed()) loadBanner();
+            }));
+        } catch (RuntimeException error) {
+            Log.w(TAG, "Ad SDK unavailable; continuing the offline game", error);
+        }
     }
 
     private void requestConsentAndInitialize() {
-        consentInformation = UserMessagingPlatform.getConsentInformation(this);
-        ConsentRequestParameters params = new ConsentRequestParameters.Builder().build();
-        consentInformation.requestConsentInfoUpdate(
-            this, params,
-            () -> {
-                UserMessagingPlatform.loadAndShowConsentFormIfRequired(
-                    MainActivity.this, formError -> initializeAdsIfAllowed());
-                initializeAdsIfAllowed();
-            },
-            requestError -> initializeAdsIfAllowed()
-        );
+        try {
+            consentInformation = UserMessagingPlatform.getConsentInformation(this);
+            ConsentRequestParameters params = new ConsentRequestParameters.Builder().build();
+            consentInformation.requestConsentInfoUpdate(
+                this, params,
+                () -> runOnUiThread(() -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    try {
+                        UserMessagingPlatform.loadAndShowConsentFormIfRequired(
+                            MainActivity.this, formError -> initializeAdsIfAllowed());
+                    } catch (RuntimeException error) {
+                        Log.w(TAG, "Consent form unavailable", error);
+                    }
+                    initializeAdsIfAllowed();
+                }),
+                requestError -> runOnUiThread(this::initializeAdsIfAllowed)
+            );
+        } catch (RuntimeException error) {
+            Log.w(TAG, "Consent SDK unavailable; continuing the offline game", error);
+        }
     }
 
     @Override public void onCreate(Bundle saved) {
@@ -176,6 +208,35 @@ public final class MainActivity extends Activity {
                 pageLoaded = true;
                 // Only an anchored banner at bottom of parent; no full-screen ads.
             }
+            @Override public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+                // An Android WebView renderer can be killed on low-memory devices.
+                // The default WebViewClient crashes the entire app in this case.
+                Log.w(TAG, "Game renderer exited; restarting the offline view");
+                pageLoaded = false;
+                if (view.getParent() instanceof android.view.ViewGroup) {
+                    ((android.view.ViewGroup) view.getParent()).removeView(view);
+                }
+                view.destroy();
+                if (game == view) game = null;
+                if (++rendererRecoveries <= 2) {
+                    recreate();
+                } else {
+                    LinearLayout retry = new LinearLayout(MainActivity.this);
+                    retry.setOrientation(LinearLayout.VERTICAL);
+                    retry.setGravity(Gravity.CENTER);
+                    TextView message = new TextView(MainActivity.this);
+                    message.setText("Oyun geçici olarak durdu. Kayıtların korunuyor.");
+                    message.setTextColor(Color.WHITE);
+                    retry.addView(message);
+                    Button button = new Button(MainActivity.this);
+                    button.setText("Oyunu tekrar aç");
+                    button.setOnClickListener(v -> { rendererRecoveries = 0; recreate(); });
+                    retry.addView(button);
+                    ((LinearLayout) bannerContainer.getParent()).addView(retry, 0,
+                            new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1));
+                }
+                return true;
+            }
         });
         root.addView(game, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 0, 1));
@@ -192,7 +253,10 @@ public final class MainActivity extends Activity {
     }
 
     @Override public void onBackPressed() {
-        if (game != null) game.evaluateJavascript("window.gameBack && window.gameBack()", null);
+        if (game != null) {
+            try { game.evaluateJavascript("window.gameBack && window.gameBack()", null); }
+            catch (RuntimeException error) { Log.w(TAG, "Back navigation ignored during renderer recovery", error); }
+        }
         else super.onBackPressed();
     }
     @Override protected void onPause() {
