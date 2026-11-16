@@ -89,6 +89,7 @@ jobs:
             set -euo pipefail
             mkdir -p smoke-results
             adb install -r smoke-src/OkKacis/app/build/outputs/apk/debug/app-debug.apk
+            adb shell settings put secure immersive_mode_confirmations confirmed
             adb logcat -c
             adb shell am start -W -n com.okkacis.game/.MainActivity
             sleep 10
@@ -105,6 +106,7 @@ jobs:
             cmp -s smoke-results/launch-pid.txt smoke-results/navigation-pid.txt
             cmp -s smoke-results/launch-pid.txt smoke-results/back-pid.txt
             ! grep -Eq 'Process: com.okkacis.game' smoke-results/logcat.txt
+            python3 -c 'from PIL import Image; im=Image.open("smoke-results/home.png").convert("RGB").resize((160,320)); n=len(set(im.getdata())); print("Home screen colors:",n); assert n>50, "Home screen did not render"'
             python3 -c 'from PIL import Image; im=Image.open("smoke-results/after-tap.png").convert("RGB").resize((160,320)); n=len(set(im.getdata())); print("Screen colors:",n); assert n>50, "Game did not render beyond a flat screen"'
       - name: Save screenshots and launch logs
         if: always()
