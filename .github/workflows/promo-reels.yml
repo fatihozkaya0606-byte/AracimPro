@@ -1,0 +1,56 @@
+name: Aracim Pro Free Reels MP4
+
+on:
+  push:
+    branches:
+      - promo-aracimpro-reels-20261117
+    paths:
+      - promo/create_reels.py
+      - .github/workflows/promo-reels.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  render-reels:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout isolated video branch
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install free media tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-dejavu-core
+          python -m pip install --disable-pip-version-check pillow requests qrcode numpy edge-tts gTTS
+
+      - name: Create authentic Aracim Pro Reels
+        run: python promo/create_reels.py
+
+      - name: Verify video file
+        run: |
+          test -s promo/video/AracimPro_Reels_27s.mp4
+          ffprobe -v error -show_entries format=duration,size -of default=noprint_wrappers=1 promo/video/AracimPro_Reels_27s.mp4
+          ffprobe -v error -select_streams v:0 -show_entries stream=width,height,codec_name -of default=noprint_wrappers=1 promo/video/AracimPro_Reels_27s.mp4
+
+      - name: Publish MP4 to this isolated branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f promo/video/AracimPro_Reels_27s.mp4
+          git commit -m "Publish free Aracim Pro Reels MP4"
+          git push origin HEAD:promo-aracimpro-reels-20261117
+
+      - name: Keep a backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AracimPro-Reels-MP4
+          path: promo/video/AracimPro_Reels_27s.mp4
+          retention-days: 7
