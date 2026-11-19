@@ -1,4 +1,7 @@
 name: Nur Rehberi Ezan Test APK
+permissions:
+  contents: read
+  actions: read
 on:
   push:
     branches:
@@ -191,6 +194,7 @@ jobs:
           print('Featured live MP3 streams tested:',len(verified),'/',len(ids))
           PY
       - name: Build offline licensed adhan audio assets
+        if: github.ref != 'refs/heads/nur-mektebi-osmanlica-test'
         shell: bash
         run: |
           set -euo pipefail
@@ -227,6 +231,29 @@ jobs:
           ffmpeg -nostdin -v error -y -ss 00:00:18 -i mecca_2013.webm -t 14 -vn -ac 1 -ar 44100 -c:a libmp3lame -b:a 96k "$GITHUB_WORKSPACE/nur-rehberi/app/src/main/res/raw/ezan_notify.mp3"
           test "$(stat -c%s "$GITHUB_WORKSPACE/nur-rehberi/app/src/main/res/raw/ezan_notify.mp3")" -gt 20000
                     ls -lh "$out"/*.mp3
+      - name: Reuse verified adhan files from previous successful APK
+        if: github.ref == 'refs/heads/nur-mektebi-osmanlica-test'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          scratch="$(mktemp -d)"
+          gh run download 42496335460 --repo "$GITHUB_REPOSITORY" \
+            --name NurRehberi-3D-v1.6-Hafizlar --dir "$scratch"
+          test -f "$scratch/app-debug.apk"
+          audio="$GITHUB_WORKSPACE/nur-rehberi/app/src/main/assets/audio"
+          raw="$GITHUB_WORKSPACE/nur-rehberi/app/src/main/res/raw"
+          mkdir -p "$audio" "$raw"
+          for name in aaqib_azeez beautiful_adhan mecca_2012 mecca_2013; do
+            unzip -p "$scratch/app-debug.apk" "assets/audio/$name.mp3" > "$audio/$name.mp3"
+            test "$(stat -c%s "$audio/$name.mp3")" -gt 100000
+            if command -v ffprobe >/dev/null; then
+              ffprobe -v error -show_entries format=duration -of default=nokey=1:noprint_wrappers=1 "$audio/$name.mp3"
+            fi
+          done
+          unzip -p "$scratch/app-debug.apk" res/raw/ezan_notify.mp3 > "$raw/ezan_notify.mp3"
+          test "$(stat -c%s "$raw/ezan_notify.mp3")" -gt 20000
       - name: Build debug APK
         run: gradle -p nur-rehberi :app:assembleDebug --stacktrace --no-daemon
       - name: Upload test APK
