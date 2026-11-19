@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - nur-rehberi-ezan
+      - nur-mektebi-osmanlica-test
     paths:
       - 'nur-rehberi/**'
       - '.github/workflows/nur-rehberi-ezan.yml'
@@ -42,6 +43,8 @@ jobs:
           grep -q 'nrCuratedDetails' nur-rehberi/app/src/main/assets/premium_hafiz.js
           grep -q 'nrSadienExpanded' nur-rehberi/app/src/main/assets/premium_hafiz.js
           node --check nur-rehberi/app/src/main/assets/book_reader.js
+          node --check nur-rehberi/app/src/main/assets/ottoman_script.js
+          node nur-rehberi/tests/ottoman_script.test.cjs
           grep -q 'book_reader.js' nur-rehberi/app/src/main/assets/index.html
           python3 - <<'PY'
           import pathlib,re

@@ -93,6 +93,12 @@
 .nr-guide-page{min-height:360px;padding:26px 20px!important;background:linear-gradient(135deg,#fffaf0,#f5e5c6 72%,#e9c992)!important}
 .nr-guide-page h2{margin:12px 0 20px;font:700 25px/1.25 Georgia,serif;color:#164f38}
 .nr-guide-page>p{font:17px/1.85 Georgia,serif;color:#2e4130;text-align:left;margin:17px 0;overflow-wrap:anywhere}
+.nr-script-switch{display:flex;gap:6px;margin:14px 0 10px;padding:5px;background:#0b382a;border:1px solid #bd9960;border-radius:15px}
+.nr-script-switch button{flex:1;min-width:0;padding:12px 7px;border:1px solid transparent;border-radius:11px;background:transparent;color:#e4c995;font:700 12px/1.4 system-ui,sans-serif}
+.nr-script-switch button.active{background:linear-gradient(#fff2cf,#dec38f);color:#184532;border-color:#eacb93;box-shadow:0 3px 0 #7d582b}
+.nr-script-disclaimer{margin:10px 0 17px;color:#edd7a4;background:#244c3b;border-left:3px solid #d1a65c;border-radius:8px;padding:11px 13px;font:12px/1.6 system-ui,sans-serif}
+.nr-guide-page .nr-ottoman-text,.nr-tafsir-sheet .nr-ottoman-text{direction:rtl;text-align:right;font-family:"Noto Naskh Arabic","Noto Sans Arabic","Amiri",serif;font-size:26px;line-height:2.15;word-break:normal;overflow-wrap:break-word}
+.nr-guide-page h2.nr-ottoman-text{font-size:30px;line-height:1.9}
 .nr-guide-page>small{display:block;font:11px/1.65 system-ui,sans-serif;color:#786243;border-top:1px solid #d1bc8a;padding-top:12px;margin-top:22px}
 .nr-guide-number{color:#a47837;font:700 12px system-ui,sans-serif;letter-spacing:1px;text-align:center}
 .nr-similar-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0}

@@ -45,6 +45,7 @@ function nrTafsirControls(){
 function tefsirKitap(){
  main.innerHTML=nrTop('📖','Tefsir Kitaplığı','Uygulama içinde sayfa sayfa oku')+nrTafsirActions()+
  '<div class="nr-note">Türkçe tefsir metni yayıncı kaynaklarından internet üzerinden yüklenir; kitap sayfası gibi uygulamanın içinde görüntülenir. Bunlar Diyanet’in telifli tefsiri değil, adları gösterilen farklı tefsirlerdir.</div>'+
+ nrBookSwitch()+nrBookDisclaimer()+
  nrTafsirControls()+
  '<div id="nr-tafsir-book" class="nr-tafsir-book"><div class="nr-panel">Tefsir yükleniyor…</div></div>'+
  '<div class="nr-note">Kaynak: <a style="color:#ffde98" href="https://github.com/spa5k/tafsir_api">Tafsir API</a> / QUL. Diyanet tefsiri için <a style="color:#ffde98" href="https://kuran.diyanet.gov.tr/tefsir/sure/1-fatiha-suresi">resmî tefsir arşivi</a>. Bu sayfalar dijital okuma sayfasıdır; basılı kitabın özgün sayfa numaraları değildir.</div>';
@@ -76,7 +77,7 @@ function nrTafsirReadPage(){
  rows.map((r,i)=>{
    const text=String(r.text||'').replace(/<[^>]*>/g,' ').trim();
    return '<article class="nr-tafsir-verse"><div class="nr-tafsir-marker">'+(Number(r.ayah)||start+i+1)+(r.lastAyah&&r.lastAyah!==r.ayah?'–'+r.lastAyah:'')+'. AYET'+(r.part?' · BÖLÜM '+r.part+'/'+r.parts:'')+'</div>'+
-      '<p style="font-size:'+nrTafsirFont+'px">'+esc(text||'Bu ayetin tefsir metni kaynakta bulunmuyor.')+'</p></article>';
+      '<p'+nrBookDirection()+' style="font-size:'+(nrOttomanEnabled?nrTafsirFont+7:nrTafsirFont)+'px">'+esc(nrBookText(text||'Bu ayetin tefsir metni kaynakta bulunmuyor.'))+'</p></article>';
  }).join('')+
  '<div class="nr-tafsir-sheet-end">✦ Nur Rehberi • '+nrTafsirPage+'. sayfa ✦</div></div>'+
  nav+'<div class="nr-tafsir-bottom">'+

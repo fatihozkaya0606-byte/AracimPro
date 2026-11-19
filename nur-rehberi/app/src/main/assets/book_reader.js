@@ -76,8 +76,9 @@ function nrOpenGuide(i){
 function nrGuide(){
  const g=NR_LOCAL_GUIDES[nrGuideIndex]||NR_LOCAL_GUIDES[0],page=g.pages[nrGuidePage];
  main.innerHTML='<div class="royal-page-head"><span>📚</span><h1>'+esc(g.name)+'</h1><small>Uygulama içinde okunabilen konu rehberi</small></div>'+
- '<div class="nr-panel nr-guide-page"><div class="nr-guide-number">✦ '+(nrGuidePage+1)+' / '+g.pages.length+'. sayfa</div><h2>'+esc(page[0])+'</h2>'+
- page.slice(1).map(p=>'<p>'+esc(p)+'</p>').join('')+
+ nrBookSwitch()+nrBookDisclaimer()+
+ '<div class="nr-panel nr-guide-page"><div class="nr-guide-number">✦ '+(nrGuidePage+1)+' / '+g.pages.length+'. sayfa</div><h2'+nrBookDirection()+'>'+esc(nrBookText(page[0]))+'</h2>'+
+ page.slice(1).map(p=>'<p'+nrBookDirection()+'>'+esc(nrBookText(p))+'</p>').join('')+
  '<small>Bu metin Nur Rehberi için hazırlanmış özgün giriş özetidir; '+esc(g.source)+' kitabının tam metni veya resmî fetva değildir.</small></div>'+
  '<div class="nr-tafsir-nav"><button data-guide="prev"'+(nrGuidePage===0?' disabled':'')+'>‹ Önceki sayfa</button><strong>'+(nrGuidePage+1)+' / '+g.pages.length+'</strong>'+
  '<button data-guide="next"'+(nrGuidePage===g.pages.length-1?' disabled':'')+'>Sonraki sayfa ›</button></div>'+

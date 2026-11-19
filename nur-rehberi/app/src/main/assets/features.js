@@ -60,7 +60,7 @@ function nrItems(rows){
 function books(){
  const rows=NR_LIBRARY.filter(r=>(r[0]+' '+r[1]).toLocaleLowerCase('tr').includes(nrBookQuery.toLocaleLowerCase('tr')));
  main.innerHTML=nrTop('📚','İslami Kitaplık','Diyanet ve TDV yayınları')+
- '<p class="nr-note">Telifli eserler izinsiz kopyalanmıyor. Yayıncıların sunduğu okuma, PDF ve indirme seçenekleri resmî sayfalarda açılır.</p>'+
+ '<p class="nr-note">Telifli eserler izinsiz kopyalanmıyor. Yayıncıların sunduğu okuma, PDF ve indirme seçenekleri resmî sayfalarda açılır.</p>'+nrBookSwitch()+nrBookDisclaimer()+
  '<input id="nr-book-search" class="nr-input" placeholder="Kitaplıkta ara" value="'+esc(nrBookQuery)+'"/>'+
  '<div class="nr-list" id="nr-book-results">'+nrBookItems(rows)+'</div>'+
  '<div class="nr-actions"><button data-page="ilmihal" class="btn gold">İlmihal konuları</button><button data-page="tefsir" class="btn ghost">Tefsir</button><button data-page="hadis" class="btn ghost">Hadisler</button></div>';
