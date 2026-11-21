@@ -1,5 +1,9 @@
 # Ok Kaçış V20: One bottom banner on every screen
 
+## V33.1 — Age prompt removed
+
+This isolated test branch removes the first-launch birthday calendar entirely, in response to user feedback. With 6–8, 9–12, 13–15, 16–17 and 18+ selected in Play Console, unknown-age users must receive child-appropriate ads. Every request therefore remains child-directed, under-age-of-consent and G-rated, through a single bottom AdMob banner with certified Unity Ads bidding mediation. Yandex is excluded from this build because there is no neutral age gate or separate verified adult audience. The V32.2 540-level game and its local saves are otherwise unchanged. This is a separate debug package, not a Play production update. The banner uses Google's test IDs and cannot generate live revenue.
+
 **TEST-only branch; published Google Play V18 remains unchanged.**
 
 - Only one anchored adaptive banner at the bottom of the app, outside the WebView board; zero interstitial, rewarded, and opening ads.

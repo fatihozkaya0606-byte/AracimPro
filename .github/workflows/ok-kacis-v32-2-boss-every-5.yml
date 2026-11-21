@@ -1,7 +1,7 @@
-name: OK Kacis V32.2 Boss Every Five Levels TEST
+name: OK Kacis V33.1 No Age Screen Banner TEST
 on:
   push:
-    branches: [ok-kacis-v32-2-boss-every-5]
+    branches: [ok-kacis-v33-no-age-banner-test]
     paths:
       - '.github/workflows/ok-kacis-v32-2-boss-every-5.yml'
       - 'game-development/**'
@@ -54,8 +54,8 @@ jobs:
           for old,new in [
               ("compileSdk 35","compileSdk 36"),
               ("targetSdk 35","targetSdk 36"),
-              ("versionCode 14","versionCode 34"),
-              ("versionName '4.2.0'","versionName '5.0.2'")
+              ("versionCode 14","versionCode 36"),
+              ("versionName '4.2.0'","versionName '5.0.4'")
           ]:
               assert s.count(old)==1,old
               s=s.replace(old,new,1)
@@ -64,8 +64,8 @@ jobs:
           android {
             buildTypes {
               debug {
-                applicationIdSuffix '.wood3d.v322'
-                versionNameSuffix '-boss5-test'
+                applicationIdSuffix '.wood3d.v331'
+                versionNameSuffix '-no-age-banner-test'
               }
             }
           }
@@ -87,8 +87,8 @@ jobs:
           </application>''',1)
           # Name the side-by-side build visibly: this must not replace the older V32.
           import re
-          x,n=re.subn(r'android:label="[^"]+"','android:label="Ok Kaçış V32.2 TEST"',x,count=1)
-          if n==0:x=x.replace('<application ','<application android:label="Ok Kaçış V32.2 TEST" ',1)
+          x,n=re.subn(r'android:label="[^"]+"','android:label="Ok Kaçış V33.1 TEST"',x,count=1)
+          if n==0:x=x.replace('<application ','<application android:label="Ok Kaçış V33.1 TEST" ',1)
           m.write_text(x)
           PY
       - name: Test 540 levels, accessibility visuals and banner-only ad policy
@@ -108,10 +108,10 @@ jobs:
           done
           unzip -l "$apk" | grep -Fq 'assets/v32-engine.js'
           unzip -l "$apk" | grep -Fq 'assets/v32-features.js'
-          cp "$apk" OkKacis_V32_2_Her_Bes_Seviyede_Patron_TEST.apk
-          sha256sum OkKacis_V32_2_Her_Bes_Seviyede_Patron_TEST.apk
+          cp "$apk" OkKacis_V33_1_YasEkransiz_Banner_TEST.apk
+          sha256sum OkKacis_V33_1_YasEkransiz_Banner_TEST.apk
       - uses: actions/upload-artifact@v4
         with:
-          name: OkKacis-V32-2-Her-Bes-Seviyede-Patron-Test-APK
-          path: OkKacis_V32_2_Her_Bes_Seviyede_Patron_TEST.apk
+          name: OkKacis-V33-1-No-Age-Screen-Banner-Test-APK
+          path: OkKacis_V33_1_YasEkransiz_Banner_TEST.apk
           if-no-files-found: error
