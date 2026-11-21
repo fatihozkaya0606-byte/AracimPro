@@ -1068,10 +1068,11 @@
   }
   function modal(title,body,kind){timerLastAt=performance.now();modalType=kind;$('modalClose').textContent=(kind==='lose'?'Bölümlere Dön':'Kapat');$('modalTitle').textContent=title;$('modalContent').innerHTML=body;$('modal').hidden=false;playSound()}
   function closeModal(){$('modal').hidden=true;modalType='';timerLastAt=performance.now();}
-  function openSettings(){modal('Ayarlar',`<div class="setting-line"><span>🔊 Ses efektleri</span><button id="soundToggle">${save.sound?'Açık':'Kapalı'}</button></div><div class="setting-line"><span>🎵 Fon müziği</span><button id="musicToggle">${save.music?'Açık':'Kapalı'}</button></div><div class="setting-line"><span>📳 Titreşim</span><button id="vibrateToggle">${save.vibrate?'Açık':'Kapalı'}</button></div><div class="setting-line"><span>🌍 Dil</span><span>Türkçe</span></div><p>Ok Kaçış · 9×9 banner test<br>Çevrimdışı oynanır • ilerleme telefonda saklanır.</p>`,'settings');
+  function openSettings(){modal('Ayarlar',`<div class="setting-line"><span>🔊 Ses efektleri</span><button id="soundToggle">${save.sound?'Açık':'Kapalı'}</button></div><div class="setting-line"><span>🎵 Fon müziği</span><button id="musicToggle">${save.music?'Açık':'Kapalı'}</button></div><div class="setting-line"><span>📳 Titreşim</span><button id="vibrateToggle">${save.vibrate?'Açık':'Kapalı'}</button></div><div class="setting-line"><span>🌍 Dil</span><span>Türkçe</span></div><div class="setting-line"><span>🛡️ Reklam yaş tercihi</span><button id="ageSettings">Düzenle</button></div><p>Ok Kaçış · 9×9 · 540 bölüm<br>İlerleme telefonda saklanır. Reklam tercihi değişince oyunu yeniden açın.</p>`,'settings');
     $('soundToggle').onclick=()=>{save.sound=!save.sound;persist();$('soundToggle').textContent=save.sound?'Açık':'Kapalı'};
     $('musicToggle').onclick=()=>{setMusic(!save.music);$('musicToggle').textContent=save.music?'Açık':'Kapalı'};
     $('vibrateToggle').onclick=()=>{save.vibrate=!save.vibrate;persist();$('vibrateToggle').textContent=save.vibrate?'Açık':'Kapalı'};
+    $('ageSettings').onclick=()=>{const bridge=nativeAds();if(bridge&&typeof bridge.showAgeSettings==='function')bridge.showAgeSettings();else toast('Yaş tercihi Android uygulamasında düzenlenebilir.')};
   }
   function openShop(){shopReturn=screen==='shop'?shopReturn:screen;selectedShopTab='skins';show('shop')}
   function buy(kind,cost,amount){if(save.coins<cost){toast('Yeterli altının yok!');playSound('bad');return false;}

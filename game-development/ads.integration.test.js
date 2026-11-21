@@ -6,3 +6,13 @@ test('one native banner is requested on ALL screens',()=>{assert.match(js,/setBa
 test('interstitial and rewarded formats entirely absent',()=>{assert.doesNotMatch(java,/showInterstitial|loadInterstitial|InterstitialAd|RewardedAd/);assert.doesNotMatch(js,/showInterstitial|pendingMilestoneInterstitial|advanceFromVictory|watchReward|showRewarded/);assert.doesNotMatch(html,/openRewardLives/);assert.match(js,/\$\('continueBtn'\)\.onclick=\(\)=>transitionToLevel/);});
 test('9x9 540 levels preserved',()=>assert.match(js,/const SIZE = 9, TOTAL_LEVELS = 540/));
 test('all unknown age requests are treated as child-directed',()=>{assert.match(java,/TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE/);assert.match(java,/TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE/);assert.match(java,/MAX_AD_CONTENT_RATING_G/);});
+test('Yandex can only be mapped to adult banner unit after neutral age screen',()=>{
+  assert.match(java,/CHILD_BANNER_ID/);
+  assert.match(java,/ADULT_BANNER_ID/);
+  assert.match(java,/isAdult \? ADULT_BANNER_ID : CHILD_BANNER_ID/);
+  assert.match(java,/showNeutralAgeScreen\(/);
+  assert.match(java,/isAdult = false;/);
+  assert.match(java,/checkAgeBeforeAds\(\)/);
+  assert.match(java,/getDatePicker\(\)\.setMaxDate/);
+  assert.match(java,/DatePickerDialog\.BUTTON_NEUTRAL, "Atla"/);
+});

@@ -1,8 +1,11 @@
 package com.okkacis.game;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -26,16 +29,23 @@ import com.google.android.ump.ConsentInformation;
 import com.google.android.ump.ConsentRequestParameters;
 import com.google.android.ump.UserMessagingPlatform;
 
+import java.util.Calendar;
+
 /**
  * DEV PREVIEW: Google sample IDs exclusively, no live ad revenue.
  * Production integration must use the OK Kacis AdMob app and ad-unit IDs,
  * updated privacy/data safety declarations, and any required consent flow.
  * Only bottom banner advertising; Unity bidding is mapped in AdMob when enabled.
- * Yandex is not enabled for child/unknown-age users.
+ * Yandex must be mapped ONLY to the separate adult AdMob banner unit.
+ * The child/unknown-age unit must never have non-Families-certified sources.
  */
 public final class MainActivity extends Activity {
     // Google's official development/test IDs. Never ship these for monetization.
-    private static final String TEST_BANNER_ID = "ca-app-pub-3940256099942544/9214589741";
+    private static final String CHILD_BANNER_ID = "ca-app-pub-3940256099942544/9214589741";
+    // In this debug build both IDs are Google's sample. Production MUST map
+    // this separate ID to the adult-only Yandex mediation group.
+    private static final String ADULT_BANNER_ID = "ca-app-pub-3940256099942544/9214589741";
+    private static final String AUDIENCE_PREFERENCES = "ok_kacis_age_screen";
 
     private WebView game;
     private FrameLayout bannerContainer;
@@ -45,6 +55,8 @@ public final class MainActivity extends Activity {
     private boolean bannerLoaded = false;
     private boolean wantsBanner = true;
     private boolean pageLoaded = false;
+    private boolean ageResolved = false;
+    private boolean isAdult = false;
 
     private final class AdsBridge {
         @JavascriptInterface
@@ -64,6 +76,12 @@ public final class MainActivity extends Activity {
                     UserMessagingPlatform.showPrivacyOptionsForm(MainActivity.this, error -> {});
                 }
             });
+        }
+
+
+        @JavascriptInterface
+        public void showAgeSettings() {
+            runOnUiThread(() -> showNeutralAgeScreen());
         }
     }
 
@@ -87,7 +105,9 @@ public final class MainActivity extends Activity {
     private void loadBanner() {
         if (bannerContainer == null) return;
         banner = new AdView(this);
-        banner.setAdUnitId(TEST_BANNER_ID);
+        // Crucial: children and unknown-age users CANNOT request the adult
+        // ad unit, because that unit may contain the Yandex custom event.
+        banner.setAdUnitId(isAdult ? ADULT_BANNER_ID : CHILD_BANNER_ID);
         int dpWidth = (int) (getResources().getDisplayMetrics().widthPixels /
                 getResources().getDisplayMetrics().density);
         // Anchored adaptive banner remains outside the 9x9 WebView board.
@@ -99,10 +119,15 @@ public final class MainActivity extends Activity {
         banner.setAdListener(new AdListener() {
             @Override public void onAdLoaded() {
                 bannerLoaded = true;
+                if (banner.getResponseInfo() != null) {
+                    Log.d("OkKacisAds", "Mediation adapter: " +
+                            banner.getResponseInfo().getMediationAdapterClassName());
+                }
                 refreshBannerVisibility();
             }
             @Override public void onAdFailedToLoad(LoadAdError error) {
                 bannerLoaded = false;
+                Log.w("OkKacisAds", "Banner load failed: " + error.getCode());
                 refreshBannerVisibility();
             }
         });
@@ -110,11 +135,15 @@ public final class MainActivity extends Activity {
     }
 
     private void initializeAdsIfAllowed() {
-        if (adsInitialized || consentInformation == null || !consentInformation.canRequestAds()) return;
+        if (!ageResolved || adsInitialized || consentInformation == null || !consentInformation.canRequestAds()) return;
         adsInitialized = true;
         MobileAds.setRequestConfiguration(new RequestConfiguration.Builder()
-            .setTagForChildDirectedTreatment(RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
-            .setTagForUnderAgeOfConsent(RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
+            .setTagForChildDirectedTreatment(isAdult
+                    ? RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_FALSE
+                    : RequestConfiguration.TAG_FOR_CHILD_DIRECTED_TREATMENT_TRUE)
+            .setTagForUnderAgeOfConsent(isAdult
+                    ? RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_FALSE
+                    : RequestConfiguration.TAG_FOR_UNDER_AGE_OF_CONSENT_TRUE)
             .setMaxAdContentRating(RequestConfiguration.MAX_AD_CONTENT_RATING_G)
             .build());
         MobileAds.initialize(this, status -> runOnUiThread(() -> {
@@ -135,6 +164,69 @@ public final class MainActivity extends Activity {
             },
             requestError -> initializeAdsIfAllowed()
         );
+    }
+
+    private void applyAgeSelection(int birthYear, int birthMonth, int birthDay) {
+        Calendar today = Calendar.getInstance();
+        Calendar eighteenthBirthday = Calendar.getInstance();
+        eighteenthBirthday.clear();
+        eighteenthBirthday.set(birthYear + 18, birthMonth, birthDay);
+        isAdult = !eighteenthBirthday.after(today);
+        ageResolved = true;
+        // Date remains on-device. Never send it to any advertising network.
+        getSharedPreferences(AUDIENCE_PREFERENCES, MODE_PRIVATE).edit()
+                .putInt("year", birthYear).putInt("month", birthMonth)
+                .putInt("day", birthDay).putBoolean("skipped", false).apply();
+        if (banner != null) {
+            banner.destroy();
+            banner = null;
+            bannerLoaded = false;
+            bannerContainer.removeAllViews();
+            refreshBannerVisibility();
+        }
+        // When changed in Settings, initialize a fresh SDK session next launch;
+        // never switch from a child request to an adult network mid-session.
+        if (!adsInitialized) requestConsentAndInitialize();
+    }
+
+    private void showNeutralAgeScreen() {
+        Calendar now = Calendar.getInstance();
+        DatePickerDialog dialog = new DatePickerDialog(this,
+                (picker, year, month, day) -> applyAgeSelection(year, month, day),
+                now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH));
+        dialog.setTitle("Doğum tarihi");
+        dialog.setMessage("Reklamların yaşa uygun olması için doğum tarihinizi seçebilirsiniz.");
+        dialog.getDatePicker().setMaxDate(System.currentTimeMillis());
+        dialog.setButton(DatePickerDialog.BUTTON_NEUTRAL, "Atla", (d, which) -> {
+            // Unknown age is always treated as child-directed.
+            ageResolved = true;
+            isAdult = false;
+            getSharedPreferences(AUDIENCE_PREFERENCES, MODE_PRIVATE).edit()
+                    .putBoolean("skipped", true).apply();
+            if (!adsInitialized) requestConsentAndInitialize();
+        });
+        dialog.setCancelable(false);
+        dialog.show();
+    }
+
+    private void checkAgeBeforeAds() {
+        SharedPreferences prefs = getSharedPreferences(AUDIENCE_PREFERENCES, MODE_PRIVATE);
+        int year = prefs.getInt("year", 0);
+        int month = prefs.getInt("month", -1);
+        int day = prefs.getInt("day", 0);
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        if (prefs.getBoolean("skipped", false)) {
+            ageResolved = true;
+            isAdult = false;
+            requestConsentAndInitialize();
+            return;
+        }
+        if (year >= 1900 && year <= currentYear && month >= 0 && month <= 11
+                && day >= 1 && day <= 31) {
+            applyAgeSelection(year, month, day);
+        } else {
+            showNeutralAgeScreen();
+        }
     }
 
     @Override public void onCreate(Bundle saved) {
@@ -188,7 +280,7 @@ public final class MainActivity extends Activity {
 
         // Consent is refreshed on each launch and checked before starting ad requests.
         // All IDs in this isolated preview branch are Google test IDs.
-        requestConsentAndInitialize();
+        checkAgeBeforeAds();
     }
 
     @Override public void onBackPressed() {
